@@ -1,0 +1,68 @@
+function out = <%= s.name %>
+out{1} = @init;
+out{2} = @fun_eval;
+out{3} = <%= s.jacobian_handle %>;
+out{4} = <%= s.jacobian_params_handle %>;
+out{5} = <%= s.hessians_handle %>;
+out{6} = <%= s.hessians_params_handle %>;
+out{7} = <%= s.third_ord_derivatives_handle %>;
+out{8} = <%= s.fourth_ord_derivatives_handle %>;
+out{9} = <%= s.fifth_ord_derivatives_handle %>;
+out{10} = [];% usernorm DV: this is the only difference between
+% the standard matcont problem file and the cl_matcontL problem file
+out{11}= @x1;
+out{12}= @x2;
+out{13}= @x3;
+out{14}= @x4;
+out{15}= @x5;
+
+% Suppress function might not be used warning in this file:
+%#ok<*DEFNU>
+% Suppress Input argument might be unused warning in this file: 
+%#ok<*INUSD>
+
+% --------------------------------------------------------------------------
+function dydt = fun_eval(t,xxxxx, <%= s.parameter_arguments %>)
+dydt=<%= s.formatted_rhs %>;
+% --------------------------------------------------------------------------
+%function [tspan,y0,options] = init
+function y0 = init(par_alpha,par_beta)
+%handles = feval(adapt22);
+%y0=[0,0,0];
+y0=[0;0;0];
+%options = odeset('Jacobian',handles(3),'JacobianP',handles(4),
+%        'Hessians',handles(5),'HessiansP',handles(6));
+%tspan = [0 10];
+
+% --------------------------------------------------------------------------
+function jac = jacobian(t, xxxxx, <%= s.parameter_arguments %>)
+jac=<%= s.jacobian %>;
+% --------------------------------------------------------------------------
+function jacp=jacobian_params(t, xxxxx, <%= s.parameter_arguments %>)
+jacp=<%= s.jacobian_for_parameters %>;
+% --------------------------------------------------------------------------
+function hess = hessians(t, xxxxx, <%= s.parameter_arguments %>)
+hess=<%= s.hessians %>;
+% --------------------------------------------------------------------------
+function hessp = hessians_params(t, xxxxx, <%= s.parameter_arguments %>)
+hessp=<%= s.hessians_for_parameters %>;
+%---------------------------------------------------------------------------
+function d = third_ord_derivatives(t, xxxxx, <%= s.parameter_arguments %>)
+d = <%= s.third_ord_derivatives %>;
+%---------------------------------------------------------------------------
+function d = fourth_ord_derivatives(t, xxxxx, <%= s.parameter_arguments %>)
+d = <%= s.fourth_ord_derivatives %>;
+%---------------------------------------------------------------------------
+function d = fifth_ord_derivatives(t, xxxxx, <%= s.parameter_arguments %>)
+d = <%= s.fifth_ord_derivatives %>;
+
+function userfun1=x1(t, xxxxx, <%= s.parameter_arguments %>)
+	userfun1=0;
+function userfun2=x2(t, xxxxx, <%= s.parameter_arguments %>)
+	userfun2=0;
+function userfun3=x3(t, xxxxx, <%= s.parameter_arguments %>)
+	userfun3=0;
+function userfun4=x4(t, xxxxx, <%= s.parameter_arguments %>)
+	userfun4=0;
+function userfun5=x5(t, xxxxx, <%= s.parameter_arguments %>)
+	userfun5=0;

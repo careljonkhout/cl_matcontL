@@ -1,0 +1,833 @@
+ S	ID	 PT:  p(2)            ||u||          ||f||
+In contCIS_init
+In CISinit
+(Updated) NSub = 7 NUnstable = 1
+In equilibriumL/testf
+Test Functions: [ +1.423e-02 +2.649e-01 +1.000e+00 -1.423e-02]
+  1	 1	 00:  +2.498387e-01  7.522087e+01  8.875692e-07  
+
+ --- Step 1 ---
+In equilibriumL/testf
+Test Functions: [ +3.142e-02 +2.651e-01 +1.000e+00 -3.142e-02]
+  2		   :  +2.496791e-01  7.519745e+01  7.112787e-08  
+Current Step Size: +2.000000e-01
+Angle Between Tangents:  +2.411567e-02 * pi
+
+ --- Step 2 ---
+In equilibriumL/testf
+Test Functions: [ +5.946e-02 +2.653e-01 +1.000e+00 -5.946e-02]
+  3		   :  +2.493788e-01  7.515341e+01  1.671433e-07  
+Current Step Size: +2.600000e-01
+Angle Between Tangents:  +2.945616e-02 * pi
+
+ --- Step 3 ---
+contL: Innerangle too large
+ Reducing Stepsize
+In equilibriumL/testf
+Test Functions: [ +7.957e-02 +2.655e-01 +1.000e+00 -7.957e-02]
+  4		   :  +2.491323e-01  7.511733e+01  2.256223e-08  
+Current Step Size: +1.690000e-01
+Angle Between Tangents:  +1.774895e-02 * pi
+
+ --- Step 4 ---
+In equilibriumL/testf
+Test Functions: [ +1.004e-01 +2.657e-01 +1.000e+00 -1.004e-01]
+  5		   :  +2.488493e-01  7.507594e+01  1.877213e-08  
+Current Step Size: +1.690000e-01
+Angle Between Tangents:  +1.658536e-02 * pi
+
+ --- Step 5 ---
+In equilibriumL/testf
+Test Functions: [ +1.278e-01 +2.659e-01 +1.000e+00 -1.278e-01]
+  6		   :  +2.484322e-01  7.501505e+01  4.570428e-08  
+Current Step Size: +2.197000e-01
+Angle Between Tangents:  +1.981516e-02 * pi
+
+ --- Step 6 ---
+In equilibriumL/testf
+Test Functions: [ +1.633e-01 +2.660e-01 +1.000e+00 -1.633e-01]
+  7		   :  +2.478173e-01  7.492553e+01  1.137644e-07  
+Current Step Size: +2.856100e-01
+Angle Between Tangents:  +2.292515e-02 * pi
+
+ --- Step 7 ---
+In equilibriumL/testf
+Test Functions: [ +2.078e-01 +2.657e-01 +1.000e+00 -2.078e-01]
+  8		   :  +2.469165e-01  7.479490e+01  2.906162e-07  
+Current Step Size: +3.712930e-01
+Angle Between Tangents:  +2.548248e-02 * pi
+
+ --- Step 8 ---
+In equilibriumL/testf
+Test Functions: [ +2.621e-01 +2.646e-01 +1.000e+00 -2.621e-01]
+  9		   :  +2.456123e-01  7.460691e+01  7.223243e-07  
+Current Step Size: +4.826809e-01
+Angle Between Tangents:  +2.705885e-02 * pi
+
+ --- Step 9 ---
+In equilibriumL/testf
+Test Functions: [ +3.264e-01 +2.615e-01 +1.000e+00 -3.264e-01]
+ 10		   :  +2.437549e-01  7.434155e+01  8.673026e-09  
+Current Step Size: +6.274852e-01
+Angle Between Tangents:  +2.743064e-02 * pi
+
+ --- Step 10 ---
+In equilibriumL/testf
+Test Functions: [ +3.997e-01 +2.543e-01 +1.000e+00 -3.997e-01]
+ 11		   :  +2.411591e-01  7.397574e+01  2.445319e-08  
+Current Step Size: +8.157307e-01
+Angle Between Tangents:  +2.677159e-02 * pi
+
+ --- Step 11 ---
+In equilibriumL/testf
+Test Functions: [ +4.761e-01 +2.407e-01 +1.000e+00 -4.761e-01]
+ 12		   :  +2.378085e-01  7.351285e+01  4.491116e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.440903e-02 * pi
+
+ --- Step 12 ---
+In equilibriumL/testf
+Test Functions: [ +5.403e-01 +2.228e-01 +1.000e+00 -5.403e-01]
+ 13		   :  +2.343549e-01  7.304758e+01  2.635581e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.910660e-02 * pi
+
+ --- Step 13 ---
+In equilibriumL/testf
+Test Functions: [ +5.944e-01 +2.020e-01 +1.000e+00 -5.944e-01]
+ 14		   :  +2.308492e-01  7.258859e+01  1.823487e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.618642e-02 * pi
+
+ --- Step 14 ---
+In equilibriumL/testf
+Test Functions: [ +6.399e-01 +1.796e-01 +1.000e+00 -6.399e-01]
+ 15		   :  +2.273229e-01  7.214151e+01  1.482627e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.460530e-02 * pi
+
+ --- Step 15 ---
+In equilibriumL/testf
+Test Functions: [ +6.781e-01 +1.563e-01 +1.000e+00 -6.781e-01]
+ 16		   :  +2.237978e-01  7.171025e+01  1.369108e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.379532e-02 * pi
+
+ --- Step 16 ---
+In equilibriumL/testf
+Test Functions: [ +7.097e-01 +1.328e-01 +1.000e+00 -7.097e-01]
+ 17		   :  +2.202894e-01  7.129769e+01  1.370302e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.343996e-02 * pi
+
+ --- Step 17 ---
+In equilibriumL/testf
+Test Functions: [ +7.356e-01 +1.095e-01 +1.000e+00 -7.356e-01]
+ 18		   :  +2.168098e-01  7.090602e+01  1.432285e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.336241e-02 * pi
+
+ --- Step 18 ---
+In equilibriumL/testf
+Test Functions: [ +7.563e-01 +8.641e-02 +1.000e+00 -7.563e-01]
+ 19		   :  +2.133688e-01  7.053695e+01  1.529548e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.346480e-02 * pi
+
+ --- Step 19 ---
+In equilibriumL/testf
+Test Functions: [ +7.724e-01 +6.357e-02 +1.000e+00 -7.724e-01]
+ 20		   :  +2.099748e-01  7.019181e+01  1.650463e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.369424e-02 * pi
+
+ --- Step 20 ---
+In equilibriumL/testf
+Test Functions: [ +7.841e-01 +4.085e-02 +1.000e+00 -7.841e-01]
+ 21		   :  +2.066351e-01  6.987159e+01  1.790361e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.402387e-02 * pi
+
+ --- Step 21 ---
+In equilibriumL/testf
+Test Functions: [ +7.919e-01 +1.812e-02 +1.000e+00 -7.919e-01]
+ 22		   :  +2.033560e-01  6.957704e+01  1.948332e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.444246e-02 * pi
+
+ --- Step 22 ---
+In equilibriumL/testf
+Test Functions: [ +7.914e-01 -4.847e-03 +1.000e+00 -7.914e-01]
+ 23		   :  +2.001436e-01  6.930864e+01  2.125771e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.494852e-02 * pi
+
+ --- Step 23 ---
+In equilibriumL/testf
+Test Functions: [ +7.691e-01 -2.826e-02 +1.000e+00 -7.691e-01]
+ 24		   :  +1.970034e-01  6.906666e+01  2.325692e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.554695e-02 * pi
+
+ --- Step 24 ---
+In equilibriumL/testf
+Test Functions: [ +7.432e-01 -5.234e-02 +1.000e+00 -7.432e-01]
+ 25		   :  +1.939407e-01  6.885112e+01  2.552376e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.624694e-02 * pi
+
+ --- Step 25 ---
+In equilibriumL/testf
+Test Functions: [ +7.137e-01 -7.734e-02 +1.000e+00 -7.137e-01]
+ 26		   :  +1.909605e-01  6.866183e+01  2.811110e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.706059e-02 * pi
+
+ --- Step 26 ---
+In equilibriumL/testf
+Test Functions: [ +6.808e-01 -1.035e-01 +1.000e+00 -6.808e-01]
+ 27		   :  +1.880679e-01  6.849838e+01  3.107872e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.800164e-02 * pi
+
+ --- Step 27 ---
+In equilibriumL/testf
+Test Functions: [ +6.446e-01 -1.309e-01 +1.000e+00 -6.446e-01]
+ 28		   :  +1.852682e-01  6.836014e+01  3.448827e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.908423e-02 * pi
+
+ --- Step 28 ---
+In equilibriumL/testf
+Test Functions: [ +6.051e-01 -1.598e-01 +1.000e+00 -6.051e-01]
+ 29		   :  +1.825668e-01  6.824622e+01  3.839455e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.032131e-02 * pi
+
+ --- Step 29 ---
+In equilibriumL/testf
+Test Functions: [ +5.626e-01 -1.902e-01 +1.000e+00 -5.626e-01]
+ 30		   :  +1.799697e-01  6.815553e+01  4.283103e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.172237e-02 * pi
+
+ --- Step 30 ---
+In equilibriumL/testf
+Test Functions: [ +5.173e-01 -2.223e-01 +1.000e+00 -5.173e-01]
+ 31		   :  +1.774837e-01  6.808669e+01  4.778723e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.329046e-02 * pi
+
+ --- Step 31 ---
+In equilibriumL/testf
+Test Functions: [ +4.694e-01 -2.558e-01 +1.000e+00 -4.694e-01]
+ 32		   :  +1.751163e-01  6.803809e+01  5.317660e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.501804e-02 * pi
+
+ --- Step 32 ---
+In equilibriumL/testf
+Test Functions: [ +4.196e-01 -2.908e-01 +1.000e+00 -4.196e-01]
+ 33		   :  +1.728763e-01  6.800779e+01  5.879724e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.688213e-02 * pi
+
+ --- Step 33 ---
+In equilibriumL/testf
+Test Functions: [ +3.683e-01 -3.267e-01 +1.000e+00 -3.683e-01]
+ 34		   :  +1.707734e-01  6.799359e+01  6.429543e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.883930e-02 * pi
+
+ --- Step 34 ---
+In equilibriumL/testf
+Test Functions: [ +3.163e-01 -3.633e-01 +1.000e+00 -3.163e-01]
+ 35		   :  +1.688188e-01  6.799303e+01  6.915416e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +3.082243e-02 * pi
+
+ --- Step 35 ---
+In equilibriumL/testf
+Test Functions: [ +2.646e-01 -3.998e-01 +1.000e+00 -2.646e-01]
+ 36		   :  +1.670244e-01  6.800338e+01  7.273936e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +3.274211e-02 * pi
+
+ --- Step 36 ---
+contL: Innerangle too large
+ Reducing Stepsize
+In equilibriumL/testf
+Test Functions: [ +2.391e-01 -4.177e-01 +1.000e+00 -2.391e-01]
+ 37		   :  +1.661922e-01  6.801173e+01  4.361430e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.701934e-02 * pi
+
+ --- Step 37 ---
+In equilibriumL/testf
+Test Functions: [ +2.141e-01 -4.354e-01 +1.000e+00 -2.141e-01]
+ 38		   :  +1.654047e-01  6.802171e+01  4.265149e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.742648e-02 * pi
+
+ --- Step 38 ---
+In equilibriumL/testf
+Test Functions: [ +1.825e-01 -4.577e-01 +1.000e+00 -1.825e-01]
+ 39		   :  +1.644497e-01  6.803653e+01  5.445179e-09  
+Current Step Size: +6.500000e-01
+Angle Between Tangents:  +2.321161e-02 * pi
+
+ --- Step 39 ---
+In equilibriumL/testf
+Test Functions: [ +1.436e-01 -4.852e-01 +1.000e+00 -1.436e-01]
+ 40		   :  +1.633290e-01  6.805770e+01  2.600616e-08  
+Current Step Size: +8.450000e-01
+Angle Between Tangents:  +3.098388e-02 * pi
+
+ --- Step 40 ---
+contL: Innerangle too large
+ Reducing Stepsize
+In equilibriumL/testf
+Test Functions: [ +1.220e-01 -5.004e-01 +1.000e+00 -1.220e-01]
+ 41		   :  +1.627334e-01  6.807060e+01  3.599325e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.865520e-02 * pi
+
+ --- Step 41 ---
+In equilibriumL/testf
+Test Functions: [ +1.017e-01 -5.147e-01 +1.000e+00 -1.017e-01]
+ 42		   :  +1.621889e-01  6.808340e+01  3.407498e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.885256e-02 * pi
+
+ --- Step 42 ---
+In equilibriumL/testf
+Test Functions: [ +7.740e-02 -5.317e-01 +1.000e+00 -7.740e-02]
+ 43		   :  +1.615585e-01  6.809939e+01  9.121027e-07  
+Current Step Size: +6.500000e-01
+Angle Between Tangents:  +2.474324e-02 * pi
+
+ --- Step 43 ---
+In equilibriumL/testf
+Test Functions: [ +5.003e-02 -5.509e-01 +1.000e+00 -5.003e-02]
+ 44		   :  +1.608731e-01  6.811822e+01  2.182848e-08  
+Current Step Size: +8.450000e-01
+Angle Between Tangents:  +3.244344e-02 * pi
+
+ --- Step 44 ---
+contL: Innerangle too large
+ Reducing Stepsize
+In equilibriumL/testf
+Test Functions: [ +3.635e-02 -5.604e-01 +1.000e+00 -3.635e-02]
+ 45		   :  +1.605402e-01  6.812789e+01  2.615724e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.925543e-02 * pi
+
+ --- Step 45 ---
+In equilibriumL/testf
+Test Functions: [ +2.469e-02 -5.684e-01 +1.000e+00 -2.469e-02]
+ 46		   :  +1.602618e-01  6.813624e+01  2.460203e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.928597e-02 * pi
+
+ --- Step 46 ---
+In equilibriumL/testf
+Test Functions: [ +1.275e-02 -5.767e-01 +1.000e+00 -1.275e-02]
+ 47		   :  +1.599814e-01  6.814490e+01  6.593323e-07  
+Current Step Size: +6.500000e-01
+Angle Between Tangents:  +2.510238e-02 * pi
+
+ --- Step 47 ---
+In equilibriumL/testf
+Test Functions: [ +2.985e-03 -5.834e-01 +1.000e+00 -2.985e-03]
+ 48		   :  +1.597559e-01  6.815204e+01  2.016476e-08  
+Current Step Size: +8.450000e-01
+Angle Between Tangents:  +3.266197e-02 * pi
+
+ --- Step 48 ---
+contL: Innerangle too large
+ Reducing Stepsize
+In equilibriumL/testf
+Test Functions: [ +3.991e-04 -5.852e-01 +1.000e+00 -3.991e-04]
+ 49		   :  +1.596966e-01  6.815394e+01  2.049013e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.930204e-02 * pi
+
+ --- Step 49 ---
+In equilibriumL/testf
+Test Functions: [ -2.189e-04 -5.853e-01 +1.000e+00 -2.189e-04]
+contL: 
+BP detected at step 49
+using locator
+In equilibriumL/locate
+In equilibriumL/locateBP
+Locate BP: Newton Step: norm(dx)=0.008407738 norm(f1)=0.000230842
+Locate BP: Newton Step: norm(dx)=0.025331818 norm(f1)=0.005545905
+Locate BP: Residual Converging Too Slowly
+Time spent in locator function: 0.120566
+contL: Unable to locate BP with locator. 
+Try increasing contL_Loc_MaxCorrIters, Loc_MaxIters, contL_Loc_FunTolerance and contL_Loc_VarTolerance
+In equilibriumL/testf
+Test Functions: [ +3.991e-04 +0.000e+00 +0.000e+00 +0.000e+00]
+In equilibriumL/testf
+Test Functions: [ -2.189e-04 +0.000e+00 +0.000e+00 +0.000e+00]
+In equilibriumL/testf
+Test Functions: [ -6.221e-06 +0.000e+00 +0.000e+00 +0.000e+00]
+In equilibriumL/testf
+Test Functions: [ +7.628e-05 +0.000e+00 +0.000e+00 +0.000e+00]
+In equilibriumL/testf
+Test Functions: [ +9.759e-06 +0.000e+00 +0.000e+00 +0.000e+00]
+In equilibriumL/testf
+Test Functions: [ -1.129e-07 +0.000e+00 +0.000e+00 +0.000e+00]
+In equilibriumL/testf
+Test Functions: [ +1.943e-06 +0.000e+00 +0.000e+00 +0.000e+00]
+In equilibriumL/testf
+Test Functions: [ +1.818e-07 +0.000e+00 +0.000e+00 +0.000e+00]
+In equilibriumL/testf
+Test Functions: [ -5.992e-08 +0.000e+00 +0.000e+00 +0.000e+00]
+Time spent in bisection: 0.585264
+Test Functions: [ ]
+Test Functions: [ ]
+Test Functions: [ ]
+Test Functions: [ ]
+In equilibriumL/testf
+Test Functions: [ -6.000e-08 -5.855e-01 +2.000e+00 +6.000e-08]
+In equilibriumL/process
+
+Eigenvalues: (Subspace)
++5.854570e-01
++5.999802e-08
+-2.601988e+00
+-4.701042e+00
+-6.700584e+00
+-1.214607e+01
+-1.526220e+01
+Eigenvalues: (Reference)
+-1.888149e+01
+-2.688202e+01
+-3.123740e+01
+-3.613558e+01
+ 50	 2	 BP:  +1.596876e-01  6.815424e+01  2.535056e-07  
+Adapt: updating test functions
+In contCIS_init
+contCIS_init: need adapt test functions
+In CISinit
+(Updated) NSub = 7 NUnstable = 1
+In equilibriumL/testf
+Test Functions: [ -2.189e-04 -5.853e-01 +1.000e+00 -2.189e-04]
+ 51		   :  +1.596926e-01  6.815408e+01  2.046308e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.930094e-02 * pi
+
+ --- Step 51 ---
+In equilibriumL/testf
+Test Functions: [ -3.589e-03 -5.830e-01 +1.000e+00 -3.589e-03]
+ 52		   :  +1.597697e-01  6.815160e+01  5.806871e-07  
+Current Step Size: +6.500000e-01
+Angle Between Tangents:  +2.510330e-02 * pi
+
+ --- Step 52 ---
+In equilibriumL/testf
+Test Functions: [ -1.395e-02 -5.759e-01 +1.000e+00 -1.395e-02]
+ 53		   :  +1.600095e-01  6.814402e+01  1.433673e-08  
+Current Step Size: +8.450000e-01
+Angle Between Tangents:  +3.266211e-02 * pi
+
+ --- Step 53 ---
+contL: Innerangle too large
+ Reducing Stepsize
+In equilibriumL/testf
+Test Functions: [ -2.314e-02 -5.695e-01 +1.000e+00 -2.314e-02]
+ 54		   :  +1.602251e-01  6.813736e+01  2.222250e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.930171e-02 * pi
+
+ --- Step 54 ---
+In equilibriumL/testf
+Test Functions: [ -3.448e-02 -5.617e-01 +1.000e+00 -3.448e-02]
+ 55		   :  +1.604955e-01  6.812922e+01  2.345606e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.928900e-02 * pi
+
+ --- Step 55 ---
+In equilibriumL/testf
+Test Functions: [ -5.228e-02 -5.493e-01 +1.000e+00 -5.228e-02]
+ 56		   :  +1.609283e-01  6.811664e+01  7.117266e-07  
+Current Step Size: +6.500000e-01
+Angle Between Tangents:  +2.504173e-02 * pi
+
+ --- Step 56 ---
+In equilibriumL/testf
+Test Functions: [ -8.010e-02 -5.299e-01 +1.000e+00 -8.010e-02]
+ 57		   :  +1.616277e-01  6.809758e+01  1.800363e-08  
+Current Step Size: +8.450000e-01
+Angle Between Tangents:  +3.242304e-02 * pi
+
+ --- Step 57 ---
+contL: Innerangle too large
+ Reducing Stepsize
+In equilibriumL/testf
+Test Functions: [ -9.877e-02 -5.168e-01 +1.000e+00 -9.877e-02]
+ 58		   :  +1.621124e-01  6.808527e+01  2.995018e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.902659e-02 * pi
+
+ --- Step 58 ---
+In equilibriumL/testf
+Test Functions: [ -1.189e-01 -5.026e-01 +1.000e+00 -1.189e-01]
+ 59		   :  +1.626493e-01  6.807252e+01  3.191378e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.887818e-02 * pi
+
+ --- Step 59 ---
+In equilibriumL/testf
+Test Functions: [ -1.470e-01 -4.828e-01 +1.000e+00 -1.470e-01]
+ 60		   :  +1.634238e-01  6.805575e+01  9.644502e-07  
+Current Step Size: +6.500000e-01
+Angle Between Tangents:  +2.425931e-02 * pi
+
+ --- Step 60 ---
+In equilibriumL/testf
+Test Functions: [ -1.862e-01 -4.551e-01 +1.000e+00 -1.862e-01]
+ 61		   :  +1.645573e-01  6.803471e+01  2.199848e-08  
+Current Step Size: +8.450000e-01
+Angle Between Tangents:  +3.091121e-02 * pi
+
+ --- Step 61 ---
+contL: Innerangle too large
+ Reducing Stepsize
+In equilibriumL/testf
+Test Functions: [ -2.104e-01 -4.380e-01 +1.000e+00 -2.104e-01]
+ 62		   :  +1.652917e-01  6.802331e+01  3.890878e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.784946e-02 * pi
+
+ --- Step 62 ---
+In equilibriumL/testf
+Test Functions: [ -2.354e-01 -4.204e-01 +1.000e+00 -2.354e-01]
+ 63		   :  +1.660725e-01  6.801311e+01  4.040471e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.748405e-02 * pi
+
+ --- Step 63 ---
+In equilibriumL/testf
+Test Functions: [ -2.685e-01 -3.970e-01 +1.000e+00 -2.685e-01]
+ 64		   :  +1.671547e-01  6.800227e+01  4.921286e-09  
+Current Step Size: +6.500000e-01
+Angle Between Tangents:  +2.213030e-02 * pi
+
+ --- Step 64 ---
+In equilibriumL/testf
+Test Functions: [ -3.122e-01 -3.662e-01 +1.000e+00 -3.122e-01]
+ 65		   :  +1.686702e-01  6.799349e+01  2.323193e-08  
+Current Step Size: +8.450000e-01
+Angle Between Tangents:  +2.765921e-02 * pi
+
+ --- Step 65 ---
+In equilibriumL/testf
+Test Functions: [ -3.642e-01 -3.296e-01 +1.000e+00 -3.642e-01]
+ 66		   :  +1.706126e-01  6.799309e+01  6.158004e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +3.098013e-02 * pi
+
+ --- Step 66 ---
+In equilibriumL/testf
+Test Functions: [ -4.156e-01 -2.936e-01 +1.000e+00 -4.156e-01]
+ 67		   :  +1.727042e-01  6.800610e+01  5.879238e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.899824e-02 * pi
+
+ --- Step 67 ---
+In equilibriumL/testf
+Test Functions: [ -4.656e-01 -2.586e-01 +1.000e+00 -4.656e-01]
+ 68		   :  +1.749338e-01  6.803504e+01  5.503644e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.703594e-02 * pi
+
+ --- Step 68 ---
+In equilibriumL/testf
+Test Functions: [ -5.136e-01 -2.249e-01 +1.000e+00 -5.136e-01]
+ 69		   :  +1.772915e-01  6.808212e+01  5.077574e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.516229e-02 * pi
+
+ --- Step 69 ---
+In equilibriumL/testf
+Test Functions: [ -5.591e-01 -1.927e-01 +1.000e+00 -5.591e-01]
+ 70		   :  +1.797685e-01  6.814929e+01  4.639163e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.342255e-02 * pi
+
+ --- Step 70 ---
+In equilibriumL/testf
+Test Functions: [ -6.019e-01 -1.621e-01 +1.000e+00 -6.019e-01]
+ 71		   :  +1.823571e-01  6.823820e+01  4.215250e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.184117e-02 * pi
+
+ --- Step 71 ---
+In equilibriumL/testf
+Test Functions: [ -6.416e-01 -1.331e-01 +1.000e+00 -6.416e-01]
+ 72		   :  +1.850505e-01  6.835024e+01  3.821829e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.042670e-02 * pi
+
+ --- Step 72 ---
+In equilibriumL/testf
+Test Functions: [ -6.781e-01 -1.056e-01 +1.000e+00 -6.781e-01]
+ 73		   :  +1.878427e-01  6.848653e+01  3.466362e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.917679e-02 * pi
+
+ --- Step 73 ---
+In equilibriumL/testf
+Test Functions: [ -7.112e-01 -7.936e-02 +1.000e+00 -7.112e-01]
+ 74		   :  +1.907282e-01  6.864795e+01  3.150458e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.808230e-02 * pi
+
+ --- Step 74 ---
+In equilibriumL/testf
+Test Functions: [ -7.410e-01 -5.429e-02 +1.000e+00 -7.410e-01]
+ 75		   :  +1.937017e-01  6.883518e+01  2.872169e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.713048e-02 * pi
+
+ --- Step 75 ---
+In equilibriumL/testf
+Test Functions: [ -7.671e-01 -3.013e-02 +1.000e+00 -7.671e-01]
+ 76		   :  +1.967581e-01  6.904863e+01  2.627702e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.630721e-02 * pi
+
+ --- Step 76 ---
+In equilibriumL/testf
+Test Functions: [ -7.898e-01 -6.680e-03 +1.000e+00 -7.898e-01]
+ 77		   :  +1.998924e-01  6.928852e+01  2.412574e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.559864e-02 * pi
+
+ --- Step 77 ---
+In equilibriumL/testf
+Test Functions: [ -7.924e-01 +1.631e-02 +1.000e+00 -7.924e-01]
+ 78		   :  +2.030993e-01  6.955484e+01  2.222380e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.499253e-02 * pi
+
+ --- Step 78 ---
+In equilibriumL/testf
+Test Functions: [ -7.848e-01 +3.906e-02 +1.000e+00 -7.848e-01]
+ 79		   :  +2.063733e-01  6.984733e+01  2.053312e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.447937e-02 * pi
+
+ --- Step 79 ---
+In equilibriumL/testf
+Test Functions: [ -7.734e-01 +6.176e-02 +1.000e+00 -7.734e-01]
+ 80		   :  +2.097085e-01  7.016555e+01  1.902569e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.405389e-02 * pi
+
+ --- Step 80 ---
+In equilibriumL/testf
+Test Functions: [ -7.578e-01 +8.460e-02 +1.000e+00 -7.578e-01]
+ 81		   :  +2.130984e-01  7.050875e+01  1.768816e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.371694e-02 * pi
+
+ --- Step 81 ---
+In equilibriumL/testf
+Test Functions: [ -7.375e-01 +1.077e-01 +1.000e+00 -7.375e-01]
+ 82		   :  +2.165360e-01  7.087597e+01  1.652919e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.347884e-02 * pi
+
+ --- Step 82 ---
+In equilibriumL/testf
+Test Functions: [ -7.120e-01 +1.310e-01 +1.000e+00 -7.120e-01]
+ 83		   :  +2.200128e-01  7.126591e+01  1.559366e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.336487e-02 * pi
+
+ --- Step 83 ---
+In equilibriumL/testf
+Test Functions: [ -6.808e-01 +1.544e-01 +1.000e+00 -6.808e-01]
+ 84		   :  +2.235194e-01  7.167689e+01  1.499299e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.342534e-02 * pi
+
+ --- Step 84 ---
+In equilibriumL/testf
+Test Functions: [ -6.432e-01 +1.777e-01 +1.000e+00 -6.432e-01]
+ 85		   :  +2.270437e-01  7.210676e+01  1.497106e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.375355e-02 * pi
+
+ --- Step 85 ---
+In equilibriumL/testf
+Test Functions: [ -5.983e-01 +2.003e-01 +1.000e+00 -5.983e-01]
+ 86		   :  +2.305705e-01  7.255271e+01  1.604816e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.451825e-02 * pi
+
+ --- Step 86 ---
+In equilibriumL/testf
+Test Functions: [ -5.449e-01 +2.213e-01 +1.000e+00 -5.449e-01]
+ 87		   :  +2.340787e-01  7.301092e+01  1.934208e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.602165e-02 * pi
+
+ --- Step 87 ---
+In equilibriumL/testf
+Test Functions: [ -4.816e-01 +2.394e-01 +1.000e+00 -4.816e-01]
+ 88		   :  +2.375377e-01  7.347593e+01  2.738503e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.880534e-02 * pi
+
+ --- Step 88 ---
+In equilibriumL/testf
+Test Functions: [ -4.063e-01 +2.534e-01 +1.000e+00 -4.063e-01]
+ 89		   :  +2.408986e-01  7.393938e+01  4.665018e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.386036e-02 * pi
+
+ --- Step 89 ---
+In equilibriumL/testf
+Test Functions: [ -3.161e-01 +2.621e-01 +1.000e+00 -3.161e-01]
+ 90		   :  +2.440766e-01  7.438731e+01  9.588472e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +3.308597e-02 * pi
+
+ --- Step 90 ---
+contL: Innerangle too large
+ Reducing Stepsize
+In equilibriumL/testf
+Test Functions: [ -2.646e-01 +2.645e-01 +1.000e+00 -2.646e-01]
+ 91		   :  +2.455485e-01  7.459774e+01  6.758054e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +2.220609e-02 * pi
+
+ --- Step 91 ---
+In equilibriumL/testf
+Test Functions: [ -2.084e-01 +2.657e-01 +1.000e+00 -2.084e-01]
+ 92		   :  +2.469031e-01  7.479296e+01  4.117551e-09  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +2.785270e-02 * pi
+
+ --- Step 92 ---
+contL: Innerangle too large
+ Reducing Stepsize
+In equilibriumL/testf
+Test Functions: [ -1.696e-01 +2.659e-01 +1.000e+00 -1.696e-01]
+ 93		   :  +2.476984e-01  7.490825e+01  1.816527e-07  
+Current Step Size: +3.250000e-01
+Angle Between Tangents:  +2.198619e-02 * pi
+
+ --- Step 93 ---
+In equilibriumL/testf
+Test Functions: [ -1.294e-01 +2.659e-01 +1.000e+00 -1.294e-01]
+ 94		   :  +2.484075e-01  7.501145e+01  2.008834e-07  
+Current Step Size: +3.250000e-01
+Angle Between Tangents:  +2.570261e-02 * pi
+
+ --- Step 94 ---
+contL: Innerangle too large
+ Reducing Stepsize
+In equilibriumL/testf
+Test Functions: [ -1.030e-01 +2.657e-01 +1.000e+00 -1.030e-01]
+ 95		   :  +2.488124e-01  7.507054e+01  3.850663e-08  
+Current Step Size: +2.112500e-01
+Angle Between Tangents:  +1.891121e-02 * pi
+
+ --- Step 95 ---
+In equilibriumL/testf
+Test Functions: [ -7.695e-02 +2.655e-01 +1.000e+00 -7.695e-02]
+ 96		   :  +2.491660e-01  7.512225e+01  4.313407e-08  
+Current Step Size: +2.112500e-01
+Angle Between Tangents:  +2.074025e-02 * pi
+
+ --- Step 96 ---
+In equilibriumL/testf
+Test Functions: [ -4.513e-02 +2.652e-01 +1.000e+00 -4.513e-02]
+ 97		   :  +2.495385e-01  7.517682e+01  1.506874e-07  
+Current Step Size: +2.746250e-01
+Angle Between Tangents:  +2.966823e-02 * pi
+
+ --- Step 97 ---
+contL: Innerangle too large
+ Reducing Stepsize
+In equilibriumL/testf
+Test Functions: [ -2.706e-02 +2.650e-01 +1.000e+00 -2.706e-02]
+ 98		   :  +2.497213e-01  7.520364e+01  3.530857e-08  
+Current Step Size: +1.785063e-01
+Angle Between Tangents:  +2.075101e-02 * pi
+
+ --- Step 98 ---
+In equilibriumL/testf
+Test Functions: [ -1.252e-02 +2.649e-01 +1.000e+00 -1.252e-02]
+ 99		   :  +2.498537e-01  7.522306e+01  4.225703e-08  
+Current Step Size: +1.785063e-01
+Angle Between Tangents:  +2.169763e-02 * pi
+
+ --- Step 99 ---
+In equilibriumL/testf
+Test Functions: [ -1.418e-03 +2.648e-01 +1.000e+00 -1.418e-03]
+100		   :  +2.499459e-01  7.523661e+01  1.393641e-07  
+Current Step Size: +2.320581e-01
+Angle Between Tangents:  +2.917847e-02 * pi
+
+ --- Step 100 ---
+contL: Innerangle too large
+ Reducing Stepsize
+In equilibriumL/testf
+Test Functions: [ +1.529e-04 +2.648e-01 +1.000e+00 -1.529e-04]
+contL: 
+BP detected at step 100
+using locator
+In equilibriumL/locate
+In equilibriumL/locateBP
+Locate BP: Newton Step: norm(dx)=0.001211542 norm(f1)=0.000006759
+Locate BP: Newton Step: norm(dx)=0.000022992 norm(f1)=0.000000001
+In equilibriumL/BPswitchBisect
+Branch Angle = 0.500000 * pi
+Time spent in locator function: 0.195912
+In equilibriumL/testf
+Test Functions: [ -4.262e-08 +2.648e-01 +0.000e+00 +4.262e-08]
+In equilibriumL/process
+
+Eigenvalues: (Subspace)
+-4.261538e-08
+-2.648037e-01
+-1.269647e+00
+-1.304022e+00
+-2.880191e+00
+-5.063945e+00
+-5.796829e+00
+Eigenvalues: (Reference)
+-7.787038e+00
+-1.102926e+01
+-1.246031e+01
+-1.479469e+01
+101	 3	 BP:  +2.499571e-01  7.523826e+01  9.696364e-10  
+Adapt: updating test functions
+In contCIS_init
+contCIS_init: need adapt test functions
+In CISinit
+(Updated) NSub = 7 NUnstable = 1
+In equilibriumL/testf
+Test Functions: [ +1.530e-04 +2.648e-01 +1.000e+00 -1.530e-04]
+102		   :  +2.499559e-01  7.523808e+01  2.701631e-08  
+Current Step Size: +1.508378e-01
+Angle Between Tangents:  +1.922551e-02 * pi
+
+ --- Step 102 ---
+In equilibriumL/testf
+Test Functions: [ +3.844e-03 +2.648e-01 +1.000e+00 -3.844e-03]
+103		   :  +2.499264e-01  7.523374e+01  2.711727e-08  
+Current Step Size: +1.508378e-01
+Angle Between Tangents:  +1.916553e-02 * pi
+
+Closed curve detected at step 104
+104	 4	 99:  +2.498387e-01  7.522087e+01  8.875692e-07  
+
+Elapsed time  = 11.7 secs
+Number of Points = 104

@@ -1,0 +1,364 @@
+ S	ID	 PT:  p(2)            ||u||          ||f||
+(Updated) NSub = 5 NUnstable = 1
+tangent vector to first point found
+Test Functions: [ +4.770e-01 +9.485e+00 +1.000e+00 -4.770e-01]
+  1	 1	 00:  +6.228439e-02  8.675355e+01  7.927835e-10  
+
+ --- Step 1 ---
+Test Functions: [ +4.394e-01 +9.606e+00 +1.000e+00 -4.394e-01]
+Angle Between Subspaces: +3.595653e-04 * pi
+
+Eigenvalues: (Subspace)
++4.393588e-01
+-1.004501e+01
+-3.076120e+01 -8.889286e-01 i
+-3.076120e+01 +8.889286e-01 i
+-5.891499e+01
+Eigenvalues: (Reference)
+-9.307781e+01
+-9.586622e+01
+-1.411162e+02
+-1.946732e+02
+  2		   :  +6.190731e-02  8.817168e+01  5.494437e-09  
+Current Step Size: +2.000000e+00
+Angle Between Tangents:  +3.536176e-04 * pi
+
+ --- Step 2 ---
+Test Functions: [ +3.955e-01 +9.718e+00 +1.000e+00 -3.955e-01]
+Angle Between Subspaces: +3.744433e-04 * pi
+
+Eigenvalues: (Subspace)
++3.954605e-01
+-1.011308e+01
+-3.131945e+01 -6.868489e-01 i
+-3.131945e+01 +6.868489e-01 i
+-5.948073e+01
+Eigenvalues: (Reference)
+-9.447978e+01
+-9.681855e+01
+-1.425459e+02
+-1.966644e+02
+  3		   :  +6.158119e-02  8.961186e+01  5.558003e-09  
+Current Step Size: +2.000000e+00
+Angle Between Tangents:  +4.088513e-04 * pi
+
+ --- Step 3 ---
+Test Functions: [ +3.456e-01 +9.821e+00 +1.000e+00 -3.456e-01]
+Angle Between Subspaces: +3.908337e-04 * pi
+
+Eigenvalues: (Subspace)
++3.455946e-01
+-1.016641e+01
+-3.159093e+01
+-3.210883e+01
+-5.995707e+01
+Eigenvalues: (Reference)
+-9.577312e+01
+-9.762664e+01
+-1.437643e+02
+-1.983669e+02
+  4		   :  +6.130452e-02  9.107289e+01  5.724397e-09  
+Current Step Size: +2.000000e+00
+Angle Between Tangents:  +4.704753e-04 * pi
+
+ --- Step 4 ---
+Test Functions: [ +2.901e-01 +9.915e+00 +1.000e+00 -2.901e-01]
+Angle Between Subspaces: +4.089104e-04 * pi
+
+Eigenvalues: (Subspace)
++2.900777e-01
+-1.020471e+01
+-3.142253e+01
+-3.328123e+01
+-6.034228e+01
+Eigenvalues: (Reference)
+-9.695552e+01
+-9.828773e+01
+-1.447673e+02
+-1.997744e+02
+  5		   :  +6.107624e-02  9.255361e+01  6.010382e-09  
+Current Step Size: +2.000000e+00
+Angle Between Tangents:  +5.383947e-04 * pi
+
+ --- Step 5 ---
+Test Functions: [ +2.292e-01 +9.998e+00 +1.000e+00 -2.292e-01]
+Angle Between Subspaces: +4.288900e-04 * pi
+
+Eigenvalues: (Subspace)
++2.292370e-01
+-1.022769e+01
+-3.142527e+01
+-3.422421e+01
+-6.063440e+01
+Eigenvalues: (Reference)
+-9.802437e+01
+-9.879872e+01
+-1.455505e+02
+-2.008804e+02
+  6		   :  +6.089572e-02  9.405289e+01  6.441359e-09  
+Current Step Size: +2.000000e+00
+Angle Between Tangents:  +6.132319e-04 * pi
+
+ --- Step 6 ---
+Test Functions: [ +1.634e-01 +1.007e+01 +1.000e+00 -1.634e-01]
+Angle Between Subspaces: +4.510424e-04 * pi
+
+Eigenvalues: (Subspace)
++1.634109e-01
+-1.023499e+01
+-3.142504e+01
+-3.511022e+01
+-6.083122e+01
+Eigenvalues: (Reference)
+-9.897674e+01
+-9.915609e+01
+-1.461087e+02
+-2.016775e+02
+  7		   :  +6.076276e-02  9.556968e+01  7.055959e-09  
+Current Step Size: +2.000000e+00
+Angle Between Tangents:  +6.961654e-04 * pi
+
+ --- Step 7 ---
+Test Functions: [ +9.295e-02 +1.013e+01 +1.000e+00 -9.295e-02]
+Angle Between Subspaces: +4.757045e-04 * pi
+
+Eigenvalues: (Subspace)
++9.294894e-02
+-1.022621e+01
+-3.139477e+01
+-3.596441e+01
+-6.093022e+01
+Eigenvalues: (Reference)
+-9.935582e+01
+-9.980924e+01
+-1.464360e+02
+-2.021575e+02
+  8		   :  +6.067764e-02  9.710296e+01  7.912599e-09  
+Current Step Size: +2.000000e+00
+Angle Between Tangents:  +7.888987e-04 * pi
+
+ --- Step 8 ---
+Test Functions: [ +1.821e-02 +1.018e+01 +1.000e+00 -1.821e-02]
+Angle Between Subspaces: +5.032999e-04 * pi
+
+Eigenvalues: (Subspace)
++1.821192e-02
+-1.020087e+01
+-3.132365e+01
+-3.679533e+01
+-6.092849e+01
+Eigenvalues: (Reference)
+-9.939326e+01
+-1.005180e+02
+-1.465256e+02
+-2.023112e+02
+  9		   :  +6.064113e-02  9.865173e+01  9.099568e-09  
+Current Step Size: +2.000000e+00
+Angle Between Tangents:  +8.937249e-04 * pi
+
+ --- Step 9 ---
+Test Functions: [ +6.043e-02 +1.022e+01 +0.000e+00 +6.043e-02]
+
+LP detected at step 9
+using locator
+Locate LP, Newton Step: norm(dx)=0.014988278 norm(f1)=0.000440397
+Locate LP, Newton Step: norm(dx)=0.000069089 norm(f1)=0.000385233
+Locate LP, Newton Step: norm(dx)=0.000000973 norm(f1)=0.000000050
+Time spent in locator function: 0.577032
+Test Functions: [ +7.813e-09 +1.019e+01 +0.000e+00 +7.813e-09]
+Quadratic coefficient = -1.925435e-02
+
+Eigenvalues: (Subspace)
+-7.813350e-09
+-1.019243e+01
+-3.130022e+01
+-3.698837e+01
+-6.091305e+01
+Eigenvalues: (Reference)
+-9.937786e+01
+-1.006666e+02
+-1.465113e+02
+-2.022987e+02
+ 10	 2	 LP:  +6.063973e-02  9.901921e+01  2.886235e-09  
+Adapt: updating update test functions
+contCIS_init: need adapt test functions
+(Updated) NSub = 4 NUnstable = 0
+Test Functions: [ +6.043e-02 +1.022e+01 +0.000e+00 +6.043e-02]
+Angle Between Subspaces: +3.074804e-16 * pi
+
+Eigenvalues: (Subspace)
+-6.042745e-02
+-1.015844e+01
+-3.120555e+01
+-3.760642e+01
+Eigenvalues: (Reference)
+-6.082266e+01
+-9.926302e+01
+-1.010984e+02
+-1.463697e+02
+ 11		   :  +6.065456e-02  1.002150e+02  1.075348e-08  
+Current Step Size: +2.000000e+00
+Angle Between Tangents:  +1.013679e-03 * pi
+
+ --- Step 11 ---
+Test Functions: [ +1.426e-01 +1.024e+01 +0.000e+00 +1.426e-01]
+Angle Between Subspaces: +5.695960e-04 * pi
+
+Eigenvalues: (Subspace)
+-1.425840e-01
+-1.009826e+01
+-3.103606e+01
+-3.839891e+01
+Eigenvalues: (Reference)
+-6.060876e+01
+-9.895878e+01
+-1.015451e+02
+-1.459590e+02
+ 12		   :  +6.071991e-02  1.017919e+02  1.308964e-08  
+Current Step Size: +2.000000e+00
+Angle Between Tangents:  +1.152795e-03 * pi
+
+ --- Step 12 ---
+Test Functions: [ +2.279e-01 +1.025e+01 +0.000e+00 +2.279e-01]
+Angle Between Subspaces: +6.098919e-04 * pi
+
+Eigenvalues: (Subspace)
+-2.278589e-01
+-1.001957e+01
+-3.081133e+01
+-3.917277e+01
+Eigenvalues: (Reference)
+-6.028209e+01
+-9.847299e+01
+-1.018519e+02
+-1.452825e+02
+ 13		   :  +6.083993e-02  1.033814e+02  1.645868e-08  
+Current Step Size: +2.000000e+00
+Angle Between Tangents:  +1.316513e-03 * pi
+
+ --- Step 13 ---
+Test Functions: [ +3.158e-01 +1.024e+01 +0.000e+00 +3.158e-01]
+Angle Between Subspaces: +6.564554e-04 * pi
+
+Eigenvalues: (Subspace)
+-3.158389e-01
+-9.921431e+00
+-3.052755e+01
+-3.992713e+01
+Eigenvalues: (Reference)
+-5.983700e+01
+-9.779660e+01
+-1.020110e+02
+-1.443270e+02
+ 14		   :  +6.101834e-02  1.049826e+02  2.145122e-08  
+Current Step Size: +2.000000e+00
+Angle Between Tangents:  +1.512327e-03 * pi
+
+ --- Step 14 ---
+Test Functions: [ +4.061e-01 +1.021e+01 +0.000e+00 +4.061e-01]
+Angle Between Subspaces: +7.109193e-04 * pi
+
+Eigenvalues: (Subspace)
+-4.060939e-01
+-9.802701e+00
+-3.018057e+01
+-4.066032e+01
+Eigenvalues: (Reference)
+-5.926658e+01
+-9.691853e+01
+-1.020130e+02
+-1.430762e+02
+ 15		   :  +6.126004e-02  1.065945e+02  2.910610e-08  
+Current Step Size: +2.000000e+00
+Angle Between Tangents:  +1.750818e-03 * pi
+
+ --- Step 15 ---
+Test Functions: [ +4.982e-01 +1.016e+01 +0.000e+00 +4.982e-01]
+Angle Between Subspaces: +7.755592e-04 * pi
+
+Eigenvalues: (Subspace)
+-4.981749e-01
+-9.661958e+00
+-2.976554e+01
+-4.136986e+01
+Eigenvalues: (Reference)
+-5.856226e+01
+-9.582502e+01
+-1.018464e+02
+-1.415102e+02
+ 16		   :  +6.157154e-02  1.082160e+02  4.134398e-08  
+Current Step Size: +2.000000e+00
+Angle Between Tangents:  +2.047392e-03 * pi
+
+ --- Step 16 ---
+Test Functions: [ +5.916e-01 +1.009e+01 +0.000e+00 +5.916e-01]
+Angle Between Subspaces: +8.536453e-04 * pi
+
+Eigenvalues: (Subspace)
+-5.916101e-01
+-9.497389e+00
+-2.927656e+01
+-4.205230e+01
+Eigenvalues: (Reference)
+-5.771317e+01
+-9.449862e+01
+-1.014963e+02
+-1.396032e+02
+ 17		   :  +6.196151e-02  1.098460e+02  6.193351e-08  
+Current Step Size: +2.000000e+00
+Angle Between Tangents:  +2.425301e-03 * pi
+
+ --- Step 17 ---
+Test Functions: [ +6.859e-01 +9.993e+00 +0.000e+00 +6.859e-01]
+Angle Between Subspaces: +9.500517e-04 * pi
+
+Eigenvalues: (Subspace)
+-6.858995e-01
+-9.306624e+00
+-2.870613e+01
+-4.270284e+01
+Eigenvalues: (Reference)
+-5.670515e+01
+-9.291659e+01
+-1.009434e+02
+-1.373222e+02
+ 18		   :  +6.244168e-02  1.114831e+02  9.882360e-08  
+Current Step Size: +2.000000e+00
+Angle Between Tangents:  +2.921196e-03 * pi
+
+ --- Step 18 ---
+Test Functions: [ +7.805e-01 +9.867e+00 +0.000e+00 +7.805e-01]
+Angle Between Subspaces: +1.072377e-03 * pi
+
+Eigenvalues: (Subspace)
+-7.805073e-01
+-9.086474e+00
+-2.804427e+01
+-4.331481e+01
+Eigenvalues: (Reference)
+-5.551924e+01
+-9.104841e+01
+-1.001618e+02
+-1.346225e+02
+ 19		   :  +6.302832e-02  1.131256e+02  1.703419e-07  
+Current Step Size: +2.000000e+00
+Angle Between Tangents:  +3.596014e-03 * pi
+
+ --- Step 19 ---
+Test Functions: [ +8.748e-01 +9.707e+00 +0.000e+00 +8.748e-01]
+Angle Between Subspaces: +1.233158e-03 * pi
+
+Eigenvalues: (Subspace)
+-8.748487e-01
+-8.832470e+00
+-2.727716e+01
+-4.387863e+01
+Eigenvalues: (Reference)
+-5.412890e+01
+-8.885143e+01
+-9.911519e+01
+-1.314417e+02
+ 20	 3	 99:  +6.374478e-02  1.147716e+02  3.237869e-07  
+
+Elapsed time  = 7.6 secs
+Number of Points = 20

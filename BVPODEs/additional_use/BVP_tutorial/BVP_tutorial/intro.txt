@@ -1,0 +1,31 @@
+Tutorial on solving BVPs.
+
+Solving Boundary Value Problems for ODEs with BVP4C. Tutorial + Examples.
+
+
+This tutorial shows how to formulate, solve, and plot the solutions of 
+boundary value problems (BVPs) for ordinary differential equations. 
+The tutorial introduces the function BVP4C (available in MATLAB 6.0 
+and later), briefly describes the numerical method used, and illustrates 
+solving BVPs with several examples and exercises. 
+
+The M-files for all the examples and exercises in the tutorial 
+are available in the directory BVP_examples. 
+
+The directory BVP_examples_65 contains the files for the examples 
+and exercises, updated to take advantage of features available 
+in MATLAB 6.5 (R13). Correspondingly, BVP_examples_70 contains 
+files modified for use with MATLAB 7.0 (R14).
+
+More information about solving BVPs in MATLAB, can be found in
+the paper 
+
+  Jacek Kierzenka, Lawrence F. Shampine, 
+  A BVP Solver based on Residual Control and the MATLAB PSE, 
+  ACM TOMS, Vol. 27 (2001), No. 3, pp. 299-316. 
+
+or in the book
+
+  L.F. Shampine, I. Gladwell, and S. Thompson, 
+  Solving ODEs with MATLAB, Cambridge University Press, 2003. 
+

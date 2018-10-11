@@ -1,0 +1,32 @@
+
+httpspeople.sc.fsu.edu~jburkardtindex.html
+
+https://people.sc.fsu.edu/~jburkardt/classes/classes.html
+
+MATLAB Source Codes     https://people.sc.fsu.edu/~jburkardt/m_src/m_src.html
+
+Index of /~jburkardt/m_src/bvp4c 
+
+	Parent Directory	 	-
+[TXT]	bratu.m	07-Sep-2013 22:12	4.8K
+[IMG]	bratu_0.450000.png	07-Sep-2013 22:12	19K
+[IMG]	bratu_1.000000.png	07-Sep-2013 22:12	19K
+[IMG]	bratu_3.500000.png	07-Sep-2013 22:12	22K
+[TXT]	bvp4c.html	20-Apr-2015 10:38	12K
+[TXT]	example1.m	22-Sep-2013 14:48	4.9K
+[IMG]	example1.png	07-Sep-2013 22:12	17K
+[TXT]	example2.m	07-Sep-2013 22:12	4.1K
+[IMG]	example2.png	07-Sep-2013 22:12	18K
+[TXT]	example3.m	08-Sep-2013 08:38	4.6K
+[IMG]	example3.png	07-Sep-2013 22:12	19K
+[TXT]	example4.m	07-Sep-2013 22:12	5.0K
+[IMG]	example4.png	07-Sep-2013 22:12	19K
+[TXT]	sample1.m	07-Sep-2013 22:12	3.6K
+[IMG]	sample1.png
+=====================================================
+
+ROOTS_RC 
+Nonlinear Equation Solver, Reverse Communication
+
+
+https://people.sc.fsu.edu/~jburkardt/m_src/roots_rc/roots_rc.html

@@ -1,0 +1,60 @@
+$#include "fem.h"
+
+
+@function makemex
+if ~exist('femex')
+  mex femex.c fem1.c gaussquad.c
+end
+
+
+@function [ix, nodex] = block2d4(x1, y1, x2, y2, nx, ny)
+
+nix = nx*ny;
+nnodex = (nx+1)*(ny+1);
+# block2d4(double x1, double y1, double x2, double y2, int nx, int ny,
+#         output int[4,nix] ix, output double[2,nnodex] nodex);
+
+
+@function [ix, nodex] = block2d9(x1, y1, x2, y2, nx, ny)
+
+nix = nx*ny;
+nnodex = (2*nx+1)*(2*ny+1);
+# block2d9(double x1, double y1, double x2, double y2, int nx, int ny,
+#          output int[9,nix] ix, output double[2,nnodex] nodex);
+
+
+@function [f,K] = eval_Kf(nodeu, nodex, ix, E, nu)
+
+nshape = size(ix,1);
+nelt = size(ix,2);
+nshape2 = nshape*2;
+Ki = zeros(nshape2*nshape2, nelt);
+Kj = zeros(nshape2*nshape2, nelt);
+Ka = zeros(nshape2*nshape2, nelt);
+
+N = prod(size(nodex));
+f = zeros(N,1);
+idf = reshape(1:N,size(nodex));
+e   = ones(nshape2,1);
+
+for ielt = 1:nelt
+  
+  % -- Get element contribution --
+  I = ix(:,ielt);
+  enodex = nodex(:,I);
+  enodeu = nodeu(:,I);
+  # element_neohook(double[2,nshape] enodex, double[2,nshape] enodeu, 
+  #                 double E, double nu,
+  #                 output double[nshape2,nshape2] Kelt, 
+  #                 output double[nshape2] felt, int nshape);
+  
+  % -- Assemble into K and f
+  J = reshape(idf(:,I), nshape2, 1);
+  f(J) = f(J) + felt;
+  Ki(:,ielt) = reshape(e*J', nshape2*nshape2, 1);
+  Kj(:,ielt) = reshape(J*e', nshape2*nshape2, 1);
+  Ka(:,ielt) = reshape(Kelt, nshape2*nshape2, 1);
+  
+end
+
+K = sparse(Ki, Kj, Ka, N, N);

@@ -1,0 +1,828 @@
+ S	ID	 PT:  p(1)            ||u||          ||f||
+  1	 1	 00:  -8.414040e-08  1.000000e-06  0.000000e+00  
+
+ --- Step 1 ---
+  2		   :  +1.791013e-03  1.823203e-02  5.903392e-08  
+Current Step Size: +2.000000e-01
+Angle Between Tangents:  +1.037197e-02 * pi
+
+ --- Step 2 ---
+  3		   :  +4.620503e-03  4.216088e-02  2.885926e-09  
+Current Step Size: +2.600000e-01
+Angle Between Tangents:  +7.040592e-03 * pi
+
+ --- Step 3 ---
+  4		   :  +9.142447e-03  7.351082e-02  1.405144e-08  
+Current Step Size: +3.380000e-01
+Angle Between Tangents:  +9.181103e-03 * pi
+
+ --- Step 4 ---
+  5		   :  +1.636867e-02  1.146173e-01  6.858986e-08  
+Current Step Size: +4.394000e-01
+Angle Between Tangents:  +1.198374e-02 * pi
+
+ --- Step 5 ---
+  6		   :  +2.676060e-02  1.619089e-01  1.533323e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.381542e-02 * pi
+
+ --- Step 6 ---
+  7		   :  +3.953711e-02  2.098211e-01  1.639127e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.411662e-02 * pi
+
+ --- Step 7 ---
+  8		   :  +5.472921e-02  2.584128e-01  1.796311e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.458741e-02 * pi
+
+ --- Step 8 ---
+  9		   :  +7.251470e-02  3.076762e-01  2.029537e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.518050e-02 * pi
+
+ --- Step 9 ---
+ 10		   :  +9.218600e-02  3.574450e-01  2.302218e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.579626e-02 * pi
+
+ --- Step 10 ---
+ 11		   :  +1.145492e-01  4.077889e-01  2.722520e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.667371e-02 * pi
+
+ --- Step 11 ---
+ 12		   :  +1.394545e-01  4.585231e-01  3.207348e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.768105e-02 * pi
+
+ --- Step 12 ---
+ 13		   :  +1.675152e-01  5.099250e-01  4.096126e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.934625e-02 * pi
+
+ --- Step 13 ---
+contL: Innerangle too large
+ Reducing Stepsize
+ 14		   :  +1.822159e-01  5.356336e-01  7.337781e-09  
+Current Step Size: +2.500000e-01
+Angle Between Tangents:  +1.021126e-02 * pi
+
+ --- Step 14 ---
+ 15		   :  +1.977854e-01  5.614184e-01  8.349761e-09  
+Current Step Size: +2.500000e-01
+Angle Between Tangents:  +1.072840e-02 * pi
+
+ --- Step 15 ---
+ 16		   :  +2.191139e-01  5.949963e-01  4.717113e-08  
+Current Step Size: +3.250000e-01
+Angle Between Tangents:  +1.481198e-02 * pi
+
+ --- Step 16 ---
+contL: Innerangle too large
+ Reducing Stepsize
+ 17		   :  +2.336715e-01  6.168189e-01  4.132371e-09  
+Current Step Size: +2.112500e-01
+Angle Between Tangents:  +1.023048e-02 * pi
+
+ --- Step 17 ---
+ 18		   :  +2.487605e-01  6.386193e-01  4.687280e-09  
+Current Step Size: +2.112500e-01
+Angle Between Tangents:  +1.076513e-02 * pi
+
+ --- Step 18 ---
+ 19		   :  +2.690849e-01  6.668772e-01  2.630756e-08  
+Current Step Size: +2.746250e-01
+Angle Between Tangents:  +1.487944e-02 * pi
+
+ --- Step 19 ---
+contL: Innerangle too large
+ Reducing Stepsize
+ 20		   :  +2.827590e-01  6.851577e-01  2.269558e-09  
+Current Step Size: +1.785063e-01
+Angle Between Tangents:  +1.026891e-02 * pi
+
+ --- Step 20 ---
+ 21		   :  +2.969294e-01  7.033610e-01  2.553588e-09  
+Current Step Size: +1.785063e-01
+Angle Between Tangents:  +1.081404e-02 * pi
+
+ --- Step 21 ---
+ 22		   :  +3.161314e-01  7.268668e-01  1.417193e-08  
+Current Step Size: +2.320581e-01
+Angle Between Tangents:  +1.493984e-02 * pi
+
+ --- Step 22 ---
+contL: Innerangle too large
+ Reducing Stepsize
+ 23		   :  +3.290042e-01  7.420138e-01  1.196347e-09  
+Current Step Size: +1.508378e-01
+Angle Between Tangents:  +1.027297e-02 * pi
+
+ --- Step 23 ---
+ 24		   :  +3.419916e-01  7.570291e-01  1.310216e-09  
+Current Step Size: +1.508378e-01
+Angle Between Tangents:  +1.073533e-02 * pi
+
+ --- Step 24 ---
+ 25		   :  +3.591256e-01  7.763128e-01  7.045131e-09  
+Current Step Size: +1.960891e-01
+Angle Between Tangents:  +1.469324e-02 * pi
+
+ --- Step 25 ---
+contL: Innerangle too large
+ Reducing Stepsize
+ 26		   :  +3.703243e-01  7.886687e-01  5.736357e-10  
+Current Step Size: +1.274579e-01
+Angle Between Tangents:  +1.000295e-02 * pi
+
+ --- Step 26 ---
+ 27		   :  +3.820189e-01  8.008719e-01  6.151832e-10  
+Current Step Size: +1.274579e-01
+Angle Between Tangents:  +1.041215e-02 * pi
+
+ --- Step 27 ---
+ 28		   :  +3.977587e-01  8.165162e-01  3.258257e-09  
+Current Step Size: +1.656953e-01
+Angle Between Tangents:  +1.423528e-02 * pi
+
+ --- Step 28 ---
+ 29		   :  +4.189038e-01  8.363856e-01  1.748601e-08  
+Current Step Size: +2.154039e-01
+Angle Between Tangents:  +1.965630e-02 * pi
+
+ --- Step 29 ---
+contL: Innerangle too large
+ Reducing Stepsize
+ 30		   :  +4.332488e-01  8.490010e-01  1.415240e-09  
+Current Step Size: +1.400125e-01
+Angle Between Tangents:  +1.362071e-02 * pi
+
+ --- Step 30 ---
+ 31		   :  +4.471231e-01  8.612919e-01  1.479471e-09  
+Current Step Size: +1.400125e-01
+Angle Between Tangents:  +1.412033e-02 * pi
+
+ --- Step 31 ---
+ 32		   :  +4.659555e-01  8.768068e-01  7.619745e-09  
+Current Step Size: +1.820163e-01
+Angle Between Tangents:  +1.933410e-02 * pi
+
+ --- Step 32 ---
+contL: Innerangle too large
+ Reducing Stepsize
+ 33		   :  +4.781482e-01  8.865517e-01  5.816877e-10  
+Current Step Size: +1.183106e-01
+Angle Between Tangents:  +1.304465e-02 * pi
+
+ --- Step 33 ---
+ 34		   :  +4.903647e-01  8.960149e-01  5.920453e-10  
+Current Step Size: +1.183106e-01
+Angle Between Tangents:  +1.343943e-02 * pi
+
+ --- Step 34 ---
+ 35		   :  +5.065520e-01  9.078687e-01  2.911345e-09  
+Current Step Size: +1.538038e-01
+Angle Between Tangents:  +1.801429e-02 * pi
+
+ --- Step 35 ---
+contL: Innerangle too large
+ Reducing Stepsize
+ 36		   :  +5.169660e-01  9.152745e-01  9.111300e-07  
+Current Step Size: +9.997245e-02
+Angle Between Tangents:  +1.197164e-02 * pi
+
+ --- Step 36 ---
+ 37		   :  +5.277017e-01  9.224292e-01  9.285831e-07  
+Current Step Size: +9.997245e-02
+Angle Between Tangents:  +1.214968e-02 * pi
+
+ --- Step 37 ---
+ 38		   :  +5.417236e-01  9.313497e-01  1.049879e-09  
+Current Step Size: +1.299642e-01
+Angle Between Tangents:  +1.600483e-02 * pi
+
+ --- Step 38 ---
+contL: Innerangle too large
+ Reducing Stepsize
+ 39		   :  +5.508274e-01  9.369079e-01  4.861628e-07  
+Current Step Size: +8.447672e-02
+Angle Between Tangents:  +1.049088e-02 * pi
+
+ --- Step 39 ---
+ 40		   :  +5.599510e-01  9.422718e-01  4.888526e-07  
+Current Step Size: +8.447672e-02
+Angle Between Tangents:  +1.053070e-02 * pi
+
+ --- Step 40 ---
+ 41		   :  +5.718353e-01  9.489500e-01  3.746167e-10  
+Current Step Size: +1.098197e-01
+Angle Between Tangents:  +1.371017e-02 * pi
+
+ --- Step 41 ---
+ 42		   :  +5.871302e-01  9.571262e-01  1.799286e-09  
+Current Step Size: +1.427657e-01
+Angle Between Tangents:  +1.777949e-02 * pi
+
+ --- Step 42 ---
+contL: Innerangle too large
+ Reducing Stepsize
+ 43		   :  +5.969372e-01  9.621300e-01  7.074887e-07  
+Current Step Size: +9.279767e-02
+Angle Between Tangents:  +1.148112e-02 * pi
+
+ --- Step 43 ---
+ 44		   :  +6.065810e-01  9.668904e-01  7.018173e-07  
+Current Step Size: +9.279767e-02
+Angle Between Tangents:  +1.139583e-02 * pi
+
+ --- Step 44 ---
+ 45		   :  +6.189308e-01  9.727178e-01  6.489975e-10  
+Current Step Size: +1.206370e-01
+Angle Between Tangents:  +1.465113e-02 * pi
+
+ --- Step 45 ---
+ 46		   :  +6.349163e-01  9.796919e-01  3.098866e-09  
+Current Step Size: +1.568281e-01
+Angle Between Tangents:  +1.869804e-02 * pi
+
+ --- Step 46 ---
+contL: Innerangle too large
+ Reducing Stepsize
+ 47		   :  +6.452060e-01  9.838654e-01  9.613141e-07  
+Current Step Size: +1.019382e-01
+Angle Between Tangents:  +1.189035e-02 * pi
+
+ --- Step 47 ---
+ 48		   :  +6.552664e-01  9.877632e-01  9.388194e-07  
+Current Step Size: +1.019382e-01
+Angle Between Tangents:  +1.165411e-02 * pi
+
+ --- Step 48 ---
+ 49		   :  +6.683418e-01  9.924313e-01  1.093348e-09  
+Current Step Size: +1.325197e-01
+Angle Between Tangents:  +1.475544e-02 * pi
+
+ --- Step 49 ---
+ 50		   :  +6.849340e-01  9.978571e-01  5.083760e-09  
+Current Step Size: +1.722756e-01
+Angle Between Tangents:  +1.850413e-02 * pi
+
+ --- Step 50 ---
+contL: Innerangle too large
+ Reducing Stepsize
+ 51		   :  +6.957882e-01  1.001017e+00  3.758395e-10  
+Current Step Size: +1.119792e-01
+Angle Between Tangents:  +1.163523e-02 * pi
+
+ --- Step 51 ---
+ 52		   :  +7.062141e-01  1.003901e+00  3.638932e-10  
+Current Step Size: +1.119792e-01
+Angle Between Tangents:  +1.128007e-02 * pi
+
+ --- Step 52 ---
+ 53		   :  +7.193832e-01  1.007261e+00  1.667857e-09  
+Current Step Size: +1.455729e-01
+Angle Between Tangents:  +1.410630e-02 * pi
+
+ --- Step 53 ---
+ 54		   :  +7.359294e-01  1.011019e+00  7.461876e-09  
+Current Step Size: +1.892448e-01
+Angle Between Tangents:  +1.741018e-02 * pi
+
+ --- Step 54 ---
+contL: Innerangle too large
+ Reducing Stepsize
+ 55		   :  +7.463341e-01  1.013122e+00  5.312978e-10  
+Current Step Size: +1.230091e-01
+Angle Between Tangents:  +1.076459e-02 * pi
+
+ --- Step 55 ---
+ 56		   :  +7.564671e-01  1.014979e+00  4.993759e-10  
+Current Step Size: +1.230091e-01
+Angle Between Tangents:  +1.034389e-02 * pi
+
+ --- Step 56 ---
+ 57		   :  +7.692345e-01  1.017055e+00  2.219842e-09  
+Current Step Size: +1.599118e-01
+Angle Between Tangents:  +1.284095e-02 * pi
+
+ --- Step 57 ---
+ 58		   :  +7.851077e-01  1.019242e+00  9.575896e-09  
+Current Step Size: +2.078854e-01
+Angle Between Tangents:  +1.571982e-02 * pi
+
+ --- Step 58 ---
+ 59		   :  +8.048813e-01  1.021332e+00  3.961692e-08  
+Current Step Size: +2.702510e-01
+Angle Between Tangents:  +1.890001e-02 * pi
+
+ --- Step 59 ---
+contL: Innerangle too large
+ Reducing Stepsize
+ 60		   :  +8.171042e-01  1.022300e+00  2.637545e-09  
+Current Step Size: +1.756632e-01
+Angle Between Tangents:  +1.145743e-02 * pi
+
+ --- Step 60 ---
+ 61		   :  +8.288101e-01  1.023006e+00  2.367311e-09  
+Current Step Size: +1.756632e-01
+Angle Between Tangents:  +1.087575e-02 * pi
+
+ --- Step 61 ---
+ 62		   :  +8.432791e-01  1.023583e+00  1.002948e-08  
+Current Step Size: +2.283621e-01
+Angle Between Tangents:  +1.333729e-02 * pi
+
+ --- Step 62 ---
+ 63		   :  +8.608527e-01  1.023854e+00  4.092630e-08  
+Current Step Size: +2.968707e-01
+Angle Between Tangents:  +1.611804e-02 * pi
+
+ --- Step 63 ---
+ 64		   :  +8.817681e-01  1.023575e+00  1.597765e-07  
+Current Step Size: +3.859320e-01
+Angle Between Tangents:  +1.916240e-02 * pi
+
+ --- Step 64 ---
+contL: Innerangle too large
+ Reducing Stepsize
+ 65		   :  +8.945429e-01  1.023106e+00  9.821917e-09  
+Current Step Size: +2.500000e-01
+Angle Between Tangents:  +1.146151e-02 * pi
+
+ --- Step 65 ---
+ 66		   :  +9.062772e-01  1.022467e+00  8.501753e-09  
+Current Step Size: +2.500000e-01
+Angle Between Tangents:  +1.083302e-02 * pi
+
+ --- Step 66 ---
+ 67		   :  +9.208793e-01  1.021443e+00  3.498361e-08  
+Current Step Size: +3.250000e-01
+Angle Between Tangents:  +1.326116e-02 * pi
+
+ --- Step 67 ---
+ 68		   :  +9.381264e-01  1.019883e+00  1.426663e-07  
+Current Step Size: +4.225000e-01
+Angle Between Tangents:  +1.620232e-02 * pi
+
+ --- Step 68 ---
+ 69		   :  +9.554060e-01  1.017840e+00  3.301759e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.800159e-02 * pi
+
+ --- Step 69 ---
+ 70		   :  +9.698749e-01  1.015710e+00  2.760635e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.687242e-02 * pi
+
+ --- Step 70 ---
+ 71		   :  +9.814861e-01  1.013581e+00  2.345876e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.593685e-02 * pi
+
+ --- Step 71 ---
+ 72		   :  +9.910480e-01  1.011501e+00  2.025707e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.517867e-02 * pi
+
+ --- Step 72 ---
+ 73		   :  +9.982034e-01  1.009491e+00  1.819371e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.459984e-02 * pi
+
+ --- Step 73 ---
+ 74		   :  +1.003017e+00  1.007550e+00  1.667661e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.417393e-02 * pi
+
+ --- Step 74 ---
+ 75		   :  +1.005510e+00  1.005662e+00  1.548989e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.386835e-02 * pi
+
+ --- Step 75 ---
+ 76		   :  +1.006002e+00  1.003804e+00  1.467275e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.357651e-02 * pi
+
+ --- Step 76 ---
+ 77		   :  +1.004161e+00  1.001929e+00  1.434478e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.347814e-02 * pi
+
+ --- Step 77 ---
+ 78		   :  +9.999669e-01  9.999877e-01  1.472752e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.354415e-02 * pi
+
+ --- Step 78 ---
+ 79		   :  +9.933037e-01  9.979258e-01  1.469344e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.363989e-02 * pi
+
+ --- Step 79 ---
+ 80		   :  +9.836310e-01  9.956896e-01  1.477736e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.365113e-02 * pi
+
+ --- Step 80 ---
+ 81		   :  +9.720521e-01  9.932167e-01  1.492086e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.366128e-02 * pi
+
+ --- Step 81 ---
+ 82		   :  +9.587263e-01  9.904235e-01  1.571123e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.387374e-02 * pi
+
+ --- Step 82 ---
+ 83		   :  +9.420988e-01  9.872236e-01  1.679115e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.424734e-02 * pi
+
+ --- Step 83 ---
+ 84		   :  +9.232440e-01  9.835232e-01  1.852009e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.470036e-02 * pi
+
+ --- Step 84 ---
+ 85		   :  +9.039628e-01  9.792153e-01  2.100764e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.532911e-02 * pi
+
+ --- Step 85 ---
+ 86		   :  +8.814896e-01  9.741847e-01  2.419167e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.609683e-02 * pi
+
+ --- Step 86 ---
+ 87		   :  +8.566225e-01  9.683108e-01  2.820329e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.698118e-02 * pi
+
+ --- Step 87 ---
+ 88		   :  +8.289228e-01  9.614491e-01  3.378981e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.810551e-02 * pi
+
+ --- Step 88 ---
+ 89		   :  +7.962326e-01  9.534322e-01  4.189255e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.956285e-02 * pi
+
+ --- Step 89 ---
+contL: Innerangle too large
+ Reducing Stepsize
+ 90		   :  +7.831026e-01  9.489424e-01  7.735718e-09  
+Current Step Size: +2.500000e-01
+Angle Between Tangents:  +1.041419e-02 * pi
+
+ --- Step 90 ---
+ 91		   :  +7.686823e-01  9.440841e-01  8.898221e-09  
+Current Step Size: +2.500000e-01
+Angle Between Tangents:  +1.098139e-02 * pi
+
+ --- Step 91 ---
+ 92		   :  +7.481574e-01  9.371762e-01  5.059144e-08  
+Current Step Size: +3.250000e-01
+Angle Between Tangents:  +1.518123e-02 * pi
+
+ --- Step 92 ---
+contL: Innerangle too large
+ Reducing Stepsize
+ 93		   :  +7.335051e-01  9.322927e-01  4.495749e-09  
+Current Step Size: +2.112500e-01
+Angle Between Tangents:  +1.053285e-02 * pi
+
+ --- Step 93 ---
+ 94		   :  +7.182862e-01  9.270746e-01  5.155223e-09  
+Current Step Size: +2.112500e-01
+Angle Between Tangents:  +1.115305e-02 * pi
+
+ --- Step 94 ---
+ 95		   :  +6.978684e-01  9.197518e-01  2.941770e-08  
+Current Step Size: +2.746250e-01
+Angle Between Tangents:  +1.554752e-02 * pi
+
+ --- Step 95 ---
+contL: Innerangle too large
+ Reducing Stepsize
+ 96		   :  +6.843218e-01  9.146528e-01  2.543856e-09  
+Current Step Size: +1.785063e-01
+Angle Between Tangents:  +1.076249e-02 * pi
+
+ --- Step 96 ---
+ 97		   :  +6.703230e-01  9.092630e-01  2.871146e-09  
+Current Step Size: +1.785063e-01
+Angle Between Tangents:  +1.137107e-02 * pi
+
+ --- Step 97 ---
+ 98		   :  +6.517501e-01  9.018045e-01  1.591337e-08  
+Current Step Size: +2.320581e-01
+Angle Between Tangents:  +1.573770e-02 * pi
+
+ --- Step 98 ---
+contL: Innerangle too large
+ Reducing Stepsize
+ 99		   :  +6.391072e-01  8.966701e-01  1.341655e-09  
+Current Step Size: +1.508378e-01
+Angle Between Tangents:  +1.086241e-02 * pi
+
+ --- Step 99 ---
+100		   :  +6.261117e-01  8.913055e-01  1.465450e-09  
+Current Step Size: +1.508378e-01
+Angle Between Tangents:  +1.136186e-02 * pi
+
+ --- Step 100 ---
+101		   :  +6.089653e-01  8.839646e-01  7.900614e-09  
+Current Step Size: +1.960891e-01
+Angle Between Tangents:  +1.560846e-02 * pi
+
+ --- Step 101 ---
+contL: Innerangle too large
+ Reducing Stepsize
+102		   :  +5.976384e-01  8.789627e-01  6.457986e-10  
+Current Step Size: +1.274579e-01
+Angle Between Tangents:  +1.069218e-02 * pi
+
+ --- Step 102 ---
+103		   :  +5.861597e-01  8.737732e-01  6.911380e-10  
+Current Step Size: +1.274579e-01
+Angle Between Tangents:  +1.114349e-02 * pi
+
+ --- Step 103 ---
+104		   :  +5.709926e-01  8.667394e-01  3.612649e-09  
+Current Step Size: +1.656953e-01
+Angle Between Tangents:  +1.518104e-02 * pi
+
+ --- Step 104 ---
+contL: Innerangle too large
+ Reducing Stepsize
+105		   :  +5.609806e-01  8.619921e-01  9.589117e-07  
+Current Step Size: +1.077019e-01
+Angle Between Tangents:  +1.029001e-02 * pi
+
+ --- Step 105 ---
+106		   :  +5.508596e-01  8.571044e-01  9.957970e-07  
+Current Step Size: +1.077019e-01
+Angle Between Tangents:  +1.062481e-02 * pi
+
+ --- Step 106 ---
+107		   :  +5.375577e-01  8.505375e-01  1.507423e-09  
+Current Step Size: +1.400125e-01
+Angle Between Tangents:  +1.431362e-02 * pi
+
+ --- Step 107 ---
+108		   :  +5.200351e-01  8.416377e-01  7.680280e-09  
+Current Step Size: +1.820163e-01
+Angle Between Tangents:  +1.943827e-02 * pi
+
+ --- Step 108 ---
+contL: Innerangle too large
+ Reducing Stepsize
+109		   :  +5.084913e-01  8.356372e-01  5.858388e-10  
+Current Step Size: +1.183106e-01
+Angle Between Tangents:  +1.310378e-02 * pi
+
+ --- Step 109 ---
+110		   :  +4.968702e-01  8.294669e-01  5.949491e-10  
+Current Step Size: +1.183106e-01
+Angle Between Tangents:  +1.344995e-02 * pi
+
+ --- Step 110 ---
+111		   :  +4.816867e-01  8.211929e-01  2.926127e-09  
+Current Step Size: +1.538038e-01
+Angle Between Tangents:  +1.795885e-02 * pi
+
+ --- Step 111 ---
+contL: Innerangle too large
+ Reducing Stepsize
+112		   :  +4.717338e-01  8.156677e-01  9.189380e-07  
+Current Step Size: +9.997245e-02
+Angle Between Tangents:  +1.191724e-02 * pi
+
+ --- Step 112 ---
+113		   :  +4.617819e-01  8.100284e-01  9.343764e-07  
+Current Step Size: +9.997245e-02
+Angle Between Tangents:  +1.208270e-02 * pi
+
+ --- Step 113 ---
+114		   :  +4.489261e-01  8.025300e-01  1.054344e-09  
+Current Step Size: +1.299642e-01
+Angle Between Tangents:  +1.590755e-02 * pi
+
+ --- Step 114 ---
+contL: Innerangle too large
+ Reducing Stepsize
+115		   :  +4.403375e-01  7.975606e-01  4.881320e-07  
+Current Step Size: +8.447672e-02
+Angle Between Tangents:  +1.042901e-02 * pi
+
+ --- Step 115 ---
+116		   :  +4.318120e-01  7.925172e-01  4.905082e-07  
+Current Step Size: +8.447672e-02
+Angle Between Tangents:  +1.047455e-02 * pi
+
+ --- Step 116 ---
+117		   :  +4.207928e-01  7.858525e-01  3.764972e-10  
+Current Step Size: +1.098197e-01
+Angle Between Tangents:  +1.363676e-02 * pi
+
+ --- Step 117 ---
+118		   :  +4.066938e-01  7.770140e-01  1.806555e-09  
+Current Step Size: +1.427657e-01
+Angle Between Tangents:  +1.767577e-02 * pi
+
+ --- Step 118 ---
+contL: Innerangle too large
+ Reducing Stepsize
+119		   :  +3.977036e-01  7.711717e-01  7.074011e-07  
+Current Step Size: +9.279767e-02
+Angle Between Tangents:  +1.140517e-02 * pi
+
+ --- Step 119 ---
+120		   :  +3.885493e-01  7.652550e-01  7.008734e-07  
+Current Step Size: +9.279767e-02
+Angle Between Tangents:  +1.131294e-02 * pi
+
+ --- Step 120 ---
+121		   :  +3.764310e-01  7.574618e-01  6.498281e-10  
+Current Step Size: +1.206370e-01
+Angle Between Tangents:  +1.451870e-02 * pi
+
+ --- Step 121 ---
+122		   :  +3.612868e-01  7.471626e-01  3.099452e-09  
+Current Step Size: +1.568281e-01
+Angle Between Tangents:  +1.856713e-02 * pi
+
+ --- Step 122 ---
+contL: Innerangle too large
+ Reducing Stepsize
+123		   :  +3.514165e-01  7.403793e-01  9.565563e-07  
+Current Step Size: +1.019382e-01
+Angle Between Tangents:  +1.179400e-02 * pi
+
+ --- Step 123 ---
+124		   :  +3.414233e-01  7.335320e-01  9.321854e-07  
+Current Step Size: +1.019382e-01
+Angle Between Tangents:  +1.153919e-02 * pi
+
+ --- Step 124 ---
+125		   :  +3.289154e-01  7.245318e-01  1.090082e-09  
+Current Step Size: +1.325197e-01
+Angle Between Tangents:  +1.465976e-02 * pi
+
+ --- Step 125 ---
+126		   :  +3.128031e-01  7.126830e-01  5.067318e-09  
+Current Step Size: +1.722756e-01
+Angle Between Tangents:  +1.837403e-02 * pi
+
+ --- Step 126 ---
+contL: Innerangle too large
+ Reducing Stepsize
+127		   :  +3.024351e-01  7.049040e-01  3.735800e-10  
+Current Step Size: +1.119792e-01
+Angle Between Tangents:  +1.149916e-02 * pi
+
+ --- Step 127 ---
+128		   :  +2.921696e-01  6.970658e-01  3.610718e-10  
+Current Step Size: +1.119792e-01
+Angle Between Tangents:  +1.114926e-02 * pi
+
+ --- Step 128 ---
+129		   :  +2.788920e-01  6.867939e-01  1.653504e-09  
+Current Step Size: +1.455729e-01
+Angle Between Tangents:  +1.396129e-02 * pi
+
+ --- Step 129 ---
+130		   :  +2.612389e-01  6.733129e-01  7.392075e-09  
+Current Step Size: +1.892448e-01
+Angle Between Tangents:  +1.725342e-02 * pi
+
+ --- Step 130 ---
+contL: Innerangle too large
+ Reducing Stepsize
+131		   :  +2.507363e-01  6.644838e-01  5.258417e-10  
+Current Step Size: +1.230091e-01
+Angle Between Tangents:  +1.067924e-02 * pi
+
+ --- Step 131 ---
+132		   :  +2.427672e-01  6.556038e-01  4.941430e-10  
+Current Step Size: +1.230091e-01
+Angle Between Tangents:  +1.027040e-02 * pi
+
+ --- Step 132 ---
+133		   :  +2.310262e-01  6.439829e-01  2.199391e-09  
+Current Step Size: +1.599118e-01
+Angle Between Tangents:  +1.276590e-02 * pi
+
+ --- Step 133 ---
+134		   :  +2.164204e-01  6.287523e-01  9.515936e-09  
+Current Step Size: +2.078854e-01
+Angle Between Tangents:  +1.566318e-02 * pi
+
+ --- Step 134 ---
+135		   :  +1.980598e-01  6.087583e-01  3.963781e-08  
+Current Step Size: +2.702510e-01
+Angle Between Tangents:  +1.890396e-02 * pi
+
+ --- Step 135 ---
+contL: Innerangle too large
+ Reducing Stepsize
+136		   :  +1.864489e-01  5.956509e-01  2.650339e-09  
+Current Step Size: +1.756632e-01
+Angle Between Tangents:  +1.149258e-02 * pi
+
+ --- Step 136 ---
+137		   :  +1.752249e-01  5.824674e-01  2.373633e-09  
+Current Step Size: +1.756632e-01
+Angle Between Tangents:  +1.089933e-02 * pi
+
+ --- Step 137 ---
+138		   :  +1.613167e-01  5.652252e-01  1.001461e-08  
+Current Step Size: +2.283621e-01
+Angle Between Tangents:  +1.334314e-02 * pi
+
+ --- Step 138 ---
+139		   :  +1.441511e-01  5.426453e-01  4.065630e-08  
+Current Step Size: +2.968707e-01
+Angle Between Tangents:  +1.609384e-02 * pi
+
+ --- Step 139 ---
+140		   :  +1.232356e-01  5.129905e-01  1.588713e-07  
+Current Step Size: +3.859320e-01
+Angle Between Tangents:  +1.914514e-02 * pi
+
+ --- Step 140 ---
+contL: Innerangle too large
+ Reducing Stepsize
+141		   :  +1.106319e-01  4.936074e-01  9.845540e-09  
+Current Step Size: +2.500000e-01
+Angle Between Tangents:  +1.149812e-02 * pi
+
+ --- Step 141 ---
+142		   :  +9.877323e-02  4.740934e-01  8.562009e-09  
+Current Step Size: +2.500000e-01
+Angle Between Tangents:  +1.088472e-02 * pi
+
+ --- Step 142 ---
+143		   :  +8.432860e-02  4.485101e-01  3.557536e-08  
+Current Step Size: +3.250000e-01
+Angle Between Tangents:  +1.337841e-02 * pi
+
+ --- Step 143 ---
+144		   :  +6.686006e-02  4.148705e-01  1.439394e-07  
+Current Step Size: +4.225000e-01
+Angle Between Tangents:  +1.629322e-02 * pi
+
+ --- Step 144 ---
+145		   :  +4.898332e-02  3.744798e-01  3.300629e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.802470e-02 * pi
+
+ --- Step 145 ---
+146		   :  +3.378424e-02  3.335003e-01  2.762352e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.689994e-02 * pi
+
+ --- Step 146 ---
+147		   :  +2.116546e-02  2.919491e-01  2.364623e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.600185e-02 * pi
+
+ --- Step 147 ---
+148		   :  +1.052562e-02  2.497609e-01  2.099737e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.535318e-02 * pi
+
+ --- Step 148 ---
+149		   :  +2.621335e-03  2.070815e-01  1.863139e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.470438e-02 * pi
+
+ --- Step 149 ---
+150		   :  -1.251437e-03  1.638515e-01  1.697378e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.426537e-02 * pi
+
+ --- Step 150 ---
+151		   :  -3.919283e-03  1.201207e-01  1.565849e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.389497e-02 * pi
+
+ --- Step 151 ---
+152		   :  -4.663381e-03  7.591175e-02  1.466941e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.361827e-02 * pi
+
+ --- Step 152 ---
+153		   :  -2.353309e-03  3.102769e-02  1.452722e-07  
+Current Step Size: +5.000000e-01
+Angle Between Tangents:  +1.354005e-02 * pi
+
+Closed curve detected at step 154
+154	 2	 99:  -8.414040e-08  1.000000e-06  0.000000e+00  
+
+Elapsed time  = 37.6 secs
+Number of Points = 154

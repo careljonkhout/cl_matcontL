@@ -1,0 +1,1851 @@
+ S	ID	 PT:  p(2)            ||u||          ||f||
+(Updated) NSub = 4 NUnstable = 0
+Test Functions: [ +3.793e-03 +1.895e-02 +0.000e+00 +3.793e-03]
+  1	 1	 00:  +0.000000e+00  0.000000e+00  0.000000e+00  
+
+ --- Step 1 ---
+Test Functions: [ +3.197e-03 +1.778e-02 +0.000e+00 +3.197e-03]
+  2		   :  +5.045148e-04  1.000014e+00  1.498257e-09  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +3.325006e-03 * pi
+
+ --- Step 2 ---
+Test Functions: [ +2.587e-03 +1.661e-02 +0.000e+00 +2.587e-03]
+  3		   :  +8.617082e-04  2.000000e+00  1.266009e-09  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +3.254986e-03 * pi
+
+ --- Step 3 ---
+Test Functions: [ +1.965e-03 +1.545e-02 +0.000e+00 +1.965e-03]
+  4		   :  +1.101910e-03  2.999935e+00  1.052409e-09  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +3.174240e-03 * pi
+
+ --- Step 4 ---
+Test Functions: [ +1.329e-03 +1.431e-02 +0.000e+00 +1.329e-03]
+  5		   :  +1.250267e-03  3.999797e+00  8.571608e-10  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +3.083402e-03 * pi
+
+ --- Step 5 ---
+Test Functions: [ +6.795e-04 +1.318e-02 +0.000e+00 +6.795e-04]
+  6		   :  +1.327515e-03  4.999567e+00  3.026756e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.983332e-03 * pi
+
+ --- Step 6 ---
+Test Functions: [ +1.610e-05 +1.205e-02 +0.000e+00 +1.610e-05]
+  7		   :  +1.350669e-03  5.999232e+00  2.583175e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.874957e-03 * pi
+
+ --- Step 7 ---
+Test Functions: [ +6.621e-04 +1.094e-02 +1.000e+00 -6.621e-04]
+contL: 
+LP detected at step 7
+using locator
+Locate LP, Newton Step: norm(dx)=0.023997658 norm(f1)=0.000016102
+Locate LP, Newton Step: norm(dx)=0.000007781 norm(f1)=0.000000207
+Time spent in locator function: 0.104461
+Test Functions: [ +4.378e-13 +1.202e-02 +0.000e+00 +4.378e-13]
+Quadratic coefficient = -3.355072e-04
+
+Eigenvalues: (Subspace)
+-4.378442e-13
+-1.202475e-02
+-3.095456e-02
+-5.731791e-02
+Eigenvalues: (Reference)
+-9.103270e-02
+-1.319749e-01
+-1.799903e-01
+-2.348975e-01
+  8	 2	 LP:  +1.350684e-03  6.023212e+00  2.422805e-13  
+Adapt: updating test functions
+contCIS_init: need adapt test functions
+(Updated) NSub = 5 NUnstable = 1
+Test Functions: [ +6.621e-04 +1.094e-02 +1.000e+00 -6.621e-04]
+  9		   :  +1.333571e-03  6.998779e+00  2.163264e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.759534e-03 * pi
+
+ --- Step 9 ---
+Test Functions: [ +1.356e-03 +9.832e-03 +1.000e+00 -1.356e-03]
+ 10		   :  +1.287408e-03  7.998202e+00  1.755413e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.638313e-03 * pi
+
+ --- Step 10 ---
+Test Functions: [ +2.067e-03 +8.733e-03 +1.000e+00 -2.067e-03]
+ 11		   :  +1.221130e-03  8.997497e+00  1.356828e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.512659e-03 * pi
+
+ --- Step 11 ---
+Test Functions: [ +2.796e-03 +7.639e-03 +1.000e+00 -2.796e-03]
+ 12		   :  +1.141822e-03  9.996662e+00  9.657384e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.383975e-03 * pi
+
+ --- Step 12 ---
+Test Functions: [ +3.544e-03 +6.547e-03 +1.000e+00 -3.544e-03]
+ 13		   :  +1.055017e-03  1.099570e+01  5.815665e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.253662e-03 * pi
+
+ --- Step 13 ---
+Test Functions: [ +4.314e-03 +5.456e-03 +1.000e+00 -4.314e-03]
+ 14		   :  +9.649639e-04  1.199462e+01  2.073950e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.123080e-03 * pi
+
+ --- Step 14 ---
+Test Functions: [ +5.106e-03 +4.362e-03 +1.000e+00 -5.106e-03]
+ 15		   :  +8.748617e-04  1.299342e+01  1.813452e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.993511e-03 * pi
+
+ --- Step 15 ---
+Test Functions: [ +5.921e-03 +3.263e-03 +1.000e+00 -5.921e-03]
+ 16		   :  +7.870528e-04  1.399211e+01  5.403074e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.866129e-03 * pi
+
+ --- Step 16 ---
+Test Functions: [ +6.762e-03 +2.157e-03 +1.000e+00 -6.762e-03]
+ 17		   :  +7.031906e-04  1.499071e+01  8.949739e-08  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.741975e-03 * pi
+
+ --- Step 17 ---
+Test Functions: [ +7.630e-03 +1.042e-03 +1.000e+00 -7.630e-03]
+ 18		   :  +6.243790e-04  1.598923e+01  1.239703e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.621944e-03 * pi
+
+ --- Step 18 ---
+Test Functions: [ +8.440e-03 -8.665e-05 +1.000e+00 -8.440e-03]
+ 19		   :  +5.512901e-04  1.698767e+01  1.572392e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.506775e-03 * pi
+
+ --- Step 19 ---
+Test Functions: [ +8.224e-03 -1.230e-03 +1.000e+00 -8.224e-03]
+ 20		   :  +4.842623e-04  1.798605e+01  1.891296e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.397047e-03 * pi
+
+ --- Step 20 ---
+Test Functions: [ +8.021e-03 -2.390e-03 +1.000e+00 -8.021e-03]
+ 21		   :  +4.233806e-04  1.898438e+01  2.194878e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.293186e-03 * pi
+
+ --- Step 21 ---
+Test Functions: [ +7.832e-03 -3.570e-03 +1.000e+00 -7.832e-03]
+ 22		   :  +3.685431e-04  1.998268e+01  2.481829e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.195474e-03 * pi
+
+ --- Step 22 ---
+Test Functions: [ +7.655e-03 -4.771e-03 +1.000e+00 -7.655e-03]
+ 23		   :  +3.195143e-04  2.098094e+01  2.751106e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.104059e-03 * pi
+
+ --- Step 23 ---
+Test Functions: [ +7.489e-03 -5.996e-03 +1.000e+00 -7.489e-03]
+ 24		   :  +2.759681e-04  2.197919e+01  3.001949e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.018970e-03 * pi
+
+ --- Step 24 ---
+Test Functions: [ +7.333e-03 -7.247e-03 +1.000e+00 -7.333e-03]
+ 25		   :  +2.375213e-04  2.297743e+01  3.233894e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +9.401395e-04 * pi
+
+ --- Step 25 ---
+Test Functions: [ +7.188e-03 -8.525e-03 +1.000e+00 -7.188e-03]
+ 26		   :  +2.037599e-04  2.397567e+01  3.446760e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +8.674128e-04 * pi
+
+ --- Step 26 ---
+Test Functions: [ +7.052e-03 -7.899e-03 +1.000e+00 -7.052e-03]
+ 27		   :  +1.742591e-04  2.497392e+01  3.640631e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +8.005690e-04 * pi
+
+ --- Step 27 ---
+Test Functions: [ +6.924e-03 -6.454e-03 +1.000e+00 -6.924e-03]
+ 28		   :  +1.485980e-04  2.597219e+01  3.815832e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +7.393359e-04 * pi
+
+ --- Step 28 ---
+Test Functions: [ +6.804e-03 -4.976e-03 +1.000e+00 -6.804e-03]
+ 29		   :  +1.263700e-04  2.697047e+01  3.972892e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +6.834038e-04 * pi
+
+ --- Step 29 ---
+Test Functions: [ +6.691e-03 -3.465e-03 +1.000e+00 -6.691e-03]
+ 30		   :  +1.071904e-04  2.796878e+01  4.112508e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +6.324386e-04 * pi
+
+ --- Step 30 ---
+Test Functions: [ +6.585e-03 -1.920e-03 +1.000e+00 -6.585e-03]
+ 31		   :  +9.070049e-05  2.896712e+01  4.235513e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +5.860925e-04 * pi
+
+ --- Step 31 ---
+Test Functions: [ +6.485e-03 -3.392e-04 +1.000e+00 -6.485e-03]
+ 32		   :  +7.657068e-05  2.996548e+01  4.342839e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +5.440134e-04 * pi
+
+ --- Step 32 ---
+Test Functions: [ +6.391e-03 +1.277e-03 +1.000e+00 -6.391e-03]
+ 33		   :  +6.450106e-05  3.096389e+01  4.435488e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +5.058524e-04 * pi
+
+ --- Step 33 ---
+Test Functions: [ +6.303e-03 +2.929e-03 +1.000e+00 -6.303e-03]
+ 34		   :  +5.422149e-05  3.196233e+01  4.514498e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +4.712699e-04 * pi
+
+ --- Step 34 ---
+Test Functions: [ +6.219e-03 +4.618e-03 +1.000e+00 -6.219e-03]
+ 35		   :  +4.549059e-05  3.296081e+01  4.580925e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +4.399403e-04 * pi
+
+ --- Step 35 ---
+Test Functions: [ +6.140e-03 +6.344e-03 +1.000e+00 -6.140e-03]
+ 36		   :  +3.809424e-05  3.395933e+01  4.635818e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +4.115550e-04 * pi
+
+ --- Step 36 ---
+Test Functions: [ +6.065e-03 +8.107e-03 +1.000e+00 -6.065e-03]
+ 37		   :  +3.184374e-05  3.495789e+01  4.680206e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +3.858252e-04 * pi
+
+ --- Step 37 ---
+Test Functions: [ +5.995e-03 +9.909e-03 +1.000e+00 -5.995e-03]
+ 38		   :  +2.657372e-05  3.595649e+01  4.715082e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +3.624828e-04 * pi
+
+ --- Step 38 ---
+Test Functions: [ +5.928e-03 +1.175e-02 +1.000e+00 -5.928e-03]
+ 39		   :  +2.214006e-05  3.695513e+01  4.741395e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +3.412815e-04 * pi
+
+ --- Step 39 ---
+Test Functions: [ +5.864e-03 +1.153e-02 +1.000e+00 -5.864e-03]
+ 40		   :  +1.841769e-05  3.795382e+01  4.760042e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +3.219961e-04 * pi
+
+ --- Step 40 ---
+Test Functions: [ +5.804e-03 +9.548e-03 +1.000e+00 -5.804e-03]
+ 41		   :  +1.529860e-05  3.895254e+01  4.771865e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +3.044229e-04 * pi
+
+ --- Step 41 ---
+Test Functions: [ +5.747e-03 +7.521e-03 +1.000e+00 -5.747e-03]
+ 42		   :  +1.268986e-05  3.995130e+01  4.777648e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.883780e-04 * pi
+
+ --- Step 42 ---
+Test Functions: [ +5.693e-03 +5.454e-03 +1.000e+00 -5.693e-03]
+ 43		   :  +1.051179e-05  4.095011e+01  4.778115e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.736965e-04 * pi
+
+ --- Step 43 ---
+Test Functions: [ +5.641e-03 +3.347e-03 +1.000e+00 -5.641e-03]
+ 44		   :  +8.696346e-06  4.194895e+01  4.773935e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.602314e-04 * pi
+
+ --- Step 44 ---
+Test Functions: [ +5.592e-03 +1.198e-03 +1.000e+00 -5.592e-03]
+ 45		   :  +7.185556e-06  4.294783e+01  4.765719e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.478519e-04 * pi
+
+ --- Step 45 ---
+Test Functions: [ +5.545e-03 -9.912e-04 +1.000e+00 -5.545e-03]
+ 46		   :  +5.930203e-06  4.394674e+01  4.754022e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.364420e-04 * pi
+
+ --- Step 46 ---
+Test Functions: [ +5.500e-03 -3.222e-03 +1.000e+00 -5.500e-03]
+ 47		   :  +4.888609e-06  4.494569e+01  4.739350e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.258992e-04 * pi
+
+ --- Step 47 ---
+Test Functions: [ +5.457e-03 -5.494e-03 +1.000e+00 -5.457e-03]
+ 48		   :  +4.025569e-06  4.594468e+01  4.722158e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.161328e-04 * pi
+
+ --- Step 48 ---
+Test Functions: [ +5.416e-03 -7.807e-03 +1.000e+00 -5.416e-03]
+ 49		   :  +3.311419e-06  4.694370e+01  4.702859e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.070632e-04 * pi
+
+ --- Step 49 ---
+Test Functions: [ +5.377e-03 -1.016e-02 +1.000e+00 -5.377e-03]
+ 50		   :  +2.721219e-06  4.794275e+01  4.681822e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.986199e-04 * pi
+
+ --- Step 50 ---
+Test Functions: [ +5.340e-03 -1.256e-02 +1.000e+00 -5.340e-03]
+ 51		   :  +2.234045e-06  4.894184e+01  4.659377e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.907412e-04 * pi
+
+ --- Step 51 ---
+Test Functions: [ +5.304e-03 -1.500e-02 +1.000e+00 -5.304e-03]
+ 52		   :  +1.832379e-06  4.994095e+01  4.635822e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.833723e-04 * pi
+
+ --- Step 52 ---
+Test Functions: [ +5.270e-03 -1.501e-02 +1.000e+00 -5.270e-03]
+ 53		   :  +1.501580e-06  5.094009e+01  4.611418e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.764653e-04 * pi
+
+ --- Step 53 ---
+Test Functions: [ +5.237e-03 -1.244e-02 +1.000e+00 -5.237e-03]
+ 54		   :  +1.229435e-06  5.193927e+01  4.586400e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.699778e-04 * pi
+
+ --- Step 54 ---
+Test Functions: [ +5.205e-03 -9.819e-03 +1.000e+00 -5.205e-03]
+ 55		   :  +1.005774e-06  5.293847e+01  4.560977e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.638721e-04 * pi
+
+ --- Step 55 ---
+Test Functions: [ +5.175e-03 -7.160e-03 +1.000e+00 -5.175e-03]
+ 56		   :  +8.221392e-07  5.393769e+01  4.535328e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.581152e-04 * pi
+
+ --- Step 56 ---
+Test Functions: [ +5.146e-03 -4.458e-03 +1.000e+00 -5.146e-03]
+ 57		   :  +6.715102e-07  5.493694e+01  4.509619e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.526775e-04 * pi
+
+ --- Step 57 ---
+Test Functions: [ +5.117e-03 -1.712e-03 +1.000e+00 -5.117e-03]
+ 58		   :  +5.480672e-07  5.593622e+01  4.483988e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.475330e-04 * pi
+
+ --- Step 58 ---
+Test Functions: [ +5.090e-03 +1.076e-03 +1.000e+00 -5.090e-03]
+ 59		   :  +4.469921e-07  5.693552e+01  4.458561e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.426584e-04 * pi
+
+ --- Step 59 ---
+Test Functions: [ +5.064e-03 +3.908e-03 +1.000e+00 -5.064e-03]
+ 60		   :  +3.643018e-07  5.793484e+01  4.433445e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.380326e-04 * pi
+
+ --- Step 60 ---
+Test Functions: [ +5.039e-03 +6.784e-03 +1.000e+00 -5.039e-03]
+ 61		   :  +2.967071e-07  5.893419e+01  4.408735e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.336373e-04 * pi
+
+ --- Step 61 ---
+Test Functions: [ +5.015e-03 +9.703e-03 +1.000e+00 -5.015e-03]
+ 62		   :  +2.414957e-07  5.993355e+01  4.384511e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.294555e-04 * pi
+
+ --- Step 62 ---
+Test Functions: [ +4.992e-03 +1.267e-02 +1.000e+00 -4.992e-03]
+ 63		   :  +1.964332e-07  6.093294e+01  4.360843e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.254722e-04 * pi
+
+ --- Step 63 ---
+Test Functions: [ +4.969e-03 +1.567e-02 +1.000e+00 -4.969e-03]
+ 64		   :  +1.596808e-07  6.193234e+01  4.337790e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.216737e-04 * pi
+
+ --- Step 64 ---
+Test Functions: [ +4.947e-03 +1.872e-02 +1.000e+00 -4.947e-03]
+ 65		   :  +1.297273e-07  6.293177e+01  4.315402e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.180479e-04 * pi
+
+ --- Step 65 ---
+Test Functions: [ +4.926e-03 +2.182e-02 +1.000e+00 -4.926e-03]
+ 66		   :  +1.053316e-07  6.393121e+01  4.293721e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.145833e-04 * pi
+
+ --- Step 66 ---
+Test Functions: [ +4.906e-03 +2.427e-02 +1.000e+00 -4.906e-03]
+ 67		   :  +8.547560e-08  6.493067e+01  4.272782e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.112700e-04 * pi
+
+ --- Step 67 ---
+Test Functions: [ +4.886e-03 +2.418e-02 +1.000e+00 -4.886e-03]
+ 68		   :  +6.932487e-08  6.593014e+01  4.252612e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.080984e-04 * pi
+
+ --- Step 68 ---
+Test Functions: [ +4.867e-03 +2.410e-02 +1.000e+00 -4.867e-03]
+ 69		   :  +5.619612e-08  6.692963e+01  4.233234e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.050602e-04 * pi
+
+ --- Step 69 ---
+Test Functions: [ +4.849e-03 +2.402e-02 +1.000e+00 -4.849e-03]
+ 70		   :  +4.553030e-08  6.792914e+01  4.214664e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.021476e-04 * pi
+
+ --- Step 70 ---
+Test Functions: [ +4.831e-03 +2.394e-02 +1.000e+00 -4.831e-03]
+ 71		   :  +3.687042e-08  6.892866e+01  4.196914e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +9.935322e-05 * pi
+
+ --- Step 71 ---
+Test Functions: [ +4.814e-03 +2.386e-02 +1.000e+00 -4.814e-03]
+ 72		   :  +2.984317e-08  6.992820e+01  4.179991e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +9.667061e-05 * pi
+
+ --- Step 72 ---
+Test Functions: [ +4.797e-03 +2.378e-02 +1.000e+00 -4.797e-03]
+ 73		   :  +2.414388e-08  7.092775e+01  4.163900e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +9.409361e-05 * pi
+
+ --- Step 73 ---
+Test Functions: [ +4.781e-03 +2.371e-02 +1.000e+00 -4.781e-03]
+ 74		   :  +1.952405e-08  7.192731e+01  4.148640e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +9.161653e-05 * pi
+
+ --- Step 74 ---
+Test Functions: [ +4.765e-03 +2.364e-02 +1.000e+00 -4.765e-03]
+ 75		   :  +1.578116e-08  7.292689e+01  4.134208e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +8.923415e-05 * pi
+
+ --- Step 75 ---
+Test Functions: [ +4.749e-03 +2.357e-02 +1.000e+00 -4.749e-03]
+ 76		   :  +1.275027e-08  7.392647e+01  4.120597e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +8.694158e-05 * pi
+
+ --- Step 76 ---
+Test Functions: [ +4.735e-03 +2.350e-02 +1.000e+00 -4.735e-03]
+ 77		   :  +1.029713e-08  7.492607e+01  4.107797e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +8.473429e-05 * pi
+
+ --- Step 77 ---
+Test Functions: [ +4.720e-03 +2.343e-02 +1.000e+00 -4.720e-03]
+ 78		   :  +8.312545e-09  7.592569e+01  4.095798e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +8.260803e-05 * pi
+
+ --- Step 78 ---
+Test Functions: [ +4.706e-03 +2.337e-02 +1.000e+00 -4.706e-03]
+ 79		   :  +6.707760e-09  7.692531e+01  4.084584e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +8.055884e-05 * pi
+
+ --- Step 79 ---
+Test Functions: [ +4.692e-03 +2.331e-02 +1.000e+00 -4.692e-03]
+ 80		   :  +5.410670e-09  7.792494e+01  4.074138e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +7.858301e-05 * pi
+
+ --- Step 80 ---
+Test Functions: [ +4.679e-03 +2.325e-02 +1.000e+00 -4.679e-03]
+ 81		   :  +4.362736e-09  7.892458e+01  4.064441e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +7.667709e-05 * pi
+
+ --- Step 81 ---
+Test Functions: [ +4.666e-03 +2.319e-02 +1.000e+00 -4.666e-03]
+ 82		   :  +3.516457e-09  7.992424e+01  4.055471e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +7.483781e-05 * pi
+
+ --- Step 82 ---
+Test Functions: [ +4.653e-03 +2.313e-02 +1.000e+00 -4.653e-03]
+ 83		   :  +2.833309e-09  8.092390e+01  4.047203e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +7.306210e-05 * pi
+
+ --- Step 83 ---
+Test Functions: [ +4.641e-03 +2.307e-02 +1.000e+00 -4.641e-03]
+ 84		   :  +2.282069e-09  8.192357e+01  4.039612e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +7.134710e-05 * pi
+
+ --- Step 84 ---
+Test Functions: [ +4.629e-03 +2.302e-02 +1.000e+00 -4.629e-03]
+ 85		   :  +1.837441e-09  8.292325e+01  4.032668e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +6.969009e-05 * pi
+
+ --- Step 85 ---
+Test Functions: [ +4.617e-03 +2.296e-02 +1.000e+00 -4.617e-03]
+ 86		   :  +1.478943e-09  8.392294e+01  4.026340e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +6.808850e-05 * pi
+
+ --- Step 86 ---
+Test Functions: [ +4.606e-03 +2.291e-02 +1.000e+00 -4.606e-03]
+ 87		   :  +1.189998e-09  8.492264e+01  4.020596e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +6.653992e-05 * pi
+
+ --- Step 87 ---
+Test Functions: [ +4.595e-03 +2.286e-02 +1.000e+00 -4.595e-03]
+ 88		   :  +9.571967e-10  8.592234e+01  4.015399e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +6.504208e-05 * pi
+
+ --- Step 88 ---
+Test Functions: [ +4.584e-03 +2.280e-02 +1.000e+00 -4.584e-03]
+ 89		   :  +7.696962e-10  8.692206e+01  4.010713e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +6.359280e-05 * pi
+
+ --- Step 89 ---
+Test Functions: [ +4.573e-03 +2.276e-02 +1.000e+00 -4.573e-03]
+ 90		   :  +6.187337e-10  8.792178e+01  4.006498e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +6.219003e-05 * pi
+
+ --- Step 90 ---
+Test Functions: [ +4.563e-03 +2.271e-02 +1.000e+00 -4.563e-03]
+ 91		   :  +4.972302e-10  8.892150e+01  4.002711e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +6.083184e-05 * pi
+
+ --- Step 91 ---
+Test Functions: [ +4.553e-03 +2.266e-02 +1.000e+00 -4.553e-03]
+ 92		   :  +3.994693e-10  8.992124e+01  3.999309e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +5.951637e-05 * pi
+
+ --- Step 92 ---
+Test Functions: [ +4.543e-03 +2.261e-02 +1.000e+00 -4.543e-03]
+ 93		   :  +3.208369e-10  9.092098e+01  3.996246e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +5.824189e-05 * pi
+
+ --- Step 93 ---
+Test Functions: [ +4.533e-03 +2.257e-02 +1.000e+00 -4.533e-03]
+ 94		   :  +2.576100e-10  9.192073e+01  3.993473e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +5.700672e-05 * pi
+
+ --- Step 94 ---
+Test Functions: [ +4.524e-03 +2.252e-02 +1.000e+00 -4.524e-03]
+ 95		   :  +2.067861e-10  9.292048e+01  3.990941e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +5.580929e-05 * pi
+
+ --- Step 95 ---
+Test Functions: [ +4.514e-03 +2.248e-02 +1.000e+00 -4.514e-03]
+ 96		   :  +1.659445e-10  9.392024e+01  3.988599e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +5.464807e-05 * pi
+
+ --- Step 96 ---
+Test Functions: [ +4.505e-03 +2.244e-02 +1.000e+00 -4.505e-03]
+ 97		   :  +1.331341e-10  9.492001e+01  3.986393e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +5.352164e-05 * pi
+
+ --- Step 97 ---
+Test Functions: [ +4.497e-03 +2.240e-02 +1.000e+00 -4.497e-03]
+ 98		   :  +1.067833e-10  9.591978e+01  3.984268e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +5.242863e-05 * pi
+
+ --- Step 98 ---
+Test Functions: [ +4.488e-03 +2.235e-02 +1.000e+00 -4.488e-03]
+ 99		   :  +8.562634e-11  9.691956e+01  3.982168e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +5.136772e-05 * pi
+
+ --- Step 99 ---
+Test Functions: [ +4.479e-03 +2.231e-02 +1.000e+00 -4.479e-03]
+100		   :  +6.864412e-11  9.791934e+01  3.980035e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +5.033768e-05 * pi
+
+ --- Step 100 ---
+Test Functions: [ +4.471e-03 +2.227e-02 +1.000e+00 -4.471e-03]
+101		   :  +5.501656e-11  9.891913e+01  3.977810e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +4.933730e-05 * pi
+
+ --- Step 101 ---
+Test Functions: [ +4.463e-03 +2.224e-02 +1.000e+00 -4.463e-03]
+102		   :  +4.408388e-11  9.991892e+01  3.975433e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +4.836544e-05 * pi
+
+ --- Step 102 ---
+Test Functions: [ +4.455e-03 +2.220e-02 +1.000e+00 -4.455e-03]
+103		   :  +3.531543e-11  1.009187e+02  3.972844e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +4.742103e-05 * pi
+
+ --- Step 103 ---
+Test Functions: [ +4.447e-03 +2.216e-02 +1.000e+00 -4.447e-03]
+104		   :  +2.828455e-11  1.019185e+02  3.969982e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +4.650299e-05 * pi
+
+ --- Step 104 ---
+Test Functions: [ +4.439e-03 +2.212e-02 +1.000e+00 -4.439e-03]
+105		   :  +2.264834e-11  1.029183e+02  3.966783e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +4.561036e-05 * pi
+
+ --- Step 105 ---
+Test Functions: [ +4.431e-03 +2.209e-02 +1.000e+00 -4.431e-03]
+106		   :  +1.813123e-11  1.039181e+02  3.963187e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +4.474216e-05 * pi
+
+ --- Step 106 ---
+Test Functions: [ +4.424e-03 +2.205e-02 +1.000e+00 -4.424e-03]
+107		   :  +1.451190e-11  1.049179e+02  3.959131e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +4.389749e-05 * pi
+
+ --- Step 107 ---
+Test Functions: [ +4.416e-03 +2.202e-02 +1.000e+00 -4.416e-03]
+108		   :  +1.161258e-11  1.059178e+02  3.954553e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +4.307546e-05 * pi
+
+ --- Step 108 ---
+Test Functions: [ +4.409e-03 +2.199e-02 +1.000e+00 -4.409e-03]
+109		   :  +9.290565e-12  1.069176e+02  3.949390e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +4.227522e-05 * pi
+
+ --- Step 109 ---
+Test Functions: [ +4.402e-03 +2.195e-02 +1.000e+00 -4.402e-03]
+110		   :  +7.431331e-12  1.079174e+02  3.943583e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +4.149599e-05 * pi
+
+ --- Step 110 ---
+Test Functions: [ +4.394e-03 +2.192e-02 +1.000e+00 -4.394e-03]
+111		   :  +5.942970e-12  1.089173e+02  3.937070e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +4.073698e-05 * pi
+
+ --- Step 111 ---
+Test Functions: [ +4.387e-03 +2.189e-02 +1.000e+00 -4.387e-03]
+112		   :  +4.751761e-12  1.099171e+02  3.929791e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +3.999745e-05 * pi
+
+ --- Step 112 ---
+Test Functions: [ +4.380e-03 +2.185e-02 +1.000e+00 -4.380e-03]
+113		   :  +3.798579e-12  1.109169e+02  3.921690e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +3.927669e-05 * pi
+
+ --- Step 113 ---
+Test Functions: [ +4.373e-03 +2.182e-02 +1.000e+00 -4.373e-03]
+114		   :  +3.036021e-12  1.119168e+02  3.912707e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +3.857403e-05 * pi
+
+ --- Step 114 ---
+Test Functions: [ +4.366e-03 +2.179e-02 +1.000e+00 -4.366e-03]
+115		   :  +2.426090e-12  1.129166e+02  3.902790e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +3.788881e-05 * pi
+
+ --- Step 115 ---
+Test Functions: [ +4.359e-03 +2.176e-02 +1.000e+00 -4.359e-03]
+116		   :  +1.938335e-12  1.139165e+02  3.891884e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +3.722040e-05 * pi
+
+ --- Step 116 ---
+Test Functions: [ +4.352e-03 +2.173e-02 +1.000e+00 -4.352e-03]
+117		   :  +1.548361e-12  1.149163e+02  3.879939e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +3.656821e-05 * pi
+
+ --- Step 117 ---
+Test Functions: [ +4.345e-03 +2.170e-02 +1.000e+00 -4.345e-03]
+118		   :  +1.236625e-12  1.159162e+02  3.866906e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +3.593166e-05 * pi
+
+ --- Step 118 ---
+Test Functions: [ +4.338e-03 +2.167e-02 +1.000e+00 -4.338e-03]
+119		   :  +9.874788e-13  1.169160e+02  3.852740e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +3.531021e-05 * pi
+
+ --- Step 119 ---
+Test Functions: [ +4.331e-03 +2.164e-02 +1.000e+00 -4.331e-03]
+120		   :  +7.883930e-13  1.179159e+02  3.837398e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +3.470333e-05 * pi
+
+ --- Step 120 ---
+Test Functions: [ +4.323e-03 +2.161e-02 +1.000e+00 -4.323e-03]
+121		   :  +6.293382e-13  1.189157e+02  3.820841e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +3.411052e-05 * pi
+
+ --- Step 121 ---
+Test Functions: [ +4.316e-03 +2.159e-02 +1.000e+00 -4.316e-03]
+122		   :  +5.022883e-13  1.199156e+02  3.803034e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +3.353129e-05 * pi
+
+ --- Step 122 ---
+Test Functions: [ +4.309e-03 +2.156e-02 +1.000e+00 -4.309e-03]
+123		   :  +4.008213e-13  1.209155e+02  3.783945e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +3.296520e-05 * pi
+
+ --- Step 123 ---
+Test Functions: [ +4.301e-03 +2.153e-02 +1.000e+00 -4.301e-03]
+124		   :  +3.198001e-13  1.219154e+02  3.763547e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +3.241180e-05 * pi
+
+ --- Step 124 ---
+Test Functions: [ +4.294e-03 +2.150e-02 +1.000e+00 -4.294e-03]
+125		   :  +2.551158e-13  1.229152e+02  3.741818e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +3.187069e-05 * pi
+
+ --- Step 125 ---
+Test Functions: [ +4.286e-03 +2.147e-02 +1.000e+00 -4.286e-03]
+126		   :  +2.034831e-13  1.239151e+02  3.718741e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +3.134145e-05 * pi
+
+ --- Step 126 ---
+Test Functions: [ +4.278e-03 +2.145e-02 +1.000e+00 -4.278e-03]
+127		   :  +1.622754e-13  1.249150e+02  3.694303e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +3.082372e-05 * pi
+
+ --- Step 127 ---
+Test Functions: [ +4.269e-03 +2.142e-02 +1.000e+00 -4.269e-03]
+128		   :  +1.293931e-13  1.259149e+02  3.668501e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +3.031714e-05 * pi
+
+ --- Step 128 ---
+Test Functions: [ +4.261e-03 +2.139e-02 +1.000e+00 -4.261e-03]
+129		   :  +1.031585e-13  1.269147e+02  3.641333e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.982137e-05 * pi
+
+ --- Step 129 ---
+Test Functions: [ +4.252e-03 +2.136e-02 +1.000e+00 -4.252e-03]
+130		   :  +8.223099e-14  1.279146e+02  3.612808e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.933608e-05 * pi
+
+ --- Step 130 ---
+Test Functions: [ +4.243e-03 +2.134e-02 +1.000e+00 -4.243e-03]
+131		   :  +6.553951e-14  1.289145e+02  3.582941e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.886098e-05 * pi
+
+ --- Step 131 ---
+Test Functions: [ +4.233e-03 +2.131e-02 +1.000e+00 -4.233e-03]
+132		   :  +5.222870e-14  1.299144e+02  3.551755e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.839577e-05 * pi
+
+ --- Step 132 ---
+Test Functions: [ +4.224e-03 +2.128e-02 +1.000e+00 -4.224e-03]
+133		   :  +4.161545e-14  1.309143e+02  3.519281e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.794019e-05 * pi
+
+ --- Step 133 ---
+Test Functions: [ +4.213e-03 +2.125e-02 +1.000e+00 -4.213e-03]
+134		   :  +3.315432e-14  1.319142e+02  3.485560e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.749397e-05 * pi
+
+ --- Step 134 ---
+Test Functions: [ +4.203e-03 +2.123e-02 +1.000e+00 -4.203e-03]
+135		   :  +2.640990e-14  1.329141e+02  3.450643e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.705688e-05 * pi
+
+ --- Step 135 ---
+Test Functions: [ +4.192e-03 +2.120e-02 +1.000e+00 -4.192e-03]
+136		   :  +2.103466e-14  1.339140e+02  3.414589e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.662871e-05 * pi
+
+ --- Step 136 ---
+Test Functions: [ +4.180e-03 +2.117e-02 +1.000e+00 -4.180e-03]
+137		   :  +1.675125e-14  1.349139e+02  3.377472e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.620921e-05 * pi
+
+ --- Step 137 ---
+Test Functions: [ +4.168e-03 +2.114e-02 +1.000e+00 -4.168e-03]
+138		   :  +1.333837e-14  1.359138e+02  3.339374e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.579822e-05 * pi
+
+ --- Step 138 ---
+Test Functions: [ +4.155e-03 +2.111e-02 +1.000e+00 -4.155e-03]
+139		   :  +1.061947e-14  1.369137e+02  3.300396e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.539553e-05 * pi
+
+ --- Step 139 ---
+Test Functions: [ +4.141e-03 +2.108e-02 +1.000e+00 -4.141e-03]
+140		   :  +8.453731e-15  1.379136e+02  3.260633e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.500099e-05 * pi
+
+ --- Step 140 ---
+Test Functions: [ +4.127e-03 +2.105e-02 +1.000e+00 -4.127e-03]
+141		   :  +6.728842e-15  1.389135e+02  3.220241e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.461442e-05 * pi
+
+ --- Step 141 ---
+Test Functions: [ +4.112e-03 +2.102e-02 +1.000e+00 -4.112e-03]
+142		   :  +5.355246e-15  1.399134e+02  3.179319e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.423569e-05 * pi
+
+ --- Step 142 ---
+Test Functions: [ +4.096e-03 +2.099e-02 +1.000e+00 -4.096e-03]
+143		   :  +4.261538e-15  1.409133e+02  3.138045e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.386467e-05 * pi
+
+ --- Step 143 ---
+Test Functions: [ +4.080e-03 +2.096e-02 +1.000e+00 -4.080e-03]
+144		   :  +3.390799e-15  1.419132e+02  3.096561e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.350119e-05 * pi
+
+ --- Step 144 ---
+Test Functions: [ +4.062e-03 +2.093e-02 +1.000e+00 -4.062e-03]
+145		   :  +2.697660e-15  1.429131e+02  3.055111e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.314518e-05 * pi
+
+ --- Step 145 ---
+Test Functions: [ +4.044e-03 +2.090e-02 +1.000e+00 -4.044e-03]
+146		   :  +2.145965e-15  1.439131e+02  3.013853e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.279647e-05 * pi
+
+ --- Step 146 ---
+Test Functions: [ +4.025e-03 +2.086e-02 +1.000e+00 -4.025e-03]
+147		   :  +1.706904e-15  1.449130e+02  2.973016e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.245508e-05 * pi
+
+ --- Step 147 ---
+Test Functions: [ +4.004e-03 +2.083e-02 +1.000e+00 -4.004e-03]
+148		   :  +1.357523e-15  1.459129e+02  2.932867e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.212074e-05 * pi
+
+ --- Step 148 ---
+Test Functions: [ +3.982e-03 +2.079e-02 +1.000e+00 -3.982e-03]
+149		   :  +1.079538e-15  1.469128e+02  2.893644e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.179358e-05 * pi
+
+ --- Step 149 ---
+Test Functions: [ +3.959e-03 +2.076e-02 +1.000e+00 -3.959e-03]
+150		   :  +8.583841e-16  1.479127e+02  2.855620e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.147333e-05 * pi
+
+ --- Step 150 ---
+Test Functions: [ +3.935e-03 +2.072e-02 +1.000e+00 -3.935e-03]
+151		   :  +6.824634e-16  1.489127e+02  2.819099e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.115996e-05 * pi
+
+ --- Step 151 ---
+Test Functions: [ +3.909e-03 +2.068e-02 +1.000e+00 -3.909e-03]
+152		   :  +5.425398e-16  1.499126e+02  2.784390e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.085343e-05 * pi
+
+ --- Step 152 ---
+Test Functions: [ +3.882e-03 +2.064e-02 +1.000e+00 -3.882e-03]
+153		   :  +4.312600e-16  1.509125e+02  2.751818e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.055374e-05 * pi
+
+ --- Step 153 ---
+Test Functions: [ +3.854e-03 +2.060e-02 +1.000e+00 -3.854e-03]
+154		   :  +3.427699e-16  1.519124e+02  2.721707e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +2.026070e-05 * pi
+
+ --- Step 154 ---
+Test Functions: [ +3.824e-03 +2.056e-02 +1.000e+00 -3.824e-03]
+155		   :  +2.724099e-16  1.529124e+02  2.694405e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.997438e-05 * pi
+
+ --- Step 155 ---
+Test Functions: [ +3.792e-03 +2.051e-02 +1.000e+00 -3.792e-03]
+156		   :  +2.164713e-16  1.539123e+02  2.670240e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.969462e-05 * pi
+
+ --- Step 156 ---
+Test Functions: [ +3.758e-03 +2.047e-02 +1.000e+00 -3.758e-03]
+157		   :  +1.720028e-16  1.549122e+02  2.649547e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.942126e-05 * pi
+
+ --- Step 157 ---
+Test Functions: [ +3.722e-03 +2.042e-02 +1.000e+00 -3.722e-03]
+158		   :  +1.366563e-16  1.559122e+02  2.632706e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.915449e-05 * pi
+
+ --- Step 158 ---
+Test Functions: [ +3.685e-03 +2.037e-02 +1.000e+00 -3.685e-03]
+159		   :  +1.085632e-16  1.569121e+02  2.619996e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.889405e-05 * pi
+
+ --- Step 159 ---
+Test Functions: [ +3.645e-03 +2.032e-02 +1.000e+00 -3.645e-03]
+160		   :  +8.623744e-17  1.579120e+02  2.611757e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.864015e-05 * pi
+
+ --- Step 160 ---
+Test Functions: [ +3.603e-03 +2.026e-02 +1.000e+00 -3.603e-03]
+161		   :  +6.849666e-17  1.589120e+02  2.608186e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.839254e-05 * pi
+
+ --- Step 161 ---
+Test Functions: [ +3.559e-03 +2.021e-02 +1.000e+00 -3.559e-03]
+162		   :  +5.440064e-17  1.599119e+02  2.609499e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.815084e-05 * pi
+
+ --- Step 162 ---
+Test Functions: [ +3.512e-03 +2.015e-02 +1.000e+00 -3.512e-03]
+163		   :  +4.320165e-17  1.609118e+02  2.616056e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.791553e-05 * pi
+
+ --- Step 163 ---
+Test Functions: [ +3.463e-03 +2.009e-02 +1.000e+00 -3.463e-03]
+164		   :  +3.430512e-17  1.619118e+02  2.627900e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.768643e-05 * pi
+
+ --- Step 164 ---
+Test Functions: [ +3.411e-03 +2.003e-02 +1.000e+00 -3.411e-03]
+165		   :  +2.723833e-17  1.629117e+02  2.645104e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.746332e-05 * pi
+
+ --- Step 165 ---
+Test Functions: [ +3.357e-03 +1.996e-02 +1.000e+00 -3.357e-03]
+166		   :  +2.162546e-17  1.639116e+02  2.667726e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.724589e-05 * pi
+
+ --- Step 166 ---
+Test Functions: [ +3.299e-03 +1.990e-02 +1.000e+00 -3.299e-03]
+167		   :  +1.716779e-17  1.649116e+02  2.695918e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.703470e-05 * pi
+
+ --- Step 167 ---
+Test Functions: [ +3.239e-03 +1.983e-02 +1.000e+00 -3.239e-03]
+168		   :  +1.362787e-17  1.659115e+02  2.729449e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.682936e-05 * pi
+
+ --- Step 168 ---
+Test Functions: [ +3.175e-03 +1.975e-02 +1.000e+00 -3.175e-03]
+169		   :  +1.081700e-17  1.669115e+02  2.768180e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.662937e-05 * pi
+
+ --- Step 169 ---
+Test Functions: [ +3.107e-03 +1.967e-02 +1.000e+00 -3.107e-03]
+170		   :  +8.585222e-18  1.679114e+02  2.812209e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.643516e-05 * pi
+
+ --- Step 170 ---
+Test Functions: [ +3.036e-03 +1.959e-02 +1.000e+00 -3.036e-03]
+171		   :  +6.813377e-18  1.689114e+02  2.861265e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.624633e-05 * pi
+
+ --- Step 171 ---
+Test Functions: [ +2.962e-03 +1.951e-02 +1.000e+00 -2.962e-03]
+172		   :  +5.406798e-18  1.699113e+02  2.915234e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.606348e-05 * pi
+
+ --- Step 172 ---
+Test Functions: [ +2.883e-03 +1.942e-02 +1.000e+00 -2.883e-03]
+173		   :  +4.290276e-18  1.709113e+02  2.973533e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.588531e-05 * pi
+
+ --- Step 173 ---
+Test Functions: [ +2.801e-03 +1.933e-02 +1.000e+00 -2.801e-03]
+174		   :  +3.404068e-18  1.719112e+02  3.036320e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.571228e-05 * pi
+
+ --- Step 174 ---
+Test Functions: [ +2.714e-03 +1.923e-02 +1.000e+00 -2.714e-03]
+175		   :  +2.700720e-18  1.729111e+02  3.103403e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.554513e-05 * pi
+
+ --- Step 175 ---
+Test Functions: [ +2.622e-03 +1.913e-02 +1.000e+00 -2.622e-03]
+176		   :  +2.142545e-18  1.739111e+02  3.173946e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.538230e-05 * pi
+
+ --- Step 176 ---
+Test Functions: [ +2.526e-03 +1.903e-02 +1.000e+00 -2.526e-03]
+177		   :  +1.699612e-18  1.749110e+02  3.248117e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.522450e-05 * pi
+
+ --- Step 177 ---
+Test Functions: [ +2.425e-03 +1.892e-02 +1.000e+00 -2.425e-03]
+178		   :  +1.348154e-18  1.759110e+02  3.325517e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.507149e-05 * pi
+
+ --- Step 178 ---
+Test Functions: [ +2.318e-03 +1.880e-02 +1.000e+00 -2.318e-03]
+179		   :  +1.069300e-18  1.769110e+02  3.405805e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.492284e-05 * pi
+
+ --- Step 179 ---
+Test Functions: [ +2.206e-03 +1.868e-02 +1.000e+00 -2.206e-03]
+180		   :  +8.480684e-19  1.779109e+02  3.488885e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.477871e-05 * pi
+
+ --- Step 180 ---
+Test Functions: [ +2.088e-03 +1.856e-02 +1.000e+00 -2.088e-03]
+181		   :  +6.725638e-19  1.789109e+02  3.574434e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.463933e-05 * pi
+
+ --- Step 181 ---
+Test Functions: [ +1.964e-03 +1.843e-02 +1.000e+00 -1.964e-03]
+182		   :  +5.333447e-19  1.799108e+02  3.661853e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.450361e-05 * pi
+
+ --- Step 182 ---
+Test Functions: [ +1.834e-03 +1.829e-02 +1.000e+00 -1.834e-03]
+183		   :  +4.229167e-19  1.809108e+02  3.751281e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.437210e-05 * pi
+
+ --- Step 183 ---
+Test Functions: [ +1.697e-03 +1.815e-02 +1.000e+00 -1.697e-03]
+184		   :  +3.353317e-19  1.819107e+02  3.842341e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.424447e-05 * pi
+
+ --- Step 184 ---
+Test Functions: [ +1.554e-03 +1.799e-02 +1.000e+00 -1.554e-03]
+185		   :  +2.658689e-19  1.829107e+02  3.934802e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.412059e-05 * pi
+
+ --- Step 185 ---
+Test Functions: [ +1.402e-03 +1.784e-02 +1.000e+00 -1.402e-03]
+186		   :  +2.107824e-19  1.839106e+02  4.028436e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.400030e-05 * pi
+
+ --- Step 186 ---
+Test Functions: [ +1.243e-03 +1.767e-02 +1.000e+00 -1.243e-03]
+187		   :  +1.670996e-19  1.849106e+02  4.123030e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.388347e-05 * pi
+
+ --- Step 187 ---
+Test Functions: [ +1.076e-03 +1.750e-02 +1.000e+00 -1.076e-03]
+188		   :  +1.324619e-19  1.859106e+02  4.218382e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.377003e-05 * pi
+
+ --- Step 188 ---
+Test Functions: [ +9.006e-04 +1.731e-02 +1.000e+00 -9.006e-04]
+189		   :  +1.049982e-19  1.869105e+02  4.314220e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.365947e-05 * pi
+
+ --- Step 189 ---
+Test Functions: [ +7.159e-04 +1.712e-02 +1.000e+00 -7.159e-04]
+190		   :  +8.322389e-20  1.879105e+02  4.410591e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.355220e-05 * pi
+
+ --- Step 190 ---
+Test Functions: [ +5.218e-04 +1.692e-02 +1.000e+00 -5.218e-04]
+191		   :  +6.596144e-20  1.889104e+02  4.507093e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.344779e-05 * pi
+
+ --- Step 191 ---
+Test Functions: [ +3.177e-04 +1.671e-02 +1.000e+00 -3.177e-04]
+192		   :  +5.227676e-20  1.899104e+02  4.603565e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.334566e-05 * pi
+
+ --- Step 192 ---
+Test Functions: [ +1.031e-04 +1.649e-02 +1.000e+00 -1.031e-04]
+193		   :  +4.142895e-20  1.909104e+02  4.700237e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.324692e-05 * pi
+
+ --- Step 193 ---
+Test Functions: [ -1.224e-04 +1.626e-02 +2.000e+00 +1.224e-04]
+contL: 
+BP detected at step 193
+using locator
+Locate BP: Newton Step: norm(dx)=0.032677252 norm(f1)=0.000169220
+Locate BP: Newton Step: norm(dx)=0.067593408 norm(f1)=0.000252841
+Locate BP: Residual Converging Too Slowly
+Time spent in locator function: 0.073579
+contL: Unable to locate BP with locator. 
+Try increasing contL_Loc_MaxCorrIters, Loc_MaxIters, contL_Loc_FunTolerance and contL_Loc_VarTolerance
+Test Functions: [ +1.031e-04 +0.000e+00 +0.000e+00 +0.000e+00]
+Test Functions: [ -1.224e-04 +0.000e+00 +0.000e+00 +0.000e+00]
+Test Functions: [ +1.381e-06 +0.000e+00 +0.000e+00 +0.000e+00]
+Test Functions: [ -6.011e-05 +0.000e+00 +0.000e+00 +0.000e+00]
+Test Functions: [ -2.926e-05 +0.000e+00 +0.000e+00 +0.000e+00]
+Test Functions: [ -1.392e-05 +0.000e+00 +0.000e+00 +0.000e+00]
+Test Functions: [ -6.261e-06 +0.000e+00 +0.000e+00 +0.000e+00]
+Test Functions: [ +4.644e-08 +0.000e+00 +0.000e+00 +0.000e+00]
+Time spent in bisection: 0.448649
+Test Functions: [ ]
+Test Functions: [ ]
+Test Functions: [ ]
+Test Functions: [ ]
+Test Functions: [ +4.644e-08 +1.638e-02 +1.000e+00 -4.644e-08]
+
+Eigenvalues: (Subspace)
++8.789883e-01
+-4.643655e-08
+-1.638287e-02
+-3.311329e-02
+-6.515039e-02
+Eigenvalues: (Reference)
+-9.711489e-02
+-1.452107e-01
+-1.912981e-01
+-2.548842e-01
+194	 3	 BP:  +3.719735e-20  1.913735e+02  2.573783e-14  
+Adapt: updating test functions
+contCIS_init: need adapt test functions
+(Updated) NSub = 6 NUnstable = 2
+Test Functions: [ -1.224e-04 -1.626e-02 +2.000e+00 +1.224e-04]
+195		   :  +3.283041e-20  1.919103e+02  4.796268e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.315014e-05 * pi
+
+ --- Step 195 ---
+Test Functions: [ -3.596e-04 -1.601e-02 +2.000e+00 +3.596e-04]
+196		   :  +2.601515e-20  1.929103e+02  4.891985e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.305537e-05 * pi
+
+ --- Step 196 ---
+Test Functions: [ -6.090e-04 -1.576e-02 +2.000e+00 +6.090e-04]
+197		   :  +2.061362e-20  1.939103e+02  4.987426e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.296348e-05 * pi
+
+ --- Step 197 ---
+Test Functions: [ -8.713e-04 -1.549e-02 +2.000e+00 +8.713e-04]
+198		   :  +1.633280e-20  1.949102e+02  5.081910e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.287297e-05 * pi
+
+ --- Step 198 ---
+Test Functions: [ -1.147e-03 -1.521e-02 +2.000e+00 +1.147e-03]
+199		   :  +1.294034e-20  1.959102e+02  5.175886e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.278495e-05 * pi
+
+ --- Step 199 ---
+Test Functions: [ -1.437e-03 -1.491e-02 +2.000e+00 +1.437e-03]
+200		   :  +1.025202e-20  1.969101e+02  5.268764e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.269800e-05 * pi
+
+ --- Step 200 ---
+Test Functions: [ -1.742e-03 -1.460e-02 +2.000e+00 +1.742e-03]
+201		   :  +8.121817e-21  1.979101e+02  5.361102e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.261346e-05 * pi
+
+ --- Step 201 ---
+Test Functions: [ -2.063e-03 -1.428e-02 +2.000e+00 +2.063e-03]
+202		   :  +6.433934e-21  1.989101e+02  5.452156e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.253031e-05 * pi
+
+ --- Step 202 ---
+Test Functions: [ -2.401e-03 -1.393e-02 +2.000e+00 +2.401e-03]
+203		   :  +5.096595e-21  1.999101e+02  5.541998e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.244843e-05 * pi
+
+ --- Step 203 ---
+Test Functions: [ -2.756e-03 -1.357e-02 +2.000e+00 +2.756e-03]
+204		   :  +4.037051e-21  2.009100e+02  5.630798e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.236809e-05 * pi
+
+ --- Step 204 ---
+Test Functions: [ -3.129e-03 -1.319e-02 +2.000e+00 +3.129e-03]
+205		   :  +3.197637e-21  2.019100e+02  5.721073e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.228877e-05 * pi
+
+ --- Step 205 ---
+Test Functions: [ -3.522e-03 -1.280e-02 +2.000e+00 +3.522e-03]
+206		   :  +2.532652e-21  2.029100e+02  1.360223e-09  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.221035e-05 * pi
+
+ --- Step 206 ---
+Test Functions: [ -3.935e-03 -1.238e-02 +2.000e+00 +3.935e-03]
+207		   :  +2.005871e-21  2.039099e+02  5.869631e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.213459e-05 * pi
+
+ --- Step 207 ---
+Test Functions: [ -4.370e-03 -1.194e-02 +2.000e+00 +4.370e-03]
+208		   :  +1.588593e-21  2.049099e+02  5.971961e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.205786e-05 * pi
+
+ --- Step 208 ---
+Test Functions: [ -4.828e-03 -1.148e-02 +2.000e+00 +4.828e-03]
+209		   :  +1.258069e-21  2.059099e+02  6.055110e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.198298e-05 * pi
+
+ --- Step 209 ---
+Test Functions: [ -5.309e-03 -1.099e-02 +2.000e+00 +5.309e-03]
+210		   :  +9.962743e-22  2.069098e+02  6.589514e-12  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.190750e-05 * pi
+
+ --- Step 210 ---
+Test Functions: [ -5.815e-03 -1.048e-02 +2.000e+00 +5.815e-03]
+211		   :  +7.889254e-22  2.079098e+02  6.186414e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.183583e-05 * pi
+
+ --- Step 211 ---
+Test Functions: [ -6.347e-03 -9.943e-03 +2.000e+00 +6.347e-03]
+212		   :  +6.247068e-22  2.089098e+02  6.289058e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.176222e-05 * pi
+
+ --- Step 212 ---
+Test Functions: [ -6.907e-03 -9.378e-03 +2.000e+00 +6.907e-03]
+213		   :  +4.946522e-22  2.099098e+02  6.364455e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.168971e-05 * pi
+
+ --- Step 213 ---
+Test Functions: [ -7.496e-03 -8.785e-03 +2.000e+00 +7.496e-03]
+214		   :  +3.916584e-22  2.109097e+02  6.438120e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.161820e-05 * pi
+
+ --- Step 214 ---
+Test Functions: [ -8.115e-03 -8.162e-03 +2.000e+00 +8.115e-03]
+215		   :  +3.100979e-22  2.119097e+02  6.509868e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.154709e-05 * pi
+
+ --- Step 215 ---
+Test Functions: [ -8.765e-03 -7.508e-03 +2.000e+00 +8.765e-03]
+216		   :  +2.455131e-22  2.129097e+02  6.579778e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.147607e-05 * pi
+
+ --- Step 216 ---
+Test Functions: [ -9.449e-03 -6.820e-03 +2.000e+00 +9.449e-03]
+217		   :  +1.943726e-22  2.139097e+02  6.648157e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.140612e-05 * pi
+
+ --- Step 217 ---
+Test Functions: [ -1.017e-02 -6.098e-03 +2.000e+00 +1.017e-02]
+218		   :  +1.538793e-22  2.149096e+02  6.714304e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.133560e-05 * pi
+
+ --- Step 218 ---
+Test Functions: [ -1.092e-02 -5.340e-03 +2.000e+00 +1.092e-02]
+219		   :  +1.218178e-22  2.159096e+02  6.779160e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.126630e-05 * pi
+
+ --- Step 219 ---
+Test Functions: [ -1.171e-02 -4.544e-03 +2.000e+00 +1.171e-02]
+220		   :  +9.643316e-23  2.169096e+02  6.841751e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.119660e-05 * pi
+
+ --- Step 220 ---
+Test Functions: [ -1.254e-02 -3.709e-03 +2.000e+00 +1.254e-02]
+221		   :  +7.633573e-23  2.179096e+02  6.902775e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.112763e-05 * pi
+
+ --- Step 221 ---
+Test Functions: [ -1.342e-02 -2.834e-03 +2.000e+00 +1.342e-02]
+222		   :  +6.042480e-23  2.189095e+02  6.961695e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.105836e-05 * pi
+
+ --- Step 222 ---
+Test Functions: [ -1.433e-02 -1.916e-03 +2.000e+00 +1.433e-02]
+223		   :  +4.782871e-23  2.199095e+02  7.019051e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.098969e-05 * pi
+
+ --- Step 223 ---
+Test Functions: [ -1.529e-02 -9.539e-04 +2.000e+00 +1.529e-02]
+224		   :  +3.785721e-23  2.209095e+02  7.074383e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.092074e-05 * pi
+
+ --- Step 224 ---
+Test Functions: [ -1.624e-02 +5.363e-05 +2.000e+00 +1.624e-02]
+225		   :  +2.996368e-23  2.219095e+02  7.128163e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.085243e-05 * pi
+
+ --- Step 225 ---
+Test Functions: [ -1.624e-02 +1.108e-03 +2.000e+00 +1.624e-02]
+226		   :  +2.371530e-23  2.229095e+02  7.179822e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.078379e-05 * pi
+
+ --- Step 226 ---
+Test Functions: [ -1.623e-02 +2.212e-03 +2.000e+00 +1.623e-02]
+227		   :  +1.876935e-23  2.239094e+02  7.229850e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.071574e-05 * pi
+
+ --- Step 227 ---
+Test Functions: [ -1.623e-02 +3.367e-03 +2.000e+00 +1.623e-02]
+228		   :  +1.485447e-23  2.249094e+02  7.277683e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.064702e-05 * pi
+
+ --- Step 228 ---
+Test Functions: [ -1.623e-02 +4.540e-03 +2.000e+00 +1.623e-02]
+229		   :  +1.175581e-23  2.259094e+02  7.324176e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.057902e-05 * pi
+
+ --- Step 229 ---
+Test Functions: [ -1.622e-02 +3.055e-03 +2.000e+00 +1.622e-02]
+230		   :  +9.303278e-24  2.269094e+02  7.368597e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.051059e-05 * pi
+
+ --- Step 230 ---
+Test Functions: [ -1.622e-02 +1.517e-03 +2.000e+00 +1.622e-02]
+231		   :  +7.362195e-24  2.279094e+02  7.411497e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.044268e-05 * pi
+
+ --- Step 231 ---
+Test Functions: [ -1.622e-02 -7.348e-05 +2.000e+00 +1.622e-02]
+232		   :  +5.825952e-24  2.289093e+02  7.452352e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.037448e-05 * pi
+
+ --- Step 232 ---
+Test Functions: [ -1.621e-02 -1.719e-03 +2.000e+00 +1.621e-02]
+233		   :  +4.610148e-24  2.299093e+02  7.491545e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.030640e-05 * pi
+
+ --- Step 233 ---
+Test Functions: [ -1.621e-02 -3.420e-03 +2.000e+00 +1.621e-02]
+234		   :  +3.647971e-24  2.309093e+02  7.528992e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.023832e-05 * pi
+
+ --- Step 234 ---
+Test Functions: [ -1.621e-02 -5.179e-03 +2.000e+00 +1.621e-02]
+235		   :  +2.886535e-24  2.319093e+02  7.564740e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.017029e-05 * pi
+
+ --- Step 235 ---
+Test Functions: [ -1.620e-02 -6.996e-03 +2.000e+00 +1.620e-02]
+236		   :  +2.283975e-24  2.329093e+02  7.598765e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.010235e-05 * pi
+
+ --- Step 236 ---
+Test Functions: [ -1.620e-02 -8.872e-03 +2.000e+00 +1.620e-02]
+237		   :  +1.807153e-24  2.339092e+02  7.631017e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +1.003412e-05 * pi
+
+ --- Step 237 ---
+Test Functions: [ -1.620e-02 -1.081e-02 +2.000e+00 +1.620e-02]
+238		   :  +1.429842e-24  2.349092e+02  7.661894e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +9.966218e-06 * pi
+
+ --- Step 238 ---
+Test Functions: [ -1.620e-02 -1.281e-02 +2.000e+00 +1.620e-02]
+239		   :  +1.131281e-24  2.359092e+02  7.691043e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +9.898496e-06 * pi
+
+ --- Step 239 ---
+Test Functions: [ -1.619e-02 -1.487e-02 +2.000e+00 +1.619e-02]
+240		   :  +8.950413e-25  2.369092e+02  7.718288e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +9.830440e-06 * pi
+
+ --- Step 240 ---
+Test Functions: [ -1.619e-02 -1.700e-02 +2.000e+00 +1.619e-02]
+241		   :  +7.081177e-25  2.379092e+02  7.744120e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +9.762619e-06 * pi
+
+ --- Step 241 ---
+Test Functions: [ -1.619e-02 -1.919e-02 +2.000e+00 +1.619e-02]
+242		   :  +5.602191e-25  2.389092e+02  7.768306e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +9.694786e-06 * pi
+
+ --- Step 242 ---
+Test Functions: [ -1.619e-02 -2.046e-02 +2.000e+00 +1.619e-02]
+243		   :  +4.432009e-25  2.399092e+02  7.790929e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +9.626837e-06 * pi
+
+ --- Step 243 ---
+Test Functions: [ -1.618e-02 -1.829e-02 +2.000e+00 +1.618e-02]
+244		   :  +3.506177e-25  2.409091e+02  7.812234e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +9.559097e-06 * pi
+
+ --- Step 244 ---
+Test Functions: [ -1.618e-02 -1.605e-02 +2.000e+00 +1.618e-02]
+245		   :  +2.773689e-25  2.419091e+02  7.832040e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +9.491423e-06 * pi
+
+ --- Step 245 ---
+Test Functions: [ -1.618e-02 -1.373e-02 +2.000e+00 +1.618e-02]
+246		   :  +2.194180e-25  2.429091e+02  7.850366e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +9.423869e-06 * pi
+
+ --- Step 246 ---
+Test Functions: [ -1.618e-02 -1.134e-02 +2.000e+00 +1.618e-02]
+247		   :  +1.735713e-25  2.439091e+02  7.867164e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +9.356467e-06 * pi
+
+ --- Step 247 ---
+Test Functions: [ -1.618e-02 -8.878e-03 +2.000e+00 +1.618e-02]
+248		   :  +1.373012e-25  2.449091e+02  7.882362e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +9.288871e-06 * pi
+
+ --- Step 248 ---
+Test Functions: [ -1.617e-02 -6.336e-03 +2.000e+00 +1.617e-02]
+249		   :  +1.086081e-25  2.459091e+02  7.896358e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +9.221445e-06 * pi
+
+ --- Step 249 ---
+Test Functions: [ -1.617e-02 -3.718e-03 +2.000e+00 +1.617e-02]
+250		   :  +8.590954e-26  2.469091e+02  7.909070e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +9.154243e-06 * pi
+
+ --- Step 250 ---
+Test Functions: [ -1.617e-02 -1.023e-03 +2.000e+00 +1.617e-02]
+251		   :  +6.795355e-26  2.479090e+02  7.920357e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +9.087153e-06 * pi
+
+ --- Step 251 ---
+Test Functions: [ -1.617e-02 +1.751e-03 +2.000e+00 +1.617e-02]
+252		   :  +5.374951e-26  2.489090e+02  7.930245e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +9.019985e-06 * pi
+
+ --- Step 252 ---
+Test Functions: [ -1.616e-02 +4.603e-03 +2.000e+00 +1.616e-02]
+253		   :  +4.251368e-26  2.499090e+02  7.939036e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +8.953220e-06 * pi
+
+ --- Step 253 ---
+Test Functions: [ -1.616e-02 +7.161e-03 +2.000e+00 +1.616e-02]
+254		   :  +3.362597e-26  2.509090e+02  7.946364e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +8.886301e-06 * pi
+
+ --- Step 254 ---
+Test Functions: [ -1.616e-02 +3.875e-03 +2.000e+00 +1.616e-02]
+255		   :  +2.659580e-26  2.519090e+02  7.952678e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +8.819762e-06 * pi
+
+ --- Step 255 ---
+Test Functions: [ -1.616e-02 +5.142e-04 +2.000e+00 +1.616e-02]
+256		   :  +2.103504e-26  2.529090e+02  7.957672e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +8.753230e-06 * pi
+
+ --- Step 256 ---
+Test Functions: [ -1.616e-02 -2.922e-03 +2.000e+00 +1.616e-02]
+257		   :  +1.663666e-26  2.539090e+02  7.961590e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +8.687066e-06 * pi
+
+ --- Step 257 ---
+Test Functions: [ -1.615e-02 -6.433e-03 +2.000e+00 +1.615e-02]
+258		   :  +1.315774e-26  2.549090e+02  7.964166e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +8.620868e-06 * pi
+
+ --- Step 258 ---
+Test Functions: [ -1.615e-02 -1.002e-02 +2.000e+00 +1.615e-02]
+259		   :  +1.040612e-26  2.559089e+02  7.965729e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +8.554879e-06 * pi
+
+ --- Step 259 ---
+Test Functions: [ -1.615e-02 -1.368e-02 +2.000e+00 +1.615e-02]
+260		   :  +8.229802e-27  2.569089e+02  7.966279e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +8.489131e-06 * pi
+
+ --- Step 260 ---
+Test Functions: [ -1.615e-02 -1.742e-02 +2.000e+00 +1.615e-02]
+261		   :  +6.508525e-27  2.579089e+02  7.965769e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +8.423796e-06 * pi
+
+ --- Step 261 ---
+Test Functions: [ -1.615e-02 -2.123e-02 +2.000e+00 +1.615e-02]
+262		   :  +5.147173e-27  2.589089e+02  7.963915e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +8.358283e-06 * pi
+
+ --- Step 262 ---
+Test Functions: [ -1.615e-02 -2.511e-02 +2.000e+00 +1.615e-02]
+263		   :  +4.070501e-27  2.599089e+02  7.961334e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +8.293364e-06 * pi
+
+ --- Step 263 ---
+Test Functions: [ -1.614e-02 -2.908e-02 +2.000e+00 +1.614e-02]
+264		   :  +3.218994e-27  2.609089e+02  7.957485e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +8.228378e-06 * pi
+
+ --- Step 264 ---
+Test Functions: [ -1.614e-02 -3.311e-02 +2.000e+00 +1.614e-02]
+265		   :  +2.545574e-27  2.619089e+02  7.952845e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +8.163692e-06 * pi
+
+ --- Step 265 ---
+Test Functions: [ -1.614e-02 -3.580e-02 +2.000e+00 +1.614e-02]
+266		   :  +2.013004e-27  2.629089e+02  7.947350e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +8.099315e-06 * pi
+
+ --- Step 266 ---
+Test Functions: [ -1.614e-02 -3.572e-02 +2.000e+00 +1.614e-02]
+267		   :  +1.591832e-27  2.639089e+02  7.940935e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +8.035293e-06 * pi
+
+ --- Step 267 ---
+Test Functions: [ -1.614e-02 -3.564e-02 +2.000e+00 +1.614e-02]
+268		   :  +1.258760e-27  2.649088e+02  7.933466e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +7.971391e-06 * pi
+
+ --- Step 268 ---
+Test Functions: [ -1.614e-02 -3.556e-02 +2.000e+00 +1.614e-02]
+269		   :  +9.953656e-28  2.659088e+02  7.925191e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +7.907910e-06 * pi
+
+ --- Step 269 ---
+Test Functions: [ -1.613e-02 -3.548e-02 +2.000e+00 +1.613e-02]
+270		   :  +7.870748e-28  2.669088e+02  7.915897e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +7.844315e-06 * pi
+
+ --- Step 270 ---
+Test Functions: [ -1.613e-02 -3.540e-02 +2.000e+00 +1.613e-02]
+271		   :  +6.223622e-28  2.679088e+02  7.906247e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +7.781527e-06 * pi
+
+ --- Step 271 ---
+Test Functions: [ -1.613e-02 -3.533e-02 +2.000e+00 +1.613e-02]
+272		   :  +4.921125e-28  2.689088e+02  7.895417e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +7.718738e-06 * pi
+
+ --- Step 272 ---
+Test Functions: [ -1.613e-02 -3.526e-02 +2.000e+00 +1.613e-02]
+273		   :  +3.891164e-28  2.699088e+02  7.883908e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +7.656253e-06 * pi
+
+ --- Step 273 ---
+Test Functions: [ -1.613e-02 -3.519e-02 +2.000e+00 +1.613e-02]
+274		   :  +3.076726e-28  2.709088e+02  7.871744e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +7.594365e-06 * pi
+
+ --- Step 274 ---
+Test Functions: [ -1.613e-02 -3.512e-02 +2.000e+00 +1.613e-02]
+275		   :  +2.432722e-28  2.719088e+02  7.858460e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +7.532273e-06 * pi
+
+ --- Step 275 ---
+Test Functions: [ -1.613e-02 -3.506e-02 +2.000e+00 +1.613e-02]
+276		   :  +1.923491e-28  2.729088e+02  7.844942e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +7.470885e-06 * pi
+
+ --- Step 276 ---
+Test Functions: [ -1.612e-02 -3.499e-02 +2.000e+00 +1.612e-02]
+277		   :  +1.520836e-28  2.739088e+02  7.830557e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +7.409792e-06 * pi
+
+ --- Step 277 ---
+Test Functions: [ -1.612e-02 -3.493e-02 +2.000e+00 +1.612e-02]
+278		   :  +1.202456e-28  2.749088e+02  7.815381e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +7.348899e-06 * pi
+
+ --- Step 278 ---
+Test Functions: [ -1.612e-02 -3.487e-02 +2.000e+00 +1.612e-02]
+279		   :  +9.507150e-29  2.759088e+02  7.799669e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +7.288400e-06 * pi
+
+ --- Step 279 ---
+Test Functions: [ -1.612e-02 -3.482e-02 +2.000e+00 +1.612e-02]
+280		   :  +7.516683e-29  2.769087e+02  7.783330e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +7.228181e-06 * pi
+
+ --- Step 280 ---
+Test Functions: [ -1.612e-02 -3.476e-02 +2.000e+00 +1.612e-02]
+281		   :  +5.942877e-29  2.779087e+02  7.766484e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +7.168432e-06 * pi
+
+ --- Step 281 ---
+Test Functions: [ -1.612e-02 -3.471e-02 +2.000e+00 +1.612e-02]
+282		   :  +4.698531e-29  2.789087e+02  7.748950e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +7.109037e-06 * pi
+
+ --- Step 282 ---
+Test Functions: [ -1.612e-02 -3.465e-02 +2.000e+00 +1.612e-02]
+283		   :  +3.714687e-29  2.799087e+02  7.730742e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +7.049927e-06 * pi
+
+ --- Step 283 ---
+Test Functions: [ -1.612e-02 -3.460e-02 +2.000e+00 +1.612e-02]
+284		   :  +2.936820e-29  2.809087e+02  7.711994e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +6.990972e-06 * pi
+
+ --- Step 284 ---
+Test Functions: [ -1.611e-02 -3.455e-02 +2.000e+00 +1.611e-02]
+285		   :  +2.321814e-29  2.819087e+02  7.693088e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +6.932790e-06 * pi
+
+ --- Step 285 ---
+Test Functions: [ -1.611e-02 -3.450e-02 +2.000e+00 +1.611e-02]
+286		   :  +1.835577e-29  2.829087e+02  7.673307e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +6.874771e-06 * pi
+
+ --- Step 286 ---
+Test Functions: [ -1.611e-02 -3.445e-02 +2.000e+00 +1.611e-02]
+287		   :  +1.451152e-29  2.839087e+02  7.653029e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +6.817083e-06 * pi
+
+ --- Step 287 ---
+Test Functions: [ -1.611e-02 -3.441e-02 +2.000e+00 +1.611e-02]
+288		   :  +1.147225e-29  2.849087e+02  7.632340e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +6.759850e-06 * pi
+
+ --- Step 288 ---
+Test Functions: [ -1.611e-02 -3.436e-02 +2.000e+00 +1.611e-02]
+289		   :  +9.069414e-30  2.859087e+02  7.611119e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +6.702711e-06 * pi
+
+ --- Step 289 ---
+Test Functions: [ -1.611e-02 -3.432e-02 +2.000e+00 +1.611e-02]
+290		   :  +7.169772e-30  2.869087e+02  7.589891e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +6.646424e-06 * pi
+
+ --- Step 290 ---
+Test Functions: [ -1.611e-02 -3.428e-02 +2.000e+00 +1.611e-02]
+291		   :  +5.667961e-30  2.879087e+02  7.567785e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +6.590180e-06 * pi
+
+ --- Step 291 ---
+Test Functions: [ -1.611e-02 -3.424e-02 +2.000e+00 +1.611e-02]
+292		   :  +4.480679e-30  2.889087e+02  7.545453e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +6.534621e-06 * pi
+
+ --- Step 292 ---
+Test Functions: [ -1.611e-02 -3.419e-02 +2.000e+00 +1.611e-02]
+293		   :  +3.542063e-30  2.899087e+02  7.522352e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +6.479044e-06 * pi
+
+ --- Step 293 ---
+Test Functions: [ -1.610e-02 -3.416e-02 +2.000e+00 +1.610e-02]
+294		   :  +2.800041e-30  2.909087e+02  7.499253e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +6.424072e-06 * pi
+
+ --- Step 294 ---
+Test Functions: [ -1.610e-02 -3.412e-02 +2.000e+00 +1.610e-02]
+295		   :  +2.213442e-30  2.919086e+02  7.475760e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +6.369565e-06 * pi
+
+ --- Step 295 ---
+Test Functions: [ -1.610e-02 -3.408e-02 +2.000e+00 +1.610e-02]
+296		   :  +1.749716e-30  2.929086e+02  7.451733e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +6.315353e-06 * pi
+
+ --- Step 296 ---
+Test Functions: [ -1.610e-02 -3.404e-02 +2.000e+00 +1.610e-02]
+297		   :  +1.383129e-30  2.939086e+02  7.427366e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +6.261479e-06 * pi
+
+ --- Step 297 ---
+Test Functions: [ -1.610e-02 -3.401e-02 +2.000e+00 +1.610e-02]
+298		   :  +1.093336e-30  2.949086e+02  7.402781e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +6.208015e-06 * pi
+
+ --- Step 298 ---
+Test Functions: [ -1.610e-02 -3.397e-02 +2.000e+00 +1.610e-02]
+299		   :  +8.642519e-31  2.959086e+02  7.377944e-07  
+Current Step Size: +1.000000e+00
+Angle Between Tangents:  +6.155012e-06 * pi
+
+ --- Step 299 ---
+Test Functions: [ -1.610e-02 -3.394e-02 +2.000e+00 +1.610e-02]
+300	 4	 99:  +6.831610e-31  2.969086e+02  7.352761e-07  
+
+Elapsed time  = 21.5 secs
+Number of Points = 300

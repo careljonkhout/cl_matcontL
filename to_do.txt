@@ -1,0 +1,14 @@
+
+1) minimize use (get rid?) of globals,
+
+2) add hessian, need or  not?
+
+3) time integration
+
+4) symbolic derivatives
+
+5) graphics update
+
+6) add limit cycles
+
+7) manual update

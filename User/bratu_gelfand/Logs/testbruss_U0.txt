@@ -1,0 +1,3 @@
+ S	ID	 PT:  p(2)            ||u||          ||f||
+(Updated) NSub = 4 NUnstable = 0
+Test Functions: [ -9.674e-04 +4.836e-03 +0.000e+00 +9.674e-04]
