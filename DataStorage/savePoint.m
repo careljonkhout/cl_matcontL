@@ -44,7 +44,10 @@ if nargin == 1
     print_diag(1,'%.6e  '       ,norm(point.x(1:cds.ncoo)));
     print_diag(1,'%.6e  \n'     ,point.R);
     print_diag(1,'Current Step Size: %+e\n',cds.h);
-    print_diag(2,'Angle Between Tangents:  %+e * pi\n',point.angle/pi());
+    if (isfield(point,'angle')) % Carel Jonkhout
+      % apparently there is no field angle when continuing limit cycles
+      print_diag(2,'Angle Between Tangents:  %+e * pi\n',point.angle/pi());
+    end
     failed = savePointDataFile(point.x, point.v, point.h, point.tvals', point.uvals');
 elseif nargin == 2
     % 'singular' point

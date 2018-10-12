@@ -194,7 +194,9 @@ for i=1:dim
   end
 end
 %-----------------------------------------------------------------
-function [failed,s] = process(id, x, v, s)
+function [failed,s] = process(id,point, s)
+x = point.x;
+v = point.v;
 global lds
   switch id
   case 1
@@ -609,6 +611,7 @@ lds.monodromy = [];
 
 r = (0:(lds.ntst*lds.nphase-1));
 lds.multi_r1 = (floor(r./lds.nphase)+1)*lds.ncol_coord-lds.nphase+mod(r,lds.nphase)+1;
+r = (0:((lds.ntst+1)*lds.nphase-1));
 lds.multi_r2 = floor(r./lds.nphase)*lds.ncol_coord+mod(r,lds.nphase)+1;
 lds.BranchParam = lds.ActiveParams;
 

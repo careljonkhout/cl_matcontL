@@ -41,7 +41,7 @@ cds.options = contset(cds.options, 'SymDerivative', symord);
 cds.options = contset(cds.options, 'SymDerivativeP', symordp);
 cds.symjac = 1;
 cds.symhess = 0;
-
+cds.probfile = odefile;
 
 lds.odefile = odefile;
 lds.func = func_handles{2};

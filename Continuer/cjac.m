@@ -8,7 +8,7 @@ function j=cjac(odefile,jacobian,x,p,ap)
 global cds
 
 if nargin > 3 && ~isempty(p)
-  
+
     fullx = [x;cell2mat(p(ap))];
     if (isfield(cds,'oldJacX')) && (length(cds.oldJacX) == length(fullx))
 %     if isfield(cds,'oldJacX') && ~isempty(cds.oldJacX)

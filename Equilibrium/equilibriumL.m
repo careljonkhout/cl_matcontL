@@ -178,22 +178,7 @@ s.data.eigenvals = [point.CISdata.evl_r; point.CISdata.evl_l];
 eval_r = point.CISdata.evl_r;
 eval_l = point.CISdata.evl_l;
 
-print_diag(2,'\nEigenvalues: (Subspace)\n')
-for j=1:length(eval_r)
-    print_diag(2,'%+e',real(eval_r(j)))
-    if imag(eval_r(j))
-        print_diag(2,' %+e i',imag(eval_r(j)));
-    end
-    print_diag(2,'\n')
-end
-print_diag(2,'Eigenvalues: (Reference)\n')
-for j=1:length(eval_l)
-    print_diag(2,'%+e',real(eval_l(j)))
-    if imag(eval_l(j))
-        print_diag(2,' %+e i',imag(eval_l(j)));
-    end
-    print_diag(2,'\n')
-end
+in_log_file(eval_r,eval_l);
 
 failed = 0;
 
@@ -273,8 +258,22 @@ NUnstable = contopts.CIS_NUnstable;
    
 CISdata = contCIS_init(A, 0, NSub, NUnstable);
 
+% Eigenvalues                            % MP 9/2018
+s.data.eigenvals = [CISdata.evl_r; CISdata.evl_l];  % MP
+
+eval_r = CISdata.evl_r;     % MP
+eval_l = CISdata.evl_l;     % MP  
+in_log_file(eval_r,eval_l); % MP
+
 %% ---------------------------------------------------------
 function CISdata = CIS_step(X, CISdata1)
 
 [x,p] = rearr(X); p = num2cell(p); A = ejac(x, p);
 CISdata = contCIS_step(A, CISdata1);
+
+% Eigenvalues                            % MP 9/2018
+s.data.eigenvals = [CISdata.evl_r; CISdata.evl_l];
+
+eval_r = CISdata.evl_r;
+eval_l = CISdata.evl_l;  
+in_log_file(eval_r,eval_l); % MP

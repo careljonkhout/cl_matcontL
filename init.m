@@ -9,6 +9,7 @@ addpath([cd '/DataStorage/']);
 addpath([cd '/Equilibrium/']);
 addpath([cd '/Hopf/']);
 addpath([cd '/LimitPoint/']);
+addpath([cd '/LimitPointCycle/']);
 addpath([cd '/LimitCycle/']);
 addpath([cd '/MultilinearForms/']);
 addpath([cd '/Options/']);

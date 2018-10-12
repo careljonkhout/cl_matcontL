@@ -128,6 +128,9 @@ if (Backward && Vdir > 0) || (~Backward && Vdir < 0)
     firstpoint.v = -firstpoint.v;
 end
 
+ 
+firstpoint = DefaultProcessor(firstpoint); 
+
 %% Test and user functions
 if Singularities
     % WM: calculate all testfunctions at once
@@ -147,7 +150,7 @@ if Userfunctions
     end
 end
 
-firstpoint = DefaultProcessor(firstpoint);  
+
 
 %% II. Main Loop
 currpoint = firstpoint;
@@ -311,7 +314,7 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
             
             [singpoint.tvals,failed] = EvalTestFunc(0, singpoint);
             [failed,s] = feval(cds.curve_process, si, singpoint, s );
-            
+
             if ~failed
                 singpoint.h = norm(currpoint.x - singpoint.x);
                 if Userfunctions
@@ -577,7 +580,7 @@ VarTolerance  = contopts.contL_Testf_VarTolerance;   % MP:
 [t1, failed1]   = EvalTestFunc(id, p1);
 [t2, failed2]   = EvalTestFunc(id, p2);
 
-if failed1 || failed2
+if ((~isempty(failed1)) || (~isempty(failed2))) && (failed1 || failed2)
     print_diag(3, 'Evaluation of testfunctions failed in bisection');
     x = []; v = []; i = 0;
     return;

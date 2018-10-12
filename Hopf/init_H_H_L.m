@@ -17,6 +17,10 @@ if isempty(u)
 end
 if isempty(p)
     p = data.P0;
+    p(data.ap) = data.x(end); % DV 2018
+    if size(p, 2) > 1
+        p = p';
+    end
 end
 if size(ap,2)~=2
     errordlg('Two active parameter are needed for a Hopfpoint bifurcation continuation');
