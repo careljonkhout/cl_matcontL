@@ -70,7 +70,7 @@ classdef SystemsGUI < handle
                 [30+labelwidth+30, innerHeight - 4.5 * pitch,...
                 innerWidth - (30+labelwidth+30) - 30, 20]);
             
-            app.timeBox.String = "t";
+            app.timeBox.String = 't';
             
             app.derivativesButtonGroup = uibuttongroup(app.Figure,...
                 'Visible','off',...
@@ -160,5 +160,10 @@ classdef SystemsGUI < handle
       delete(app.Figure)
     end
 
+  end
+  methods(Static)
+    function new
+      SystemsGUI;
+    end
   end
 end                

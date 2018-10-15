@@ -8,6 +8,8 @@ Once init has completed you are ready to begin running CL_MATCONTL. If a
 particular problem requires additional subdirectories to function, they 
 must be added to the init file manually. 
 
+To create system files use the tools in the SystemFileGenerator folder. 
+
 In the directory '/Tutorial/' there are two series of script m-files that will 
 execute examples for use in CL_MATCONT. Any of the files ending in the
 numeral 0 (i.e. 'testbruss_BP0.m' ) can be run without any prerequisite 

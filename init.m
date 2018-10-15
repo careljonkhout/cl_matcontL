@@ -3,6 +3,7 @@ restoredefaultpath
 clearvars
 
 addpath([cd '/BogdanovTakens/']);
+addpath([cd '/BranchPointCycle/']);
 addpath([cd '/CIS/']);
 addpath([cd '/Continuer/']);
 addpath([cd '/DataStorage/']);

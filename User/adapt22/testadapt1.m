@@ -21,7 +21,7 @@ opt = contset(opt,'CIS_UsingCIS',                 0);
 %opt = contset(opt,'CIS_Ric_SubspaceSelect',  'eig');  % (default 'ric') MP 2018 
 %opt = contset(opt,'CIS_DetectOverlap',           0);
 
-%opt = contset(opt,'Locators',      [1 1 1]); % new
+opt = contset(opt,'Locators',      [1 0 0 0]); % new
 opt = contset(opt,'MaxTestIters',               30); % new
 opt = contset(opt,'contL_Testf_FunTolerance', 1e-7); 
 opt = contset(opt,'contL_Testf_VarTolerance', 1e-6); 

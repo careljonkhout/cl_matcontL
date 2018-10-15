@@ -1,37 +1,8 @@
 classdef System_of_ODEs
-  % tested only on matlab 2017a
   % 
-  % To generate a matcont system file
-  % execute the commands
-  % s = System_of_ODEs(<name>, <variables_str>, <parameters_str>, ...
-  %     <time>, <maxOrder>, <rhs>)
-  % s.generate_file
-  % where <name> is the name of the system, which will be used for the 
-  % filename
+  % see README for instructions on how to use this tool to generate
+  % system files for (cl_)matcont/matcontL
   %
-  % The matcont file generated represents the first order system of ODEs
-  % dx/dt = f(t,x,a)
-  % where f is a function from R^n to R^n
-  % and where n is the length of x
-  %
-  % f is specified by the variable rhs
-  % rhs should be supplied as an n by 1 string array,
-  % a 1 by n string array or an n by m char array,
-  % where m is the length of the longest element of rhs. 
-  % The elements of f should be valid matlab expressions. 
-  % The n-th element of rhs represents the n-th element of f(x,a).
-  % THIS IS AN IMPORTANT DIFFERENCE FROM THE MATCONT SYSTEM EDITOR
-  %
-  % x is specified by the variable variables_str.
-  % a is specified by the variable parameters_str.
-  % variables_str and parameters_str should be supplied as a char array
-  % or a string, such that the variables/parameters are separated by spaces
-  % or comma's. Additional spaces or comma's between the 
-  % variables/parameters are ignored.
-  %
-  % the symbol that represents t in dx/dt = f(t,x,a) 
-  % is specified by the variable time.
- 
   % defining properties
   % These properties are supplied by the user and fully define the system.
   properties (SetAccess=immutable)
@@ -334,8 +305,7 @@ classdef System_of_ODEs
         end
         d = System_of_ODEs.strip_comma_and_add_bracket(d);
       end
-      d = System_of_ODEs.strip_comma_and_add_bracket(d);
-      d = strip(d,',');
+      d = System_of_ODEs.strip_comma_and_add_bracket(d);      
       System_of_ODEs.replace_symbols(d, ...
         s.intermediate_symbols, s.output_symbols);
     end
@@ -378,7 +348,8 @@ classdef System_of_ODEs
         d = System_of_ODEs.strip_comma_and_add_bracket(d);
       end
       d = System_of_ODEs.strip_comma_and_add_bracket(d);
-      d = strip(d,',');
+      System_of_ODEs.replace_symbols(d, ...
+        s.intermediate_symbols, s.output_symbols);
     end
 
     function d = compute_4th_ord_derivatives(s)
@@ -425,7 +396,6 @@ classdef System_of_ODEs
         d = System_of_ODEs.strip_comma_and_add_bracket(d);
       end
       d = System_of_ODEs.strip_comma_and_add_bracket(d);
-      d = strip(d,',');
       System_of_ODEs.replace_symbols(d, ...
         s.intermediate_symbols, s.output_symbols);
     end
@@ -491,7 +461,6 @@ classdef System_of_ODEs
         d = System_of_ODEs.strip_comma_and_add_bracket(d);
       end
       d = System_of_ODEs.strip_comma_and_add_bracket(d);
-      d = strip(d,',');
       System_of_ODEs.replace_symbols(d, ...
         s.intermediate_symbols, s.output_symbols);
     end
@@ -659,6 +628,22 @@ classdef System_of_ODEs
     function throwException(msg)
       exception = MException('System_of_ODEs:BadInput', msg);
       throw(exception);
+    end
+    
+    function s=new(name, var_str, par_str, time, max_ord, rhs)
+      try
+        s=System_of_ODEs(name,var_str,par_str,time,max_ord,rhs,[]);
+      catch ex
+        s=[];
+        if   strcmp(ex.identifier,'System_of_ODEs:BadInput')...
+          || strcmp(ex.identifier,'System_of_ODEs:EvalError')...
+          || strcmp(ex.identifier,'System_of_ODEs:UndefinedFunctionInEval')
+            disp('There seems to be an error in your input.');
+            disp(ex.message);
+        else
+          ex.rethrow();
+        end
+      end
     end
     
   end   

@@ -29,7 +29,6 @@ dydt=<%= s.formatted_rhs %>;
 function y0 = init(par_alpha,par_beta)
 %handles = feval(adapt22);
 %y0=[0,0,0];
-y0=[0;0;0];
 %options = odeset('Jacobian',handles(3),'JacobianP',handles(4),
 %        'Hessians',handles(5),'HessiansP',handles(6));
 %tspan = [0 10];

@@ -246,10 +246,10 @@ function [S,L] = singmat
 
  
 %--------------------------------------------------------
-function [x,v] = locate(id, x1, v1, x2, v2)
+function [x,v] = locate(id, p1,p2)
 switch id   
   case 1
-    [x,v] = locateBPC(id, x1, v1, x2, v2);
+    [x,v] = locateBPC(id, p1.x, p1.v, p2.x, p2.v);
   otherwise
     error('No locator defined for singularity %d', id);
 end
