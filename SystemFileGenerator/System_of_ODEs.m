@@ -123,7 +123,7 @@ classdef System_of_ODEs
       
       s.intermediate_variables_str = System_of_ODEs.replace_symbols( ...
         s.variables_str, s.input_symbols, s.intermediate_symbols);
-      s.intermediate_variables = split(s.intermediate_variables_str);
+      s.intermediate_variables = strsplit(s.intermediate_variables_str);
       
       if ~isempty(s.input_parameters{1})
         s.intermediate_parameters_str = System_of_ODEs.replace_symbols( ...
@@ -212,7 +212,7 @@ classdef System_of_ODEs
     end
 
     function formatted_rhs = format_rhs(s)
-      formatted_rhs = ['[' strjoin(s.rhs, ', ') ']'];
+      formatted_rhs = ['[' strjoin(s.rhs, '; ') ']'];
       formatted_rhs = System_of_ODEs.replace_symbols(formatted_rhs, ...
         s.intermediate_symbols, s.output_symbols);
     end
@@ -237,9 +237,9 @@ classdef System_of_ODEs
 
     % returns a matrix with symbols
     function jacobian = compute_jacobian_symbolic_safe(s, variables_str)
-      eval_str = compose('jacobian([%s],[%s])', ...
+      eval_str = sprintf('jacobian([%s],[%s])', ...
           strjoin(s.rhs, ','), variables_str);
-      jacobian = s.safe_eval_w_syms(eval_str{1});
+      jacobian = s.safe_eval_w_syms(eval_str);
     end
         
     % returns the jacobian matrix as a string of matlab code
@@ -595,9 +595,9 @@ classdef System_of_ODEs
       for e_cell=parse_list
         e = e_cell{1};
         if e.is_symbol
-          disp(compose("%s %d",e.data,e.symbol_index))
+          disp(sprintf("%s %d",e.data,e.symbol_index))
         else
-          disp(compose("'%s'",e.data))
+          disp(sprintf("'%s'",e.data))
         end
       end
     end

@@ -25,13 +25,11 @@ out{15}= @x5;
 function dydt = fun_eval(t,xxxxx, <%= s.parameter_arguments %>)
 dydt=<%= s.formatted_rhs %>;
 % --------------------------------------------------------------------------
-%function [tspan,y0,options] = init
 function y0 = init(par_alpha,par_beta)
-%handles = feval(adapt22);
-%y0=[0,0,0];
-%options = odeset('Jacobian',handles(3),'JacobianP',handles(4),
-%        'Hessians',handles(5),'HessiansP',handles(6));
-%tspan = [0 10];
+handles = feval(adapt22);
+y0=zeros(1,<%= s.nDimensions %> )
+options = odeset('Jacobian',handles(3),'JacobianP',handles(4),'Hessians', ... 
+		handles(5),'HessiansP',handles(6));
 
 % --------------------------------------------------------------------------
 function jac = jacobian(t, xxxxx, <%= s.parameter_arguments %>)
