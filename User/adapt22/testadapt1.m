@@ -8,7 +8,7 @@ opt = contset(opt,'Backward',                    0);  % {0,1} = {Backward, Forwa
 opt = contset(opt,'InitStepsize',              0.01);   
 opt = contset(opt,'MaxStepsize',               0.1);
 opt = contset(opt,'MinStepsize',              1e-5);    
-opt = contset(opt,'Singularities',               0); 
+
 opt = contset(opt,'MaxNumPoints',              200); 
 
 opt = contset(opt,'CIS_UsingCIS',                 0);
@@ -21,10 +21,31 @@ opt = contset(opt,'CIS_UsingCIS',                 0);
 %opt = contset(opt,'CIS_Ric_SubspaceSelect',  'eig');  % (default 'ric') MP 2018 
 %opt = contset(opt,'CIS_DetectOverlap',           0);
 
-opt = contset(opt,'Locators',      [1 0 0 0]); % new
+opt = contset(opt,'Locators',      [0 0 0 0]); % new
 opt = contset(opt,'MaxTestIters',               30); % new
-opt = contset(opt,'contL_Testf_FunTolerance', 1e-7); 
-opt = contset(opt,'contL_Testf_VarTolerance', 1e-6); 
+opt = contset(opt,'contL_Testf_FunTolerance', 1e-4); 
+opt = contset(opt,'contL_Testf_VarTolerance', 1e-4); 
+
+
+opt.contL_EQ_BranchingMethod = 0;    % 0: Normal Form Method, 1: Perpendicular Guess, 2: Bisection
+opt.contL_EQ_SingLinSystTol  = 0.01; % Bordered System Options
+opt.IgnoreSingularity        = [];   % Boolean Array: Toggles which singularities to ignore  DV: old name 'Loc_IgnoreSings'
+
+opt.MaxTestIters     =   20;         % Tolerances for bisection to detect singularities (without locators)   DV: old name 'Loc_Testf_MaxIters'
+opt.contL_Testf_FunTolerance = 1e-4; % DV: similar to TestTolerance
+opt.contL_Testf_VarTolerance = 1e-4; % DV: similar to TestTolerance
+
+opt.contL_Userf_MaxIters     = 20;   % Tolerances for user function location
+opt.contL_Userf_FunTolerance = 1e-3;
+opt.contL_Userf_VarTolerance = 1e-3;
+
+opt.contL_Loc_MaxCorrIters       = 5; % Tolerances used in locators
+opt.contL_Loc_FunTolerance   = 1e-5;
+opt.contL_Loc_VarTolerance   = 1e-4;
+%  matcont defaults:
+%    cds.options.FunTolerance      = contget(cds.options, 'FunTolerance', 1e-6);
+%    cds.options.VarTolerance      = contget(cds.options, 'VarTolerance', 1e-6);
+%    cds.options.TestTolerance     = contget(cds.options, 'TestTolerance', 1e-5);
 
 opt = contset(opt,'Multipliers',                 1);
 opt = contset(opt,'Adapt',                       1);

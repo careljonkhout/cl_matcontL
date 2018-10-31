@@ -30,8 +30,15 @@ opt = contset(opt,'MaxTestIters',               30); % new
 opt = contset(opt,'contL_Testf_FunTolerance', 1e-7); 
 opt = contset(opt,'contL_Testf_VarTolerance', 1e-6); 
 
+%  matcont defaults:
+%    cds.options.FunTolerance      = contget(cds.options, 'FunTolerance', 1e-6);
+%    cds.options.VarTolerance      = contget(cds.options, 'VarTolerance', 1e-6);
+%    cds.options.TestTolerance     = contget(cds.options, 'TestTolerance', 1e-5);
+
 opt = contset(opt,'TestPath',mfilename('fullpath'));
 opt = contset(opt,'Filename','testadapt');
+
+
 
 %% Continuation 
 %[x0,v0]=init_EP_EP(@adapt22,[0;0;0],[-10;1],[1]);

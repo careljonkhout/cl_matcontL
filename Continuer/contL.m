@@ -277,6 +277,11 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
         end
     end
     
+    if cds.lastpointfound % Carel Jonkhout
+      % occurs if step size too small
+      continue
+    end
+    
     %% Location of singularities
     if NeedToLocate
         % DV: There is always only one singularity detected

@@ -41,7 +41,7 @@ elseif strcmpi(transform, 'cayley')
     Alen      = length(A);
     A1        = sigma*speye(Alen) - A;
     A2        = sigma*speye(Alen) + A;
-    [L1,U1,P1,QQ1] = lu(A1);
+    [L1,U1,P1,QQ1] = lu(sparse(A1));
     Afun =@(X, L, U, P, QQ, A2) QQ*(U\(L\(P*A2*X)));
     
     [Q, ~, FLAG] = ahbschur(Afun, Alen, opts, L1, U1, P1, QQ1, A2);    

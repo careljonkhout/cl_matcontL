@@ -82,6 +82,7 @@ end
 
 % nphase = size(x);
 nphase = lds.nphase;
+A = full(A); % Carel Jonkhout
 A = A(1:nphase,1:nphase);
 % calculate eigenvalues and eigenvectors
 [V,D] = eig(A);
