@@ -6,8 +6,8 @@ rhs=["mu - mu * s - beta*(1 + delta * u) * s * i"
     "u-2*pi*v - (u^2+v^2)*v"
     "2* pi * u + v - (u^2+v^2)*u"];
  
-sei_system=System_of_ODEs.new("Carel","s e i u v", "alpha beta mu delta gamma","t",3,rhs)
-
+sei_system=System_of_ODEs.new("SEI_max_ord_1","s e i u v", "alpha beta mu delta gamma","t",1,rhs)
+sei_system.generate_file
 toc
 
 % max order 4 takes 72.990323 seconds.

@@ -111,7 +111,7 @@ properties
         s.parameter_arguments = s.generate_parameter_arguments();
         s.parameters_str = strjoin(s.input_parameters, ' ');
       end
-      s.variables_str  = strjoin(s.input_variables ,' ');
+      s.variables_str  = strjoin(s.input_variables, ' ');
       [s.input_symbols, s.intermediate_symbols, s.output_symbols] = ...
         s.generate_symbols_lists;
       
@@ -138,17 +138,15 @@ properties
       s.formatted_rhs       = s.format_rhs();
       
       if (s.max_ord_derivatives >= 1)
-        s.jacobian = s.compute_jacobian(s.intermediate_variables_str);
-        s.jacobian_for_parameters = s.compute_jacobian(...
-                s.intermediate_parameters_str);
+        s.jacobian                = s.compute_jacobian_for_variables();
+        s.jacobian_for_parameters = s.compute_jacobian_for_parameters();
         s.jacobian_handle         = '@jacobian';
         s.jacobian_params_handle  = '@jacobian_params';
       end
       if (s.max_ord_derivatives >= 2)
         s.show_status('Computing second order derivatives...')
-        s.hessians = s.compute_hessians(s.intermediate_variables_str);
-        s.hessians_for_parameters = s.compute_hessians(...
-                s.intermediate_parameters_str);
+        s.hessians                = s.compute_hessians_for_variables();
+        s.hessians_for_parameters = s.compute_hessians_for_parameters();
         s.hessians_handle         = '@hessians';
         s.hessians_params_handle  = '@hessians_params';
       end
@@ -246,32 +244,40 @@ properties
       end
     end
 
-    % returns a matrix with symbols
-    function jacobian = compute_jacobian_symbolic_safe(s, variables_str)
+    function jacobian = compute_jacobian_safe(s, variables_str)
       eval_str = sprintf('jacobian([%s],[%s])', ...
           strjoin(s.rhs, ','), variables_str);
       jacobian = s.safe_eval_w_syms(eval_str);
-    end
-        
-    % returns the jacobian matrix as a string of matlab code
-    % with the i-th variable replaced with xxxxx(i)
-    % and a parameter a replaced with par_a
-    function jacobian = compute_jacobian(s, variables_str)
-      jacobian = char(s.compute_jacobian_symbolic_safe(variables_str));
+      jacobian = char(jacobian);
       jacobian = jacobian(8:end-1);
       jacobian = replace_symbols(jacobian, ...
         s.intermediate_symbols, s.output_symbols);
     end
         
+    % returns the jacobian matrix as a string of matlab code
+    % with the i-th variable replaced with xxxxx(i)
+    % and a parameter a replaced with par_a
+    function jacobian = compute_jacobian_for_variables(s)
+      jacobian = s.compute_jacobian_safe(s.intermediate_variables_str);
+      jacobian = sprintf('reshape(%s,%d,%d)', ...
+        jacobian, length(s.input_variables), length(s.input_variables));
+    end
+
+    function jacobian = compute_jacobian_for_parameters(s)
+      jacobian = s.compute_jacobian_safe(s.intermediate_parameters_str);
+      jacobian = sprintf('reshape(%s,%d,%d)', ...
+        jacobian, length(s.input_variables), length(s.input_parameters));
+    end
+
     % returns the hessian matrices as a string of matlab code
     % with the i-th variable replaced with xxxxx(i)
     % and a parameter a replaced with par_a
     % hessians(i,j,k) equals 
     % D_{variable(j),variable(k)} s.derivative(i)
-    function hessians = compute_hessians(s,variables_str)
+    function hessians = compute_hessians(s, var_str, len_vars)
       hessians = '[';
       for i = 1:length(s.rhs)
-        hessian = s.compute_hessian(s.rhs{i},variables_str);
+        hessian = s.compute_hessian(s.rhs{i},var_str);
         hessians = strcat(hessians,hessian,', ');
       end
       hessians = strip(hessians);     % removes trailing space
@@ -279,7 +285,20 @@ properties
       hessians = strcat(hessians,']');
       hessians = replace_symbols(hessians, ...
         s.intermediate_symbols, s.output_symbols);
+      hessians = sprintf('reshape(%s,%d,%d,%d)', hessians, ...
+        length(s.input_variables), len_vars, len_vars);
     end
+
+    function hessians = compute_hessians_for_variables(s)
+      hessians = s.compute_hessians(s.intermediate_variables_str, ...
+        length(s.input_variables));
+    end
+
+    function hessians = compute_hessians_for_parameters(s)
+      hessians = s.compute_hessians(s.intermediate_parameters_str, ...
+        length(s.input_parameters));
+    end
+
     
     % returns the hessian of func w.r.t. the 
     % variables listed in variables_str as a string of matlab code
@@ -292,35 +311,6 @@ properties
       hessian = hessian(8:end-1);
     end
     
-    % added underscores to variable names
-    % to prevent conflicts with user symbols
-    function d = compute_3rd_ord_derivatives_old(s)
-      eval(['syms ' s.syms_arg]);
-      variables = s.intermediate_variables;
-      d='[';
-      for i = 1:length(s.rhs)
-        d = strcat(d,'[');
-        for j = 1:length(variables)
-          d = strcat(d,'[');
-          for k = 1:length(variables)
-            d = strcat(d,'[');
-            for l = 1:length(variables)
-              evalstr = sprintf('diff(%s, %s, %s, %s)', ...
-                  s.rhs{i}, variables{j}, ...
-                  variables{k}, variables{l});
-              d = [d, char(eval(evalstr)), ',']; %#ok<AGROW>
-            end
-            d = System_of_ODEs.strip_comma_and_add_bracket(d);
-          end
-          d = System_of_ODEs.strip_comma_and_add_bracket(d);
-        end
-        d = System_of_ODEs.strip_comma_and_add_bracket(d);
-      end
-      d = System_of_ODEs.strip_comma_and_add_bracket(d);      
-      replace_symbols(d, ...
-        s.intermediate_symbols, s.output_symbols);
-    end
-
     function d = compute_3rd_ord_derivatives(s)
       eval(['syms ' s.syms_arg]);
       variables = s.intermediate_variables;
@@ -359,8 +349,9 @@ properties
         d = System_of_ODEs.strip_comma_and_add_bracket(d);
       end
       d = System_of_ODEs.strip_comma_and_add_bracket(d);
-      replace_symbols(d, ...
-        s.intermediate_symbols, s.output_symbols);
+      d = replace_symbols(d, s.intermediate_symbols, s.output_symbols);
+      d = strip(d,',');
+      d = sprintf('reshape(%s,%d,%d,%d,%d)', d, len, len, len, len);
     end
 
     function d = compute_4th_ord_derivatives(s)
@@ -407,8 +398,10 @@ properties
         d = System_of_ODEs.strip_comma_and_add_bracket(d);
       end
       d = System_of_ODEs.strip_comma_and_add_bracket(d);
-      replace_symbols(d, ...
-        s.intermediate_symbols, s.output_symbols);
+      d = replace_symbols(d, s.intermediate_symbols, s.output_symbols);
+      d = strip(d,',');
+      d = sprintf('reshape(%s,%d,%d,%d,%d,%d)', ...
+        d, len, len, len, len, len);
     end
 
     function d = compute_5th_ord_derivatives(s)
@@ -472,8 +465,10 @@ properties
         d = System_of_ODEs.strip_comma_and_add_bracket(d);
       end
       d = System_of_ODEs.strip_comma_and_add_bracket(d);
-      replace_symbols(d, ...
-        s.intermediate_symbols, s.output_symbols);
+      d = replace_symbols(d, s.intermediate_symbols, s.output_symbols);
+      d = strip(d,',');
+      d = sprintf('reshape(%s,%d,%d,%d,%d,%d,%d)', ...
+        d, len, len, len, len, len, len);
     end
 
     function result=safe_eval_w_syms(s,evalstr)
