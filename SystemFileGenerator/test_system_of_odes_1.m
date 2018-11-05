@@ -2,6 +2,8 @@ name = 'Carel2';
 s = System_of_ODEs.new(name,'x y','a b c','t',5,{'sin(a*x*y)','sin(x*x*y*b)'});
 s.generate_file
 
+old_path = pwd;
+
 fullpath = mfilename('fullpath');
 my_path = fullpath(1:end-length(mfilename));
 
@@ -34,3 +36,5 @@ assert(all(size(hessians_params_evaluated) == [2,3,3]))
 assert(all(size(d3_evaluated)              == [2,2,2,2]))
 assert(all(size(d4_evaluated)              == [2,2,2,2,2]))
 assert(all(size(d5_evaluated)              == [2,2,2,2,2,2]))
+
+cd(old_path)

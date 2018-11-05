@@ -5,9 +5,9 @@ out{3} = <%= s.jacobian_handle %>;
 out{4} = <%= s.jacobian_params_handle %>;
 out{5} = <%= s.hessians_handle %>;
 out{6} = <%= s.hessians_params_handle %>;
-out{7} = <%= s.third_ord_derivatives_handle %>;
-out{8} = <%= s.fourth_ord_derivatives_handle %>;
-out{9} = <%= s.fifth_ord_derivatives_handle %>;
+out{7} = <%= s.third_order_derivatives_handle %>;
+out{8} = <%= s.fourth_order_derivatives_handle %>;
+out{9} = <%= s.fifth_order_derivatives_handle %>;
 out{10} = [];% usernorm DV: this is the only difference between
 % the standard matcont problem file and the cl_matcontL problem file
 out{11}= @x1;
@@ -45,14 +45,14 @@ hess = <%= s.hessians %>;
 function hessp = hessians_params(t, xxxxx, <%= s.parameter_arguments %>)
 hessp = <%= s.hessians_for_parameters %>;
 %---------------------------------------------------------------------------
-function d = third_ord_derivatives(t, xxxxx, <%= s.parameter_arguments %>)
-d = <%= s.third_ord_derivatives %>;
+function d = third_order_derivatives(t, xxxxx, <%= s.parameter_arguments %>)
+d = <%= s.third_order_derivatives %>;
 %---------------------------------------------------------------------------
-function d = fourth_ord_derivatives(t, xxxxx, <%= s.parameter_arguments %>)
-d = <%= s.fourth_ord_derivatives %>;
+function d = fourth_order_derivatives(t, xxxxx, <%= s.parameter_arguments %>)
+d = <%= s.fourth_order_derivatives %>;
 %---------------------------------------------------------------------------
-function d = fifth_ord_derivatives(t, xxxxx, <%= s.parameter_arguments %>)
-d = <%= s.fifth_ord_derivatives %>;
+function d = fifth_order_derivatives(t, xxxxx, <%= s.parameter_arguments %>)
+d = <%= s.fifth_order_derivatives %>;
 
 function userfun1=x1(t, xxxxx, <%= s.parameter_arguments %>)
 	userfun1=0;

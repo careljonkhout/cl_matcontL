@@ -1,4 +1,4 @@
-classdef System_of_ODEs
+classdef System_of_ODEs < matlab.mixin.CustomDisplay
   % 
   % see README for instructions on how to use this tool to generate
   % system files for (cl_)matcont/matcontL
@@ -55,8 +55,6 @@ classdef System_of_ODEs
     syms_arg   
     formatted_rhs
     parameter_arguments
-end
-properties
     jacobian                        = '[]'
     jacobian_handle                 = '[]'
     jacobian_for_parameters         = '[]'
@@ -65,13 +63,59 @@ properties
     hessians_handle                 = '[]'
     hessians_for_parameters         = '[]'
     hessians_params_handle          = '[]'  
-    third_ord_derivatives           = '[]'
-    third_ord_derivatives_handle    = '[]' 
-    fourth_ord_derivatives          = '[]'
-    fourth_ord_derivatives_handle   = '[]'
-    fifth_ord_derivatives           = '[]'
-    fifth_ord_derivatives_handle    = '[]'
+    third_order_derivatives           = '[]'
+    third_order_derivatives_handle    = '[]' 
+    fourth_order_derivatives          = '[]'
+    fourth_order_derivatives_handle   = '[]'
+    fifth_order_derivatives           = '[]'
+    fifth_order_derivatives_handle    = '[]'
     
+  end
+  
+  methods (Access = protected)
+    function propgrp = getPropertyGroups(s)
+      my_rhs = replace_symbols(strjoin(s.rhs, ', '), ...
+        s.intermediate_symbols, s.input_symbols);
+      props = struct( ...
+         'name',                          s.name, ...
+         'variables',                     s.variables_str, ...
+         'parameters',                    s.parameters_str, ...
+         'maximum_order_of_derivatives',  num2str(s.max_ord_derivatives), ...
+         'time_variable',                 s.time, ...
+         'right_hand_side',               my_rhs ...
+         );
+      if s.max_ord_derivatives >= 1
+        props.jacobian = replace_symbols(s.jacobian, ...
+          s.output_symbols, s.input_symbols);
+        props.jacobian_for_parameters = ...
+          replace_symbols(s.jacobian_for_parameters, ...
+            s.output_symbols, s.input_symbols);
+      end
+      if s.max_ord_derivatives >= 2
+        props.hessians = replace_symbols(s.hessians, ...
+          s.output_symbols, s.input_symbols);
+        props.hessians_for_parameters = ...
+          replace_symbols(s.hessians_for_parameters, ...
+            s.output_symbols, s.input_symbols);
+      end
+      if s.max_ord_derivatives >= 3
+        props.third_order_derivatives = replace_symbols(...
+          s.third_order_derivatives, ...
+          s.output_symbols, s.input_symbols);
+      end
+      if s.max_ord_derivatives >= 4
+        props.fourth_order_derivatives = replace_symbols(...
+          s.fourth_order_derivatives, ...
+          s.output_symbols, s.input_symbols);
+      end
+      if s.max_ord_derivatives >= 5
+        props.fifth_order_derivatives = replace_symbols(...
+          s.fifth_order_derivatives, ...
+          s.output_symbols, s.input_symbols);
+      end
+
+      propgrp = matlab.mixin.util.PropertyGroup(props);
+    end
   end
 
   methods
@@ -117,19 +161,18 @@ properties
       
       s.verify_inputs()
 
-      % generate strings for system file
       for i=1:length(s.rhs)
         s.rhs{i} = replace_symbols(s.rhs{i}, ...
           s.input_symbols, s.intermediate_symbols);
       end
-      
-      s.intermediate_variables_str = replace_symbols( ...
-        s.variables_str, s.input_symbols, s.intermediate_symbols);
+  
+      s.intermediate_variables_str = ...
+        s.input_to_intermediate(s.variables_str);
       s.intermediate_variables = strsplit(s.intermediate_variables_str);
       
-      if ~isempty(s.input_parameters{1})
-        s.intermediate_parameters_str = replace_symbols( ...
-          s.parameters_str, s.input_symbols, s.intermediate_symbols);
+      if ~isempty(s.input_parameters)
+        s.intermediate_parameters_str = ...
+          s.input_to_intermediate(s.parameters_str);
       end      
       
       s.syms_arg = [s.intermediate_variables_str ' ' ... 
@@ -152,19 +195,23 @@ properties
       end
       if (s.max_ord_derivatives >= 3)
         s.show_status('Computing third order derivatives...')
-        s.third_ord_derivatives = s.compute_3rd_ord_derivatives;
-        s.third_ord_derivatives_handle = '@third_ord_derivatives';
+        s.third_order_derivatives = s.compute_3rd_ord_derivatives;
+        s.third_order_derivatives_handle = '@third_order_derivatives';
       end
       if (s.max_ord_derivatives >= 4)
         s.show_status('Computing fourth order derivatives...')
-        s.fourth_ord_derivatives = s.compute_4th_ord_derivatives;
-        s.fourth_ord_derivatives_handle = '@fourth_ord_derivatives';
+        s.fourth_order_derivatives = s.compute_4th_ord_derivatives;
+        s.fourth_order_derivatives_handle = '@fourth_order_derivatives';
       end
       if (s.max_ord_derivatives >= 5)
         s.show_status('Computing fifth order derivatives...')
-        s.fifth_ord_derivatives = s.compute_5th_ord_derivatives;
-        s.fifth_ord_derivatives_handle = '@fifth_ord_derivatives';
+        s.fifth_order_derivatives = s.compute_5th_ord_derivatives;
+        s.fifth_order_derivatives_handle = '@fifth_order_derivatives';
       end
+    end
+    
+    function out = input_to_intermediate(s, in)
+      out = replace_symbols(in, s.input_symbols, s.intermediate_symbols);
     end
 
 %     function generate_file(s)
