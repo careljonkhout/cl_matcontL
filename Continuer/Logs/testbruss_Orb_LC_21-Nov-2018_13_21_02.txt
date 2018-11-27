@@ -1,0 +1,2 @@
+ S	ID	 PT:  p(4)            ||u||          ||f||
+contL: no convergence at x0.

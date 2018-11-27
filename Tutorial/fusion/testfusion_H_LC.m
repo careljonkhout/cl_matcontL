@@ -58,14 +58,13 @@ eval(evalstr);
 
 
 
-%% Plot results
 load(fullfile('Data',opt.Filename))
 
 ap = 3;
-data = s(2).data;
 x  = data.x;    
 x1 = x(1:end-1);
-P0 = data.P0;
+value_of_active_parameter_at_hopf = x(end,s(2).index);
+p(ap) = value_of_active_parameter_at_hopf;
 p  = [a;b;P0(2)];
 
 h = 1e-6;

@@ -76,16 +76,16 @@ v = rearr(point.v);
       lds.dPRCdata = [];
   end
   
-    point.multipliers = lds.multipliers;
-    point.timemesh = lds.msh;
-    point.ntst = lds.ntst;
-    point.ncol = lds.ncol;
-    point.parametervalues = p;
-    point.T = T;
-    point.phi = lds.PD_phi(lds.coords);
-    point.PRCdata = lds.PRCdata;
-    point.dPRCdata = lds.dPRCdata;
-    point.P0 = p;
+  point.multipliers = lds.multipliers;
+  point.timemesh = lds.msh;
+  point.ntst = lds.ntst;
+  point.ncol = lds.ncol;
+  point.parametervalues = p;
+  point.T = T;
+  point.phi = lds.PD_phi(lds.coords);
+  point.PRCdata = lds.PRCdata;
+  point.dPRCdata = lds.dPRCdata;
+  point.P0 = p;
     
   if lds.CalcMultipliers==0
       lds.multipliers=[];
@@ -94,7 +94,6 @@ v = rearr(point.v);
   %varargout{2} = [lds.msh'; lds.PRCdata'; lds.dPRCdata'; lds.multipliers;];
   % all done succesfully
   %varargout{1} = 0;
-  
   failed = savePoint(point);
 %-------------------------------------------------------
 function option = options
@@ -601,6 +600,7 @@ lds.NS2_switch = 0;
 
 
 [lds.bialt_M1,lds.bialt_M2,lds.bialt_M3,lds.bialt_M4]=bialtaa(lds.nphase);
+
 lds.CalcMultipliers = contopts.Multipliers;% contget(cds.options, 'Multipliers', 0);
 lds.CalcPRC = contopts.PRC; %contget(cds.options, 'PRC', 0);
 lds.CalcdPRC = contopts.dPRC; % contget(cds.options, 'dPRC', 0);

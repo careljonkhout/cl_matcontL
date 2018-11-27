@@ -110,7 +110,7 @@ options.Input           =    0;       % DV 2018
 % ActiveSParams
 % ActiveSParam
 % TSearchOrder
-
+options.TSearchOrder = 1; % Carel, needed for CorrectFirstPoint routine for cycles
 % note that cl_matcontL allows to set more options
 options.contL_DiagnosticsLevel  =    0;   % Diagnostic Level, -inf to suppress all output
 options.contL_LogFile           =    1;   % Whether a logfile will be created

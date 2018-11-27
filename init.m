@@ -1,6 +1,6 @@
 %RUN ME FIRST!
-restoredefaultpath
-clearvars
+%restoredefaultpath
+%clearvars
 
 addpath([cd '/BogdanovTakens/']);
 addpath([cd '/BranchPointCycle/']);

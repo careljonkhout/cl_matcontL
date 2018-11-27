@@ -297,11 +297,11 @@ H  detected at step 24
 using locator
 Locate Hopf: Newton Step: norm(dx)=0.238135244 norm(f1)=0.143470762
 Locate Hopf: Newton Step: norm(dx)=0.052582965 norm(f1)=0.318119804
-Locate Hopf: Newton Step: norm(dx)=0.003264660 norm(f1)=0.085875067
-Locate Hopf: Newton Step: norm(dx)=0.000106770 norm(f1)=102.067897580
-Locate Hopf: Newton Step: norm(dx)=0.000080928 norm(f1)=6459.460460646
+Locate Hopf: Newton Step: norm(dx)=0.761645059 norm(f1)=1.660982442
+Locate Hopf: Newton Step: norm(dx)=2.092351128 norm(f1)=0.341077677
+Locate Hopf: Newton Step: norm(dx)=1.231509760 norm(f1)=1.889370926
 locateHopf: Failed to find x in 5 Newton iterations
-Time spent in locator function: 0.140675
+Time spent in locator function: 0.293563
 contL: Unable to locate H  with locator. 
 Try increasing contL_Loc_MaxCorrIters, Loc_MaxIters, contL_Loc_FunTolerance and contL_Loc_VarTolerance
 Test Functions: [ +0.000e+00 -1.473e-01 +0.000e+00 +0.000e+00]
@@ -446,7 +446,7 @@ Eigenvalues: (Subspace)
 -1.000000e+00
 Eigenvalues: (Reference)
 Test Functions: [ +0.000e+00 +9.092e-09 +0.000e+00 +0.000e+00]
-Time spent in bisection: 0.198327
+Time spent in bisection: 0.159632
 Test Functions: [ ]
 Test Functions: [ ]
 Test Functions: [ +0.000e+00 +0.000e+00 +2.000e+00 +0.000e+00]
@@ -639,5 +639,5 @@ Eigenvalues: (Reference)
 Test Functions: [ +3.507e-01 +1.079e-01 +0.000e+00 +3.507e-01]
  40	 3	 99:  +8.237400e+00  0.000000e+00  0.000000e+00  
 
-Elapsed time  = 1.1 secs
+Elapsed time  = 1.5 secs
 Number of Points = 40

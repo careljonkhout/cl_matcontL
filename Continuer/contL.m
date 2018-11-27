@@ -38,7 +38,8 @@ cds.h          = contopts.InitStepsize;
 cds.h_max      = contopts.MaxStepsize;
 cds.h_min      = contopts.MinStepsize;
 cds.h_inc_fac  = contopts.h_inc_fac;  
-cds.h_dec_fac  = contopts.h_dec_fac;  
+cds.h_dec_fac  = contopts.h_dec_fac; 
+cds.options.TSearchOrder = contopts.TSearchOrder; % Carel
 cds.tfUpdate       = 0;
 cds.i              = 1;
 cds.lastpointfound = 0;
@@ -98,7 +99,8 @@ else
     firstpoint.tvals = [];
     firstpoint.uvals = [];
     if isempty(x0)
-        print_diag(0,'contL: no convergence at x0.\n');  
+        print_diag(0,'contL: no convergence at x0.\n');
+        sout = [];
         return;            
     end
 end
@@ -393,7 +395,7 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
     
     cds.i = cds.i + 1;
     currpoint  = DefaultProcessor(currpoint);
-
+    fprintf('continuation step: %d\n',cds.i);
     % stepsize control
     if cds.h < cds.h_max && corrections==1
         cds.h = min(cds.h*cds.h_inc_fac, cds.h_max);
@@ -748,3 +750,42 @@ if failed2
     v=[];
 end
 %--< END OF locateuserfunction>--
+function [x,v] = CorrectStartPoint(x0, ~)
+global cds
+
+x = [];
+v = [];
+point.x = x0;
+point.v = zeros(cds.ndim,1);
+point.R = 0;
+point.h = 0;
+point.tvals = 0;
+point.uvals = 0;
+
+% no tangent vector given, cycle through base-vectors
+
+if cds.options.TSearchOrder
+  i = 1;
+  while isempty(x) && i<=cds.ndim
+    point.v(i) = 1;
+    try
+      DefaultProcessor(point);
+      [x,v] = newtcorr(point.x, point.v);
+    catch
+    end
+    point.v(i) = 0; 
+    i=i+1;
+  end
+else
+  i = length(x0);
+  while isempty(x) && i>=1
+    point.v(i) = 1;
+    try
+      DefaultProcessor(point)
+      [x,v] = newtcorr(point.x, point.v);
+    catch
+    end
+    point.v(i) = 0; 
+    i=i-1; 
+  end
+end

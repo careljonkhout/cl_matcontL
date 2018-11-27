@@ -18,7 +18,9 @@ lds = [];
 if isempty(cds) || ~isfield(cds,'options')
     cds.options = contset();
 end
+init_EP_EP_L(odefile,y(1,:)',p,ap); 
 init_lds(odefile,y,p,ap,ntst,ncol);
+
 
 func_handles = feval(odefile);
 symord = 0; 
@@ -37,11 +39,10 @@ cds.options = contset(cds.options, 'SymDerivative', symord);
 cds.options = contset(cds.options, 'SymDerivativeP', symordp);
 cds.symjac = 1;
 cds.symhess = 0;
+cds.probfile = odefile;
+cds.nap = length(ap);
 
 
-lds.P0 = p;
-
-% check parameters
 
 nphase = lds.nphase;
 x=y';
@@ -70,11 +71,12 @@ x = interp(tn,1,x,a,4);
 %lds.ActiveParams = 1;
 lds.ntst = ntst;
 lds.ncol = ncol;
+lds.msh = a;
 x = reshape(x,size(x,2)*size(x,1),1);
 x(end+1) = t(end)-t(1);
 
 lds.T = x(end);
-x(end+1) = p(1);
+x(end+1) = p(ap);
 x0=x;
 v0=[];
 %-----------------------------------------------------------------

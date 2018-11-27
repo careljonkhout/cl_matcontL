@@ -48,7 +48,6 @@ if nargin == 1
       % apparently there is no field angle when continuing limit cycles
       print_diag(2,'Angle Between Tangents:  %+e * pi\n',point.angle/pi());
     end
-    failed = savePointDataFile(point.x, point.v, point.h, point.tvals', point.uvals');
 elseif nargin == 2
     % 'singular' point
     s = varargin{2};
@@ -63,7 +62,6 @@ elseif nargin == 2
     print_diag(0,'%+.6e  '      ,point.x(cds.ncoo+1:cds.ncoo+cds.nap));
     print_diag(0,'%.6e  '       ,norm(point.x(1:cds.ncoo)));
     print_diag(0,'%.6e  \n'     ,point.R);
-    failed = savePointDataFile(point.x, point.v, point.h, point.tvals', point.uvals');
     cds.sout = [cds.sout, s];
     
 %     if cds.i == contopts.Cont_MaxNumPoints && ~cds.lastpointfound, 
@@ -72,6 +70,11 @@ elseif nargin == 2
 %     end
 else
     error('Wrong number of arguments')
+end
+if isfield(point,'multipliers') %Carel
+  failed = savePointDataFile(point.x, point.v, point.h, point.multipliers);
+else
+  failed = savePointDataFile(point.x, point.v, point.h, point.tvals', point.uvals');
 end
 
 
@@ -90,10 +93,10 @@ try
     for i = 1:nargin
         sz = size(varargin{i});
         fprintf(cds.dataFID,'%d %d\n',sz);
-        for j= 1:sz(2)
-            fprintf(cds.dataFID,'%+e ',varargin{i});
-            fprintf(cds.dataFID,'\n');
-        end
+        if ~isempty(varargin{i})
+          fprintf(cds.dataFID,'%+e ',varargin{i});
+          fprintf(cds.dataFID,'\n');
+       end
     end
 catch
     failed = 1;

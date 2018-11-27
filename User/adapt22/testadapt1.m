@@ -1,6 +1,6 @@
 function testadapt1()
 %global x v s h f xlc vlc slc hlc flc opt
-%testadapt;
+testadapt;
 opt = contset(); %Clear previous options
 opt = contset(opt,'contL_LogFile',               1);
 opt = contset(opt,'contL_DiagnosticsLevel',      3);
@@ -55,21 +55,26 @@ opt = contset(opt,'Filename','testadapt1');
 
 
 %% Continuation
-load('Data\testadapt')
-ap = [1];
+load('Data\testadapt','s')
+ap = 1;
 ID = 2;
-opt = contset(opt,'Singularities',               1);  
 if(strcmp(s(ID).label ,'H '))
     data = s(ID).data;
     x  = data.x;    
+    % get the coordinate values of the hopf point
+    % from the continuation performed in testadapt.m:
     x1 = x(1:end-1);
-    P0 = data.P0;
-    p  = [x(end);P0(2)];
-    
+    % get parameter values from start of previous continuation:
+    p = data.P0; 
+    % set active parameter to the value where the Hopf bifurcation
+    % occurs:
+    p(ap) = x(end);
+    % limit cycle detection tolerance:
     h = 1e-6;
+    % number of mesh points:
     ntst = 20;
+    % number of colocation points per mesh interval:
     ncol = 4;
-    %
     [x0,v0] = init_H_LC_L(@adapt22, x1, p, ap, h, ntst, ncol);
     [~, datafile] = contL(@limitcycleL,x0,v0,opt);
 end

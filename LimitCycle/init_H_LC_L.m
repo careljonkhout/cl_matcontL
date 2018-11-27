@@ -18,7 +18,7 @@ lds = [];
 if isempty(cds) || ~isfield(cds,'options')
     cds.options = contset();
 end
-%cds.curve = @equilibrium;
+
 cds.curve = @equilibriumL;   % MP
 
 curvehandles = feval(cds.curve);
@@ -58,13 +58,12 @@ cds.options = contset(cds.options, 'SymDerivativeP', symordp);
 cds.symjac = 1;
 cds.symhess = 0;
 
-
 lds.P0 = p;
+
 cds.oldJac = [];
 cds.oldJacX = [];
 xp = [x;p(ap)];
 
-% xp = [x;p(ap)];
 % check parameters
 
 %% starter...
