@@ -1,5 +1,5 @@
  S	ID	 PT:  p(12)            ||u||          ||f||
-  1	 1	 00:  +1.005112e+00  2.172143e+00  0.000000e+00  
+  1	 1	 00:  +1.000000e-10  2.172143e+00  0.000000e+00  
 Test Functions: [ +3.825e-11 -1.638e-11 -6.393e-10 +1.617e-10 +6.608e-10 +6.230e+01 -0.000e+00 -1.087e-43]
 
  --- Step 1 ---
@@ -19,74 +19,16 @@ Test Functions: [ +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +0.000e
 Test Functions: [ +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 -1.893e-06 +0.000e+00]
 Test Functions: [ +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 -8.401e-07 +0.000e+00]
 Test Functions: [ +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +3.854e-09 +0.000e+00]
-Time spent in bisection: 15.316179
+Time spent in bisection: 14.907493
 Test Functions: [ ]
 Test Functions: [ ]
 Test Functions: [ ]
 Test Functions: [ ]
 Test Functions: [ +2.007e-07 +9.595e-08 -2.148e-06 -1.027e-06 +2.391e-06 +6.230e+01 +3.854e-09 +4.673e-40]
-  2		   :  +1.005112e+00  2.172143e+00  9.626910e-11  
-Current Step Size: +2.500000e-03
+  2	 2	 LPC:  +2.593670e-08  2.172143e+00  9.626910e-11  
 Test Functions: [ +1.328e-06 -2.050e-05 -2.654e-05 +4.093e-04 +4.107e-04 +6.230e+01 +6.155e-05 -4.256e-39]
-  3		   :  +1.005112e+00  2.172143e+00  1.792170e-12  
+  3		   :  +7.660594e-08  2.172143e+00  1.792170e-12  
 Current Step Size: +2.500000e-03
 Angle Between Tangents:  +1.959081e-05 * pi
 
  --- Step 3 ---
-Test Functions: [ -1.147e-06 +1.765e-05 +2.290e-05 -3.527e-04 +3.539e-04 +6.230e+01 +1.233e-04 -1.807e-38]
-contL: 
-BPC detected at step 3
-using locator
-contL: Unable to locate BPC with locator. 
-Try increasing contL_Loc_MaxCorrIters, Loc_MaxIters, contL_Loc_FunTolerance and contL_Loc_VarTolerance
-Test Functions: [ +1.917e-02 -3.088e-03 -3.140e-08 -1.885e-07 +1.942e-02 +0.000e+00 +0.000e+00 +0.000e+00]
-Test Functions: [ +1.956e-02 -8.243e-04 -3.201e-08 -1.920e-07 +1.958e-02 +0.000e+00 +0.000e+00 +0.000e+00]
-Evaluation of testfunctions failed in bisectionTestfunction 1 for Singularity BPC failed to converge
-Unable to locate BPC
-Test Functions: [ +1.058e-02 -5.471e-02 -1.948e-09 -1.168e-08 +5.572e-02 +6.230e+01 +1.233e-04 -1.807e-38]
-  4		   :  +1.005112e+00  2.172143e+00  2.318432e-12  
-Current Step Size: +2.500000e-03
-Angle Between Tangents:  +1.964237e-05 * pi
-
- --- Step 4 ---
-Test Functions: [ +1.061e-02 -5.454e-02 -1.953e-09 -1.171e-08 +5.556e-02 +6.230e+01 +2.035e-04 -5.557e-38]
-Test Functions: [ +1.293e-02 -2.442e-02 -2.048e-09 -7.377e-09 +2.763e-02 +6.230e+01 +2.035e-04 -5.557e-38]
-  5		   :  +1.005112e+00  2.172143e+00  2.286998e-12  
-Current Step Size: +3.250000e-03
-Angle Between Tangents:  +2.554101e-05 * pi
-
- --- Step 5 ---
-Test Functions: [ +1.294e-02 -2.438e-02 -2.050e-09 -7.382e-09 +2.760e-02 +6.230e+01 +3.078e-04 -1.570e-37]
-Test Functions: [ +1.301e-02 -2.415e-02 -2.166e-09 -7.798e-09 +2.743e-02 +6.230e+01 +3.078e-04 -1.570e-37]
-  6		   :  +1.005112e+00  2.172143e+00  2.379159e-12  
-Current Step Size: +4.225000e-03
-Angle Between Tangents:  +3.320509e-05 * pi
-
- --- Step 6 ---
-Test Functions: [ +1.301e-02 -2.413e-02 -2.166e-09 -7.801e-09 +2.741e-02 +6.230e+01 +4.434e-04 -4.469e-37]
-Test Functions: [ +1.091e-02 -3.092e-02 -2.644e-09 -9.286e-09 +3.279e-02 +6.230e+01 +4.434e-04 -4.469e-37]
-  7		   :  +1.005112e+00  2.172144e+00  2.543818e-12  
-Current Step Size: +5.492500e-03
-Angle Between Tangents:  +4.316753e-05 * pi
-
- --- Step 7 ---
-Test Functions: [ +1.091e-02 -3.091e-02 -2.644e-09 -9.288e-09 +3.278e-02 +6.230e+01 +6.197e-04 -1.329e-36]
-Test Functions: [ +1.146e-02 -2.898e-02 -2.331e-09 -8.188e-09 +3.116e-02 +6.230e+01 +6.197e-04 -1.329e-36]
-  8		   :  +1.005112e+00  2.172145e+00  2.180874e-12  
-Current Step Size: +7.140250e-03
-Angle Between Tangents:  +5.611829e-05 * pi
-
- --- Step 8 ---
-Test Functions: [ +1.146e-02 -2.898e-02 -2.332e-09 -8.189e-09 +3.116e-02 +6.230e+01 +8.489e-04 -4.161e-36]
-Test Functions: [ +1.209e-02 -2.641e-02 -1.965e-09 -6.811e-09 +2.905e-02 +6.230e+01 +8.489e-04 -4.161e-36]
-  9		   :  +1.005112e+00  2.172146e+00  2.032377e-12  
-Current Step Size: +9.282325e-03
-Angle Between Tangents:  +7.295406e-05 * pi
-
- --- Step 9 ---
-Test Functions: [ +1.209e-02 -2.641e-02 -1.966e-09 -6.813e-09 +2.905e-02 +6.229e+01 +1.147e-03 -1.375e-35]
-Test Functions: [ +1.342e-02 -2.182e-02 -2.199e-09 -7.620e-09 +2.561e-02 +6.229e+01 +1.147e-03 -1.375e-35]
- 10	 2	 99:  +1.005112e+00  2.172149e+00  1.967090e-12  
-
-Elapsed time  = 199.4 secs
-Number of Points = 10

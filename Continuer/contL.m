@@ -401,7 +401,7 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
     
     cds.i = cds.i + 1;
     currpoint  = DefaultProcessor(currpoint);
-    fprintf('continuation step: %d\n',cds.i);
+
     % stepsize control
     if cds.h < cds.h_max && corrections==1
         cds.h = min(cds.h*cds.h_inc_fac, cds.h_max);

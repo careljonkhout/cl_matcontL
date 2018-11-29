@@ -12,7 +12,7 @@ Test Functions: [ +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +0.000e
 Test Functions: [ +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 -3.703e-05 +0.000e+00]
 Test Functions: [ +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 -2.577e-05 +0.000e+00]
 Test Functions: [ +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 -3.134e-05 +0.000e+00]
-Time spent in bisection: 0.340610
+Time spent in bisection: 0.331327
 Test Functions: [ ]
 Test Functions: [ ]
 Test Functions: [ ]
@@ -529,7 +529,7 @@ Test Functions: [ +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 -5.982e
 Test Functions: [ +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 -2.905e-03 +0.000e+00 +0.000e+00]
 Test Functions: [ +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 -1.368e-03 +0.000e+00 +0.000e+00]
 Test Functions: [ +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +7.328e-06 +0.000e+00 +0.000e+00]
-Time spent in bisection: 1.029298
+Time spent in bisection: 1.030076
 Test Functions: [ ]
 Test Functions: [ ]
 Test Functions: [ ]
@@ -784,7 +784,7 @@ Test Functions: [ +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +0.000e
 Test Functions: [ +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +4.319e-03]
 Test Functions: [ +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +2.020e-03]
 Test Functions: [ +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 -1.156e-05]
-Time spent in bisection: 1.478464
+Time spent in bisection: 1.441951
 Test Functions: [ +1.054e-02 +1.865e-02 -4.951e-02 -8.762e-02 +1.029e-01 +0.000e+00 -2.294e-01 +0.000e+00]
 Test Functions: [ +1.044e-02 +1.866e-02 -4.821e-02 -8.620e-02 +1.011e-01 +0.000e+00 -2.293e-01 +0.000e+00]
 Test Functions: [ ]
@@ -1045,7 +1045,7 @@ Test Functions: [ +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +6.085e
 Test Functions: [ +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +2.938e-02 +0.000e+00 +0.000e+00]
 Test Functions: [ +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +1.364e-02 +0.000e+00 +0.000e+00]
 Test Functions: [ +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 +0.000e+00 -8.272e-05 +0.000e+00 +0.000e+00]
-Time spent in bisection: 1.321916
+Time spent in bisection: 1.320972
 Test Functions: [ ]
 Test Functions: [ ]
 Test Functions: [ ]
@@ -1447,5 +1447,5 @@ Test Functions: [ +9.385e-03 +2.285e-02 -2.635e-04 -6.417e-04 +2.472e-02 +2.056e
 Test Functions: [ +1.407e-02 -3.229e-03 -3.950e-04 +9.069e-05 +1.444e-02 +2.056e+03 -1.302e-02 +4.767e+03]
 200	 6	 99:  +1.004767e+00  1.002356e+00  1.058183e-07  
 
-Elapsed time  = 51.7 secs
+Elapsed time  = 51.2 secs
 Number of Points = 200

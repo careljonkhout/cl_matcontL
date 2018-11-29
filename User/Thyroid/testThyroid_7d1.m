@@ -23,18 +23,17 @@ opt = contset(opt,'MaxNumPoints',               10);
 
 opt = contset(opt,'Singularities',               1); 
 
-opt = contset(opt,'Locators',              [1 0 0 0]);
-opt = contset(opt,'MaxTestIters',                30); 
+opt = contset(opt,'Locators',              [0 0 0 0]);
+opt = contset(opt,'MaxTestIters',                20); 
 opt = contset(opt,'contL_Testf_FunTolerance',   1e-7); 
 opt = contset(opt,'contL_Testf_VarTolerance',   1e-6); 
-opt.Singularities
-opt = contset(opt,'Multipliers',                 1);
-opt = contset(opt,'Adapt',                       1);
+opt = contset(opt,'Multipliers',                   1);
+opt = contset(opt,'Adapt',                         1);
 
-%opt = contset(opt,'contL_EQ_BranchingMethod',       2);
-%opt = contset(opt,'Userfunctions',               0); 
-opt = contset(opt,'TestPath',mfilename('fullpath'));
-opt = contset(opt, 'Filename',     'testThyroid_7d1');
+%opt = contset(opt,'contL_EQ_BranchingMethod',      2);
+%opt = contset(opt,'Userfunctions',                 0); 
+opt = contset(opt,'TestPath',  mfilename('fullpath'));
+opt = contset(opt,'Filename',      'testThyroid_7d1');
 
 %% Continuation 
 

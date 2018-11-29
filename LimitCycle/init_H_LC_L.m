@@ -7,17 +7,13 @@ function [x0,v0] = init_H_LC_L(odefile, x, p, ap, h, ntst, ncol)
 % 
 %
 global cds lds eds hds 
-cds = [];
 % check input
 n_par = size(ap,2);
 if n_par~=1&& n_par~= 2
     error('One active parameter and the period or 2 active parameters are needed for limit cycle continuation');
 end
 lds = [];
-% initialize lds
-if isempty(cds) || ~isfield(cds,'options')
-    cds.options = contset();
-end
+cds.options = contset();
 
 cds.curve = @equilibriumL;   % MP
 

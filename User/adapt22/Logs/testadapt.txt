@@ -301,7 +301,7 @@ Locate Hopf: Newton Step: norm(dx)=0.761645059 norm(f1)=1.660982442
 Locate Hopf: Newton Step: norm(dx)=2.092351128 norm(f1)=0.341077677
 Locate Hopf: Newton Step: norm(dx)=1.231509760 norm(f1)=1.889370926
 locateHopf: Failed to find x in 5 Newton iterations
-Time spent in locator function: 0.039310
+Time spent in locator function: 0.077478
 contL: Unable to locate H  with locator.
 Try increasing contL_Loc_MaxCorrIters, contL_Loc_MaxCorrIters, contL_Loc_FunTolerancecontL_Loc_VarTolerance
 Test Functions: [ +0.000e+00 -1.473e-01 +0.000e+00 +0.000e+00]
@@ -446,7 +446,7 @@ Eigenvalues: (Subspace)
 -1.000000e+00
 Eigenvalues: (Reference)
 Test Functions: [ +0.000e+00 +9.092e-09 +0.000e+00 +0.000e+00]
-Time spent in bisection: 0.114199
+Time spent in bisection: 0.158784
 Test Functions: [ ]
 Test Functions: [ ]
 Test Functions: [ +0.000e+00 +0.000e+00 +2.000e+00 +0.000e+00]
@@ -639,5 +639,5 @@ Eigenvalues: (Reference)
 Test Functions: [ +3.507e-01 +1.079e-01 +0.000e+00 +3.507e-01]
  40	 3	 99:  +8.237400e+00  0.000000e+00  0.000000e+00  
 
-Elapsed time  = 0.7 secs
+Elapsed time  = 1.0 secs
 Number of Points = 40

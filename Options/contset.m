@@ -9,7 +9,7 @@ if ~ischar(name)
     error('2nd argument must be a string');
 end
 
-if ~isfield(opt, name)
+if ~isfield(defaultOptions(), name)
     if isUnsupportedOption(name)
         warning(['Option "', name, '" currently not supported by cl_matcontL'])
     else

@@ -6,6 +6,12 @@ function [ failed ] = savePoint( varargin )
 global cds contopts
 
 point = varargin{1};
+
+if nargin > 2
+  error(fprintf(['Wrong number of arguments. Number of arguments' ...
+    ' must be 1 or 2. The number of arguments is %d'], nargin));
+end
+
 if nargin == 1
     % 'normal' point
     if cds.i == 1 % first point
@@ -34,16 +40,16 @@ if nargin == 1
         print_diag(0,'Number of Points = %d\n', cds.i);
         
         % save .mat file with singular points and options
-        s = cds.sout;
+        s = cds.sout; %#ok<NASGU>
         save([cds.datapath, cds.runID, '.mat'], 's', 'contopts')
         return
     end
-    
-    print_diag(1,'%3d\t%2d\t %s:  '  ,cds.i,[],'  ');
-    print_diag(1,'%+.6e  '      ,point.x(cds.ncoo+1:cds.ncoo+cds.nap));
-    print_diag(1,'%.6e  '       ,norm(point.x(1:cds.ncoo)));
-    print_diag(1,'%.6e  \n'     ,point.R);
-    print_diag(1,'Current Step Size: %+e\n',cds.h);
+    % Carel: print every point on command line
+    print_diag(0,'%3d\t%2d\t %s:  '  ,cds.i,[],'  ');
+    print_diag(0,'%+.6e  '      ,point.x(end-cds.nap+1:end));
+    print_diag(0,'%.6e  '       ,norm(point.x(1:cds.ncoo)));
+    print_diag(0,'%.6e  \n'     ,point.R);
+    print_diag(0,'Current Step Size: %+e\n',cds.h);
     if (isfield(point,'angle')) % Carel Jonkhout
       % apparently there is no field angle when continuing limit cycles
       print_diag(2,'Angle Between Tangents:  %+e * pi\n',point.angle/pi());
@@ -59,18 +65,14 @@ elseif nargin == 2
     % print to window
     cds.num_sings = cds.num_sings + 1;
     print_diag(0,'%3d\t%2d\t %s:  '  ,cds.i,cds.num_sings,s.label);
-    print_diag(0,'%+.6e  '      ,point.x(cds.ncoo+1:cds.ncoo+cds.nap));
+    print_diag(0,'%+.6e  '      ,point.x(end-cds.nap+1:end));
     print_diag(0,'%.6e  '       ,norm(point.x(1:cds.ncoo)));
     print_diag(0,'%.6e  \n'     ,point.R);
     cds.sout = [cds.sout, s];
     
-%     if cds.i == contopts.Cont_MaxNumPoints && ~cds.lastpointfound, 
-%         cds.lastpointfound = 1; 
-%         savePoint(point); 
-%     end
-else
-    error('Wrong number of arguments')
 end
+   
+
 if isfield(point,'multipliers') %Carel
   failed = savePointDataFile(point.x, point.v, point.h, point.multipliers);
 else

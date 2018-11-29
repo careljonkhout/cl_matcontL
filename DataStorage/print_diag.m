@@ -3,8 +3,7 @@ function print_diag(priority,message,varargin)
 global contopts cds
 DiagL = contopts.contL_DiagnosticsLevel;
 
-if priority == 0 % always print priority 0 to the screen
-%if priority >= 0 % always print priority 0 to the screen
+if priority  == 0 % always print priority 0 to the screen
     fprintf(message,varargin{:});
 end
 

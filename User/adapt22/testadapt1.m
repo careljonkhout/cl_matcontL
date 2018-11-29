@@ -12,17 +12,8 @@ opt = contset(opt,'MinStepsize',              1e-5);
 opt = contset(opt,'MaxNumPoints',              200); 
 
 opt = contset(opt,'CIS_UsingCIS',                 0);
-
-%opt = contset(opt,'CIS_SparseSolvers',           1);  % new
-%opt = contset(opt,'CIS_NUnstable',              -1);
-%opt = contset(opt,'CIS_NExtra',                  0);
-%opt = contset(opt,'CIS_NSub',                    3);  % NUnstable + NStableRef
-%opt = contset(opt,'CIS_resizeable_flag',         0);  % resize subspace MP 2018
-%opt = contset(opt,'CIS_Ric_SubspaceSelect',  'eig');  % (default 'ric') MP 2018 
-%opt = contset(opt,'CIS_DetectOverlap',           0);
-
-opt = contset(opt,'Locators',      [0 0 0 0]); % new
-opt = contset(opt,'MaxTestIters',               30); % new
+opt = contset(opt,'Locators',      [0 0 0 0]); 
+opt = contset(opt,'MaxTestIters',               30);
 opt = contset(opt,'contL_Testf_FunTolerance', 1e-4); 
 opt = contset(opt,'contL_Testf_VarTolerance', 1e-4); 
 
@@ -39,7 +30,7 @@ opt.contL_Userf_MaxIters     = 20;   % Tolerances for user function location
 opt.contL_Userf_FunTolerance = 1e-3;
 opt.contL_Userf_VarTolerance = 1e-3;
 
-opt.contL_Loc_MaxCorrIters       = 5; % Tolerances used in locators
+opt.contL_Loc_MaxCorrIters       = 20; % Tolerances used in locators
 opt.contL_Loc_FunTolerance   = 1e-5;
 opt.contL_Loc_VarTolerance   = 1e-4;
 %  matcont defaults:

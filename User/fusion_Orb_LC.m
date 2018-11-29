@@ -1,6 +1,6 @@
 
 % continuation of cycles cycles in brusselator
-N = 25;
+N = 50;
 odefile = str2func(sprintf('fusion_precomputed_with_sage_N_%d', N));
 a = -1;
 b = -0.3;

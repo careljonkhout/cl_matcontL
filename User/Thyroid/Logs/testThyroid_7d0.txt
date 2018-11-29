@@ -1612,7 +1612,7 @@ contL:
 H  detected at step 100
 using locator
 Locate Hopf: Newton Step: norm(dx)=0.000010000 norm(f1)=0.000040000
-Time spent in locator function: 0.076546
+Time spent in locator function: 0.092172
 
 Eigenvalues: (Subspace)
 -1.474815e-21 +1.000000e+00 i
@@ -1641,5 +1641,5 @@ contCIS_init: need adapt test functions
 Test Functions: [ -8.000e-06 +2.000e-10 +0.000e+00 +8.000e-06]
 102	 3	 99:  -1.927847e-18  2.172143e+00  5.968559e-12  
 
-Elapsed time  = 3.4 secs
+Elapsed time  = 4.2 secs
 Number of Points = 102
