@@ -26,5 +26,5 @@ A0 = S(r1,lds.phases);
 A1 = S(r1,r1+lds.nphase);
 lds.monodromy=-A1\A0;
 d=eig(-A0,A1);
-[Y,I] = sort(abs(d));
+[~,I] = sort(abs(d));
 multi = d(I);

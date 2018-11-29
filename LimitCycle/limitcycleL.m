@@ -42,12 +42,11 @@ function varargout = hessians(varargin)
 
 
 function point = defaultprocessor(varargin)
-% function varargout = defaultprocessor(si, singpoint, s )
-global lds cds           
 
-point = varargin{1};
-[x,p,T] = rearr(point.x); % with point-structure this becomes
-v = rearr(point.v);
+  global lds cds           
+  point = varargin{1};
+  [x,p,T] = rearr(point.x); 
+  v = rearr(point.v);
   % update
   lds.ups = reshape(x,lds.nphase,lds.tps);
   lds.vps = reshape(v,lds.nphase,lds.tps);
@@ -58,11 +57,12 @@ v = rearr(point.v);
   end
   % calculate multipliers if requested
   if lds.CalcMultipliers 
+      lds.multipliersX = point.x;
       try
-          lds.multipliers = multipliers(cjac(cds.curve_func,cds.curve_jacobian,point.x,[])); 
-          lds.multipliersX = point.x;
+          lds.multipliers = multipliers(...
+            cjac(cds.curve_func,cds.curve_jacobian,point.x,[]));     
       catch
-          lds.multipliersX = point.x;
+          print_diag(3, 'Failed to compute multipliers');
       end
   end
   
@@ -94,7 +94,8 @@ v = rearr(point.v);
   %varargout{2} = [lds.msh'; lds.PRCdata'; lds.dPRCdata'; lds.multipliers;];
   % all done succesfully
   %varargout{1} = 0;
-  failed = savePoint(point);
+  out = { point varargin{2:end} };
+  savePoint(out{:});
 %-------------------------------------------------------
 function option = options
 global lds

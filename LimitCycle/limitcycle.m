@@ -150,7 +150,7 @@ if any(ismember([1 2 3 4 5],id))
 
 end
 if ismember(6,id)% PD
-    A = lds.monodromy;
+    A = lds.monodromy; % note: reduce to subspace
     A = A + eye(size(A,1));
     out(6) = det(A);
 end

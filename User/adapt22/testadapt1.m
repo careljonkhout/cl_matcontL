@@ -49,7 +49,7 @@ opt.contL_Loc_VarTolerance   = 1e-4;
 
 opt = contset(opt,'Multipliers',                 1);
 opt = contset(opt,'Adapt',                       1);
-
+opt = contset(opt,'Singularities',               1);
 opt = contset(opt,'TestPath',mfilename('fullpath'));
 opt = contset(opt,'Filename','testadapt1');
 
@@ -84,7 +84,7 @@ disp('>> plotcycle(xlc,vlc,slc,[size(xlc,1) 1 2]);');
 figure
 axes
 [xlc, vlc, ~] = loadPoint(datafile); % DV: load computed cycles
-load('Data\testadapt1.mat')            % DV: load singular points
+load('Data\testadapt1.mat', 's')            % DV: load singular points
 plotcycle(xlc,vlc,s,[size(xlc,1) 1 2]);
 
 
@@ -92,10 +92,10 @@ plotcycle(xlc,vlc,s,[size(xlc,1) 1 2]);
 opt = contset(opt,'TestPath',[mfilename('fullpath'), '_run2']);
 opt = contset(opt,'Filename','testadapt1_run2');
 opt = contset(opt,'Singularities',               1);  
-[x0,v0]=init_LC_LC_L(@adapt22,xlc,vlc,s(end),[xlc(end);1],[1 2],ntst,ncol);
+[x0,v0]=init_LC_LC_L(@adapt22,xlc,vlc,s(end),[xlc(end);1],[1 2],ntst,ncol); %#ok<COLND>
 [~, datafile]=contL(@limitcycleL,x0,v0,opt);
 figure
 axes
 [xlc, vlc, ~] = loadPoint(datafile); % DV: load computed cycles
-load('Data\testadapt1_run2.mat')       % DV: load singular points
+load('Data\testadapt1_run2.mat', 's')       % DV: load singular points
 plotcycle(xlc,vlc,s,[size(xlc,1) 1 2]);

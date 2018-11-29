@@ -1,7 +1,7 @@
 
 % continuation of cycles cycles in brusselator
-odefile = @fusion_precomputed_with_sage_N_25;
 N = 25;
+odefile = str2func(sprintf('fusion_precomputed_with_sage_N_%d', N));
 a = -1;
 b = -0.3;
 q_inf = -0.72;
@@ -66,7 +66,6 @@ tolerance = 1e-2;
 
 opt = contset();
 opt.MaxNumPoints   = 3;
-opt.Multipliers    = 0;
 opt.InitStepSize   = 3;
 opt.MinStepSize    = 1e-4;
 opt.MaxStepSize    = 20;
@@ -81,6 +80,7 @@ opt.MaxNumPoints   = 100;
 opt.ClosedCurve    = 50;
 opt.Multipliers    = true;
 opt.Backward       = false;
+opt.Singularities  = true;
 
 ap = 3;
 [x0,v0] = initOrbLC_L(odefile, t, y, p, ap, ntst, ncol,tolerance);
@@ -126,6 +126,7 @@ ylabel('period')
 
 figure
 hold on;
-for i=1:2*N
+nMults = size(mult,1);
+for i=nMults-10:nMults
   plot(x(end,:),mult(i, :))
 end

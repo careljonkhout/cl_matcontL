@@ -7,7 +7,7 @@ function [x0,v0] = init_H_LC_L(odefile, x, p, ap, h, ntst, ncol)
 % 
 %
 global cds lds eds hds 
-
+cds = [];
 % check input
 n_par = size(ap,2);
 if n_par~=1&& n_par~= 2
@@ -146,7 +146,7 @@ elseif ~isempty(func_handles{7}),   symord = 3;
 elseif ~isempty(func_handles{5}),   symord = 2; 
 elseif ~isempty(func_handles{3}),   symord = 1; 
 end
-cds.options = contset(cds.options, 'SymDerivative', symord);
+cds.options.SymDerivative = symord;
 siz = size(func_handles,2);
 if siz > 9
     j=1;

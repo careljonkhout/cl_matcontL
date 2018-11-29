@@ -287,10 +287,12 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
     %% Location of singularities
     if NeedToLocate
         % DV: There is always only one singularity detected
-        %print_diag(1,'\n%s detected at step %d\n',cds.SingLables(si,:),cds.i);
-        print_diag(1,'contL: \n%s detected at step %d\n',cds.SingLables(si,:),cds.i);
         
-        locatorAvailable = ismember(si, find(UseLocators==1));  % do we have a locator?
+        print_diag(1, 'contL: \n%s detected at step %d\n', ...
+          cds.SingLables(si,:),cds.i);
+        
+        % do we have a locator?
+        locatorAvailable = ismember(si, find(UseLocators==1));  
         
         if locatorAvailable
             
@@ -302,9 +304,13 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
             singpoint = feval(cds.curve_locate, si, p1, p2);
             
             if isempty(singpoint) % Singularity not located
-                % MP print_diag(3,'Unable to locate %s with locator. \nTry increasing Locator_MaxIters, Loc_MaxIters, Loc_FunTolerance and Loc_VarTolerance\n', cds.SingLables(si,:));
-                print_diag(3,'contL: Unable to locate %s with locator. \nTry increasing contL_Loc_MaxCorrIters, Loc_MaxIters, contL_Loc_FunTolerance and contL_Loc_VarTolerance\n', cds.SingLables(si,:));              
-                singpoint = LocateSingularity(si, p1, p2);          % DV: Try location with testfunctions
+                print_diag(3, ...
+                    ['contL: Unable to locate %s with locator.\n' ...
+                     'Try increasing contL_Loc_MaxCorrIters, ' ...
+                     'contL_Loc_MaxCorrIters, contL_Loc_FunTolerance' ...
+                     'contL_Loc_VarTolerance\n'], cds.SingLables(si,:));              
+                % attempt to locate with bisection:
+                singpoint = LocateSingularity(si, p1, p2);          
             end
         else
             singpoint = LocateSingularity(si, currpoint, trialpoint);

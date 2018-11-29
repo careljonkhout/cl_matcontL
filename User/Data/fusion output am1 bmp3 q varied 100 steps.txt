@@ -1,0 +1,104 @@
+continuation step: 4
+continuation step: 5
+continuation step: 6
+continuation step: 7
+continuation step: 8
+continuation step: 9
+continuation step: 10
+continuation step: 11
+continuation step: 12
+continuation step: 13
+continuation step: 14
+continuation step: 15
+continuation step: 16
+continuation step: 17
+continuation step: 18
+continuation step: 19
+continuation step: 20
+continuation step: 21
+continuation step: 22
+continuation step: 23
+continuation step: 24
+continuation step: 25
+continuation step: 26
+continuation step: 27
+continuation step: 28
+continuation step: 29
+continuation step: 30
+Limit point cycle (period = 6.970224e+00, parameter = -7.181545e-01)
+Normal form coefficient = 5.627524e+00
+continuation step: 32
+continuation step: 33
+continuation step: 34
+Neutral Saddle Cycle (period = 7.163207e+00, parameter = -7.181787e-01)
+continuation step: 36
+continuation step: 37
+Neutral Saddle Cycle (period = 7.255919e+00, parameter = -7.182060e-01)
+continuation step: 39
+continuation step: 40
+continuation step: 41
+Neutral Saddle Cycle (period = 7.452595e+00, parameter = -7.182906e-01)
+continuation step: 43
+Neutral Saddle Cycle (period = 7.511518e+00, parameter = -7.183219e-01)
+continuation step: 45
+continuation step: 46
+Neutral Saddle Cycle (period = 7.621927e+00, parameter = -7.183863e-01)
+continuation step: 48
+continuation step: 49
+continuation step: 50
+continuation step: 51
+Neutral Saddle Cycle (period = 7.762014e+00, parameter = -7.184756e-01)
+continuation step: 53
+continuation step: 54
+continuation step: 55
+continuation step: 56
+continuation step: 57
+continuation step: 58
+continuation step: 59
+continuation step: 60
+continuation step: 61
+continuation step: 62
+continuation step: 63
+Neutral Saddle Cycle (period = 8.044289e+00, parameter = -7.186382e-01)
+continuation step: 65
+Unable to locate PD 
+continuation step: 66
+Neutral Saddle Cycle (period = 8.076526e+00, parameter = -7.186454e-01)
+continuation step: 68
+Limit point cycle (period = 8.089968e+00, parameter = -7.186461e-01)
+Normal form coefficient = -4.864383e+01
+continuation step: 70
+continuation step: 71
+continuation step: 72
+continuation step: 73
+continuation step: 74
+continuation step: 75
+continuation step: 76
+continuation step: 77
+continuation step: 78
+continuation step: 79
+continuation step: 80
+continuation step: 81
+continuation step: 82
+continuation step: 83
+continuation step: 84
+continuation step: 85
+continuation step: 86
+continuation step: 87
+continuation step: 88
+continuation step: 89
+continuation step: 90
+continuation step: 91
+continuation step: 92
+continuation step: 93
+continuation step: 94
+continuation step: 95
+continuation step: 96
+continuation step: 97
+continuation step: 98
+continuation step: 99
+100	 2	 99:  +4.758963e-01  9.969542e+00  9.251837e-08  
+
+Elapsed time  = 3151.8 secs
+Number of Points = 100
+continuation step: 100
