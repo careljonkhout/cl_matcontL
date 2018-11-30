@@ -19,7 +19,7 @@ opt = contset(opt,'MaxNewtonIters',              5);
 %opt = contset(opt,'VarTolerance',            1e-5); 
 opt = contset(opt,'FunTolerance',             1e-8); 
 opt = contset(opt,'VarTolerance',             1e-7);
-opt = contset(opt,'MaxNumPoints',               10); 
+opt = contset(opt,'MaxNumPoints',               1000); 
 
 opt = contset(opt,'Singularities',               1); 
 
@@ -65,27 +65,36 @@ if(strcmp(s(ID).label ,'H '))
 end
 
 %% Plot results
+[xlc, ~] = loadPoint(datafile); % DV: load computed cycles
+load('Data\testThyroid_7d1', 's')            % DV: load singular points
 figure
 axes
-[xlc, vlc, ~] = loadPoint(datafile); % DV: load computed cycles
-load('Data\testThyroid_7d1', 's')            % DV: load singular points
-plotcycle(xlc,vlc,s,[size(xlc,1) 1 2]);
-pause
+hold on;
+global lds
+coordinate1 = 6; % modify to select coordinate for x-axis
+coordinate2 = 7; % modify to select coordinate for y-axis
+for i=1:opt.MaxNumPoints
+  coordinate_data = xlc(1:end-1-length(lds.ActiveParams),i);
+  coord1_vals = coordinate_data(coordinate1:lds.nphase:end);
+  coord2_vals = coordinate_data(coordinate2:lds.nphase:end);
+  plot(coord1_vals,coord2_vals,'b');
+end
+drawnow
 
-x = loadPoint('Data\testThyroid_7d0.dat');
+%x = loadPoint('Data\testThyroid_7d0.dat');
 %N = s(1).data.P0(1);
 %xx = s(2).data.x(:, 1)
 %pause
-plot(x(end, :), x(2, :)); % y2
-hold on
-plot(x(end, :), x(4, :)); % y4
-for sii = s
-    plot(x(end, sii.index), x(2, sii.index), 'r.');  % y2
-    text(x(end, sii.index), x(2, sii.index), sii.label);  % y2
-    plot(x(end, sii.index), x(4, sii.index), 'r.');  % y2
-    text(x(end, sii.index), x(4, sii.index), sii.label);  % y2
-end
+%plot(x(end, :), x(2, :)); % y2
+%hold on
+%plot(x(end, :), x(4, :)); % y4
+%for sii = s
+%    plot(x(end, sii.index), x(2, sii.index), 'r.');  % y2
+%    text(x(end, sii.index), x(2, sii.index), sii.label);  % y2
+%    plot(x(end, sii.index), x(4, sii.index), 'r.');  % y2
+%    text(x(end, sii.index), x(4, sii.index), sii.label);  % y2
+%end
 
-xlabel 'v4'
-ylabel 'y(2) = FT3'
+%xlabel 'v4'
+%ylabel 'y(2) = FT3'
 %ylabel 'y(4) = TSH'
