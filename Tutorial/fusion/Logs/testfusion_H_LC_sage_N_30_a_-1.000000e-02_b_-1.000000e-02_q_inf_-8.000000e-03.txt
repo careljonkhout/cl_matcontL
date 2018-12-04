@@ -1,4 +1,0 @@
- S	ID	 PT:  p(3)            ||u||          ||f||
-  1	 1	 00:  +5.399807e-01  9.681924e+00  0.000000e+00  
-Test Functions: [ -1.114e-05 +1.715e-05 +5.630e-04 -1.412e-03 +1.520e-03 +2.360e+10 +0.000e+00 -0.000e+00]
-contL: Evaluation of test functions failed at start point.
