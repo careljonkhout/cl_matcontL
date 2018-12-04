@@ -76,6 +76,8 @@ figure
 axes
 [xlc, vlc, ~] = loadPoint(datafile); % DV: load computed cycles
 load('Data\testadapt1.mat', 's')            % DV: load singular points
+
+
 plotcycle(xlc,vlc,s,[size(xlc,1) 1 2]);
 
 

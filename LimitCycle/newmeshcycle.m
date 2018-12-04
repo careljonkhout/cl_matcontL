@@ -1,5 +1,14 @@
 function [tmnew,upsnew,mshnew] = newmeshcycle(ups,msh,oldntst,oldncol,newntst,newncol)
-
+%
+% tmnew:  new time mesh
+% upsnew: new ups
+% mshne:  new mesh
+%
+% oldntst: old number of test points
+% oldncol: old number of collocation points per test interval
+% newntst: new number of test points
+% newncol: new number of collocation points per test interval
+% ( newncol is unused apparently )
 wh = 1:(oldncol+1);
 wh(1) = 1;
 for i=1:oldncol
@@ -37,7 +46,7 @@ else
     eqf(j+1)=eqf(j)+dt(j)*e;
 
   end
-end;
+end
 
 % make new time mesh such that eqf is more or less equally
 % distributed over the interval

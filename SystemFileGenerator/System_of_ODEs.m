@@ -72,7 +72,12 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
     
   end
   
+  
   methods (Access = protected)
+    % this method defines customized output
+    % when inspecting a System_of_ODEs on the command line
+    % or when a System_of_ODEs is printed using the disp function
+    % see: https://mathworks.com/help/matlab/ref/matlab.mixin.util.propertygroup-class.html
     function propgrp = getPropertyGroups(s)
       my_rhs = replace_symbols(strjoin(s.rhs, ', '), ...
         s.intermediate_symbols, s.input_symbols);

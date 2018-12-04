@@ -50,7 +50,7 @@ cds.options = contset(cds.options, 'SymDerivative', symord);
 cds.options = contset(cds.options, 'SymDerivativeP', symordp);
 cds.symjac = 1;
 cds.symhess = 0;
-
+cds.curve_CIS_step = [];
 
 lds.P0 = p;
 cds.oldJac = [];

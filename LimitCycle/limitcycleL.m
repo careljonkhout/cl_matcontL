@@ -94,8 +94,10 @@ function point = defaultprocessor(varargin)
   %varargout{2} = [lds.msh'; lds.PRCdata'; lds.dPRCdata'; lds.multipliers;];
   % all done succesfully
   %varargout{1} = 0;
-  out = { point varargin{2:end} };
-  savePoint(out{:});
+  if ~((nargin > 1) && strcmp(varargin{2},'do not save'))
+    out = { point varargin{2:end} };
+    savePoint(out{:});
+  end
 %-------------------------------------------------------
 function option = options
 global lds
@@ -600,7 +602,7 @@ lds.NS1_switch = 0;
 lds.NS2_switch = 0;
 
 
-[lds.bialt_M1,lds.bialt_M2,lds.bialt_M3,lds.bialt_M4]=bialtaa(lds.nphase);
+%[lds.bialt_M1,lds.bialt_M2,lds.bialt_M3,lds.bialt_M4]=bialtaa(lds.nphase);
 
 lds.CalcMultipliers = contopts.Multipliers;% contget(cds.options, 'Multipliers', 0);
 lds.CalcPRC = contopts.PRC; %contget(cds.options, 'PRC', 0);

@@ -1,6 +1,9 @@
 %RUN ME FIRST!
-%restoredefaultpath
-%clearvars
+if exist('cont','file') || exist('contL', 'file')
+  % in this case some other version of matcont might be on the path
+  restoredefaultpath
+  clearvars
+end
 
 addpath([cd '/BogdanovTakens/']);
 addpath([cd '/BranchPointCycle/']);

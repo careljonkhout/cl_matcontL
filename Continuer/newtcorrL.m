@@ -110,7 +110,7 @@ for i = 1:MaxCorrIters
         % *** end user norm check ***
         
         %%if varnorm < VarTolerance && funcnorm < FunTolerance;
-        if varnorm < VarTolerance & funcnorm < FunTolerance
+        if varnorm < VarTolerance && funcnorm < FunTolerance
             A = contjac(x, CISdata);
             if isempty(A)
                 pout = [];

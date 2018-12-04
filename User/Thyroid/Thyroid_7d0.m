@@ -1,6 +1,5 @@
-function out = Thyroid_5d0
-%
-% Odefile of 5-d Thyroid mode
+function out = Thyroid_7d0
+
 
 out{1} = @init;
 out{2} = @fun_eval;

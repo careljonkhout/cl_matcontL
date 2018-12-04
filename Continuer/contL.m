@@ -90,9 +90,9 @@ if (~ isequal(curvefile,@limitcycleL))
     firstpoint = newtcorrL(x0, v0, CISdata0);
     
 else
-    if isempty(v0)        
-        [x0, v0] = CorrectStartPoint(x0, v0);
-    end
+    %if isempty(v0)        
+    [x0, v0] = CorrectStartPoint(x0, v0);
+    %end
     firstpoint.x = x0;
     firstpoint.v = v0;
     firstpoint.R = 0;
@@ -185,6 +185,7 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
         % CIS Processing
         if ~reduce_stepsize
             special_step = 0;
+            % TODO: check if this if is necesary
             if ~isempty(cds.curve_CIS_step)
                 trialpoint.CISdata = feval(cds.curve_CIS_step, trialpoint.x, currpoint.CISdata);
                 if isempty(trialpoint.CISdata)
@@ -222,7 +223,7 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
                     (  testchanges * S_true  == sum(S_true)  ) & ...
                     ( ~testchanges * S_false == sum(S_false) ) & ...
                     ( testchanges2 * S_change== sum(S_change)); % DV
-                singsdetected(cds.ActSing) = all_sings_detected(cds.ActSing);
+                singsdetected(cds.ActSing) = all_sings_detected(cds.ActSing); %#ok<AGROW>
                 
                 if sum(singsdetected) > 1
                     print_diag(3, 'More than one singularity detected: ')
@@ -392,7 +393,7 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
         if res == 1 && Singularities
             
             % recompute testvals            
-            [trialpoint.tvals,failed] = EvalTestFunc(0,trialpoint);
+            [trialpoint.tvals,~] = EvalTestFunc(0,trialpoint);
         end
     end
     
@@ -413,7 +414,7 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
         cds.lastpointfound = 1;
         currpoint = firstpoint;
         print_diag(1,'\nClosed curve detected at step %d\n', cds.i);
-        currpoint = DefaultProcessor(currpoint);
+        DefaultProcessor(currpoint);
         break;
     end
 end
@@ -756,7 +757,8 @@ if failed2
     v=[];
 end
 %--< END OF locateuserfunction>--
-function [x,v] = CorrectStartPoint(x0, ~)
+
+function [x,v] = CorrectStartPoint(x0, v0)
 global cds
 
 x = [];
@@ -768,16 +770,34 @@ point.h = 0;
 point.tvals = 0;
 point.uvals = 0;
 
-% no tangent vector given, cycle through base-vectors
 
+if ~isempty(v0)
+  point.v = v0;
+  [x,v] = DefaultProcessor_and_newtcorr(point);
+  if ~isempty(x)
+    fprintf('Initial v0 was a good guess.\n')
+    return
+  end
+end
+
+for ii=1:30
+  % generates a random vector with elements between
+  % -1 and 1
+  point.v = 2*rand(cds.ndim,1)-1;
+  [x,v] = DefaultProcessor_and_newtcorr(point);
+  if ~isempty(x)    
+    return
+  end
+end
+
+% no tangent vector given, cycle through base-vectors
 if cds.options.TSearchOrder
   i = 1;
   while isempty(x) && i<=cds.ndim
     point.v(i) = 1;
-    try
-      DefaultProcessor(point);
-      [x,v] = newtcorr(point.x, point.v);
-    catch
+    [x,v] = DefaultProcessor_and_newtcorr(point);
+    if ~isempty(x)    
+      return
     end
     point.v(i) = 0; 
     i=i+1;
@@ -786,12 +806,20 @@ else
   i = length(x0);
   while isempty(x) && i>=1
     point.v(i) = 1;
-    try
-      DefaultProcessor(point)
-      [x,v] = newtcorr(point.x, point.v);
-    catch
+    [x,v] = DefaultProcessor_and_newtcorr(point);
+    if ~isempty(x)    
+      return
     end
     point.v(i) = 0; 
     i=i-1; 
   end
 end
+%--< END OF CorrectStartPoint>--
+function [x,v] = DefaultProcessor_and_newtcorr(point)
+% for continuation of limit cycles using orthogonal colocation
+% newtcorr cannot be called
+% without calling DefaultProcessor first
+% or else a crash inside BVP_LC_jac.c will occur
+% due to missing fields in lds
+DefaultProcessor(point, 'do not save');
+[x,v] = newtcorr(point.x, point.v);

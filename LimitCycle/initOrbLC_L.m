@@ -1,4 +1,4 @@
-function [x0,v0] = initOrbLC(odefile, t, y, p, ap, ntst, ncol,tolerance)
+function [x0,v0] = initOrbLC_L(odefile, t, y, p, ap, ntst, ncol,tolerance)
 
 %
 %
@@ -41,7 +41,7 @@ cds.symjac = 1;
 cds.symhess = 0;
 cds.probfile = odefile;
 cds.nap = length(ap);
-
+cds.curve_CIS_step = [];
 
 
 nphase = lds.nphase;
