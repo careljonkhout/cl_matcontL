@@ -8,7 +8,7 @@ end
 
 
 
-% continuation of cycles cycles in brusselator
+% continuation of limit cycles in fusion system
 N = 25;                     
 odefile = str2func(sprintf('fusion_precomputed_with_sage_N_%d', N));
 a = -1;

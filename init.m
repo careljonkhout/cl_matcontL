@@ -15,6 +15,7 @@ addpath([cd '/Hopf/']);
 addpath([cd '/LimitPoint/']);
 addpath([cd '/LimitPointCycle/']);
 addpath([cd '/LimitCycle/']);
+addpath([cd '/LimitCycleCodim2/']);
 addpath([cd '/MultilinearForms/']);
 addpath([cd '/Options/']);
 

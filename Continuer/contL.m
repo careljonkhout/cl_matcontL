@@ -70,7 +70,9 @@ cds.StartTime = clock;
 feval(cds.curve_init, x0, v0); % DV 2018
 cds.newtcorrL_needs_CISdata = 0;
 
-if (~ isequal(curvefile,@limitcycleL))
+if ~ (isequal(curvefile,@limitcycleL) || ...
+      isequal(curvefile,@limitpointcycle) || ...
+      isequal(curvefile,@single_shooting))
 
     try feval(cds.curve_func    , x0); catch; cds.newtcorrL_needs_CISdata = 1; end
     try feval(cds.curve_jacobian, x0); catch; cds.newtcorrL_needs_CISdata = 1; end
@@ -166,12 +168,23 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
         reduce_stepsize = 0;
         
         %% B. Correct
-        trialpoint = newtcorrL(xpre, currpoint.v, currpoint.CISdata);
-        if isempty(trialpoint)
+        if ~ isequal(curvefile,@single_shooting)
+          trialpoint = newtcorrL(xpre, currpoint.v, currpoint.CISdata);
+          if isempty(trialpoint)
             %print_diag(3, 'contL: newtcorrL failed\n ')
             reduce_stepsize = 1;
+          end
+        else
+          [x0, v0] = newtcorr(xpre, currpoint.v);
+          trialpoint = [];
+          trialpoint.x = x0;
+          trialpoint.v = v0;
+          trialpoint.CISdata = 1;
+          if isempty(x0)
+            %print_diag(3, 'contL: newtcorrL failed\n ')
+            reduce_stepsize = 1;
+          end
         end
-        
         % curve smoothing
         if ~reduce_stepsize
             trialpoint.h = cds.h;
@@ -526,7 +539,7 @@ switch len
             nm(i) = norm(xs(:,i));
         end
         
-        if max(nm)-min(nm) < contopts.Loc_Testf_FunTolerance
+        if max(nm)-min(nm) < contopts.contL_Testf_FunTolerance
             xs = mean(xs,2);
             vs = mean(vs,2);
             Rs = max(Rs);
@@ -780,16 +793,6 @@ if ~isempty(v0)
   end
 end
 
-for ii=1:30
-  % generates a random vector with elements between
-  % -1 and 1
-  point.v = 2*rand(cds.ndim,1)-1;
-  [x,v] = DefaultProcessor_and_newtcorr(point);
-  if ~isempty(x)    
-    return
-  end
-end
-
 % no tangent vector given, cycle through base-vectors
 if cds.options.TSearchOrder
   i = 1;
@@ -819,7 +822,7 @@ function [x,v] = DefaultProcessor_and_newtcorr(point)
 % for continuation of limit cycles using orthogonal colocation
 % newtcorr cannot be called
 % without calling DefaultProcessor first
-% or else a crash inside BVP_LC_jac.c will occur
+% or else a crash inside a c function such as BVP_LC_jac.c will occur
 % due to missing fields in lds
 DefaultProcessor(point, 'do not save');
 [x,v] = newtcorr(point.x, point.v);

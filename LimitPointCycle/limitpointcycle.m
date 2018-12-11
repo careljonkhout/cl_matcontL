@@ -16,9 +16,11 @@ function out = limitpointcycle
     out{11} = @init;
     out{12} = @done;
     out{13} = @adapt;
+    out{14} = @CIS_first_point;
+    out{15} = @CIS_step;
 return
 %--------------------------------------------------
-function func = curve_func(arg)
+function func = curve_func(arg, ~) % The additional argument is CISdata
 global lds 
   [x,p,T] = rearr(arg);
   f = BVP('BVP_LC_f','BVP_LC_bc','BVP_LC_ic',x,p,T);
@@ -106,10 +108,11 @@ global lds
 %---------------------------------------------------------- 
 function hessians(varargin)
 %----------------------------------------------------------
-function varargout = defaultprocessor(varargin)
+function point = defaultprocessor(varargin)
 global lds cds
-  [x,p,T] = rearr(varargin{1});
-  v = rearr(varargin{2});
+  point = varargin{1};
+  [x,p,T] = rearr(point.x);
+  v = rearr(point.v);
 
   % update
   lds.ups = reshape(x,lds.nphase,lds.tps);
@@ -141,10 +144,13 @@ global lds cds
   if lds.CalcMultipliers==0
       lds.multipliers = [];
   end
-  varargout{2} = [lds.msh'; lds.multipliers];
+  
 
   % all done succesfully
-  varargout{1} = 0;
+  if ~((nargin > 1) && strcmp(varargin{2},'do not save'))
+    out = { point varargin{2:end} };
+    savePoint(out{:});
+  end
 
 %---------------------------------------------------------
 function option = options
@@ -181,7 +187,8 @@ global lds
   option = contset(option, 'SymDerivativeP', symordp);
   
 %------------------------------------------------------------------------
-function [out, failed] = testf(id, x0, v)
+function [out, failed] = testf(id, x0, ~, ~ ) % The unused arguments are
+% v0 and CISdata
 global lds cds
  [x,p,T] = rearr(x0);
  %BP
@@ -301,9 +308,10 @@ for i=1:dim
 end
 
 %-------------------------------------------------------------
-function [failed,s] = process (id, x, v, s)
-global lds 
- bp = size(lds.BranchParams,2);
+function [failed,s] = process (id, point, s)
+  global lds 
+  x = point.x;
+  bp = size(lds.BranchParams,2);
  
   % WM: Removed SL array
   switch id
@@ -383,7 +391,8 @@ function done
   WorkspaceDone;
 
 % -------------------------------------------------------
-function [res,x,v] = adapt(x,v)
+function [res,x,v,CISdata] = adapt(x,v,CISdata,~) % unused arguments are:
+% CISdata and tfUpdate
 global lds
 % calculate phi and psi for next point
 if lds.LPC_switch == 0
@@ -521,7 +530,7 @@ lds.LPC_new_phi = lds.LPC_phi;
 lds.LPC_new_psi = lds.LPC_psi;
 lds.LPC_switch = 0;
 
-lds.CalcMultipliers = contget(cds.options, 'Multipliers', 0);
+lds.CalcMultipliers = cds.options.Multipliers;
 lds.multipliersX = [];
 lds.multipliers = nan;
 lds.monodromy = [];
@@ -535,5 +544,20 @@ lds.multi_r2 = floor(r./lds.nphase)*lds.ncol_coord+mod(r,lds.nphase)+1;
 
 function WorkspaceDone
 
+%% ------CIS First Point-------------------------------------------
+function CISdata = CIS_first_point(X) % MP
 
+%global contopts
+%NSub = contopts.CIS_NSub;            
+%NUnstable = contopts.CIS_NUnstable;
+%[x,p] = rearr(X); p = num2cell(p); A = ejac(x, p);
+   
+%CISdata = contCIS_init(A, 0, NSub, NUnstable);
+CISdata = 1;
+%% ---------------------------------------------------------
+function CISdata = CIS_step(X, CISdata1) % MP
+
+%[x,p] = rearr(X); p = num2cell(p); A = ejac(x, p);
+%CISdata = contCIS_step(A, CISdata1);
+CISdata = 1;
 

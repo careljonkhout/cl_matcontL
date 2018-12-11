@@ -1,0 +1,4 @@
+investigate cycles in brusselator in higher dimension
+newton picard defining system
+practice single shooting implementation in matcont ( from equilibrium )
+loca examples of large systems
