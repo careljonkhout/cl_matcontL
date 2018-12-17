@@ -9,7 +9,7 @@ end
 
 
 % continuation of limit cycles in fusion system
-N = 25;                     
+N = 50;                     
 odefile = str2func(sprintf('fusion_precomputed_with_sage_N_%d', N));
 a = -1;
 b = -0.3;
@@ -38,7 +38,7 @@ if draw_plots
     'fusion N:%d a:%.2f n:%.2f q_{inf}:%.2f', ...
     N,a,b,q_inf));
   xlabel('t');
-  ylabel('n_1, ..., n_{N-1},U_1, ..., y_{N-1},z_1,...,z_{N-1}');
+  ylabel('n_1, ..., n_{N-1},U_1, ..., U_{N-1},z_1,...,z_{N-1}');
 end
 
 approximate_period = 10;
@@ -95,7 +95,6 @@ opt = contset(opt, 'MaxCorrIters',   10);
 opt = contset(opt, 'MaxTestIters',   10);
 opt = contset(opt, 'VarTolerance',   1e-6);
 opt = contset(opt, 'FunTolerance',   1e-6);
-opt = contset(opt, 'TestTolerance',  1e-5);
 opt = contset(opt, 'Adapt',          3);
 opt = contset(opt, 'MaxNumPoints',   100);
 opt = contset(opt, 'CheckClosed',    50);

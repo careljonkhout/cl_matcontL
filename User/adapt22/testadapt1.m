@@ -1,5 +1,6 @@
 function testadapt1()
 %global x v s h f xlc vlc slc hlc flc opt
+run_init_if_needed
 testadapt;
 opt = contset(); %Clear previous options
 opt = contset(opt,'contL_LogFile',               1);
@@ -46,7 +47,7 @@ opt = contset(opt,'Filename','testadapt1');
 
 
 %% Continuation
-load('Data\testadapt','s')
+load(fullfile('Data','testadapt'),'s')
 ap = 1;
 ID = 2;
 if(strcmp(s(ID).label ,'H '))
@@ -74,8 +75,8 @@ end
 disp('>> plotcycle(xlc,vlc,slc,[size(xlc,1) 1 2]);');
 figure
 axes
-[xlc, vlc, ~] = loadPoint(datafile); % DV: load computed cycles
-load('Data\testadapt1.mat', 's')            % DV: load singular points
+[xlc, vlc, ~] = loadPoint(datafile);          % DV: load computed cycles
+load(fullfile('Data','testadapt1.mat'), 's')  % DV: load singular points
 
 
 plotcycle(xlc,vlc,s,[size(xlc,1) 1 2]);
@@ -85,10 +86,10 @@ plotcycle(xlc,vlc,s,[size(xlc,1) 1 2]);
 opt = contset(opt,'TestPath',[mfilename('fullpath'), '_run2']);
 opt = contset(opt,'Filename','testadapt1_run2');
 opt = contset(opt,'Singularities',               1);  
-[x0,v0]=init_LC_LC_L(@adapt22,xlc,vlc,s(end),[xlc(end);1],[1 2],ntst,ncol); %#ok<COLND>
+[x0,v0]=init_LC_LC_L(@adapt22,xlc,vlc,s(end),[xlc(end);1],[1 2],ntst,ncol);
 [~, datafile]=contL(@limitcycleL,x0,v0,opt);
 figure
 axes
-[xlc, vlc, ~] = loadPoint(datafile); % DV: load computed cycles
-load('Data\testadapt1_run2.mat', 's')       % DV: load singular points
+[xlc, vlc, ~] = loadPoint(datafile);              % load computed cycles
+load(fullfile('Data','testadapt1_run2.mat'), 's') % load singular points
 plotcycle(xlc,vlc,s,[size(xlc,1) 1 2]);

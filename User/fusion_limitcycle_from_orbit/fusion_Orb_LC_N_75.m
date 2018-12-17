@@ -1,4 +1,5 @@
 function fusion_Orb_LC_N_75
+  run_init_if_needed
   % continuation of cycles cycles in fusion system
   N = 75;                     
   odefile = str2func(sprintf('fusion_precomputed_with_sage_N_%d', N));

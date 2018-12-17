@@ -39,6 +39,7 @@ cds.h_max      = contopts.MaxStepsize;
 cds.h_min      = contopts.MinStepsize;
 cds.h_inc_fac  = contopts.h_inc_fac;  
 cds.h_dec_fac  = contopts.h_dec_fac; 
+cds.options.TSearchOrder = contopts.TSearchOrder; % Carel
 cds.tfUpdate       = 0;
 cds.i              = 1;
 cds.lastpointfound = 0;
@@ -92,19 +93,15 @@ else
     point.x = x0;
     CISdata0 = 1;
     if isempty(v0)
-        point.v = zeros(length(x0),1);
+        point.v = zeros(length(x0),0);
         % must run defaultprocessor before computing jacobina
         % in find_initial_tangent_vector_by_nullspace(x0,v0);
-        % or else a crash will occur due to missing fiels in
-        % the global struct lds
+        
         DefaultProcessor(point, 'do not save');
-        point.v = find_initial_tangent_vector_by_nullspace(x0,v0,CISdata0);
-        v0 = point.v;
+        point.v = find_initial_tangent_vector_by_nullspace(x0,v0);
         disp('found tangent vector')
-    else
-        point.v = zeros(length(x0),1);
-        DefaultProcessor(point, 'do not save');
     end
+    point.v = v0;
 end
 
 %% Newton corrections for first point
@@ -778,3 +775,59 @@ if failed2
     v=[];
 end
 %--< END OF locateuserfunction>--
+
+function [x,v] = CorrectStartPoint(x0, v0)
+global cds
+
+x = [];
+v = [];
+point.x = x0;
+point.v = zeros(cds.ndim,1);
+point.R = 0;
+point.h = 0;
+point.tvals = 0;
+point.uvals = 0;
+
+
+if ~isempty(v0)
+  point.v = v0;
+  [x,v] = DefaultProcessor_and_newtcorr(point);
+  if ~isempty(x)
+    fprintf('Initial v0 was a good guess.\n')
+    return
+  end
+end
+
+% no tangent vector given, cycle through base-vectors
+if cds.options.TSearchOrder
+  i = 1;
+  while isempty(x) && i<=cds.ndim
+    point.v(i) = 1;
+    [x,v] = DefaultProcessor_and_newtcorr(point);
+    if ~isempty(x)    
+      return
+    end
+    point.v(i) = 0; 
+    i=i+1;
+  end
+else
+  i = length(x0);
+  while isempty(x) && i>=1
+    point.v(i) = 1;
+    [x,v] = DefaultProcessor_and_newtcorr(point);
+    if ~isempty(x)    
+      return
+    end
+    point.v(i) = 0; 
+    i=i-1; 
+  end
+end
+%--< END OF CorrectStartPoint>--
+function [x,v] = DefaultProcessor_and_newtcorr(point)
+% for continuation of limit cycles using orthogonal colocation
+% newtcorr cannot be called
+% without calling DefaultProcessor first
+% or else a crash inside a c function such as BVP_LC_jac.c will occur
+% due to missing fields in lds
+DefaultProcessor(point, 'do not save');
+[x,v] = newtcorr(point.x, point.v);

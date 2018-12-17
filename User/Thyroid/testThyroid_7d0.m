@@ -1,4 +1,4 @@
-function testThyroid_7d0_0()
+function testThyroid_7d0()
 % Test script for 1d brusselator (original MATCONT data)
 
 % This example performs continuation of equilibrium curve and locates 
@@ -71,11 +71,11 @@ ap1 = 12;
 
 [x0,v0]      = init_EP_EP_L(@Thyroid_7d0, [], p, ap1);
 %contL(@equilibriumL_hom,x0,v0,opt);
-contL(@equilibriumL,x0,v0,opt);
+[s,datafile] = contL(@equilibriumL,x0,v0,opt);
 
 %% Plot results
-x = loadPoint('Data\testThyroid_7d0.dat');
-load('Data\testThyroid_7d0.mat')
+x = loadPoint(datafile);
+load(fullfile('Data','testThyroid_7d0.mat'),'s')
 %N = s(1).data.P0(1);
 %xx = s(2).data.x(:, 1)
 %pause

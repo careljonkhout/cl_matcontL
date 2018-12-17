@@ -52,8 +52,8 @@ p = [par_alpha, par_beta]; ap1 = 1;
 contL(@equilibriumL,x0,v0,opt); 
 
 %% Plot results
-x = loadPoint('Data\testadapt.dat');
-load('Data\testadapt.mat')
+x = loadPoint(fullfile('Data','testadapt.dat'));
+load(fullfile('Data','testadapt.mat'),'s')
 %N = s(1).data.P0(1);
 N = 3;
 plot(x(N+1, :), x(1, :));

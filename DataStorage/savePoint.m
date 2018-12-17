@@ -68,7 +68,14 @@ elseif nargin == 2
     print_diag(0,'%+.6e  '      ,point.x(end-cds.nap+1:end));
     print_diag(0,'%.6e  '       ,norm(point.x(1:cds.ncoo)));
     print_diag(0,'%.6e  \n'     ,point.R);
-    cds.sout = [cds.sout, s];
+    try
+      cds.sout = [cds.sout, s];
+    catch
+      disp(cds.sout)
+      disp(size(cds.sout))
+      disp(s)
+      disp(size(s))
+    end
     
 end
    

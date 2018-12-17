@@ -314,30 +314,49 @@ function [failed,s] = process (id, point, s)
   bp = size(lds.BranchParams,2);
  
   % WM: Removed SL array
-  switch id
-      case {bp+1}
-        s.data.c = nf_R1(x); 
-        fprintf('Resonance 1:1 (period = %e, parameters = %e, %e)\n',x(length(x)-2),x(length(x)-1),x(length(x)));
-        fprintf('ab=%d\n',s.data.c); 
-        s.msg  = sprintf('Resonance 1:1');
-      case {bp+2}
-          s.data.cpccoefficient = nf_CPC(x);
-          fprintf('label = CPC (period = %e, parameters = %e, %e)\n',x(length(x)-2),x(length(x)-1),x(length(x))); 
-          fprintf('c = %d\n', s.data.cpccoefficient);          
-          s.msg = sprintf('Cusp point'); 
-      case {bp+3}
-          s.data.c = nf_LPNS(x);                     
-          fprintf('label = LPNS (period = %e, parameters = %e, %e)\n',x(length(x)-2),x(length(x)-1),x(length(x)));
-          fprintf('(s,theta,E)=(%d, %d, %d)\n',s.data.c); 
-          s.msg = sprintf('Fold-Neimark Sacker');
-      case {bp+4}
-          s.data.ffcoefficients = nf_FF(x);
-          fprintf('Fold-flip (period = %e, parameters = %e, %e)\n',x(length(x)-2),x(length(x)-1),x(length(x)));      
-          fprintf('(b11,a20,a02,cns) = (%d,%d,%d,%d)\n', s.data.ffcoefficients);
-          s.msg = sprintf('Fold-flip');                    
-      otherwise
-          fprintf('label = %s ', s.label); 
-          s.msg = sprintf('Branch point (parameter %d)',lds.BranchParams(id));
+  try % Carel: added this try-catch, to prevent computations being stopped, by
+      % errors which that might occur in normal form (nf) computations
+      % specifically, this error:
+        % Undefined function or variable 'idx2'.
+        %
+        % Error in nf_LPNS (line 32)
+        % theta = abs(angle(d(idx2)));
+        % 
+        % Error in limitpointcycle>process (line 329)
+        %           s.data.c = nf_LPNS(x);
+        % 
+        % Error in contL (line 343)
+        %             [failed,s] = feval(cds.curve_process, si, singpoint, s );
+        % 
+        % Error in fusion_LPC (line 38)
+        % contL(@limitpointcycle,x0,v0,opt)
+      switch id
+          case {bp+1}
+            s.data.c = nf_R1(x); 
+            fprintf('Resonance 1:1 (period = %e, parameters = %e, %e)\n',x(length(x)-2),x(length(x)-1),x(length(x)));
+            fprintf('ab=%d\n',s.data.c); 
+            s.msg  = sprintf('Resonance 1:1');
+          case {bp+2}
+              s.data.cpccoefficient = nf_CPC(x);
+              fprintf('label = CPC (period = %e, parameters = %e, %e)\n',x(length(x)-2),x(length(x)-1),x(length(x))); 
+              fprintf('c = %d\n', s.data.cpccoefficient);          
+              s.msg = sprintf('Cusp point'); 
+          case {bp+3}
+              s.data.c = nf_LPNS(x);   
+              fprintf('label = LPNS (period = %e, parameters = %e, %e)\n',x(length(x)-2),x(length(x)-1),x(length(x)));
+              fprintf('(s,theta,E)=(%d, %d, %d)\n',s.data.c); 
+              s.msg = sprintf('Fold-Neimark Sacker');
+          case {bp+4}
+              s.data.ffcoefficients = nf_FF(x);
+              fprintf('Fold-flip (period = %e, parameters = %e, %e)\n',x(length(x)-2),x(length(x)-1),x(length(x)));      
+              fprintf('(b11,a20,a02,cns) = (%d,%d,%d,%d)\n', s.data.ffcoefficients);
+              s.msg = sprintf('Fold-flip');                    
+          otherwise
+              fprintf('label = %s ', s.label); 
+              s.msg = sprintf('Branch point (parameter %d)',lds.BranchParams(id));
+      end
+  catch exception
+      fprintf(getReport(exception))
   end
 
   failed = 0;

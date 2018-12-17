@@ -18,6 +18,7 @@ pt = num2cell(p);
 ups = reshape(xt,lds.nphase,lds.tps);
 
 d = lds.multipliers;
+idx2=0;
 smallest_sum = Inf;
     for jk=1:lds.nphase-1
         if abs(imag(d(jk))) > 1e-3

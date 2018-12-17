@@ -16,7 +16,7 @@ function out = single_shooting
     out{12} = [];%@done;
     out{13} = @adapt;
     out{14} = @curve_CIS_first_point;
-    out{15} = [];%@curve_CIS_step;
+    out{15} = @curve_CIS_step;
 %---------------------------------------------------------  
 function func = curve_func(varargin)
   global cds
@@ -32,10 +32,6 @@ function func = curve_func(varargin)
 %---------------------
 function trajectory = shoot(x, T, parameters)
   global cds
-  disp shoot
-  disp(x)
-  disp(T)
-  disp(parameters{cds.ActiveParams})
   odefile = cds.probfile;
   handles = feval(odefile);
   dydt = handles{2};
@@ -64,12 +60,24 @@ function [value, isterminal, direction] = returnToPlane(t, x, x0, v0)
 %---------------------------------------------------------
 function init(~,~)
 %----------------------------------------------------------
-function out=defaultprocessor(varargin)
-  out = varargin{1};
+function point=defaultprocessor(varargin)
+  point = varargin{1};
+  point.R=0;
+  point.tvals=0;
+  point.uvals=0;
+  if ~((nargin > 1) && strcmp(varargin{2},'do not save'))
+    out = { point varargin{2:end} };
+    savePoint(out{:});
+  end
+  
 
 function options
 
-function out = curve_CIS_first_point(~)
-  out = 1;
+function CISdata = curve_CIS_first_point(x) %#ok<INUSD>
+  CISdata = 1;
+  
+function CISdata = curve_CIS_step(x, CISdata_in) %#ok<INUSD>
+  CISdata = 1;
 
+    
 function adapt(varargin)

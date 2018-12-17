@@ -7,15 +7,13 @@ N=2;
 L = 1.1; A = 1; B = 2.2; Dx = 0.008; Dy = 0.004;
 parameters = {L; A; B; Dx; Dy};
 handles = feval(odefile);
-title_format_string = ...
-  'Brusselator N:%d  L:%.0f  A:%.0f  B:%.1f  Dx:%.3f  Dy:%.3f';
+title_format_string = 'Brusselator N:%d A:%.2f B:%.2f Dx:%.3f Dy:%.3f';
 title_format_args = {N; L; A; B; Dx; Dy;};
 clear global cds
 global cds
 cds.poincare_tolerance = 1e-4;
 cds.dydt_ode = handles{2};
 cds.jacobian_ode = handles{3};
-
 cds.probfile = odefile;
 cds.nap = 1;
 cds.ActiveParams = 4;
@@ -28,14 +26,8 @@ cds.nDiscretizationPoints = 1000;
 cds.symjac = false;
 cds.usernorm = [];
 cds.probfile = odefile;
-cds.ncoo = cds.nphases;
-odefile = @brusselator_N_2;
-N=2;
-L = 1.1; A = 1; B = 2.2; Dx = 0.008; Dy = 0.004;
-parameters = {L; A; B; Dx; Dy};
-handles = feval(odefile);
-poincare_tolerance = 1e-4;
-
+cds.ncoo = 2*N;
+    
 int_opt = odeset( ...
   'AbsTol',      1e-10,    ...
   'RelTol',      1e-13,    ...
@@ -48,7 +40,7 @@ dydt = handles{2};
 f =@(t, y) dydt(t, y, parameters{:});
 [t1, x1] = ode15s(f, [0 150], x0, int_opt);
 
-draw_plots = false || false;
+draw_plots = false || true;
 if draw_plots
   figure(1)
   plot(t1,x1)
@@ -57,22 +49,17 @@ if draw_plots
   ylabel('x_1,x_2,y_1,y_2');
 end
 
-
 approximate_period = 12;
 
 cds.x0 = x1(end,:)';
+disp(cds.x0')
 cds.dydt_0 = f(0,x0);
 int_opt = odeset(int_opt, 'Events', @returnToPlane);
-cds.nDiscretizationPoints = 100;
-[t2,x2] = ode15s(f, 0:approximate_period, x1(end,:), int_opt); 
-T = t2(end);
-int_opt = odeset(int_opt, 'Events', []);
-[t3,x3] = ode15s(f, linspace(0,T,cds.nDiscretizationPoints), x2(end,:), int_opt); 
 
-cds.x0_prime = zeros(cds.nDiscretizationPoints,2*N);
-for i=1:cds.nDiscretizationPoints
-  cds.x0_prime(i,:) = f(0,x3(i,:));
-end
+[t2,x2] = ode15s(f, 0:approximate_period, x1(end,:), int_opt); 
+period = t2(end);
+int_opt = odeset(int_opt, 'Events', []);
+[t3,x3] = ode15s(f, [0 period], x2(end,:), int_opt); 
 
 
 
@@ -80,31 +67,32 @@ end
 %[t3,x3] = ode15s(f, 0:5*approximate_period,x1(end,:)',integration_opt);
 
 
-
 if draw_plots
   figure(2)
+  hold on;
   plot(t2,x2)
   title(sprintf(title_format_string, title_format_args{:}));
   xlabel('t')
   ylabel('x_1,x_2,y_1,y_2');
 end
 
-
 if draw_plots
   figure(3)
+  hold on;
   plot(t3,x3)
   title(sprintf(title_format_string, title_format_args{:}));
   xlabel('t')
-  ylabel('x_1,x_2,y_1,y_2');
+  ylabel('n_1, ..., n_{N-1},U_1, ..., U_{N-1},z_1,...,z_{N-1}');
 end
 
 
 if draw_plots
-  figure(4)
-  plot(x2(:,1),x2(:,2*N))
+  figure(3)
+  plot(x2(:,1),x2(:,2))
   title(sprintf(title_format_string, title_format_args{:}));
-  xlabel('x_1')
-  ylabel('y_N')
+  xlabel('n_1')
+  ylabel('U_1')
+
   drawnow
 end
 
@@ -125,7 +113,7 @@ opt = contset(opt, 'FunTolerance',   1e-6);
 % we don't want to adapt
 % since it is not implemented
 opt = contset(opt, 'Adapt',          1000*1000*1000);
-opt = contset(opt, 'MaxNumPoints',   10);
+opt = contset(opt, 'MaxNumPoints',   5);
 opt = contset(opt, 'CheckClosed',    50);
 opt = contset(opt, 'Multipliers',    true);
 opt = contset(opt, 'Backward',       false);
@@ -133,35 +121,32 @@ opt = contset(opt, 'Singularities',  false);
 opt = contset(opt, 'CIS_UsingCIS',   false);
 
 
-cds.probfile = odefile;
-cds.nap = 1;
-cds.ActiveParams = 4;
-cds.nphase = 2*N;
-cds.ndim = cds.nphase + cds.nap + 1;
-cds.P0 = cell2mat(parameters);
-cds.options = contset();
-cds.symjac = false;
-cds.usernorm = [];
-cds.probfile = odefile;
-cds.sout = [];
-[s, datafile] = contL(@single_shooting,[cds.x0; T; cds.P0(cds.ActiveParams)],[],opt); 
 
 
-[x,~] = loadPoint(datafile); % DV: load computed cycles
+
+
+figure
+hold on;
+coordinate1 = 1;
+coordinate2 = 2;
+ title(sprintf( ...
+    'brusselator'))
+ ylabel('y_1')
+x = loadPoint(datafile); % DV: load computed cycles
 %load('Data\testbruss_Orb_LC.mat')    % DV: load singular points
+
+
 close all
 figure
 hold on
-for i=1:opt.MaxNumPoints
-  xx = x(1:end,i);
-  
-  disp(xx')
+for i=1:1:opt.MaxNumPoints
+  xx = x(1:end-1-length(cds.ActiveParams),i);
   period                       = xx(end-1);
   phases_0                     = xx(1:end-2);
   parameters                   = cds.P0;
   parameters(cds.ActiveParams) = xx(end);
   parameters                   = num2cell(parameters);
-  [t,y] = compute_cycle(phases_0,period,parameters);
+  [t,y] = compute_cycle(xx,period,parameters);
   coord1_vals = y(:,1);
   coord2_vals = y(:,3);
   plot(coord1_vals,coord2_vals,'b');
@@ -170,6 +155,29 @@ for i=1:opt.MaxNumPoints
   ylabel('U_1')
 end
 
+return
+figure
+plot(x(end,:),x(end-1,:))
+title(sprintf( ...
+    'brusselator N:%d a:%.2f n:%.2f q_{inf}:varied', ...
+     N,parameters{:}));
+xlabel('q_{inf}')
+ylabel('period')
+
+figure
+hold on;
+nMults = size(mult,1);
+for i=nMults-10:nMults
+  plot(x(end,:),mult(i, :))
+end
+
+function [value, isterminal, direction] = returnToPlane(t, x)
+  global cds;
+  % x and should be a column vectors
+  value = cds.dydt_0'*(x-cds.x0);
+  isterminal = t > 1 && sum((x-cds.x0).^2) < cds.poincare_tolerance;
+  direction = 1;
+end
 
 function [t,x] = compute_cycle(x, period, parameters)
   global cds
@@ -183,13 +191,5 @@ function [t,x] = compute_cycle(x, period, parameters)
     'Refine',       1,      ...
     'Jacobian',     @(t,y) feval(cds.jacobian_ode,t,y,parameters{:}) ...
   );
-  [t,x] = ode15s(f, [0 period], x, integration_opt);
-end
-
-function [value, isterminal, direction] = returnToPlane(t, x)
-  global cds;
-  % x and should be a column vectors
-  value = cds.dydt_0'*(x-cds.x0);
-  isterminal = t > 1 && sum((x-cds.x0).^2) < cds.poincare_tolerance;
-  direction = 1;
+  [t,x] = ode15s(f, 0:0.1:period, x, integration_opt);
 end
