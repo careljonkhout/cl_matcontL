@@ -125,13 +125,13 @@ close all
 figure
 hold on
 for i=1:opt.MaxNumPoints
-  xx = x(1:end-1-length(cds.ActiveParams),i);
+  xx = x(1:end,i);
   period                       = xx(end-1);
   phases_0                     = xx(1:end-2);
   parameters                   = cds.P0;
   parameters(cds.ActiveParams) = xx(end);
   parameters                   = num2cell(parameters);
-  [t,y] = compute_cycle(xx,period,parameters);
+  [t,y] = compute_cycle(phases_0,period,parameters);
   coord1_vals = y(:,1);
   coord2_vals = y(:,3);
   plot(coord1_vals,coord2_vals,'b');
@@ -172,6 +172,7 @@ function [t,x] = compute_cycle(x, period, parameters)
     'MaxOrder',     5,      ...
     'NormControl',  'off',  ...
     'Refine',       1,      ...
+    'Events',      [],...
     'Jacobian',     @(t,y) feval(cds.jacobian_ode,t,y,parameters{:}) ...
   );
   [t,x] = ode15s(f, 0:0.1:period, x, integration_opt);

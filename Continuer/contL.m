@@ -69,26 +69,9 @@ cds.StartTime = clock;
 feval(cds.curve_init, x0, v0); % DV 2018
 cds.newtcorrL_needs_CISdata = 0;
 
-if ~ (isequal(curvefile,@limitcycleL) || ...
-      isequal(curvefile,@limitpointcycle) || ...
-      isequal(curvefile,@single_shooting))
-    try feval(cds.curve_func    , x0); catch; cds.newtcorrL_needs_CISdata = 1; end
-    try feval(cds.curve_jacobian, x0); catch; cds.newtcorrL_needs_CISdata = 1; end
+if isequal(curvefile,@limitcycleL) || ...
+   isequal(curvefile,@limitpointcycle)
 
-    CISdata0 = [];
-    if isempty(v0)
-        if cds.newtcorrL_needs_CISdata
-            CISdata0 = feval(cds.curve_CIS_first_point, x0);
-            if isempty(CISdata0)
-                print_diag(0,'contL: failed to intialize CIS algorithm.\n');
-                sout = [];
-                return;
-            end
-        end
-        v0       = find_initial_tangent_vector(x0, v0, CISdata0);
-        if isempty(v0); print_diag(0,'contL: failed to find initial tangent vector.\n'); sout = []; return; end
-    end
-else
     point.x = x0;
     CISdata0 = 1;
     if isempty(v0)
@@ -105,10 +88,41 @@ else
         point.v = zeros(length(x0),1);
         DefaultProcessor(point, 'do not save');
     end
+    firstpoint = newtcorrL(x0, v0, CISdata0);
+elseif isequal(curvefile,@single_shooting)    
+    [x0, v0] = CorrectStartPoint(x0, v0);
+    firstpoint.x = x0;
+    firstpoint.v = v0;
+    firstpoint.R = 0;
+    firstpoint.tvals = [];
+    firstpoint.uvals = [];
+    if isempty(x0)
+        print_diag(0,'contL: no convergence at x0.\n');
+        sout = [];
+        return;            
+    end
+else
+    try feval(cds.curve_func    , x0); catch; cds.newtcorrL_needs_CISdata = 1; end
+    try feval(cds.curve_jacobian, x0); catch; cds.newtcorrL_needs_CISdata = 1; end
+
+    CISdata0 = [];
+    if isempty(v0)
+        if cds.newtcorrL_needs_CISdata
+            CISdata0 = feval(cds.curve_CIS_first_point, x0);
+            if isempty(CISdata0)
+                print_diag(0,'contL: failed to intialize CIS algorithm.\n');
+                sout = [];
+                return;
+            end
+        end
+        v0       = find_initial_tangent_vector(x0, v0, CISdata0);
+        if isempty(v0); print_diag(0,'contL: failed to find initial tangent vector.\n'); sout = []; return; end
+    end
+    firstpoint = newtcorrL(x0, v0, CISdata0);
 end
 
 %% Newton corrections for first point
-firstpoint = newtcorrL(x0, v0, CISdata0);
+
 
 if isempty(firstpoint)
 
@@ -778,3 +792,48 @@ if failed2
     v=[];
 end
 %--< END OF locateuserfunction>--
+
+function [x,v] = CorrectStartPoint(x0, v0)
+global cds
+
+x = [];
+v = [];
+point.x = x0;
+point.v = zeros(cds.ndim,1);
+point.R = 0;
+point.h = 0;
+point.tvals = 0;
+point.uvals = 0;
+
+
+if ~isempty(v0)
+  point.v = v0;
+  [x,v] = DefaultProcessor_and_newtcorr(point);
+  if ~isempty(x)
+    fprintf('Initial v0 was a good guess.\n')
+    return
+  end
+end
+
+% no tangent vector given, cycle through base-vectors
+
+i = 1;
+while isempty(x) && i<=cds.ndim
+  point.v(i) = 1;
+  [x,v] = DefaultProcessor_and_newtcorr(point);
+  if ~isempty(x)    
+    return
+  end
+  point.v(i) = 0; 
+  i=i+1;
+end
+
+%--< END OF CorrectStartPoint>--
+function [x,v] = DefaultProcessor_and_newtcorr(point)
+% for continuation of limit cycles using orthogonal colocation
+% newtcorr cannot be called
+% without calling DefaultProcessor first
+% or else a crash inside a c function such as BVP_LC_jac.c will occur
+% due to missing fields in lds
+DefaultProcessor(point, 'do not save');
+[x,v] = newtcorr(point.x, point.v);
