@@ -601,8 +601,9 @@ lds.NS_switch = 0;
 lds.NS1_switch = 0;
 lds.NS2_switch = 0;
 
-
-[lds.bialt_M1,lds.bialt_M2,lds.bialt_M3,lds.bialt_M4]=bialtaa(lds.nphase);
+if contopts.Singularities
+  [lds.bialt_M1,lds.bialt_M2,lds.bialt_M3,lds.bialt_M4]=bialtaa(lds.nphase);
+end
 
 lds.CalcMultipliers = contopts.Multipliers;% contget(cds.options, 'Multipliers', 0);
 lds.CalcPRC = contopts.PRC; %contget(cds.options, 'PRC', 0);

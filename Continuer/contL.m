@@ -81,7 +81,7 @@ if isequal(curvefile,@limitcycleL) || ...
         % or else a crash will occur due to missing fiels in
         % the global struct lds
         DefaultProcessor(point, 'do not save');
-        point.v = find_initial_tangent_vector_by_nullspace(x0,v0,CISdata0);
+        point.v = find_initial_tangent_vector(x0,v0,CISdata0);
         v0 = point.v;
         disp('found tangent vector')
     else
@@ -89,18 +89,6 @@ if isequal(curvefile,@limitcycleL) || ...
         DefaultProcessor(point, 'do not save');
     end
     firstpoint = newtcorrL(x0, v0, CISdata0);
-elseif isequal(curvefile,@single_shooting)    
-    [x0, v0] = CorrectStartPoint(x0, v0);
-    firstpoint.x = x0;
-    firstpoint.v = v0;
-    firstpoint.R = 0;
-    firstpoint.tvals = [];
-    firstpoint.uvals = [];
-    if isempty(x0)
-        print_diag(0,'contL: no convergence at x0.\n');
-        sout = [];
-        return;            
-    end
 else
     try feval(cds.curve_func    , x0); catch; cds.newtcorrL_needs_CISdata = 1; end
     try feval(cds.curve_jacobian, x0); catch; cds.newtcorrL_needs_CISdata = 1; end
@@ -126,7 +114,7 @@ end
 
 if isempty(firstpoint)
 
-    print_diag(0,'contL: no convergence at x0. aaa\n');
+    print_diag(0,'contL: no convergence at x0.\n');
     sout = [];
     return;
 end
@@ -186,22 +174,10 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
         reduce_stepsize = 0;
         
         %% B. Correct
-        if ~ isequal(curvefile,@single_shooting)
-          trialpoint = newtcorrL(xpre, currpoint.v, currpoint.CISdata);
-          if isempty(trialpoint)
-            %print_diag(3, 'contL: newtcorrL failed\n ')
-            reduce_stepsize = 1;
-          end
-        else
-          [x0, v0] = newtcorr(xpre, currpoint.v);
-          trialpoint = [];
-          trialpoint.x = x0;
-          trialpoint.v = v0;
-          trialpoint.CISdata = 1;
-          if isempty(x0)
-            %print_diag(3, 'contL: newtcorrL failed\n ')
-            reduce_stepsize = 1;
-          end
+        trialpoint = newtcorrL(xpre, currpoint.v, currpoint.CISdata);
+        if isempty(trialpoint)
+          %print_diag(3, 'contL: newtcorrL failed\n ')
+          reduce_stepsize = 1;
         end
         % curve smoothing
         if ~reduce_stepsize
@@ -792,48 +768,3 @@ if failed2
     v=[];
 end
 %--< END OF locateuserfunction>--
-
-function [x,v] = CorrectStartPoint(x0, v0)
-global cds
-
-x = [];
-v = [];
-point.x = x0;
-point.v = zeros(cds.ndim,1);
-point.R = 0;
-point.h = 0;
-point.tvals = 0;
-point.uvals = 0;
-
-
-if ~isempty(v0)
-  point.v = v0;
-  [x,v] = DefaultProcessor_and_newtcorr(point);
-  if ~isempty(x)
-    fprintf('Initial v0 was a good guess.\n')
-    return
-  end
-end
-
-% no tangent vector given, cycle through base-vectors
-
-i = 1;
-while isempty(x) && i<=cds.ndim
-  point.v(i) = 1;
-  [x,v] = DefaultProcessor_and_newtcorr(point);
-  if ~isempty(x)    
-    return
-  end
-  point.v(i) = 0; 
-  i=i+1;
-end
-
-%--< END OF CorrectStartPoint>--
-function [x,v] = DefaultProcessor_and_newtcorr(point)
-% for continuation of limit cycles using orthogonal colocation
-% newtcorr cannot be called
-% without calling DefaultProcessor first
-% or else a crash inside a c function such as BVP_LC_jac.c will occur
-% due to missing fields in lds
-DefaultProcessor(point, 'do not save');
-[x,v] = newtcorr(point.x, point.v);

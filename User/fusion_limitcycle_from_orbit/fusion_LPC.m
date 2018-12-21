@@ -1,11 +1,4 @@
-if ~ exist('contL', 'file')
-  fullpath = mfilename('fullpath');
-  file_directory = fullpath(1:end-length(mfilename));
-  cd([file_directory '../..']);
-  init
-  cd(file_directory)
-end
-
+run_init_if_needed
 
 filename = 'fusion_Orb_LC_10-Dec-2018_17_52_09';
 datafile = ['Data/' filename '.dat'];

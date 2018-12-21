@@ -1,27 +1,56 @@
 run_init_if_needed
+clc
+if ~ exist('x75','var')
+  [x75,v75,~,mult75] = loadPoint(...
+    fullfile('Data','fusion_Orb_LC_N_75_16-Dec-2018_16_58_59.dat'));
+end
+nPhases = 3*(N-1);
+x0 = x75(:,end);
+v0 = v75(:,end);
 
 
-% continuation of limit cycles in fusion system
+
+
 N = 75;                     
 odefile = str2func(sprintf('fusion_precomputed_with_sage_N_%d', N));
 a = -1;
 b = -0.3;
-q_inf = -0.72;
-poincare_tolerance = 1e-4;
+
+
+period = x0(end-1);
+q_inf = x0(end);
 parameters = {a ; b; q_inf};
+
+
+% continuation of limit cycles in fusion system
+global poincare_tolerance
+poincare_tolerance = 1e-4;
+
 handles = feval(odefile);
 
 integration_opt = odeset( ...
-  'AbsTol',      1e-10,    ...
+  'AbsTol',      1e-13,    ...
   'RelTol',      1e-13,    ...
-  'Jacobian',     @(t,y) feval(handles{3},t,y,parameters{:}) ...
+  'Jacobian',    @(t,y) feval(handles{3},t,y,parameters{:}), ...
+  'Events',      @returnToPlane ...
 );
 
 
-x0 = ones(3*(N-1),1);
+global plane
+
+x = x0(1:nPhases);
+for i=1:(ntst*ncol)
+  plane.x0 = x0((i+1)*nPhases+1:(i+2)*nPhases);
+  plane.v0 = v0((i+1)*nPhases+1:(i+2)*nPhases);
+  [t, trajectory] = ode15s(f, linspace(0,period,1000), x, integration_opt);
+  x = trajectory(end,:)';
+  fprintf('%.5f\n',t);
+end
+return
+
 dydt = handles{2};
 f =@(t, y) dydt(t, y, parameters{:});
-[t1, x1] = ode15s(f, [0 150], x0, integration_opt);
+
 
 draw_plots = false || true;
 if draw_plots
@@ -34,33 +63,10 @@ if draw_plots
   ylabel('n_1, ..., n_{N-1},U_1, ..., U_{N-1},z_1,...,z_{N-1}');
 end
 
-approximate_period = 10;
-
-x0 = x1(end,:)';
-v0 = f(0,x0)';
-%  integration_opt = odeset(integration_opt, 'Events', @returnToPlane);
-
-[t2,x2] = ode15s(f, 0:0.01:approximate_period, x1(end,:), ...
-  integration_opt); 
-
-
-
-if draw_plots && true
-  figure(2)
-  hold on;
-  plot(t2,x2)
-  title(sprintf( ...
-    'fusion N:%d a:%.2f n:%.2f q_{inf}:%.2f', ...
-     N,a,b,q_inf));
-  xlabel('t')
-  ylabel('n_1, ..., n_{N-1},U_1, ..., U_{N-1},z_1,...,z_{N-1}');
-end
-
-
 
 if draw_plots
   figure(3)
-  plot(x2(:,1),x2(:,2))
+  plot(x1(:,1),x1(:,2))
   title(sprintf( ...
     'fusion N:%d a:%.2f n:%.2f q_{inf}:%.2f', ...
      N,a,b,q_inf));
@@ -71,8 +77,6 @@ if draw_plots
 end
 
 %% Continue limit cycle from orbit
-q_inf = -0.72;
-parameters = {a ; b; q_inf};
 p = cell2mat(parameters);
 ntst = 20;
 ncol = 4;
@@ -147,3 +151,11 @@ for i=nMults-10:nMults
   plot(x(end,:),mult(i, :))
 end
 
+ function [value, isterminal, direction] = returnToPlane(t, x)
+   % v0, x, and x0 should be column vectors
+   global plane
+   global poincare_tolerance
+   value = plane.v0'*(x-plane.x0);
+   isterminal =  sum((x-plane.x0).^2) < poincare_tolerance && t > 1;
+   direction = 1;
+ end

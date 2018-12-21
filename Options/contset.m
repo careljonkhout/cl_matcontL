@@ -1,4 +1,4 @@
-function opt = contset(opt, name, value)
+function opt = contset(opt, name, value) %#ok<INUSD>
 
 if nargin == 0
     opt = defaultOptions();
