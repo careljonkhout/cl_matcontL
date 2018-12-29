@@ -30,8 +30,14 @@ Userfunctions  = contopts.Userfunctions;
 IgnoreSings    = contopts.IgnoreSingularity;
 UseLocators    = contopts.Locators;
 UserInfo       = contopts.UserFuncInfo;
+NewtonPicard   = contopts.NewtonPicard;
 if contopts.contL_ParallelComputing && isempty(gcp('NoCreate'))
     parpool;   % initialize new parallel pool when no is available
+end
+
+if NewtonPicard && ~ isequal(curvefile,@single_shooting)
+  disp(['Newton-Picard is only supported with single shooting.' ...
+       ' Continuation will be aborted.'])
 end
 
 cds.h          = contopts.InitStepsize;
@@ -69,16 +75,16 @@ cds.StartTime = clock;
 feval(cds.curve_init, x0, v0); % DV 2018
 cds.newtcorrL_needs_CISdata = 0;
 
-if isequal(curvefile,@limitcycleL) || ...
-   isequal(curvefile,@limitpointcycle)
+if isequal(curvefile, @limitcycleL) || ...
+   isequal(curvefile, @limitpointcycle)
 
     point.x = x0;
     CISdata0 = 1;
     if isempty(v0)
         point.v = zeros(length(x0),1);
-        % must run defaultprocessor before computing jacobina
+        % must run defaultprocessor before computing jacobian
         % in find_initial_tangent_vector_by_nullspace(x0,v0);
-        % or else a crash will occur due to missing fiels in
+        % or else a crash will occur due to missing fields in
         % the global struct lds
         DefaultProcessor(point, 'do not save');
         point.v = find_initial_tangent_vector(x0,v0,CISdata0);
@@ -89,6 +95,10 @@ if isequal(curvefile,@limitcycleL) || ...
         DefaultProcessor(point, 'do not save');
     end
     firstpoint = newtcorrL(x0, v0, CISdata0);
+elseif NewtonPicard
+    firstpoint = Newton_Picard_Corrections(x0);
+    firstpoint.v = find_initial_tangent_vector(x0,[],1);
+    v0 = firstpoint.v;
 else
     try feval(cds.curve_func    , x0); catch; cds.newtcorrL_needs_CISdata = 1; end
     try feval(cds.curve_jacobian, x0); catch; cds.newtcorrL_needs_CISdata = 1; end
@@ -109,11 +119,7 @@ else
     firstpoint = newtcorrL(x0, v0, CISdata0);
 end
 
-%% Newton corrections for first point
-
-
 if isempty(firstpoint)
-
     print_diag(0,'contL: no convergence at x0.\n');
     sout = [];
     return;
@@ -170,11 +176,25 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
     while 1
         
         %% A. Predict
-        xpre = currpoint.x + cds.h * currpoint.v(1:cds.ndim);
+        if NewtonPicard
+          %xpre = currpoint.x;
+          %xpre(end) = xpre(end) + cds.h;
+          xpre = currpoint.x + cds.h * currpoint.v;
+        else
+          xpre = currpoint.x + cds.h * currpoint.v(1:cds.ndim);
+        end
         reduce_stepsize = 0;
         
         %% B. Correct
-        trialpoint = newtcorrL(xpre, currpoint.v, currpoint.CISdata);
+        if NewtonPicard
+          trialpoint = Newton_Picard_Corrections(xpre);
+          if ~ isempty(trialpoint)
+            trialpoint.v = trialpoint.x - currpoint.x;
+            trialpoint.v = trialpoint.v / norm(trialpoint.v);
+          end
+        else
+          trialpoint = newtcorrL(xpre, currpoint.v, currpoint.CISdata);
+        end
         if isempty(trialpoint)
           %print_diag(3, 'contL: newtcorrL failed\n ')
           reduce_stepsize = 1;
@@ -188,6 +208,7 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
                 reduce_stepsize = 1;
             end
         end
+        
         
         % CIS Processing
         if ~reduce_stepsize

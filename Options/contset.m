@@ -106,6 +106,7 @@ options.UserFuncInfo    =    [];      % Struct:                                 
 options.PRC             =    0;       % DV 2018
 options.dPRC            =    0;       % DV 2018
 options.Input           =    0;       % DV 2018
+options.NewtonPicard    =    false;
 % ActiveUParams
 % ActiveSParams
 % ActiveSParam

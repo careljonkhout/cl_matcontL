@@ -78,9 +78,11 @@ elseif nargin == 2
     end
     
 end
-   
 
-if isfield(point,'multipliers') %Carel
+
+if contopts.NewtonPicard
+  failed = savePointDataFile(point.x);
+elseif isfield(point,'multipliers') %Carel
   failed = savePointDataFile(point.x, point.v, point.h, point.multipliers);
 else
   failed = savePointDataFile(point.x, point.v, point.h, point.tvals', point.uvals');

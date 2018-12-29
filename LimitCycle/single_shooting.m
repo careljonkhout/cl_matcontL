@@ -29,7 +29,7 @@ function func = curve_func(varargin)
   parameters                   = num2cell(parameters);
   phases_end                   = shoot(phases_0, period, parameters);
   func = [phases_end - phases_0; 
-          (phases_0-cds.x0)' * cds.dydt_0  ]; 
+          (phases_end - phases_0)' * cds.dydt_0  ]; 
 %---------------------
   
 function x_end = shoot(x, period, parameters)
@@ -46,15 +46,6 @@ function x_end = shoot(x, period, parameters)
   );
   [~, trajectory] = ode15s(f, [0 period], x, integration_opt);
   x_end = trajectory(end,:)';
-  
-
-  
-function [value, isterminal, direction] = returnToPlane(t, x, x0, v0)
-   % v0 should be a row vector
-   % x and x0 should be column vectors
-   value = v0*(x-x0);
-   isterminal =  sum((x-x0).^2) < poincare_tolerance && t > 1;
-   direction = 1;
 
 function jacobian = jacobian(varargin)
   global cds
@@ -68,9 +59,8 @@ function jacobian = jacobian(varargin)
   [y_end, monodromy] = compute_monodromy(phases, period, parameters);
   jacobian = [monodromy-eye(cds.nphases); cds.dydt_0'];
   % add d_phi_d_T and d_s_d_T
-  % set d_s_d_T to 0 for now
   d_phi_d_T = cds.dydt_ode(0,y_end,parameters{:});
-  d_s_d_T = d_phi_d_T' * cds.dydt_0;
+  d_s_d_T = cds.dydt_0' * d_phi_d_T;
   jacobian = [jacobian [d_phi_d_T; d_s_d_T]];
   dphidp = d_phi_d_p(phases, period, parameters);
   dsdp = cds.dydt_0'*dphidp;
@@ -145,48 +135,14 @@ function [y_end, monodromy] = monodromy_column_by_column(x, period, parameters)
   y_end = deval(cycle,period);
   monodromy = eye(cds.nphases);
   integration_opt = odeset(integration_opt, 'Jacobian', ...
-    @(t,y) feval(cds.jacobian_ode,t,deval(cycle,t),parameters{:}));
-  f = @(t, y) dydt_monodromy_map(t,y,cycle,parameters);
-  for i=1:cds.nphases
+    @(t,y) feval(cds.jacobian_ode, t, deval(cycle,t), parameters{:}));
+  f = @(t, y) cds.jacobian_ode(t, deval(cycle,t), parameters{:}) * y;
+  parfor i=1:cds.nphases
     fprintf('%d ',i);
     [~, monodromy_map_trajectory] = ode15s(...
       f, [0 period], monodromy(:,i), integration_opt);
     monodromy(:,i) = monodromy_map_trajectory(end,:);
-  end
-
-function dydt_mon = dydt_monodromy_map(t,y, cycle, parameters)
-  global cds
-  dydt_mon = cds.jacobian_ode(t, deval(cycle,t), parameters{:}) * y;
-  
-  
-function [y_end, monodromy] = monodromy_column_by_column_simultaneous(x, period, parameters)
-  global cds;
-  integration_opt = odeset(...
-    'AbsTol',      1e-10,    ...
-    'RelTol',      1e-10,    ...
-    'BDF',         'off',   ...
-    'MaxOrder',     5,      ...
-    'NormControl',  'off',  ...
-    'Refine',       1,      ...
-    'Jacobian',     @(t,y) feval(cds.jacobian_ode,t,y,parameters{:}) ...
-  );
-  f = @(t, y) cds.dydt_ode(t, y, parameters{:});
-  cycle = ode15s(f, linspace(0,period,cds.nDiscretizationPoints), x, integration_opt);
-  y_end = deval(cycle,period);
-
-  monodromy = eye(cds.nphases);
-  integration_opt = odeset(integration_opt, 'Jacobian', []);
-  f = @(t, y) dydt_monodromy_map_simultaneous(t,y,cycle,parameters);
-  for i=1:cds.nphases
-    [~, monodromy_map_trajectory] = ode15s(...
-      f, [0 period], monodromy(:,i), integration_opt);
-    monodromy(:,i) = monodromy_map_trajectory(end,:);
-  end
-
-function dydt_mon = dydt_monodromy_map_simultaneous(t,y, cycle, parameters)
-  global cds
-  dydt_mon =  [cds.jacobian_ode(t, deval(cycle,t), parameters{:}) * y];
-%-------------------------------------------------------
+  end 
 
 function init(~,~)
 %----------------------------------------------------------
