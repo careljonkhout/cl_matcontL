@@ -2,24 +2,26 @@
 
 run_init_if_needed
 % continuation of cycles cycles in brusselator
-odefile = @bruss_1d;
-N=30;
+odefile = @bruss_1d; %@brusselator_N_2;
+N=20;
 L = 1.1; A = 1; B = 2.2; Dx = 0.008; Dy = 0.004;
-parameters = {N; L; A; B; Dx; Dy};
+parameters = {N; L; A; B; Dx; Dy};%parameters = {L; A; B; Dx; Dy};
+clear global cds
+clear global lds
+global cds
+cds.ActiveParams = 5; %4;
 handles = feval(odefile);
 title_format_string = ...
   'Brusselator N:%d  L:%.0f  A:%.0f  B:%.1f  Dx:%.3f  Dy:%.3f';
 title_format_args = {N; L; A; B; Dx; Dy;};
-clear global cds
-clear global lds
-global cds
+
 cds.poincare_tolerance = 1e-2;
 cds.dydt_ode = handles{2};
 cds.jacobian_ode = handles{3};
 
 cds.probfile = odefile;
 cds.nap = 1;
-cds.ActiveParams = 5;
+
 cds.nphases = 2*N;
 cds.ndim = cds.nphases + cds.nap + 1;
 cds.P0 = cell2mat(parameters);
@@ -93,12 +95,12 @@ end
 
 
 opt = contset();
-opt = contset(opt, 'MaxNumPoints',   4);
+opt = contset(opt, 'MaxNumPoints',   30);
 opt = contset(opt, 'InitStepsize',   1e-1);
 opt = contset(opt, 'MinStepsize',    1e-6);
-opt = contset(opt, 'MaxStepsize',    10);
+opt = contset(opt, 'MaxStepsize',    1e-2);
 opt = contset(opt, 'MaxNewtonIters', 3);
-opt = contset(opt, 'MaxCorrIters',   9);
+opt = contset(opt, 'MaxCorrIters',   4);
 opt = contset(opt, 'MaxTestIters',   10);
 opt = contset(opt, 'VarTolerance',   1e-6);
 opt = contset(opt, 'FunTolerance',   1e-6);
@@ -108,7 +110,7 @@ opt = contset(opt, 'contL_SmoothingAngle',   3);
 opt = contset(opt, 'Adapt',          1000*1000*1000);
 opt = contset(opt, 'CheckClosed',    1000);
 opt = contset(opt, 'Multipliers',    true);
-opt = contset(opt, 'Backward',       true);
+opt = contset(opt, 'Backward',       false);
 opt = contset(opt, 'Singularities',  false);
 opt = contset(opt, 'CIS_UsingCIS',   false);
 opt = contset(opt, 'NewtonPicard',   true);

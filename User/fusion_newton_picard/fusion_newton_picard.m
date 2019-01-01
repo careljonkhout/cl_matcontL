@@ -115,20 +115,20 @@ end
 
 
 opt = contset();
-opt = contset(opt, 'MaxNumPoints',   3);
-opt = contset(opt, 'InitStepsize',   5e-3);
+opt = contset(opt, 'InitStepsize',   1e-1);
 opt = contset(opt, 'MinStepsize',    1e-6);
-opt = contset(opt, 'MaxStepsize',    1e-1);
+opt = contset(opt, 'MaxStepsize',    5e-2);
 opt = contset(opt, 'MaxNewtonIters', 8);
 opt = contset(opt, 'MaxCorrIters',   10);
 opt = contset(opt, 'MaxTestIters',   10);
 opt = contset(opt, 'VarTolerance',   1e-6);
-opt = contset(opt, 'FunTolerance',   1e-5);
+opt = contset(opt, 'FunTolerance',   1e-4);
 % we don't want to adapt
 % since it is not implemented
 opt = contset(opt, 'Adapt',          1000*1000*1000);
-opt = contset(opt, 'MaxNumPoints',   100);
-opt = contset(opt, 'CheckClosed',    50);
+opt = contset(opt, 'MaxNumPoints',   420);
+opt = contset(opt, 'contL_SmoothingAngle', 10);
+opt = contset(opt, 'CheckClosed',    5000);
 opt = contset(opt, 'Multipliers',    true);
 opt = contset(opt, 'Backward',       false);
 opt = contset(opt, 'Singularities',  false);
@@ -145,11 +145,11 @@ hold on;
 coordinate1 = 1;
 coordinate2 = 2;
  title(sprintf( ...
-    'brusselator N:%d a:%.2f n:%.2f q_inf:%.2f', ...
+    'fusion N:%d a:%.2f n:%.2f q_{inf}:%.2f', ...
      N,a,b,q_inf));
  xlabel('x_1')
  ylabel('y_1')
-[x, v, h, mult] = loadPoint(datafile); % DV: load computed cycles
+ [x, v, h, mult] = loadPoint(datafile); % DV: load computed cycles
 %load('Data\testbruss_Orb_LC.mat')    % DV: load singular points
 
 close all

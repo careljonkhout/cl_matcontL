@@ -96,9 +96,9 @@ if isequal(curvefile, @limitcycleL) || ...
     end
     firstpoint = newtcorrL(x0, v0, CISdata0);
 elseif NewtonPicard
-    firstpoint = Newton_Picard_Corrections(x0);
-    firstpoint.v = find_initial_tangent_vector(x0,[],1);
-    v0 = firstpoint.v;
+    v0 = find_initial_tangent_vector(x0,[],1);
+    firstpoint = Newton_Picard_Corrections(x0,v0);
+    firstpoint.v = v0;
 else
     try feval(cds.curve_func    , x0); catch; cds.newtcorrL_needs_CISdata = 1; end
     try feval(cds.curve_jacobian, x0); catch; cds.newtcorrL_needs_CISdata = 1; end
@@ -177,8 +177,6 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
         
         %% A. Predict
         if NewtonPicard
-          %xpre = currpoint.x;
-          %xpre(end) = xpre(end) + cds.h;
           xpre = currpoint.x + cds.h * currpoint.v;
         else
           xpre = currpoint.x + cds.h * currpoint.v(1:cds.ndim);
@@ -187,7 +185,7 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
         
         %% B. Correct
         if NewtonPicard
-          trialpoint = Newton_Picard_Corrections(xpre);
+          trialpoint = Newton_Picard_Corrections(xpre, currpoint.v);
           if ~ isempty(trialpoint)
             trialpoint.v = trialpoint.x - currpoint.x;
             trialpoint.v = trialpoint.v / norm(trialpoint.v);
@@ -196,7 +194,7 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
           trialpoint = newtcorrL(xpre, currpoint.v, currpoint.CISdata);
         end
         if isempty(trialpoint)
-          %print_diag(3, 'contL: newtcorrL failed\n ')
+          print_diag(0, 'contL: newtcorrL failed\n')
           reduce_stepsize = 1;
         end
         % curve smoothing
@@ -204,7 +202,7 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
             trialpoint.h = cds.h;
             trialpoint.angle = innerangle(currpoint.v,trialpoint.v);
             if trialpoint.angle > SmoothingAngle
-                print_diag(2, 'contL: Innerangle too large\n ');
+                print_diag(0, 'contL: Innerangle too large\n ');
                 reduce_stepsize = 1;
             end
         end
@@ -215,7 +213,7 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
             special_step = 0;
             trialpoint.CISdata = feval(cds.curve_CIS_step, trialpoint.x, currpoint.CISdata);
             if isempty(trialpoint.CISdata)
-                print_diag(1, 'contL: Candidate step failed\n ');
+                print_diag(1, 'contL: Candidate step failed\n');
                 reduce_stepsize = 1;
             end
         end
@@ -224,7 +222,7 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
         if ~reduce_stepsize && Singularities
             [trialpoint.tvals,failed] = EvalTestFunc(0, trialpoint);
             if failed
-                print_diag(1, 'contL: Unable to evaluate Test Functions at Point %d: ',cds.i)
+                print_diag(1, 'contL: Unable to evaluate Test Functions at Point %d',cds.i)
                 reduce_stepsize = 1;
             end
         end
