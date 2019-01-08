@@ -88,6 +88,7 @@ options.Increment      = 1e-5;        % Increment for finite difference approxim
 options.FunTolerance   = 1e-6;        % residual tolerance for curve   DV: old name     'Cont_FunTolerance'
 options.VarTolerance   = 1e-6;        % Tolerance for curve            DV: old name     'Cont_VarTolerance'
 options.NewtonPicardBasisTolerance = 1e-6; % Tolerance for the basis in Newton Picard corrections, see continuer/Newton_Picard_Correction.m
+options.NewtonPicardMaxSubspaceIterations = 10; % number of iterations before subspace iteration in Newton Picard is aborted, see continuer/Newton_Picard_Correction.m
 % TestTolerance (NOT SUPPORTED: cl_matcontL now makes a distinction between
 % fun and var tolerance, see locator options below) MP why??????
 options.Singularities   =    0;       % Whether or not to detect Singularities     DV: old name 'Cont_Singularities'

@@ -169,23 +169,6 @@ function Mx = monodromy_map(phases_0, period, parameters)
   [~,trajectory] = ode15s(dydt_mon, [0 period], phases_0, int_opt);
   Mx = trajectory(end,:)';
     
-
-  
-% not used 
-function v = find_tangent_vector(phases_0,period,parameters,V) %#ok<DEFNU>
-  global cds
-  approximate_monodromy = V*V';
-  jacobian              = [approximate_monodromy-eye(cds.nphases); cds.dydt_0'];
-  phases_end            = shoot(phases_0, period, parameters);
-  d_phi_d_T             = cds.dydt_ode(0,phases_end,parameters{:});
-  d_s_d_T               = cds.dydt_0' * d_phi_d_T;
-  jacobian              = [jacobian [d_phi_d_T; d_s_d_T]];
-  d_phi_d_gamma_val     = d_phi_d_gamma(phases_0, period, parameters);
-  dsdp                  = cds.dydt_0'*d_phi_d_gamma_val;
-  jacobian              = [jacobian [d_phi_d_gamma_val; dsdp]];
-  v                     = null(jacobian);
-  
-% only used by find_tangent_vector
 function x_end = shoot(x, period, parameters)
   global cds
   f =@(t, y) cds.dydt_ode(t, y, parameters{:});
@@ -201,7 +184,6 @@ function x_end = shoot(x, period, parameters)
   [~, trajectory] = ode15s(f, [0 period], x, integration_opt);
   x_end = trajectory(end,:)';
  
-% only used by find_tangent vector
 function dphidp = d_phi_d_gamma(x, period, parameters)
   global cds
   ap = cds.ActiveParams;
@@ -246,32 +228,6 @@ function V = compute_subspace(period, parameters)
     end
   end
   V = orth(basis(:,1:i));
-  
-  
-function V = continue_subspace(period, parameters)
-  global cds
-  V = cds.V;
-  
-  int_opt = odeset(...
-    'AbsTol',       1e-10,    ...
-    'RelTol',       1e-10,    ...
-    'BDF',          'off',   ...
-    'MaxOrder',     5,      ...
-    'NormControl',  'off',  ...
-    'Refine',       1, ...
-    'Jacobian',     @(t,y) feval(cds.jacobian_ode, ...
-                      t, deval(cds.cycle_trajectory,t), parameters{:}) ...
-  );                
-  dydt_monodromy_map = @(t, y) ...
-    cds.jacobian_ode(t, deval(cds.cycle_trajectory,t), parameters{:}) * y;
-  % The function monodromy_map cannot be used here, since it depends on
-  % the global variable cds, and global variables are not copied so the
-  % the workspace of the workers that parfor uses.
-  for i=1:size(V,2)
-    [~,trajectory] = ode15s(dydt_monodromy_map, [0 period], V(:,i), int_opt);
-    V(:,i) = trajectory(end,:)';
-  end
-  V = orth(V);
 
 % based on page 283 of (bibtex citation follows)
 % @incollection{lust2000,
@@ -304,7 +260,7 @@ function V = continue_subspace_with_convergence_criterium(period, parameters)
   p_eff = 0;
   W = V_extended;
   iteration = 0;
-  while p_eff < p
+  while p_eff < p && iteration < contopts.NewtonPicardMaxSubspaceIterations
     iteration = iteration + 1;
     if  iteration > 3
       fprintf('subspace iteration %d\n',iteration);
