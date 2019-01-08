@@ -16,6 +16,7 @@ title_format_string = ...
 title_format_args = {N; L; A; B; Dx; Dy;};
 
 cds.poincare_tolerance = 1e-2;
+cds.minimum_period = 1;
 cds.dydt_ode = handles{2};
 cds.jacobian_ode = handles{3};
 
@@ -59,8 +60,8 @@ end
 
 approximate_period = 30;
 
-cds.x0 = x1(end,:)';
-cds.dydt_0 = f(0,x0);
+cds.previous_phases = x1(end,:)';
+cds.previous_dydt_0 = f(0,x0);
 int_opt = odeset(int_opt, 'Events', @returnToPlane);
 
 [t2,x2] = ode15s(f, linspace(0,approximate_period,1000000), x1(end,:), int_opt); 
@@ -95,15 +96,16 @@ end
 
 
 opt = contset();
-opt = contset(opt, 'MaxNumPoints',   30);
+opt = contset(opt, 'MaxNumPoints',   1000);
 opt = contset(opt, 'InitStepsize',   1e-1);
 opt = contset(opt, 'MinStepsize',    1e-6);
-opt = contset(opt, 'MaxStepsize',    1e-2);
+opt = contset(opt, 'MaxStepsize',    2);
 opt = contset(opt, 'MaxNewtonIters', 3);
 opt = contset(opt, 'MaxCorrIters',   4);
 opt = contset(opt, 'MaxTestIters',   10);
 opt = contset(opt, 'VarTolerance',   1e-6);
 opt = contset(opt, 'FunTolerance',   1e-6);
+opt = contset(opt, 'NewtonPicardBasisTolerance',   1e-1);
 opt = contset(opt, 'contL_SmoothingAngle',   3);
 % we don't want to adapt
 % since it is not implemented
@@ -115,7 +117,7 @@ opt = contset(opt, 'Singularities',  false);
 opt = contset(opt, 'CIS_UsingCIS',   false);
 opt = contset(opt, 'NewtonPicard',   true);
 
-initial_continuation_data = [cds.x0; period; cds.P0(cds.ActiveParams)];
+initial_continuation_data = [cds.previous_phases; period; cds.P0(cds.ActiveParams)];
 initial_continuation_tangent_vector = [];
 [s, datafile] = contL(@single_shooting, ...
   initial_continuation_data, ...
@@ -168,12 +170,12 @@ end
 
 function [value, isterminal, direction] = returnToPlane(t, x)
   global cds;
-  % x and should be a column vectors
-  value = cds.dydt_0'*(x-cds.x0);
-  isterminal = t > 1;% && max(abs(x-cds.x0)) < cds.poincare_tolerance;
+  % x and should be a column vector
+  value = cds.previous_dydt_0'*(x-cds.previous_phases);
+  isterminal = t > cds.minimum_period ...
+    && max(abs(x-cds.previous_phases)) < cds.poincare_tolerance;
   direction = 1;
 end
-
 function [time_values, trajectory] ...
   = compute_cycle(initial_condition, period, parameters)
   global cds

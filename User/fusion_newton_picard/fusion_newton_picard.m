@@ -14,6 +14,7 @@ clear global lds
 
 global cds
 cds.poincare_tolerance = 1e-4;
+cds.minimum_period = 1;
 cds.nphases = 3*(N-1);
 cds.nap = 1;
 cds.ActiveParams = 3;
@@ -60,8 +61,8 @@ end
 
 approximate_period = 12;
 
-cds.x0 = x1(end,:)';
-cds.dydt_0 = f(0,x0);
+cds.previous_phases = x1(end,:)';
+cds.previous_dydt_0 = f(0,x0);
 int_opt = odeset(int_opt, 'Events', @returnToPlane);
 
 [t2,x2] = ode15s(f, 0:approximate_period, x1(end,:), int_opt); 
@@ -80,7 +81,7 @@ if draw_plots
   hold on;
   plot(t2,x2)
    title(sprintf( ...
-    'brusselator N:2 L:%.2f a:%.2f n:%.2f Dx:%.2f Dy:.2f', ...
+    'fusion N:2 L:%.2f a:%.2f n:%.2f Dx:%.2f Dy:.2f', ...
     parameters{:}));
   xlabel('t')
   ylabel('x_1,x_2,y_1,y_2');
@@ -91,7 +92,7 @@ if draw_plots
   hold on;
   plot(t3,x3)
   title(sprintf( ...
-    'brusselator N:2 L:%.2f a:%.2f n:%.2f Dx:%.2f Dy:.2f', ...
+    'fusion N:2 L:%.2f a:%.2f n:%.2f Dx:%.2f Dy:.2f', ...
     parameters{:}));
   xlabel('t')
   ylabel('n_1, ..., n_{N-1},U_1, ..., U_{N-1},z_1,...,z_{N-1}');
@@ -102,7 +103,7 @@ if draw_plots
   figure(3)
   plot(x2(:,1),x2(:,2))
  title(sprintf( ...
-    'brusselator N:2 L:%.2f a:%.2f n:%.2f Dx:%.2f Dy:.2f', ...
+    'fusion N:2 L:%.2f a:%.2f n:%.2f Dx:%.2f Dy:.2f', ...
     parameters{:}));
   xlabel('n_1')
   ylabel('U_1')
@@ -115,20 +116,20 @@ end
 
 
 opt = contset();
-opt = contset(opt, 'InitStepsize',   1e-1);
-opt = contset(opt, 'MinStepsize',    1e-6);
-opt = contset(opt, 'MaxStepsize',    5e-2);
+opt = contset(opt, 'InitStepsize',   2e-2);
+opt = contset(opt, 'MinStepsize',    1e-10);
+opt = contset(opt, 'MaxStepsize',    1e-1);
 opt = contset(opt, 'MaxNewtonIters', 8);
 opt = contset(opt, 'MaxCorrIters',   10);
 opt = contset(opt, 'MaxTestIters',   10);
 opt = contset(opt, 'VarTolerance',   1e-6);
-opt = contset(opt, 'FunTolerance',   1e-4);
+opt = contset(opt, 'FunTolerance',   1e-6);
 % we don't want to adapt
 % since it is not implemented
 opt = contset(opt, 'Adapt',          1000*1000*1000);
-opt = contset(opt, 'MaxNumPoints',   420);
+opt = contset(opt, 'MaxNumPoints',   100*1000);
 opt = contset(opt, 'contL_SmoothingAngle', 10);
-opt = contset(opt, 'CheckClosed',    5000);
+opt = contset(opt, 'CheckClosed',    50000);
 opt = contset(opt, 'Multipliers',    true);
 opt = contset(opt, 'Backward',       false);
 opt = contset(opt, 'Singularities',  false);
@@ -137,7 +138,7 @@ opt = contset(opt, 'NewtonPicard',   true);
 
 
 [s, datafile] = contL(@single_shooting, ...
-  [cds.x0; period; cds.P0(cds.ActiveParams)],[],opt); 
+  [cds.previous_phases; period; cds.P0(cds.ActiveParams)],[],opt); 
 
 
 figure
@@ -174,9 +175,10 @@ end
 
 function [value, isterminal, direction] = returnToPlane(t, x)
   global cds;
-  % x and should be a column vectors
-  value = cds.dydt_0'*(x-cds.x0);
-  isterminal = t > 1 && sum((x-cds.x0).^2) < cds.poincare_tolerance;
+  % x and should be a column vector
+  value = cds.previous_dydt_0'*(x-cds.previous_phases);
+  isterminal = t > cds.minimum_period ...
+    && max(abs(x-cds.previous_phases)) < cds.poincare_tolerance;
   direction = 1;
 end
 

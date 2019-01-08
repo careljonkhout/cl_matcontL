@@ -20,16 +20,16 @@ function out = single_shooting
 %---------------------------------------------------------  
 function func = curve_func(varargin)
   global cds
-  x = varargin{1};
-  active_par_val               = x(end);
-  period                       = x(end-1);
-  phases_0                     = x(1:end-2);
-  parameters                   = cds.P0;
-  parameters(cds.ActiveParams) = active_par_val;
-  parameters                   = num2cell(parameters);
-  phases_end                   = shoot(phases_0, period, parameters);
-  func = [phases_end - phases_0; 
-          (phases_0 - cds.previous_phases)' * cds.previous_dydt_0  ]; 
+  [y_0,period,parameters] = getCompontents(varargin{1});
+  y_end = zeros(cds.nphases * cds.nShootingPoints);
+  for i=0:cds.nShootingPoints-1
+    indices = (1:cds.nphases) + i * cds.nphases;
+    y_end(indices) = ...
+      shoot(y(indices), period / cds.nShootingPoints, parameters);
+  end
+  
+  func = [y_0 - y_end
+          (y_0(1:cds.nphases) - cds.previous_phases)' * cds.previous_dydt_0 ]; 
 %---------------------
   
 function x_end = shoot(x, period, parameters)
@@ -168,3 +168,13 @@ function CISdata = curve_CIS_step(x, CISdata_in) %#ok<INUSD>
   CISdata = 1;
 
 function adapt(varargin)
+
+function [y,period,parameters] = getComponents(x)
+  global cds
+  y                            = x(1:cds.nphases*cds.nShootingPoints);
+  period                       = x(end-1);
+  parameter_value              = x(end);
+  parameters                   = cds.P0;
+  parameters(cds.ActiveParams) = parameter_value;
+  parameters                   = num2cell(parameters);
+  
