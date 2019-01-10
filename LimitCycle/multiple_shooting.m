@@ -1,6 +1,6 @@
-function out = single_shooting
+function out = multiple_shooting
 %
-% Curve file of cycle continuation with single shooting
+% Curve file of cycle continuation with multiple shooting
 %
     out{1}  = @curve_func;
     out{2}  = @defaultprocessor;
@@ -20,15 +20,26 @@ function out = single_shooting
 %---------------------------------------------------------  
 function func = curve_func(varargin)
   global cds
-  [y_0,period,parameters] = getCompontents(varargin{1});
-  y_end = zeros(cds.nphases * cds.nShootingPoints);
+  [y_0,period,parameters] = getComponents(varargin{1});
+  y_end = zeros(cds.nphases * cds.nShootingPoints,1);
   for i=0:cds.nShootingPoints-1
     indices = (1:cds.nphases) + i * cds.nphases;
     y_end(indices) = ...
-      shoot(y(indices), period / cds.nShootingPoints, parameters);
+      shoot(y_0(indices), period / cds.nShootingPoints, parameters);
   end
-  
-  func = [y_0 - y_end
+  r = zeros(cds.nphases * cds.nShootingPoints,1); % residuals
+  for i=0:cds.nShootingPoints-2
+    indices1 = (1:cds.nphases) + i     * cds.nphases;
+    indices2 = (1:cds.nphases) + (i+1) * cds.nphases;
+    r(indices1) = y_end(indices1) - y_0(indices2);
+  end
+  r((1:cds.nphases)+(cds.nShootingPoints-1)*cds.nphases) ... 
+    = y_end(end-cds.nphases+1:end) - y_0(1:cds.nphases);
+%  cds.cycle_trajectory = ode15s(...
+%    @(t, y) cds.dydt_ode(t, y, parameters{:}), ...
+%    linspace(0, period, cds.nDiscretizationPoints), ...
+%    phases_0, integration_opt);
+  func = [r
           (y_0(1:cds.nphases) - cds.previous_phases)' * cds.previous_dydt_0 ]; 
 %---------------------
   
@@ -49,24 +60,41 @@ function x_end = shoot(x, period, parameters)
 
 function jacobian = jacobian(varargin)
   global cds
-  cont_state                   = varargin{1};
-  active_par_val               = cont_state(end);
-  period                       = cont_state(end-1);
-  phases                       = cont_state(1:end-2);
-  parameters                   = cds.P0;
-  parameters(cds.ActiveParams) = active_par_val;
-  parameters                   = num2cell(parameters);
-  [y_end, monodromy] = compute_monodromy(phases, period, parameters);
-  jacobian = [monodromy-eye(cds.nphases); cds.previous_dydt_0'];
-  % add d_phi_d_T and d_s_d_T
-  d_phi_d_T = cds.dydt_ode(0,y_end,parameters{:});
-  d_s_d_T = cds.previous_dydt_0' * d_phi_d_T;
-  jacobian = [jacobian [d_phi_d_T; d_s_d_T]];
-  dphidp = d_phi_d_p(phases, period, parameters);
-  dsdp = cds.previous_dydt_0'*dphidp;
-  jacobian = [jacobian [dphidp; dsdp]];
+  M = cds.nShootingPoints * cds.nphases;
+  jacobian = zeros(M + 1, M + 2);
+  [y_0,period,parameters] = getComponents(varargin{1});
+  y_end = zeros(M,1);
+  for i=0:cds.nShootingPoints-1
+    indices = (1:cds.nphases) + i * cds.nphases;
+    [y_end(indices), jacobian(indices,indices)] = ...
+      compute_monodromy(y_0(indices), period / cds.nShootingPoints, parameters);
+  end
   
-function dphidp = d_phi_d_p(x, period, parameters)
+  for i=0:cds.nShootingPoints-2
+    indices1 = (1:cds.nphases) + i     * cds.nphases;
+    indices2 = (1:cds.nphases) + (i+1) * cds.nphases;
+    jacobian(indices1, indices2) = - eye(cds.nphases);
+  end
+  jacobian((1:cds.nphases) + (cds.nShootingPoints-1) * cds.nphases, ...
+            1:cds.nphases) = - eye(cds.nphases);
+  for i=0:cds.nShootingPoints-1
+    % compute d_y_d_T
+    indices = (1:cds.nphases) + i * cds.nphases;
+    jacobian(indices,M+1) = cds.dydt_ode(0, y_end(indices), parameters{:});
+  end
+  for i=0:cds.nShootingPoints-1
+    % compute d_y_d_p
+    indices = (1:cds.nphases) + i * cds.nphases;
+    jacobian(indices,M+2) = compute_d_phi_d_p(...
+      y_0(indices), period / cds.nShootingPoints, parameters);
+  end
+  % specify d_s_d_y
+  jacobian(M+1,1:cds.nphases) = cds.previous_dydt_0';
+  % specify d_s_d_T = jacobian(N+1,N+1) = 0;
+  % specify d_s_d_p = jacobian(N+1,N+2) = 0;
+  
+  
+function d_phi_d_p = compute_d_phi_d_p(x, period, parameters)
   global cds
   ap = cds.ActiveParams;
   h = 1e-6;
@@ -74,7 +102,7 @@ function dphidp = d_phi_d_p(x, period, parameters)
   phi_1 = shoot(x, period, parameters);
   parameters{ap} = parameters{ap} + 2*h;
   phi_2 = shoot(x, period, parameters);
-  dphidp = (phi_2 - phi_1)/h/2;  
+  d_phi_d_p = (phi_2 - phi_1)/h/2;  
   
 function [y_end, monodromy] = compute_monodromy(x, period, parameters)
   global cds
@@ -105,7 +133,7 @@ function [y_end, monodromy] = monodromy_full(x, period, parameters)
   monodromy = trajectory(end,nphases+1:end);
   monodromy = reshape(monodromy, [nphases nphases]);
 
- function dydt_mon = dydt_monodromy_full(t,y, parameters)
+function dydt_mon = dydt_monodromy_full(t,y, parameters)
   global cds
   y_ode = y(1:cds.nphases);
   
@@ -148,12 +176,8 @@ function init(~,~)
 %----------------------------------------------------------
 function out=defaultprocessor(varargin)
   global cds
-  x = varargin{1}.x;
-  cds.previous_phases          = x(1:end-2);
-  active_par_val               = x(end);
-  parameters                   = cds.P0;
-  parameters(cds.ActiveParams) = active_par_val;
-  parameters                   = num2cell(parameters);
+  [y, ~, parameters]           = getComponents(varargin{1}.x);
+  cds.previous_phases          = y(1:cds.nphases);
   cds.previous_dydt_0          = cds.dydt_ode(0, ...
                                     cds.previous_phases,parameters{:});
   out                          = varargin{1};
