@@ -80,7 +80,8 @@ function jacobian = jacobian(varargin)
   for i=0:cds.nShootingPoints-1
     % compute d_y_d_T
     indices = (1:cds.nphases) + i * cds.nphases;
-    jacobian(indices,M+1) = cds.dydt_ode(0, y_end(indices), parameters{:});
+    jacobian(indices,M+1) = cds.dydt_ode(0, y_end(indices), parameters{:}) / ...
+                              cds.nShootingPoints;
   end
   for i=0:cds.nShootingPoints-1
     % compute d_y_d_p

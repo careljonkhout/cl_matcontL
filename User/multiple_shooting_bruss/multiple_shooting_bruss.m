@@ -18,7 +18,7 @@ cds.dydt_ode = handles{2};
 cds.jacobian_ode = handles{3};
 
 cds.probfile = odefile;
-cds.nShootingPoints = 2;
+cds.nShootingPoints = 20;
 cds.nap = 1;
 cds.ActiveParams = 4;
 cds.nphases = 2*N;
@@ -98,7 +98,7 @@ opt = contset();
 opt = contset(opt, 'MaxNumPoints',   10);
 opt = contset(opt, 'InitStepsize',   1e-1);
 opt = contset(opt, 'MinStepsize',    1e-6);
-opt = contset(opt, 'MaxStepsize',    1e-1);
+opt = contset(opt, 'MaxStepsize',    1);
 opt = contset(opt, 'MaxNewtonIters', 3);
 opt = contset(opt, 'MaxCorrIters',   20);
 opt = contset(opt, 'MaxTestIters',   10);
