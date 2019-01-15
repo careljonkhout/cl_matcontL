@@ -8,6 +8,8 @@
 % based on algorithm 5.1 in paragraph 5.3.1 on page 219 of Kurt Lust' Phd
 % thesis "Numerical bifurcation analysis of periodic solutions of partial
 % differential equations" completed in 1997
+% and:
+% https://blogs.mathworks.com/cleve/2016/10/03/householder-reflections-and-the-qr-decomposition/
 function [H,Q]= reduce_to_hessenberg(G)
   N = size(G,1);
   m = size(G,3);
@@ -22,13 +24,13 @@ function [H,Q]= reduce_to_hessenberg(G)
       x = H(:,i,j);       % x is the i-th column of H_j
       v = zeros(N,1);
       v(i:N) = x(i:N);
-      v(i) = v(i) + sign(v(i)) * norm(v);
-      v = v / norm(v);
-      Householder_reflection = eye(N) - 2*(v*v');
+      v(i) = v(i) + sign(v(i))*norm(v);
+      v = v / norm(v)*sqrt(2);
+      %Householder_reflection = eye(N) - 2*(v*v');
       % apply Householder reflection
-      H(:,:,j)   = Householder_reflection * H(:,:,j);
-      H(:,:,j+1) = H(:,:,j+1) * Householder_reflection;
-      Q(:,:,j)   = Q(:,:,j)   * Householder_reflection;
+      H(:,:,j)   = householder_left( v,H(:,:,j));
+      H(:,:,j+1) = householder_right(v,H(:,:,j+1));
+      Q(:,:,j)   = householder_right(v,Q(:,:,j));
     end
     if i < N-1
       % construct Householder reflection      
@@ -36,13 +38,20 @@ function [H,Q]= reduce_to_hessenberg(G)
       v = zeros(N,1);
       v(i+1:N) = x(i+1:N);
       v(i+1) = v(i+1) + sign(v(i+1)) * norm(v);
-      v = v / norm(v);
-      Householder_reflection = eye(N) - 2*(v*v');
+      v = v / norm(v)*sqrt(2);
+      % Householder_reflection = eye(N) - 2*(v*v');
       % apply Householder reflection
-      H(:,:,m) = Householder_reflection * H(:,:,m);
-      H(:,:,1) = H(:,:,1) * Householder_reflection;
-      Q(:,:,m) = Q(:,:,m) * Householder_reflection;
+      H(:,:,m) = householder_left(v,H(:,:,m));
+      H(:,:,1) = householder_right(v,H(:,:,1));
+      Q(:,:,m) = householder_right(v,Q(:,:,m));
     end
   end
 end
-  
+
+function result = householder_left(v,M)
+  result = M - v*(v'*M);
+end
+
+function result = householder_right(v,M)
+  result = M - (M*v)*v';
+end
