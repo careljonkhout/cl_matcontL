@@ -11,7 +11,7 @@ end
 tic
 [H,Q]=reduce_to_hessenberg(G);
 toc
-
+maximum_error = 0;
 for i=2:m
   assert(all(abs(Q(:,:,i)' * G(:,:,i) * Q(:,:,i-1)-H(:,:,i)) < tolerance,'all'))
   maximum_error_for_H_i = ...
