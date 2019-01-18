@@ -1,6 +1,6 @@
 clc;
-m=5;
-N=5;
+m=5; % number of matrices
+N=5; % size of matrix
 tolerance = eps(sqrt(N)*N);
 G = zeros([N N m]);
 for i=1:m
@@ -37,9 +37,9 @@ for i=2:m
   maximum_error = max(maximum_error_for_H_i, maximum_error); 
 end
 % note that Q(:,:,0) is defined as Q(:,:,m)
-%assert(all(abs(Q(:,:,1)' * H(:,:,1) * Q(:,:,m)-M(:,:,1)) < tolerance,'all'))
-%maximum_error_for_H_1 = max(max(abs(Q(:,:,1)' * H(:,:,1) * Q(:,:,m)-M(:,:,1))));
-%maximum_error = max(maximum_error_for_H_1, maximum_error); 
+assert(all(abs(Q(:,:,1)' * H(:,:,1) * Q(:,:,m)-M(:,:,1)) < tolerance,'all'))
+maximum_error_for_H_1 = max(max(abs(Q(:,:,1)' * H(:,:,1) * Q(:,:,m)-M(:,:,1))));
+maximum_error = max(maximum_error_for_H_1, maximum_error); 
 fprintf(['The maximum error in the deflation of a zero on the diagonal' ...
   ' in this test run is %.5e.\n'], maximum_error);
 
@@ -48,7 +48,22 @@ for i=1:m
   assert(is_orthogonal(Q(:,:,i)))
 end
 
-M(abs(M)<eps(100))=0;
+% set entries that are very small to zero
+% we hope that this way all entries that should be zero become zero
+M(abs(M)<eps(N*N))=0;
+
+for i=1:m-1
+  % check if M_1 up to M_{m-1} are upper triangular
+  assert(istriu(M(:,:,i)))
+  % check if M_m is Hessenberg
+  assert(bandwidth(M(:,:,m),'lower') == 1)
+  % check if zeros have are on the correct place
+  % on the subdiagonal of M_m
+  assert(M(i_star  , i_star  , k_star) == 0)
+  assert(M(i_star  , i_star-1, m     ) == 0)
+  assert(M(i_star+1, i_star  , m     ) == 0)
+end
+
 
 function orthogonal=is_orthogonal(Q)
   N = size(Q,1);

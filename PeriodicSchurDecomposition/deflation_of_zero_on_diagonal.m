@@ -78,6 +78,8 @@ function [c,s]=givens_lust(a,b)
 end
 
 function A = givens_left_lust(A,i,k,c,s)
+  A=givens_left(A,i,k,c,-s);
+  return
   givens_mat = eye(size(A));
   givens_mat(i,i) = c;
   givens_mat(k,k) = c;
@@ -95,6 +97,11 @@ function A = givens_right_lust(A,i,k,c,s)
   A=A*givens_mat';
 end
 
+
+%
+% Compute the matrix G * A
+% where G is a givens rotation, i.e.
+%
 function A = givens_left(A,i,k,c,s)
   for j=1:length(A)
     tau_1 = A(i,j);
@@ -103,6 +110,11 @@ function A = givens_left(A,i,k,c,s)
     A(k,j) = s*tau_1 + c*tau_2;
   end
 end
+
+%
+% Compute the matrix  A * G'
+%
+%
 
 function A = givens_right(A,i,k,c,s)
   for j=1:length(A)
