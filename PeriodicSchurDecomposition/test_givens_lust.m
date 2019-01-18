@@ -1,10 +1,13 @@
-N = 4;
+N = 5;
 
 A = rand(N);
 
-i = 2;
-[c,s] = givens(-A(i-1,i-1),A(i,i-1));
-AA=givens_left(A,i-1,i,c,s)
+i = 1;
+k = 2;
+
+[c,s] = givens(A(k,k),A(k,i));
+
+A=givens_right(A,i,k,c,s)
 
 
 % Golub & van Loan
@@ -26,11 +29,30 @@ function [c,s] = givens(a,b)
 end
 
 
+function A = givens_left_lust(A,i,k,c,s)
+  A=givens_left(A,i,k,c,-s);
+  givens_mat = eye(size(A));
+  givens_mat(i,i) = c;
+  givens_mat(k,k) = c;
+  givens_mat(i,k) = s;
+  givens_mat(k,i) = -s;
+  A=givens_mat*A;
+end
+
+function A = givens_right_lust(A,i,k,c,s)
+  givens_mat = eye(size(A));
+  givens_mat(i,i) = c;
+  givens_mat(k,k) = c;
+  givens_mat(i,k) = s;
+  givens_mat(k,i) = -s;
+  A=A*givens_mat';
+end
 
 
-
-
-
+%
+% Compute the matrix G * A
+% where G is a givens rotation, i.e.
+%
 function A = givens_left(A,i,k,c,s)
   for j=1:length(A)
     tau_1 = A(i,j);
@@ -39,6 +61,11 @@ function A = givens_left(A,i,k,c,s)
     A(k,j) = - s*tau_1 + c*tau_2;
   end
 end
+
+%
+% Compute the matrix  A * G'
+%
+%
 
 function A = givens_right(A,i,k,c,s)
   for j=1:length(A)
@@ -49,6 +76,3 @@ function A = givens_right(A,i,k,c,s)
   end
 end
 
-function orthogonal=isOrthogonal(Q)
-  orthogonal = max(max(Q*Q'-eye(size(Q)))) < eps(size(Q,1)^2);
-end
