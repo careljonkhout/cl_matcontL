@@ -109,6 +109,18 @@ options.PRC             =    0;       % DV 2018
 options.dPRC            =    0;       % DV 2018
 options.Input           =    0;       % DV 2018
 options.NewtonPicard    =    false;
+options.enable_nf_lpc   =    true;    
+% Set enable_nf_lpc to false to disable computation of the normal form 
+% for limit points of cycle. Normal form computations on large systems can
+% cause out of memory errors on continuation runs that would otherwise run fine.
+% Note: nf_lpc is only implemented for limitcycle.m
+options.enable_bialt    =    true;
+% Set enable_bialt to false to prevent bialtaa.m from running
+% bialtaa.m does computations related to bifurcations of cycles when 
+% continuing cycles with limitcycle.m
+% bialtaa uses a lot of memory. Hence it may cause trouble when continuing
+% cycles of large systems with limitcycle.m
+                                                
 % ActiveUParams
 % ActiveSParams
 % ActiveSParam

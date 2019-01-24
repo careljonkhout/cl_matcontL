@@ -1,8 +1,9 @@
 function [M,Q]=single_shift(M,Q,mu,L,U)
   N = size(M,1);
   m = size(M,3);
-  for i=m-1:-1:1 % counting backwards
-    H = M(L,L,i);
+  H = 1;
+  for i=1:m-1
+    H = H*M(L,L,i);
   end
   % Compute and apply shift
   H = M(L:L+1,L,m) * H;
@@ -34,7 +35,6 @@ function [M,Q]=single_shift(M,Q,mu,L,U)
       v(j+1:N) = x(j+1:N);
       v(j+1) = v(j+1) + sign(v(j+1))*norm(v);
       v = v / norm(v)*sqrt(2);
-      %Householder_reflection = eye(N) - 2*(v*v');
       % apply Householder reflection
       M(:,:,m) = householder_left( v,M(:,:,m));
       M(:,:,1) = householder_right(v,M(:,:,1));

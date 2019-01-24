@@ -199,7 +199,7 @@ end
 function [failed,s] = process(id,point, s)
 x = point.x;
 v = point.v;
-global lds
+global lds contopts
   switch id
   case 1
     fprintf('Branch Point cycle(period = %e, parameter = %e)\n',x(length(x)-1),x(length(x)));
@@ -217,10 +217,16 @@ global lds
     s.msg  = sprintf('Period Doubling');
     fprintf('Normal form coefficient = %d\n', s.data.pdcoefficient);
   case 3
-    s.data.lpccoefficient = nf_LPC(x);
-    fprintf('Limit point cycle (period = %e, parameter = %e)\n',x(length(x)-1),x(length(x)));
-    s.msg  = sprintf('Limit point cycle'); 
-    fprintf('Normal form coefficient = %d\n', s.data.lpccoefficient);
+    if contopts.enable_nf_lpc
+      s.data.lpccoefficient = nf_LPC(x);
+      fprintf('Limit point cycle (period = %e, parameter = %e)\n',x(length(x)-1),x(length(x)));
+      s.msg  = sprintf('Limit point cycle'); 
+      fprintf('Normal form coefficient = %d\n', s.data.lpccoefficient);
+    else
+      s.data.lpccoefficient = NaN;
+      fprintf('Limit point cycle (period = %e, parameter = %e)\n',x(length(x)-1),x(length(x)));
+      s.msg  = sprintf('Limit point cycle'); 
+    end
   case 4
 %   fprintf('Neimark-Sacker (period = %e, parameter = %e)\n',x(length(x)-1),x(length(x)));
     s.data.nscoefficient = nf_NS(x);
@@ -522,7 +528,6 @@ global lds
  
 p2 = num2cell(p);
 jacx = feval(BVP_func,lds.func,x,p,T,pars,nc,lds,p2,lds.Jacobian,lds.ActiveParams,lds.JacobianP); 
-jacx = sparse(full(jacx));
 
 % ---------------------------------------------------------------
 function WorkspaceInit(x,v)
@@ -601,7 +606,9 @@ lds.NS_switch = 0;
 lds.NS1_switch = 0;
 lds.NS2_switch = 0;
 
-if contopts.Singularities
+
+if contopts.Singularities && contopts.enable_bialt
+  % uses about three times as much memory as continuation itself
   [lds.bialt_M1,lds.bialt_M2,lds.bialt_M3,lds.bialt_M4]=bialtaa(lds.nphase);
 end
 

@@ -1,7 +1,6 @@
-function fusion_Orb_LC_N_75
-  run_init_if_needed
+function fusion_Orb_LC_N_25
   % continuation of cycles cycles in fusion system
-  N = 75;                     
+  N = 25;                     
   odefile = str2func(sprintf('fusion_precomputed_with_sage_N_%d', N));
   a = -1;
   b = -0.3;
@@ -105,6 +104,7 @@ function fusion_Orb_LC_N_75
   tolerance = 1e-2;
 
   opt = contset();
+  opt = contset(opt, 'MaxNumPoints',   3);
   opt = contset(opt, 'InitStepsize',   3);
   opt = contset(opt, 'MinStepsize',    1e-4);
   opt = contset(opt, 'MaxStepsize',    40);
@@ -120,19 +120,7 @@ function fusion_Orb_LC_N_75
   opt = contset(opt, 'Backward',       false);
   opt = contset(opt, 'Singularities',  true);
   opt = contset(opt, 'CIS_UsingCIS',   false);
-  opt = contset(opt, 'enable_nf_lpc',  false);    
-  % Set enable_nf_lpc to false to disable computation of the normal form 
-  % for limit points of cycle. Normal form computations on large systems can
-  % cause out of memory errors on continuation runs that would otherwise run fine.
-  % Note: nf_lpc is only implemented for limitcycle.m
-  opt = contset(opt, 'enable_bialt',  false);
-  % Set enable_bialt to false to prevent bialtaa.m from running
-  % bialtaa.m does computations related to bifurcations of cycles when 
-  % continuing cycles with limitcycle.m
-  % bialtaa uses a lot of memory. Hence it may cause trouble when continuing
-  % cycles of large systems using limitcycle.m
-  % disable smoothing by angle:
-  opt = contset(opt, 'contL_SmoothingAngle', pi/2);
+
   ap = 3;
   p2 = [a; b; -0.72];
   p3 = [a; b; -0.72 + 0.001];
