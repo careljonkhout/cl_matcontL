@@ -1,7 +1,7 @@
 clc;
 clear all; %#ok<CLALL>
-m=4; % number of matrices
-N=4; % size of matrix
+m=3; % number of matrices
+N=9; % size of matrix
 tolerance = eps(sqrt(N)*N);
 G = zeros([N N m]);
 for i=1:m

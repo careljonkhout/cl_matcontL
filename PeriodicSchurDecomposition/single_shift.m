@@ -17,6 +17,8 @@ function [M,Q]=single_shift(M,Q,mu,L,U)
     % construct a Givens rotation to introduce a zero at position L+1,L of M_k
     [c,s] = construct_givens(-M(L,L,k),M(L+1,L,k));
     M(:,:,k  ) = givens_left (M(:,:,k  ),L,L+1,c,s);
+    assert(abs(M(L+1,L,k))<eps(10));
+    M(L+1,L,k) = 0;
     M(:,:,k+1) = givens_right(M(:,:,k+1),L,L+1,c,s);
     Q(:,:,k  ) = givens_right(Q(:,:,k  ),L,L+1,c,s);
 
@@ -29,14 +31,18 @@ function [M,Q]=single_shift(M,Q,mu,L,U)
 
     if j < U-1
       
-      % construct Householder reflection
-      x = M(:,j,m);       % x is the i-th column of H_j
+      % construct Householder reflection to introduce a zero at position
+      % j+2,j of M_m
+      x = M(:,j,m);       % x is the j-th column of M_m
       v = zeros(N,1);
       v(j+1:N) = x(j+1:N);
       v(j+1) = v(j+1) + sign(v(j+1))*norm(v);
       v = v / norm(v)*sqrt(2);
       % apply Householder reflection
       M(:,:,m) = householder_left( v,M(:,:,m));
+      assert(M(j+2,j,m) < eps(10));
+      M(j+2,j,m) = 0;
+      
       M(:,:,1) = householder_right(v,M(:,:,1));
       Q(:,:,m) = householder_right(v,Q(:,:,m));
       
@@ -54,7 +60,8 @@ function [M,Q]=single_shift(M,Q,mu,L,U)
     end
 
     
-  end    
+  end
+    M = check_and_enforce_lower_triangular_and_hessenberg_structure(M);
 end
 
 function result = householder_left(v,M)

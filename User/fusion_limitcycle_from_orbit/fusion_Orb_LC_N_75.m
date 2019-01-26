@@ -107,7 +107,7 @@ function fusion_Orb_LC_N_75
   opt = contset();
   opt = contset(opt, 'InitStepsize',   3);
   opt = contset(opt, 'MinStepsize',    1e-4);
-  opt = contset(opt, 'MaxStepsize',    40);
+  opt = contset(opt, 'MaxStepsize',    4);
   opt = contset(opt, 'MaxNewtonIters', 3);
   opt = contset(opt, 'MaxCorrIters',   10);
   opt = contset(opt, 'MaxTestIters',   10);
@@ -115,7 +115,7 @@ function fusion_Orb_LC_N_75
   opt = contset(opt, 'FunTolerance',   1e-6);
   opt = contset(opt, 'Adapt',          3);
   opt = contset(opt, 'MaxNumPoints',   1000);
-  opt = contset(opt, 'CheckClosed',    50);
+  opt = contset(opt, 'CheckClosed',    500);
   opt = contset(opt, 'Multipliers',    true);
   opt = contset(opt, 'Backward',       false);
   opt = contset(opt, 'Singularities',  true);

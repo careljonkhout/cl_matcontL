@@ -6,14 +6,16 @@ function [M,Q] = double_shift(M,Q,L,U)
   for i=1:m
     H = M(L:U,L:U,i)*H;
   end
-  H_bar = zeros(3,1);
-  H_bar(1) = ((H(n,n)-H(1,1))*(H(n-1,n-1)-H(1,1))-H(n,n-1)*H(n-1,n)) ... 
-              / H(2,1)+H(1,2);
-  H_bar(2) =  H(2,2)-H(1,1)-(H(n,n)-H(1,1))-(H(n-1,n-1)-H(1,1));
-  H_bar(3) = H(2,1)*H(3,2);
-
+  lambda_1 = H(n-1,n-1) + H(n,n);
+  lambda_2 = H(n-1,n-1)*H(n,n) - H(n-1,n)*H(n,n-1);
+  %H_bar = zeros(3,1);
+  %H_bar(1) = ((H(n,n)-H(1,1))*(H(n-1,n-1)-H(1,1))-H(n,n-1)*H(n-1,n)) ... 
+  %            / H(2,1)+H(1,2);
+  %H_bar(2) =  H(2,2)-H(1,1)-(H(n,n)-H(1,1))-(H(n-1,n-1)-H(1,1));
+  %H_bar(3) = H(2,1)*H(3,2);
+  H_bar = (H-lambda_1 * eye(n))*(H-lambda_2 * eye(n));
   v = zeros(N,1);
-  v(L:L+2) = H_bar;
+  v(L:L+2) = H_bar(1:3,1);
   v(1) = v(1) + sign(v(1))*norm(v);
   v = v / norm(v)*sqrt(2);
   % Compute and apply shift
@@ -68,6 +70,8 @@ function [M,Q] = double_shift(M,Q,L,U)
     M(:,:,k+1) = givens_right(M(:,:,k+1),U-1,U,c,s);
     Q(:,:,k  ) = givens_right(Q(:,:,k  ),U-1,U,c,s);
   end
+  
+  M = check_and_enforce_lower_triangular_and_hessenberg_structure(M);
 end
 
 function result = householder_left(v,M)

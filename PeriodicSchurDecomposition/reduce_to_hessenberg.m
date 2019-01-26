@@ -46,6 +46,7 @@ function [H,Q]= reduce_to_hessenberg(G)
       Q(:,:,m) = householder_right(v,Q(:,:,m));
     end
   end
+  H = check_and_enforce_lower_triangular_and_hessenberg_structure(H);
 end
 
 function result = householder_left(v,M)

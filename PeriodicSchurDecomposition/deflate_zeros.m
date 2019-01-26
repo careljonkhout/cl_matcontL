@@ -1,4 +1,23 @@
-function [M,Q]=deflation_of_zero_on_diagonal(M,Q,k_star,i_star)
+function [M, Q, is_deflated] = deflate_zeros(M,Q,is_deflated)
+  k = 1; 
+  while k <= m-1
+    i = 1;
+    while i <= N
+      if ~ M(i,i,k) && ~ is_deflated(k,i) 
+        is_deflated(k,i) = 1;
+        [M,Q] = deflate_zero(M,Q,k,i);
+        % start again from to beginning to look if any 
+        % new zeros have been introduced on the diagonals 
+        k = 1;
+        break;
+      end
+      i = i + 1;
+    end
+    k = k + 1;
+  end
+end
+
+function [M,Q]=deflate_zero(M,Q,k_star,i_star)
   N = size(M,1);
   m = size(M,3);
   for j=N-1:-1:i_star % j counting backwards
@@ -45,10 +64,5 @@ function [M,Q]=deflation_of_zero_on_diagonal(M,Q,k_star,i_star)
       Q(:,:,k  ) = givens_right(Q(:,:,k  ),i-1,i,c,s);
     end
   end
-  
+  M=check_and_enfore_lower_triangular_and_hessenberg_structure(M);
 end
-
-
-
-
-
