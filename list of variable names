@@ -1,0 +1,30 @@
+list of variable names in matcont
+tvals = test function values
+cds   = curve description structure
+lds   = limitcycle description structure
+eds   = equilibrium point description structure
+
+                          h: 0.100000000000000
+                      h_max: 0.100000000000000
+                      h_min: 1.000000000000000e-12
+                  h_inc_fac: 1.300000000000000
+                  h_dec_fac: 0.500000000000000
+                  
+field of cds:
+
+cds.h      = stepsize         (may change every step)
+cds.h_max  = maximum stepsize (does not change, is copied from contopts)
+cds.h_min  = minimum stepsize (does not change, is copied from contopts)
+cds.h_inc_fac = stepsize increase factor (does not change, is copied from contopts)
+cds.h_dec_fac = stepsize decrease factor (does not change, is copied from contopts)
+cds.SingLabels = labels for singlarities, ( for instance 'LP', 'H' )
+cds.S          = Singularity matrix. Defines which testfunction changes correspond to which singularities
+
+fields of currpoint and trialpoint in contL.m
+
+x = continuation state vector, i.e. current values of coordinates and parameters
+v = continuation tangent vector, entries correspond to x
+iters = number of iterations spent in Newton corrections
+R = residual, i.e. value of curve function after Newton corrections
+
+

@@ -2,11 +2,14 @@ function result = nf_NS(x0)
 %
 % calculates NS normal form coefficient
 %
-global lds 
+global lds contopts
 [xt,p,T] = rearr(x0);pt = num2cell(p);
 %computing theta
-
 d = lds.multipliers;
+if contopts.nCriticalMultipliers > 0
+  d = zeros(lds.nphase);
+  d(1:contopts.nCriticalMultipliers) = lds.multipliers;
+end
 smallest_sum = Inf;
     for jk=1:lds.nphase-1
         [val,idx] = min(abs(d(jk+1:lds.nphase)*d(jk)-1));

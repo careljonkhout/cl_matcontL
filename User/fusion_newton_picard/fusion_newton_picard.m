@@ -22,7 +22,7 @@ cds.ndim = cds.nphases + cds.nap + 1;
 cds.P0 = cell2mat(parameters);
 cds.options = contset();
 cds.options.PartitionMonodromy = true;
-cds.nDiscretizationPoints = 1000;
+cds.nDiscretizationPoints = 400;
 cds.symjac = true;
 cds.usernorm = [];
 cds.probfile = odefile;
@@ -116,9 +116,9 @@ end
 
 
 opt = contset();
-opt = contset(opt, 'InitStepsize',   2e-2);
+opt = contset(opt, 'InitStepsize',   5e-1);
 opt = contset(opt, 'MinStepsize',    1e-10);
-opt = contset(opt, 'MaxStepsize',    1e-1);
+opt = contset(opt, 'MaxStepsize',    5e-1);
 opt = contset(opt, 'MaxNewtonIters', 8);
 opt = contset(opt, 'MaxCorrIters',   10);
 opt = contset(opt, 'MaxTestIters',   10);

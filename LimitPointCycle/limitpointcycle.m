@@ -514,7 +514,6 @@ global lds
  
 p2 = num2cell(p);
 jac = feval(BVP_func,lds.func,x,p,T,pars,nc,lds,p2,lds.Jacobian,lds.ActiveParams,lds.JacobianP); 
-jac = sparse(full(jac));
 
 
 % ---------------------------------------------------------------

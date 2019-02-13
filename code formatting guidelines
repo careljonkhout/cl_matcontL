@@ -1,0 +1,46 @@
+Code formatting guidelines
+
+by Carel Jonkhout
+
+These are some guidelines I used when formatting code in cl_matcontL
+
+- maximum line length is 80. Break long lines with dots ( ... ) like so:
+
+write this:
+
+some_function(very_long_argument1, very_long_argument2, ...
+  very_long_argument3, very_long_argument4)
+
+instead of this:
+
+some_function(very_long_argument1, very_long_argument2, very_long_argument3, very_long_argument4)
+
+
+- Indentation size is 2
+
+- put spaces in function calls after a comma, if arguments are more complex
+  then simple variable references.
+so:
+this is ok: some_function(a,b,c,d)
+this is not: some_function(a+b,c+d)
+please puts a space after the comma: some_function(a+b, c+d)
+
+
+
+tip:
+
+do your print-and-run-debugging using:
+
+print_diag(priority, format_string, arguments)
+
+with priority > 0. This way, all debug info can be switched off all at once by
+setting the options contopts.console_output_level and 
+contopts.contL_DiagnosticsLevel to zero. Also, debug info will be logged to file
+, if a logfile is kept (A logfile is kept by default).
+
+
+
+
+
+
+

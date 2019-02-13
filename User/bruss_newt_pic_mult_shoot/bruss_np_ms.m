@@ -3,13 +3,14 @@ format long
 run_init_if_needed
 % continuation of cycles cycles in brusselator
 odefile = @bruss_1d; %@brusselator_N_2;
-N=3;
+N=6;
 L = 1.1; A = 1; B = 2.2; Dx = 0.008; Dy = 0.004;
 parameters = {N; L; A; B; Dx; Dy};%parameters = {L; A; B; Dx; Dy};
 clear global cds
 clear global lds
 global cds
 cds.ActiveParams = 2; %4;
+cds.preferred_basis_size = 4;
 handles = feval(odefile);
 title_format_string = ...
   'Brusselator N:%d  L:%.0f  A:%.0f  B:%.1f  Dx:%.3f  Dy:%.3f';
@@ -33,6 +34,7 @@ cds.symjac = false;
 cds.usernorm = [];
 cds.probfile = odefile;
 cds.ncoo = cds.nphases;
+cds.nShootingPoints = 2;
 
     
 int_opt = odeset( ...
@@ -64,7 +66,14 @@ cds.previous_phases = x1(end,:)';
 cds.previous_dydt_0 = f(0,x0);
 int_opt = odeset(int_opt, 'Events', @returnToPlane);
 
-[t2,x2] = ode15s(f, linspace(0,approximate_period,1000000), x1(end,:), int_opt); 
+sol = ode15s(f, linspace(0,approximate_period,1000), x1(end,:), int_opt); 
+period = sol.x(end);
+initial_continuation_data = zeros(cds.nphases * cds.nShootingPoints + 2,1);
+for i=0:cds.nShootingPoints-1
+  indices = (1:cds.nphases) + i * cds.nphases;
+  initial_continuation_data(indices) = ...
+    deval(sol, i / cds.nShootingPoints * period);
+end
 period = t2(end);
 fprintf('period %.15f\n', period);
 int_opt = odeset(int_opt, 'Events', []);
@@ -116,10 +125,14 @@ opt = contset(opt, 'Backward',       true);
 opt = contset(opt, 'Singularities',  false);
 opt = contset(opt, 'CIS_UsingCIS',   false);
 opt = contset(opt, 'NewtonPicard',   true);
+opt = contset(opt, 'console_output_level',   5);
+opt = contset(opt, 'contL_DiagnosticsLevel', 5);
 
-initial_continuation_data = [cds.previous_phases; period; cds.P0(cds.ActiveParams)];
+
+initial_continuation_data(end-1) = period;
+initial_continuation_data(end  ) = cds.P0(cds.ActiveParams);
 initial_continuation_tangent_vector = [];
-[s, datafile] = contL(@single_shooting, ...
+[s, datafile] = contL(@multiple_shooting, ...
   initial_continuation_data, ...
   initial_continuation_tangent_vector, opt); 
 

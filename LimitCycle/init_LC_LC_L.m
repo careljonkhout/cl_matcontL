@@ -1,4 +1,4 @@
-function [x,v] = init_LC_LC_L(odefile, x, v, s, par, ap,ntst,ncol)
+function [x,v] = init_LC_LC_L(odefile, x, v, s, par, ap, ntst, ncol)
 % 
 % [x0,v0] = init_LC_LC(odefile, x, v, s, ap)
 %
@@ -21,18 +21,18 @@ oldlds = lds;
 lds = [];
 
 
-func_handles = feval(odefile);
+odefile_handles = feval(odefile);
 symord = 0; 
 symordp = 0;
 
-if     ~isempty(func_handles{9}),   symord = 5; 
-elseif ~isempty(func_handles{8}),   symord = 4; 
-elseif ~isempty(func_handles{7}),   symord = 3; 
-elseif ~isempty(func_handles{5}),   symord = 2; 
-elseif ~isempty(func_handles{3}),   symord = 1; 
+if     ~isempty(odefile_handles{9}),   symord = 5; 
+elseif ~isempty(odefile_handles{8}),   symord = 4; 
+elseif ~isempty(odefile_handles{7}),   symord = 3; 
+elseif ~isempty(odefile_handles{5}),   symord = 2; 
+elseif ~isempty(odefile_handles{3}),   symord = 1; 
 end
-if     ~isempty(func_handles{6}),   symordp = 2; 
-elseif ~isempty(func_handles{4}),   symordp = 1; 
+if     ~isempty(odefile_handles{6}),   symordp = 2; 
+elseif ~isempty(odefile_handles{4}),   symordp = 1; 
 end
 if ~isfield(cds,'options') || ~isfield(cds,'options')
     cds.options = contset();
@@ -42,21 +42,30 @@ cds.options = contset(cds.options, 'SymDerivativeP', symordp);
 cds.symjac = 1;
 cds.symhess = 0;
 cds.probfile = odefile;
+cds.P0 = par;
+cds.ncoo = length(x) - 1;
+cds.nap = length(ap);
+cds.ActiveParams = ap;
+cds.usernorm = odefile_handles{10};
+cds.userfunc = [];
+for i = 11:length(odefile_handles)
+    cds.userfunc{i-10} = odefile_handles{i};
+end
 
 lds.odefile = odefile;
-lds.func = func_handles{2};
-lds.Jacobian  = func_handles{3};
-lds.JacobianP = func_handles{4};
-lds.Hessians  = func_handles{5};
-lds.HessiansP = func_handles{6};
-lds.Der3 = func_handles{7};
-lds.Der4 = func_handles{8};
-lds.Der5 = func_handles{9};
-siz = size(func_handles,2);
+lds.func = odefile_handles{2};
+lds.Jacobian  = odefile_handles{3};
+lds.JacobianP = odefile_handles{4};
+lds.Hessians  = odefile_handles{5};
+lds.HessiansP = odefile_handles{6};
+lds.Der3 = odefile_handles{7};
+lds.Der4 = odefile_handles{8};
+lds.Der5 = odefile_handles{9};
+siz = size(odefile_handles,2);
 if siz > 10 % DV: was 9
     j=1;
     for i=10:siz
-        lds.user{j}= func_handles{i};
+        lds.user{j}= odefile_handles{i};
         j=j+1;
     end
 else

@@ -13,7 +13,11 @@
 #include<stdio.h>
 
 void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
-
+  /* 
+   * the right hand side is:
+   * lds.func, x, p, T, pars, nc, lds, p2, lds.Jacobian, ... 
+   *   lds.ActiveParams, lds.JacobianP, lds.BranchParam
+   */
 
     /* Declarations */
 	/* ------------ */
@@ -50,8 +54,8 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 	/* Retrieve parameters. */
 	x = mxGetPr(prhs[1]);
 	p = mxGetPr(prhs[2]);
-    pars2 = mxGetPr(prhs[4]);
-    nc = mxGetPr(prhs[5]);
+  pars2 = mxGetPr(prhs[4]);
+  nc = mxGetPr(prhs[5]);
 
     /* LDS FIELDS */
 	thisfield = mxGetFieldByNumber(prhs[6],0,10);
@@ -88,21 +92,47 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 	wploc = mxCalloc(mxGetN(thisfield)*mxGetM(thisfield),sizeof(double));
 	thisfield = mxGetFieldByNumber(prhs[6],0,41);
 	pwi = mxGetPr(thisfield);	/* Extension of weights */
-    thisfield = mxGetFieldByNumber(prhs[6],0,86);
-    bfreep = mxGetNumberOfElements(thisfield);/* number of branch parameters */
-    BranchParam = mxCalloc(bfreep,sizeof(int));
-    frhstmp = mxGetPr(thisfield);
-    for (i=0; i<bfreep; i++) 
-        *(BranchParam+i) = (int)(*(frhstmp+i));         
+    // modified to fix a bug by Carel Jonkhout februari 12, 2019
+    // old:
+    // thisfield = mxGetFieldByNumber(prhs[6],0,86);
+    // bfreep = mxGetNumberOfElements(thisfield);/* number of branch parameters */
+    // BranchParam = mxCalloc(bfreep,sizeof(int));
+    // frhstmp = mxGetPr(thisfield);
+    // for (i=0; i<bfreep; i++) 
+    //    *(BranchParam+i) = (int)(*(frhstmp+i));
+  
+    // new:
+  bfreep      = mxGetNumberOfElements(prhs[11]);
+  frhstmp     = mxGetPr(prhs[11]);
+  BranchParam = mxCalloc(bfreep,sizeof(int));
+  for (i=0;i<bfreep;i++) {
+    BranchParam[i] = (int) frhstmp[i];
+  }
+  
 	thisfield = mxGetFieldByNumber(prhs[6],0,57);
 	BPC_psi = mxGetPr(thisfield);	/* BPC_psi */
 	thisfield = mxGetFieldByNumber(prhs[6],0,58);
 	BPC_phi1 = mxGetPr(thisfield);	/* BPC_phi1 */
 	thisfield = mxGetFieldByNumber(prhs[6],0,59);
 	BPC_phi2 = mxGetPr(thisfield);	/* BPC_phi2 */
-    /* Sparse matrix as returnvalue */
-	plhs[0] = mxCreateSparse(ncoords+3,ncoords+bfreep+2,ncoords*ncoords,mxREAL);
-	pr = mxGetPr(plhs[0]);
+  
+  int jacobian_height = ncol * ntst * nphase + 1;
+  int jacobian_width  = jacobian_height + 1;
+  // we compute a pessimistic upper bound for the number of nonzero's (nnz)
+  // added by Carel Jonkhout, use matlab commands nnz and spy to refine further
+  int nnz_estimate  = ncol * nphase * (ncol + 1) * nphase * ntst; // main blocks
+      nnz_estimate += 2 * nphase;               // boundary conditions
+      nnz_estimate += (bfreep + 2) * jacobian_height; // last two columns
+      nnz_estimate += 3 * jacobian_width;      // bottom rows
+  
+  if (nnz_estimate > ncoords*ncoords) {
+    nnz_estimate = ncoords*ncoords;
+  }
+  
+   /* Sparse matrix as returnvalue */
+  
+  plhs[0] = mxCreateSparse(ncoords+3,ncoords+bfreep+2,ncoords*ncoords,mxREAL);
+  pr = mxGetPr(plhs[0]);
 	ir = mxGetIr(plhs[0]);
 	jc = mxGetJc(plhs[0]);
 	*jc = 0;

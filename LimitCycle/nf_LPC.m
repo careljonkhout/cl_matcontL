@@ -88,6 +88,8 @@ for j=lds.tsts
         range5 = range5+lds.nphase;
     end   
     fxjac(range3,range4)=sysjac;
+    fxjac = sparse(fxjac);         % Carel Jonkhout: to prevent out of memory 
+    % error.
     range1 = range1+lds.ncol;
     range3 = range3 + lds.ncol_coord;
     range4 = range4 + lds.ncol_coord;

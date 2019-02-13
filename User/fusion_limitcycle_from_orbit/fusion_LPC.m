@@ -33,7 +33,7 @@ opt = contset(opt, 'MaxNumPoints',   1000);
 opt = contset(opt, 'CheckClosed',    50);
 opt = contset(opt, 'Multipliers',    true);
 opt = contset(opt, 'Backward',       false);
-opt = contset(opt, 'Singularities',  true);
+opt = contset(opt, 'Singularities',  false);
 opt = contset(opt, 'CIS_UsingCIS',   false);
 
 

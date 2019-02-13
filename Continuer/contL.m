@@ -35,9 +35,11 @@ if contopts.contL_ParallelComputing && isempty(gcp('NoCreate'))
     parpool;   % initialize new parallel pool when no is available
 end
 
-if NewtonPicard && ~ isequal(curvefile,@single_shooting)
-  disp(['Newton-Picard is only supported with single shooting.' ...
-       ' Continuation will be aborted.'])
+if NewtonPicard && ( ~ isequal(curvefile,@single_shooting) ...
+                  && ~ isequal(curvefile,@multiple_shooting) )
+  print_diag(0,['Newton-Picard is only supported with single shooting' ...
+        ' or multiple shooting. Continuation will be aborted.'])
+  return
 end
 
 cds.h          = contopts.InitStepsize;
@@ -100,8 +102,12 @@ elseif NewtonPicard
     firstpoint = Newton_Picard_Corrections(x0,v0);
     firstpoint.v = v0;
 else
-    try feval(cds.curve_func    , x0); catch; cds.newtcorrL_needs_CISdata = 1; end
-    try feval(cds.curve_jacobian, x0); catch; cds.newtcorrL_needs_CISdata = 1; end
+    try 
+      cds.curve_func    (x0); 
+      cds.curve_jacobian(x0);
+    catch
+      cds.newtcorrL_needs_CISdata = 1;
+    end
 
     CISdata0 = [];
     if isempty(v0)
@@ -171,276 +177,294 @@ end
 %% II. Main Loop
 currpoint = firstpoint;
 while cds.i < MaxNumPoints && ~cds.lastpointfound
-    corrections = 1;
-    print_diag(1,'\n --- Step %d ---\n',cds.i);
-    while 1
-        
-        %% A. Predict
-        if NewtonPicard
-          xpre = currpoint.x + cds.h * currpoint.v;
-        else
-          xpre = currpoint.x + cds.h * currpoint.v(1:cds.ndim);
+  corrections = 1;
+  print_diag(1,'\n --- Step %d ---\n',cds.i);
+  while true
+
+    %% A. Predict
+    if NewtonPicard
+      xpre = currpoint.x + cds.h * currpoint.v;
+    else
+      xpre = currpoint.x + cds.h * currpoint.v(1:cds.ndim);
+    end
+    reduce_stepsize = 0;
+
+    %% B. Correct
+    if NewtonPicard
+       trialpoint = Newton_Picard_Corrections(xpre, currpoint.v);
+      if ~ isempty(trialpoint)
+        trialpoint.v = trialpoint.x - currpoint.x;
+        trialpoint.v = trialpoint.v / max(abs(trialpoint.v));
+      end
+    else
+      trialpoint = newtcorrL(xpre, currpoint.v, currpoint.CISdata);
+    end
+    if isempty(trialpoint)
+      print_diag(0, 'contL: newtcorrL failed\n')
+      reduce_stepsize = 1;
+    end
+    
+    %% C. curve smoothing
+    if ~reduce_stepsize
+      trialpoint.h = cds.h;
+      trialpoint.angle = innerangle(currpoint.v,trialpoint.v);
+      if trialpoint.angle > SmoothingAngle
+        print_diag(0, 'contL: Innerangle too large\n ');
+        reduce_stepsize = 1;
+      end
+    end
+
+    %% D. CIS Processing
+    if ~reduce_stepsize
+      special_step = 0;
+      trialpoint.CISdata = feval(...
+        cds.curve_CIS_step, trialpoint.x, currpoint.CISdata);
+      if isempty(trialpoint.CISdata)
+        print_diag(1, 'contL: Candidate step failed\n');
+        reduce_stepsize = 1;
+      end
+    end
+
+    %% E. Test Function Evaluation
+    if ~reduce_stepsize && Singularities
+      cds.previous_tvals = currpoint.tvals;
+      [trialpoint.tvals, failed] = EvalTestFunc(0, trialpoint);
+      if failed
+        print_diag(1, ...
+          'contL: Unable to evaluate Test Functions at Point %d', cds.i);
+        reduce_stepsize = 1;
+      end
+    end
+
+    % Detect singularities
+    NeedToLocate = 0;
+    if ~reduce_stepsize && Singularities
+      singsdetected = [];
+      % WM: the testvals arrays are not copied anymore, instead
+      % WM: use sign function and compare instead of multiply (for speed).
+      testchanges = sign(trialpoint.tvals) ~= sign(currpoint.tvals);
+      testchanges2= trialpoint.tvals ~= currpoint.tvals;
+      if any(testchanges)
+        if cds.i == 6
+          1
         end
-        reduce_stepsize = 0;
-        
-        %% B. Correct
-        if NewtonPicard
-          trialpoint = Newton_Picard_Corrections(xpre, currpoint.v);
-          if ~ isempty(trialpoint)
-            trialpoint.v = trialpoint.x - currpoint.x;
-            trialpoint.v = trialpoint.v / norm(trialpoint.v);
-          end
-        else
-          trialpoint = newtcorrL(xpre, currpoint.v, currpoint.CISdata);
-        end
-        if isempty(trialpoint)
-          print_diag(0, 'contL: newtcorrL failed\n')
+        % Every crossing that is required occurs
+        % Every crossing that is not required does not occur
+        % Required crossings matrix:
+        S_true   = double(cds.S(:,cds.ActTest)' == 0);
+        % Required noncrossings matrix:
+        S_false  = double(cds.S(:,cds.ActTest)' == 1);
+        % DV: Required to change value (not sign):
+        S_change = double(cds.S(:,cds.ActTest)' == 2);  
+
+        all_sings_detected = ...
+            (  testchanges * S_true  == sum(S_true)  ) & ...
+            ( ~testchanges * S_false == sum(S_false) ) & ...
+            ( testchanges2 * S_change== sum(S_change)); % DV
+        singsdetected(cds.ActSing) = ...
+          all_sings_detected(cds.ActSing); %#ok<AGROW>
+
+        if sum(singsdetected) > 1
+          print_diag(3, 'More than one singularity detected: ')
           reduce_stepsize = 1;
+        elseif sum(singsdetected) == 1
+          if special_step
+            print_diag(3, 'Singularity detected at special step: ')
+            reduce_stepsize = 1;
+          else
+            si = find(singsdetected==1);  % singularity detected!
+            NeedToLocate = 1;
+          end
         end
-        % curve smoothing
-        if ~reduce_stepsize
-            trialpoint.h = cds.h;
-            trialpoint.angle = innerangle(currpoint.v,trialpoint.v);
-            if trialpoint.angle > SmoothingAngle
-                print_diag(0, 'contL: Innerangle too large\n ');
-                reduce_stepsize = 1;
-            end
-        end
-        
-        
-        % CIS Processing
-        if ~reduce_stepsize
-            special_step = 0;
-            trialpoint.CISdata = feval(cds.curve_CIS_step, trialpoint.x, currpoint.CISdata);
-            if isempty(trialpoint.CISdata)
-                print_diag(1, 'contL: Candidate step failed\n');
-                reduce_stepsize = 1;
-            end
-        end
-        
-        % Test Function Evaluation
-        if ~reduce_stepsize && Singularities
-            [trialpoint.tvals,failed] = EvalTestFunc(0, trialpoint);
-            if failed
-                print_diag(1, 'contL: Unable to evaluate Test Functions at Point %d',cds.i)
-                reduce_stepsize = 1;
-            end
-        end
-        
-        % Detect singularities
-        NeedToLocate = 0;
-        if ~reduce_stepsize && Singularities
-            singsdetected = [];% WM: the testvals arrays are not copied anymore, instead
-            % WM: use sign function and compare instead of multiply (for speed).
-            testchanges = sign(trialpoint.tvals) ~= sign(currpoint.tvals);
-            testchanges2= trialpoint.tvals ~= currpoint.tvals;
-            if any(testchanges)
-                
-                % Every crossing that is required occurs
-                % Every crossing that is not required does not occur
-                S_true  = double(cds.S(:,cds.ActTest)' == 0);  % Required crossings matrix
-                S_false = double(cds.S(:,cds.ActTest)' == 1);  % Required noncrossings matrix
-                S_change= double(cds.S(:,cds.ActTest)' == 2);  % DV: Required to change value (not sign)
-                
-                all_sings_detected = ...
-                    (  testchanges * S_true  == sum(S_true)  ) & ...
-                    ( ~testchanges * S_false == sum(S_false) ) & ...
-                    ( testchanges2 * S_change== sum(S_change)); % DV
-                singsdetected(cds.ActSing) = all_sings_detected(cds.ActSing); %#ok<AGROW>
-                
-                if sum(singsdetected) > 1
-                    print_diag(3, 'More than one singularity detected: ')
-%                     print_diag(0, 'contL: More than one singularity detected:\n')
-                    reduce_stepsize = 1;
-                elseif sum(singsdetected) == 1
-                    if special_step
-                        print_diag(3, 'Singularity detected at special step: ')
-                        reduce_stepsize = 1;
-                    else
-                        si = find(singsdetected==1);  % singularity detected!
-                        NeedToLocate = 1;
-                    end
-                end
-            end
-        end
-        
-        % User Function Evaluation
-        if ~reduce_stepsize && Userfunctions
-            [trialpoint.uvals,failed] = feval(cds.curve_userf, 0, UserInfo, trialpoint.x);
-            failed = failed || isempty(trialpoint.uvals);
-            if failed
-                print_diag(1, 'contL: Unable to evaluate Test Functions at Point %d: ',cds.i)
-                reduce_stepsize = 1;
-            end
-        end
-        
-        % Detect userfunctions
-        if ~reduce_stepsize && Userfunctions
-            % WM: use sign function and compare instead of multiply (for speed).
-            userchanges = sign(trialpoint.uvals) ~= sign(currpoint.uvals);
-            if special_step && any(userchanges)
-                print_diag(3, 'Userfunction occus in Special Step: \n');
-                reduce_stepsize = 1;
-            end
-        end
-        
-        % Reduce stepsize
-        if reduce_stepsize
-            % reduce stepsize
-            print_diag(3, 'Reducing Stepsize\n')
-            if cds.h > cds.h_min
-                cds.h = max(cds.h_min, cds.h*cds.h_dec_fac);
-                corrections = corrections+1;
-                continue;
-            else
-                print_diag(0,'Current Stepsize is too small: %d.\n',cds.h);
-                cds.lastpointfound = 1;
-                break;
-            end
-        else
-            % accept step
-            break;
-        end
+      end
     end
-    
-    if cds.lastpointfound % Carel Jonkhout
-      % occurs if step size too small
-      continue
-    end
-    
-    %% Location of singularities
-    if NeedToLocate
-        % DV: There is always only one singularity detected
-        
-        print_diag(1, 'contL: \n%s detected at step %d\n', ...
-          cds.SingLables(si,:),cds.i);
-        
-        % do we have a locator?
-        locatorAvailable = ismember(si, find(UseLocators==1));  
-        
-        if locatorAvailable
-            
-            p1 = currpoint;
-            p2 = trialpoint;
-            
-            % Use locator
-            print_diag(3,'using locator\n');
-            singpoint = feval(cds.curve_locate, si, p1, p2);
-            
-            if isempty(singpoint) % Singularity not located
-                print_diag(3, ...
-                    ['contL: Unable to locate %s with locator.\n' ...
-                     'Try increasing contL_Loc_MaxCorrIters, ' ...
-                     'contL_Loc_MaxCorrIters, contL_Loc_FunTolerance' ...
-                     'contL_Loc_VarTolerance\n'], cds.SingLables(si,:));              
-                % attempt to locate with bisection:
-                singpoint = LocateSingularity(si, p1, p2);          
-            end
-        else
-            singpoint = LocateSingularity(si, currpoint, trialpoint);
-        end
-        
-        if ~isempty(singpoint)
-            % process singularity
-            singpoint.CISdata = feval(cds.curve_CIS_step, singpoint.x, currpoint.CISdata);
-            if isempty(singpoint.CISdata); print_diag(0, 'CIS algorithm failed at singular point'); end
-            singpoint.R = normU(feval(cds.curve_func, singpoint.x, singpoint.CISdata));
-            
-            cds.i = cds.i + 1; s = [];
-            s.label = cds.SingLables(si,:);
-            
-            [singpoint.tvals,failed] = EvalTestFunc(0, singpoint);
-            [failed,s] = feval(cds.curve_process, si, singpoint, s );
 
-            if ~failed
-                singpoint.h = norm(currpoint.x - singpoint.x);
-                if Userfunctions
-                    [point.uvals,failed] = feval(cds.curve_userf, 0, UserInfo, singpoint.x);
-                end
-                singpoint = DefaultProcessor(singpoint, s);
-            end
-        else
-            print_diag(0, 'Unable to locate %s\n', cds.SingLables(si,:));
-        end
+    % User Function Evaluation
+    if ~reduce_stepsize && Userfunctions
+      [trialpoint.uvals,failed] = feval( ...
+        cds.curve_userf, 0, UserInfo, trialpoint.x);
+      failed = failed || isempty(trialpoint.uvals);
+      if failed
+        print_diag(1, ...
+          'contL: Unable to evaluate Test Functions at Point %d: ',cds.i)
+        reduce_stepsize = 1;
+      end
     end
-    
-    %% D. User Functions
-    if Userfunctions
-        if any(userchanges)
-            useridx = find(userchanges);
-            for ti=1:size(useridx,2)
-                id = useridx(ti);
-                print_diag(1,'\nStep %d: User Function %s detected ... \n', ...
-                    cds.i+1,UserInfo{id}.label);
-                [userpoint] = LocateUserFunction(id, UserInfo, currpoint, trialpoint);
-                
-                if isempty(userpoint)
-                    % print_diag(1,'Unable to locate User Function %s \n', UserInfo{id}.label); % MP
-                    print_diag(0,'Unable to locate User Function %s \n', UserInfo{id}.label);  % MP
-                else % Point found
-                    cds.i = cds.i+1; s = [];
-                    s.label = UserInfo{id}.label;
-                    
-                    userpoint.h = norm(currpoint.x - userpoint.x);
-                    
-                    [userpoint.uvals,failed] = feval(cds.curve_userf, 0,UserInfo,userpoint.x);
-                    s.data.userfunctions = userpoint.uvals;
-                    
-                    if Singularities
-                        userpoint.CISdata = feval(cds.curve_CIS_step, userpoint.x, currpoint.CISdata);
-                        [userpoint.tvals,failed] = EvalTestFunc(0, userpoint);
-                        s.data.testfunctions = userpoint.tvals;
-                    end
-                    
-                    s.msg  = sprintf('%s',UserInfo{id}.name);
-                    
-                    userpoint = DefaultProcessor(userpoint, s);
-                end
-            end
-        end
-    end
-    
-    %%      E. Process
-    
-    % DV: check if testfunctions should be updated
-    tfUpdate = isfield(trialpoint, 'CISdata') && ~isempty(trialpoint.CISdata) && isstruct(trialpoint.CISdata) && ...
-        ((contopts.CIS_AdaptOnOverlap && trialpoint.CISdata.overlap) || (Singularities && sum(singsdetected) > 0));
-    
-    if (mod(cds.i,AdaptSteps)==0) || tfUpdate
-            
-        [res,x2,v2,trialpoint.CISdata] ...
-            = feval(cds.curve_adapt, trialpoint.x, trialpoint.v, trialpoint.CISdata, tfUpdate);
-        trialpoint.x = x2;
-        trialpoint.v = v2;
-        
-        if res == 1 && Singularities
-            
-            % recompute testvals            
-            [trialpoint.tvals,~] = EvalTestFunc(0,trialpoint);
-        end
-    end
-    
-    if trialpoint.v'*currpoint.v < 0,  trialpoint.v = -trialpoint.v; end
-    currpoint = trialpoint;
-    
-    cds.i = cds.i + 1;
-    currpoint  = DefaultProcessor(currpoint);
 
-    % stepsize control
-    if cds.h < cds.h_max && corrections==1
-        cds.h = min(cds.h*cds.h_inc_fac, cds.h_max);
+    % Detect userfunctions
+    if ~reduce_stepsize && Userfunctions
+      % WM: use sign function and compare instead of multiply (for speed).
+      userchanges = sign(trialpoint.uvals) ~= sign(currpoint.uvals);
+      if special_step && any(userchanges)
+        print_diag(3, 'Userfunction occurs in Special Step: \n');
+        reduce_stepsize = 1;
+      end
     end
-    
-    % closed curve check
-    if CheckClosed>0 && cds.i>= CheckClosed && norm(trialpoint.x-x0) < cds.h
-        cds.i=cds.i+1;
+
+    % Reduce stepsize
+    if reduce_stepsize
+      % reduce stepsize
+      print_diag(3, 'Reducing Stepsize\n')
+      if cds.h > cds.h_min
+        cds.h = max(cds.h_min, cds.h*cds.h_dec_fac);
+        corrections = corrections+1;
+        continue;
+      else
+        print_diag(0, 'Current Stepsize is too small: %d.\n', cds.h);
         cds.lastpointfound = 1;
-        currpoint = firstpoint;
-        print_diag(1,'\nClosed curve detected at step %d\n', cds.i);
-        DefaultProcessor(currpoint);
         break;
+      end
+    else
+      % accept step
+      break;
     end
-end
+  end
+
+  if cds.lastpointfound % Carel Jonkhout
+    % occurs if step size too small
+    continue
+  end
+
+  %% Location of singularities
+  if NeedToLocate
+    % At this point in the continuation loop, we only have to deal with one 
+    % singularity at a time. If multiple singularities had been detected in one 
+    % step, the stepsize has been decreased in the previous parts of the 
+    % continuation loop until only one singularity is detected.
+
+    print_diag(1, 'contL: %s detected at step %d\n', ...
+      cds.SingLables(si,:),cds.i);
+
+    % do we have a locator?
+    locatorAvailable = ismember(si, find(UseLocators==1));  
+
+    if locatorAvailable
+
+      p1 = currpoint;
+      p2 = trialpoint;
+
+      % Use locator
+      print_diag(3,'using locator\n');
+      singpoint = feval(cds.curve_locate, si, p1, p2);
+
+      if isempty(singpoint) % Singularity not located
+        print_diag(3, ['contL: Unable to locate %s with locator.\n' ...
+          'Try increasing contL_Loc_MaxCorrIters, ' ...
+          'contL_Loc_MaxCorrIters, contL_Loc_FunTolerance' ...
+          'contL_Loc_VarTolerance\n'], cds.SingLables(si,:));              
+        % attempt to locate with bisection:
+        singpoint = LocateSingularity(si, p1, p2);          
+      end
+    else
+      singpoint = LocateSingularity(si, currpoint, trialpoint);
+    end
+
+    if ~isempty(singpoint)
+      % process singularity
+      singpoint.CISdata = feval(...
+        cds.curve_CIS_step, singpoint.x, currpoint.CISdata);
+      if isempty(singpoint.CISdata)
+        print_diag(0, 'CIS algorithm failed at singular point')
+      end
+      singpoint.R = normU(cds.curve_func(singpoint.x, singpoint.CISdata));
+
+      cds.i = cds.i + 1;
+      s.label = cds.SingLables(si,:);
+
+      [singpoint.tvals, ~] = EvalTestFunc(0, singpoint); 
+      [failed ,s] = feval(cds.curve_process, si, singpoint, s);
+
+      if ~ failed
+        singpoint.h = norm(currpoint.x - singpoint.x);
+        if Userfunctions
+          [point.uvals, ~] = cds.curve_userf(0, UserInfo, singpoint.x);
+        end
+        DefaultProcessor(singpoint, s);
+      end
+    else
+      print_diag(0, 'Unable to locate %s\n', cds.SingLables(si,:));
+    end
+  end
+
+  %% D. User Functions
+  if Userfunctions && any(userchanges)
+    useridx = find(userchanges);
+    for ti=1:size(useridx,2)
+      id = useridx(ti);
+      print_diag(1,'\nStep %d: User Function %s detected ... \n', ...
+        cds.i+1, UserInfo{id}.label);
+      [userpoint] = LocateUserFunction(id, UserInfo, currpoint, trialpoint);
+
+      if isempty(userpoint)
+        print_diag(0, ...
+          'Unable to locate User Function %s \n', UserInfo{id}.label);
+      else
+        % Point found
+        cds.i = cds.i+1; s = [];
+        s.label = UserInfo{id}.label;
+        userpoint.h = norm(currpoint.x - userpoint.x);
+        [userpoint.uvals, ~] = feval(cds.curve_userf, 0,UserInfo,userpoint.x);
+        s.data.userfunctions = userpoint.uvals;
+
+        if Singularities
+          userpoint.CISdata = feval(...
+            cds.curve_CIS_step, userpoint.x, currpoint.CISdata);
+           [userpoint.tvals, ~] = EvalTestFunc(0, userpoint);
+           s.data.testfunctions = userpoint.tvals;
+        end
+
+        s.msg  = sprintf('%s',UserInfo{id}.name);
+
+        DefaultProcessor(userpoint, s);
+      end
+    end
+  end
+
+  %%      E. Process
+
+  % DV: check if testfunctions should be updated
+  tfUpdate = isfield(trialpoint, 'CISdata');
+  tfUpdate = tfUpdate && ~isempty(trialpoint.CISdata);
+  tfUpdate = tfUpdate && isstruct(trialpoint.CISdata);
+  tfUpdate = tfUpdate && ...
+    (        (contopts.CIS_AdaptOnOverlap && trialpoint.CISdata.overlap) ...
+        ||   (Singularities && sum(singsdetected) > 0) ...
+    );
+
+  if (mod(cds.i,AdaptSteps)==0) || tfUpdate
+
+    [res,x2,v2,trialpoint.CISdata] = feval(cds.curve_adapt, ...
+        trialpoint.x, trialpoint.v, trialpoint.CISdata, tfUpdate);
+    trialpoint.x = x2;
+    trialpoint.v = v2;
+
+    if res == 1 && Singularities
+      % recompute testvals            
+      [trialpoint.tvals,~] = EvalTestFunc(0,trialpoint);
+    end
+  end
+
+  if trialpoint.v'*currpoint.v < 0,  trialpoint.v = -trialpoint.v; end
+  currpoint = trialpoint;
+
+  cds.i = cds.i + 1;
+  currpoint  = DefaultProcessor(currpoint);
+
+  % stepsize control
+  if cds.h < cds.h_max && corrections==1
+      cds.h = min(cds.h*cds.h_inc_fac, cds.h_max);
+  end
+
+  % closed curve check
+  if CheckClosed>0 && cds.i>= CheckClosed && norm(trialpoint.x-x0) < cds.h
+      cds.i=cds.i+1;
+      cds.lastpointfound = 1;
+      currpoint = firstpoint;
+      print_diag(1,'\nClosed curve detected at step %d\n', cds.i);
+      DefaultProcessor(currpoint);
+      break;
+  end
+end % end of main continuation loop
 %% III. Finalization
 sout = cds.sout;
 
@@ -484,7 +508,8 @@ global cds
 
 if id == 0
     % WM: evaluate all testfunctions at once
-    [out,failed] = feval(cds.curve_testf, cds.ActTest, point.x, point.v, point.CISdata);
+    [out,failed] = feval(...
+                cds.curve_testf, cds.ActTest, point.x, point.v, point.CISdata);
 elseif isempty(id)  % DV
     out = [];
     failed = 0;
@@ -492,9 +517,10 @@ else
     [out,failed] = feval(cds.curve_testf, id, point.x, point.v, point.CISdata);
     %out = out(id);
 end
-
+print_diag(1,'tf eval at period: %.16f param: %.16f\n', ...
+  point.x(end-1),  point.x(end))
 print_diag(1,'Test Functions: [')
-print_diag(1,' %+.3e',out)
+print_diag(1,' %+.16e',out)
 print_diag(1,']\n')
 
 %--< END OF TESTF EVAL >--
@@ -528,59 +554,61 @@ SingLables    = cds.SingLables;
 
 % Find zeros of all needed testfunction zeros
 for ii = 1:len
-    [psii, ~, ~] = LocateTestFunction(idx(ii), p1, p2);
-    if isempty(psii)
-        print_diag(3,'Testfunction %d for Singularity %s failed to converge\n', idx(ii), SingLables(si,:));
-        singpoint = [];
-        return;
-    else
-        xs(:, ii) = psii.x;
-        vs(:, ii) = psii.v;
-        Rs(:, ii) = psii.R;
-    end
+  [psii, ~, ~] = LocateTestFunction(idx(ii), p1, p2);
+  if isempty(psii)  
+    format_string = 'Testfunction %d for Singularity %s failed to converge\n';
+    print_diag(3, format_string, idx(ii), SingLables(si,:));
+    singpoint = [];
+    return;
+  else
+    xs(:, ii) = psii.x;
+    vs(:, ii) = psii.v;
+    Rs(:, ii) = psii.R;
+  end
 end
 
 % Check that the zeros found are close enough
 switch len
-    case 0
-        % Oops, we have detected a singularity without a vanishing testfunction
-        error('Internal error: trying to locate a non-detected singularity');
-        
-    case 1
-        % return xs and vs
-        
-    otherwise
-        nm = zeros(1,len);
-        
-        for i=1:len
-            nm(i) = norm(xs(:,i));
-        end
-        
-        if max(nm)-min(nm) < contopts.contL_Testf_FunTolerance
-            xs = mean(xs,2);
-            vs = mean(vs,2);
-            Rs = max(Rs);
-        else
-            print_diag(3, 'LocateSingularity: Testfunctions for %s vanish at different points \n', SingLables(si,:));
-            singpoint = [];
-            return;
-        end
+case 0
+  % Oops, we have detected a singularity without a vanishing testfunction
+  error('Internal error: trying to locate a non-detected singularity');      
+case 1
+  % return xs and vs      
+otherwise
+  nm = zeros(1,len);    
+  for i=1:len
+    nm(i) = norm(xs(:,i));
+  end    
+  if max(nm)-min(nm) < contopts.contL_Testf_FunTolerance
+    xs = mean(xs,2);
+    vs = mean(vs,2);
+    Rs = max(Rs);
+  else
+    format_string = ['LocateSingularity:' ...
+      ' Testfunctions for %s vanish at different points \n'];
+    print_diag(3, format_string, SingLables(si,:));
+    singpoint = [];
+    return;
+  end
 end
 
 % check non-zero testfunctions
 tval1 = EvalTestFunc(nzs, p1);
 tval2 = EvalTestFunc(nzs, p2);
 if any(sign(tval1(nzs)) ~= sign(tval2(nzs)))
-    print_diag(3, 'LocateSingularity: Nonzero testfunction for %s vanishes \n', SingLables(si,:));
-    singpoint = [];
+  format_string = 'LocateSingularity: Nonzero testfunction for %s vanishes \n';
+  print_diag(3, format_string, SingLables(si,:));
+  singpoint = [];
 end
 
 % check for required changes
 tval1 = EvalTestFunc(nconst, p1);
 tval2 = EvalTestFunc(nconst, p2);
 if any(sign(tval1(nconst)) == sign(tval2(nconst)))
-    print_diag(3, 'LocateSingularity: Testfunction for %s does not change its value \n', SingLables(si,:));
-    singpoint = [];
+  format_string = ['LocateSingularity:' ...
+    ' Testfunction for %s does not change its value \n'];
+  print_diag(3, format_string, SingLables(si,:));
+  singpoint = [];
 end
 
 singpoint.x = xs;
@@ -617,6 +645,9 @@ MaxIters  = contopts.MaxTestIters;            % DV MP: Use new options
 
 FunTolerance  = contopts.contL_Testf_FunTolerance;   % MP:
 VarTolerance  = contopts.contL_Testf_VarTolerance;   % MP:
+if isequal(cds.curve, @limitcycleL) && 1 <= id && id <= 5
+  FunTolerance = contopts.bpc_tolerance; 
+end
 
 % default locator: bisection
 %print_diag(3,'Locating by test function %d\n', id);
@@ -630,7 +661,11 @@ if ((~isempty(failed1)) || (~isempty(failed2))) && (failed1 || failed2)
     return;
 end
 
-tmax = 10 * max(abs(t1), abs(t2));
+if contopts.SingularTestFunction
+  tmax = Inf;
+else
+  tmax = 10 * max(abs(t1), abs(t2));
+end
 p    = 1;
 failed2 = 1;
 R = [];
@@ -659,6 +694,7 @@ for i = 1:MaxIters
     end
     p3 = newtcorrL(x3,v3, CISdata3);
     if isempty(p3)
+        print_diag(3, 'newtcorrL algorithm failed during bisection')
         return
     end
     
@@ -703,6 +739,112 @@ print_diag(1,'Time spent in bisection: %f\n', toc);
 
 %--< END OF locatetestfunction>--
 %---------------------------------------------
+
+%
+%LocateTestFunction(id,x1,v1,x2,v2)
+%
+%----------------------------------------------
+%function [x,v,R,i,p1,p2] = LocateTestFunction(id, p1, p2, MaxIters, FunTolerance, VarTolerance)
+function [pout,p1,p2] = LocateTestFunction2(id, p1, p2)
+tic
+global contopts cds
+
+pout = [];
+MaxIters  = contopts.MaxTestIters;            % DV MP: Use new options
+
+FunTolerance  = contopts.contL_Testf_FunTolerance;   % MP:
+VarTolerance  = contopts.contL_Testf_VarTolerance;   % MP:
+if isequal(cds.curve, @limitcycleL) && 1 <= id && id <= 5
+  FunTolerance = contopts.bpc_tolerance; 
+end
+
+% default locator: bisection
+%print_diag(3,'Locating by test function %d\n', id);
+
+[t1, failed1]   = EvalTestFunc(id, p1);
+[t2, failed2]   = EvalTestFunc(id, p2);
+
+if ((~isempty(failed1)) || (~isempty(failed2))) && (failed1 || failed2)
+    print_diag(3, 'Evaluation of testfunctions failed in bisection');
+    pout = [];
+    return;
+end
+
+tmax = 10 * max(abs(t1), abs(t2));
+p    = 1;
+failed2 = 1;
+R = [];
+for i = 1:MaxIters
+    if tmax < Inf
+        % WM: make educated guess of where the zero point might be
+        r = abs(t1/(t1-t2))^p;
+        if r <= 0.1 || r >= 0.9
+            r=0.5;
+        end
+    else
+        r=0.5;          % r = 0.5; %  -> 'normal' way
+    end
+%     r = 0.5; % DV:TEST
+    
+    x3 = p1.x + r*(p2.x-p1.x);
+    v3 = p1.v + r*(p2.v-p1.v);
+    v3 = v3/norm(v3);
+    CISdata3 = [];
+    if cds.newtcorrL_needs_CISdata 
+        CISdata3 = feval(cds.curve_CIS_step, x3, p1.CISdata);
+        if isempty(CISdata3)
+            print_diag(3, 'CIS algorithm failed during bisection')
+            return
+        end
+    end
+    p3 = newtcorrL(x3,v3, CISdata3);
+    if isempty(p3)
+        print_diag(3, 'newtcorrL algorithm failed during bisection')
+        return
+    end
+    
+    p3.CISdata = feval(cds.curve_CIS_step, p3.x, p1.CISdata);
+    [tval, failed] = EvalTestFunc(id,p3);
+    if failed
+        print_diag(3, 'Evaluation of testfunctions failed in bisection');
+        return;
+    end
+    
+    %JH: Changed to make the check for relative difference. 9/25/06
+    %dist1 = norm(x-x1);
+    %dist2 = norm(x-x2);
+    dist1 = 2*norm(p3.x-p1.x)/(norm(p1.x)+norm(p3.x));
+    dist2 = 2*norm(p3.x-p2.x)/(norm(p2.x)+norm(p3.x));
+    
+    if abs(tval(id)) > tmax
+        print_diag(3,'Testfunction behaving badly.\n');
+        break;
+    end
+    
+    if (abs(tval(id)) <= FunTolerance && min(dist1,dist2) < VarTolerance)
+        failed2 = 0;
+        pout = p3;
+        break;
+    elseif sign(tval(id))==sign(t2(id))
+        p2 = p3;
+        t2 = tval;
+        p  = 1.02;
+    else
+        p1 = p3;
+        t1 = tval;
+        p  = 0.98;
+    end
+end
+
+if failed2  % DV: When MaxIters is reached without meeting tolerances
+    pout = [];
+end
+
+print_diag(1,'Time spent in bisection: %f\n', toc);
+
+%--< END OF locatetestfunction2>--
+
+
 %----------------------------------------------
 %
 %LocateUserFunction(id,x1,v1,x2,v2)

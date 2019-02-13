@@ -22,8 +22,7 @@ function out = limitcycleL
 return
 
 %----------------------------------------------------
-% function func = curve_func(arg)
-function func = curve_func(arg, CISdata)  % MP
+function func = curve_func(arg, ~)  % unused argument is CISdata
 
   [x,p,T] = rearr(arg);
   func = BVP('BVP_LC_f','BVP_LC_bc','BVP_LC_ic',x,p,T);
@@ -33,10 +32,11 @@ function varargout = jacobian(varargin)
 
   [x,p,T] = rearr(varargin{1});
   varargout{1} = BVP_jac('BVP_LC_jac',x,p,T,2,2);
- 
+  
 %-----------------------------------------------------
 
 function varargout = hessians(varargin)
+varargout = {};
 
 %------------------------------------------------------
 
@@ -65,7 +65,6 @@ function point = defaultprocessor(varargin)
           print_diag(3, 'Failed to compute multipliers');
       end
   end
-  
   if lds.CalcPRC || lds.CalcdPRC
       [lds.PRCdata, lds.dPRCdata] = calcPRC(point.x,lds.PRCInput,[0 0]);
   end
@@ -75,7 +74,7 @@ function point = defaultprocessor(varargin)
   if ~lds.CalcdPRC
       lds.dPRCdata = [];
   end
-  
+  print_diag(2,'multiplier: %.16f\n',lds.multipliers)
   point.multipliers = lds.multipliers;
   point.timemesh = lds.msh;
   point.ntst = lds.ntst;
@@ -113,13 +112,13 @@ global lds
   option = contset;
   switch lds.nphase
       case 1
-          option=contset(option,'IgnoreSingularity',[2 3 4]);
+          option = contset(option,'IgnoreSingularity',[2 3 4]);
       case 2
-          option=contset(option,'IgnoreSingularity',4);
+          option = contset(option,'IgnoreSingularity',4);
   end
   option = contset(option, 'SymDerivative', symord);
   option = contset(option, 'Workspace', 1);
-  option = contset(option, 'Locators', [0 0 0 0]);
+  option = contset(option, 'Locators', [1 0 0 0]);
   symordp = 0;
   if ~isempty(lds.JacobianP), symordp = 1; end
   if ~isempty(lds.HessiansP),  symordp = 2; end
@@ -127,8 +126,8 @@ global lds
 
 %------------------------------------------------------  
 %function [out, failed] = testf(id, x0, v)
-function [out, failed] = testf(id, x0, v, CISdata)
-global lds cds
+function [out, failed] = testf(id, x0, v, ~) % unused argument is CISdata
+global lds cds contopts
 
 [x,p,T] = rearr(x0);
 out(8) = 0;
@@ -139,6 +138,7 @@ if any(ismember([6 8],id))
     lds.multipliersX = x0;
 end
 if any(ismember([1 2 3 4 5],id))
+  if contopts.enable_bpc
     Jb = BVP_jac('BVP_BPC_jacC',x,p,T,1,1); 
     tmp = [lds.BP_psi1(lds.coords)'; 0];
     Jb= [Jb tmp;lds.BP_phi1(lds.coords) 0 0];
@@ -157,28 +157,48 @@ if any(ismember([1 2 3 4 5],id))
     out(3) = st(end,1);
     out(4) = st(end,2);
     out(5) = norm(out(1:4));
-
+  else
+    out(1:5) = ones(5,1);
+  end
 end
 if ismember(6,id)% PD
+  if contopts.nCriticalMultipliers > 0
+    % real is needed to ensure that small complex parts induced by roundoff
+    % errors do not make the result complex.
+    % A complex valued test function would cause false positives when detecting 
+    % bifurcations.
+    out(6) = real(prod(lds.multipliers + ones(size(lds.multipliers))));
+  else
     A = lds.monodromy;
     A = A + eye(size(A,1));
     out(6) = det(A);
+  end
 end
 if ismember(7,id) % LPC
     out(7) = v(lds.ncoords+2);
 end
 if ismember(8,id) %NS
+  if contopts.nCriticalMultipliers > 0
+    n = contopts.nCriticalMultipliers;
+    mults = lds.multipliers;
+    psi_ns = 1;
+    for i=1:n-1
+      psi_ns = psi_ns * (abs(mults(i)*mults(i+1))-1);
+    end
+    out(8) = real(psi_ns);
+  else
     A = lds.monodromy;
     A = A(lds.bialt_M1).*A(lds.bialt_M2)-A(lds.bialt_M3).*A(lds.bialt_M4);
     A = A-eye(size(A,1));   
     out(8) = det(A);
+  end
 end
 if ~isempty(lastwarn)
     failed = [failed id];
 end
 
 %-------------------------------------------------------------
-function [out, failed] = userf( userinf, id, x, v)
+function [out, failed] = userf( userinf, id, x, ~) % unused argument is v
 global  lds
 dim =size(id,2);
 failed = [];
@@ -192,58 +212,79 @@ for i=1:dim
       out(i)=0;
   end
   if ~isempty(lastwarn)
-    failed = [failed i];
+    failed = [failed i]; %#ok<AGROW>
   end
 end
 %-----------------------------------------------------------------
-function [failed,s] = process(id,point, s)
+function [failed,s] = process(id,point,s)
 x = point.x;
-v = point.v;
+% v = point.v;
 global lds contopts
   switch id
   case 1
-    fprintf('Branch Point cycle(period = %e, parameter = %e)\n',x(length(x)-1),x(length(x)));
+    format_string = 'Branch Point cycle(period = %e, parameter = %e)\n'; 
+    print_diag(0, format_string, x(end-1), x(end));
     s.msg  = sprintf('Branch Point cycle'); 
   case 2
-    [x0,p,T] = rearr(x);  
-    J = BVP_jac('BVP_PD_jac',x,p,T,1,1);
-    [LJ,UJ] = lu(J);
-    b = []; b(lds.ncoords+1)=1; b=b';
-    ss = UJ\(LJ\b);
-    lds.PD_phi = reshape(ss(lds.coords),lds.nphase,lds.tps);
-    s.data.phi = lds.PD_phi(lds.coords);
-    s.data.pdcoefficient = nf_PD(x);
-    fprintf('Period Doubling (period = %e, parameter = %e)\n',x(length(x)-1),x(length(x)));
-    s.msg  = sprintf('Period Doubling');
-    fprintf('Normal form coefficient = %d\n', s.data.pdcoefficient);
+    if contopts.enable_nf_pd
+      [~,p,T] = rearr(x); % unused argument is x0
+      J = BVP_jac('BVP_PD_jac',x,p,T,1,1);
+      [LJ,UJ] = lu(J);
+      b = []; b(lds.ncoords+1)=1; b=b';
+      ss = UJ\(LJ\b);
+      lds.PD_phi = reshape(ss(lds.coords),lds.nphase,lds.tps);
+      s.data.phi = lds.PD_phi(lds.coords);
+      s.data.pdcoefficient = nf_PD(x);
+      format_string = 'Period Doubling (period = %e, parameter = %e)\n';
+      print_diag(0, format_string, x(end-1), x(end));
+      s.msg  = 'Period Doubling';
+      print_diag(0, 'Normal form coefficient = %d\n', s.data.pdcoefficient);
+    else
+      s.data.phi = NaN;
+      s.data.pdcoefficient = NaN;
+      format_string = 'Period Doubling (period = %e, parameter = %e)\n';
+      print_diag(0, format_string, x(end-1), x(end));
+      s.msg  = 'Period Doubling';
+    end
   case 3
+    s.msg = 'Limit point cycle';
     if contopts.enable_nf_lpc
       s.data.lpccoefficient = nf_LPC(x);
-      fprintf('Limit point cycle (period = %e, parameter = %e)\n',x(length(x)-1),x(length(x)));
-      s.msg  = sprintf('Limit point cycle'); 
-      fprintf('Normal form coefficient = %d\n', s.data.lpccoefficient);
+      format_string = 'Limit point cycle (period = %e, parameter = %e)\n';
+      print_diag(0, format_string, x(end-1), x(end));
+      print_diag(0,' Normal form coefficient = %d\n', s.data.lpccoefficient);
     else
       s.data.lpccoefficient = NaN;
-      fprintf('Limit point cycle (period = %e, parameter = %e)\n',x(length(x)-1),x(length(x)));
-      s.msg  = sprintf('Limit point cycle'); 
+      format_string = 'Limit point cycle (period = %e, parameter = %e)\n';
+      print_diag(0, format_string, x(end-1), x(end));
     end
   case 4
-%   fprintf('Neimark-Sacker (period = %e, parameter = %e)\n',x(length(x)-1),x(length(x)));
     s.data.nscoefficient = nf_NS(x);
-    if strcmp(s.data.nscoefficient,'Neutral saddle');
-        s.msg  = sprintf('Neutral Saddle Cycle');
- %       s.label='NC ';
-        fprintf('Neutral Saddle Cycle (period = %e, parameter = %e)\n',x(length(x)-1),x(length(x)));
+    if strcmp(s.data.nscoefficient,'Neutral saddle')
+      s.msg = 'Neutral saddle cycle';
+      format_string = 'Neutral Saddle Cycle (period = %e, parameter = %e)\n';
+      % A neutral saddle is not really a bifurcation, therefore we use priority 
+      % 1 instead of 0, so that it is only logged if 
+      % contopts.contL_DiagnosticsLevel is set higher than the default value
+      % which is zero.
+      print_diag(1, format_string, x(end-1), x(end));
     else
-        s.msg  = sprintf('Neimark Sacker');
-        fprintf('Neimark-Sacker (period = %e, parameter = %e)\n',x(length(x)-1),x(length(x)));
-        fprintf('Normal form coefficient = %d\n', s.data.nscoefficient);
+      s.msg = 'Neimark Sacker';
+      format_string = 'Neimark-Sacker (period = %e, parameter = %e)\n';
+      print_diag(0, format_string, x(end-1) ,x(end));
+      print_diag(0, 'Normal form coefficient = %d\n', s.data.nscoefficient);
     end
   end
   failed = 0;
 %-------------------------------------------------------------  
 function [S,L] = singmat
-
+  % defines which changes in testfunctions correspond to which singularity type
+  % 0 == require sign-change
+  % 1 == require sign-non-change
+  % 2 == require change
+  % anything else: no requirement
+  % columns correspond to testfunctions
+  % rows correspond to singularities BPC, PD, LPC, and NS respectively
   S = [ 0 0 0 0 8 8 8 8
         8 8 8 8 8 0 8 8
         8 8 8 8 8 8 0 8
@@ -271,7 +312,8 @@ function varargout = init(varargin)
 function varargout = done
 varargout = {};
 %-----------------------------------------------------------
-function [res,x,v,CISdata] = adapt(x,v,CISdata,tfUpdate)
+function [res,x,v,CISdata] = adapt(x,v,CISdata,~) 
+% unused argument (~) is tfUpdate
 global lds cds
 
 % calculate phi and psi for next point
@@ -303,7 +345,8 @@ res = 1;
 % ---------------------------------------------------------------
 
 
-function [x,v] = locateBPC(id, x1, v1, x2, v2)
+function [x,v] = locateBPC(~, x1, v1, ~, v2)
+% unused arguments are id and x2
 global  cds
 
 ndim = cds.ndim;
@@ -325,6 +368,7 @@ while i < 4
 
   [A,f]=locjac(x,b);
   % WM: VarTol and FunTol were switched
+  print_diag(3,"locateBPC norm(du):%.5f norm(f): %.5f\n",norm(du),norm(f))
   if norm(du) < cds.options.VarTolerance && norm(f) < cds.options.FunTolerance 
       return; 
   end
@@ -346,7 +390,7 @@ global cds lds
 J = BVP_BPCjac('BVP_BPC_jacCC',x,p,T,1,1);
 
 b1=[zeros(lds.ncoords+1,2);eye(2)];
-sn = full(J)\b1;
+sn = J\b1;
 f = [feval(cds.curve_func, x0) + b*lds.BPC_psi'; sn(end,:)'];
 
 A = BVP_jac('BVP_LC_jac',x,p,T,2,2);
@@ -356,7 +400,11 @@ A(j,:)   = 0;
 A(j+1,:) = 0;
 
 b1 = []; b1(lds.ncoords+3)=1;
+
 st = A'\b1';
+if any(st==Inf) || any(isNaN(st))
+  st = lsqminnorm(A',b1');
+end
 v11 = sn(1:lds.ncoords,1)';
 v21 = sn(1:lds.ncoords,2)';
 v12 = sn(lds.ncoords+1,1);
@@ -458,9 +506,11 @@ for j=lds.tsts
 end
 jac(range(end)+1,1:lds.ncoords)= ic;
 %compute borders
-[Q,R,E] = qr(full(jac));
-R(end,end) = 0;R(end,end-1) = 0;
+[Q,R,E] = qr(jac);
+R(end,end) = 0;
+R(end,end-1) = 0;
 p = E*[R(1:end-1,1:end-2)\-R(1:end-1,end-1:end);eye(2)];
+p = full(p);
 p = p'/norm(p);
 lds.BPC_phi1=p(1,:);
 lds.BPC_phi2=p(2,:);
@@ -525,9 +575,9 @@ f = f';
 
 function jacx = BVP_jac(BVP_func,x,p,T,pars,nc)
 global lds
- 
+print_diag(5,'running %s\n',BVP_func);
 p2 = num2cell(p);
-jacx = feval(BVP_func,lds.func,x,p,T,pars,nc,lds,p2,lds.Jacobian,lds.ActiveParams,lds.JacobianP); 
+jacx = feval(BVP_func,lds.func,x,p,T,pars,nc,lds,p2,lds.Jacobian,lds.ActiveParams,lds.JacobianP);
 
 % ---------------------------------------------------------------
 function WorkspaceInit(x,v)
@@ -608,8 +658,13 @@ lds.NS2_switch = 0;
 
 
 if contopts.Singularities && contopts.enable_bialt
-  % uses about three times as much memory as continuation itself
-  [lds.bialt_M1,lds.bialt_M2,lds.bialt_M3,lds.bialt_M4]=bialtaa(lds.nphase);
+
+  if contopts.nCriticalMultipliers > 0
+    [lds.bialt_M1,lds.bialt_M2,lds.bialt_M3,lds.bialt_M4]=bialtaa(contopts.nCriticalMultipliers);
+  else
+      % uses about three times as much memory as continuation itself
+    [lds.bialt_M1,lds.bialt_M2,lds.bialt_M3,lds.bialt_M4]=bialtaa(lds.nphase);
+  end
 end
 
 lds.CalcMultipliers = contopts.Multipliers;% contget(cds.options, 'Multipliers', 0);
@@ -633,6 +688,7 @@ function [x,v,s] = WorkspaceDone(x,v,s)
 function jac = BVP_BPCjac(BVP_func,x,p,T,pars,nc)
 global lds
 p2 = num2cell(p);
+print_diag(5,'running %s\n', BVP_func)
 jac = feval(BVP_func,lds.func,x,p,T,pars,nc,lds,p2,lds.Jacobian,lds.ActiveParams,lds.JacobianP,lds.BranchParam); 
 
 %------------------------------------------------------------

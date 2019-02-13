@@ -1,5 +1,7 @@
 function [M, Q, is_deflated] = deflate_zeros(M,Q,is_deflated)
   k = 1; 
+  N = size(M,1);
+  m = size(M,3);
   while k <= m-1
     i = 1;
     while i <= N
@@ -8,7 +10,7 @@ function [M, Q, is_deflated] = deflate_zeros(M,Q,is_deflated)
         [M,Q] = deflate_zero(M,Q,k,i);
         % start again from to beginning to look if any 
         % new zeros have been introduced on the diagonals 
-        k = 1;
+        k = 0;
         break;
       end
       i = i + 1;

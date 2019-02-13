@@ -34,7 +34,7 @@ Q = [feval(cds.curve_func, x, CISdata); 0];
 funcnorm = normU(Q);
 
 for i = 1:MaxCorrIters
-    
+    print_diag(5,'newton iteration %d function norm %.5e\n', i, funcnorm)
     if i <= MaxNewtonIters
         A = contjac(x, CISdata);
         if isempty(A)
@@ -118,8 +118,11 @@ for i = 1:MaxCorrIters
             end
             
             v = bordCIS1([A;v'],R',1);
-            v = v/norm(v);
-            
+            if contopts.newtcorrL_use_max_norm
+              v = v/max(abs(v));
+            else
+              v = v/norm(v);
+            end
             pout.x = x;
 %             newtcorrL_1 =1
 %            length_x =  length(x)

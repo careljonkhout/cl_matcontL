@@ -89,10 +89,15 @@ opt = contset(opt,'CIS_NStableRef',            4);
 opt = contset(opt,'CIS_MaxUnstable',           5); %new
 opt = contset(opt,'CIS_Ric_Cayley_Shift',      1); 
 opt = contset(opt,'contL_EQ_BranchingMethod',  2); 
+opt = contset(opt, 'CIS_UsingCIS',   false);
+    % disable smoothing by angle:
+  opt = contset(opt, 'contL_SmoothingAngle', pi/2);
 opt = contset(opt,'Locators',            [0 0 0]);
 opt = contset(opt,'TestPath',mfilename('fullpath'));
 opt = contset(opt, 'Filename',     'testbruss_Orb_LC');
 opt = contset(opt, 'Multipliers',   1);
+opt = contset(opt, 'nCriticalMultipliers',  4);
+opt = contset(opt, 'contL_DiagnosticsLevel', 5);
 ap = 5;
 opt.TestTolerance = 1e-5;
 

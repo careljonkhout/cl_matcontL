@@ -44,15 +44,15 @@ cds.nap = length(ap);
 cds.curve_CIS_step = [];
 
 
-nphase = lds.nphase;
+
 x=y';
 xstart=round(size(x,2)/3);
 
 amin=sum(abs(x(:,xstart:end)-x(:,1)*ones(1,size(x(:,xstart:end),2))));
 ep=tolerance;
-amin(find(amin(:)<ep))=inf;
+amin(find(amin(:)<ep))=inf; %#ok<FNDSB>
 [pp,qq]=min(amin-(1e-4));
-if (pp==Inf)|pp<0
+if (pp==Inf)||pp<0
    ind=[]; 
 else
     ind = qq(1)+xstart-1;
@@ -107,7 +107,7 @@ if siz > 9
         lds.user{j}= func_handles{k};
         j=j+1;
     end
-else lds.user=[];
+else; lds.user=[];
 end
 lds.nphase = size(y,2);
 lds.ActiveParams = ap;

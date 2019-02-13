@@ -1,17 +1,29 @@
-function point = Newton_Picard_Corrections(x,v)
+function point = Newton_Picard_Corrections(x0,v)
   
   global cds contopts
  
-  curve_function_norm = max(abs(feval(cds.curve_func,x)));
+  curve_function_norm = max(abs(feval(cds.curve_func,x0)));
+  x = x0;
   corrections = 0;
+  if curve_function_norm > 10
+    point = [];
+    return;
+  end
   while (~ (curve_function_norm < contopts.FunTolerance)) ...
       && corrections < contopts.MaxCorrIters
-
     period = x(end-1);
     fprintf('function_norm: %.8e period: %.8e corrections: %d\n', ...
       curve_function_norm, period, corrections);
     corrections = corrections + 1;
-    x = Newton_Picard_Correction(x,v);
+    if     isequal(cds.curve, @single_shooting)
+      x = Newton_Picard_Correction(x0,x,v);
+    elseif isequal(cds.curve, @multiple_shooting)
+      x = Newton_Picard_Multiple_Shooting(x0,x,v);
+    else
+      print_diag(0,'Newton_Picard_Corrections: wrong curvefile.\n');
+      point = [];
+      return
+    end
     if isempty(x)
       break;
     end
@@ -21,10 +33,11 @@ function point = Newton_Picard_Corrections(x,v)
       break
     end
     new_curve_function_norm = max(abs(feval(cds.curve_func,x)));
-    if (new_curve_function_norm > curve_function_norm) 
-      fprintf('function_norm: %.8e period: %.8e corrections: %d\n', ...
-      new_curve_function_norm, period, corrections);
-      fprintf('Curve function norm is increasing. Aborting Corrections.\n');
+    if (new_curve_function_norm > 2 * curve_function_norm) 
+      print_diag(0,'function_norm: %.8e period: %.8e corrections: %d\n', ...
+        new_curve_function_norm, period, corrections);
+      print_diag(0,['Curve function norm is strongly increasing.' ...
+        ' Aborting Corrections.\n']);
       break;
     end
     curve_function_norm = new_curve_function_norm;
@@ -34,6 +47,9 @@ function point = Newton_Picard_Corrections(x,v)
     point.x = x;
     point.v = v;
     point.iters = corrections;
+    if isfield(cds,'eigenvalues')
+      disp(cds.eigenvalues)
+    end
   else
     point = [];
     return
@@ -41,13 +57,13 @@ function point = Newton_Picard_Corrections(x,v)
   
   
 
-function x = Newton_Picard_Correction(x0,v0)
+function x = Newton_Picard_Correction(x0,x,v0)
 
   global cds
 
-  active_par_val               = x0(end);
-  period                       = x0(end-1);
-  phases_0                     = x0(1:end-2);
+  active_par_val               = x(end);
+  period                       = x(end-1);
+  phases_0                     = x(1:end-2);
   parameters                   = cds.P0;
   parameters(cds.ActiveParams) = active_par_val;
   parameters                   = num2cell(parameters);
@@ -71,7 +87,7 @@ function x = Newton_Picard_Correction(x0,v0)
   phi = deval(cds.cycle_trajectory,period);
 
   
-  if ~ isfield(cds, 'V')
+  if true || ~ isfield(cds, 'V')
     cds.V = compute_subspace(period, parameters);
     V = cds.V;
     basis_size = size(V,2);
@@ -134,7 +150,7 @@ function x = Newton_Picard_Correction(x0,v0)
   right_hand_side = [
     - V'                   * (phi - phases_0                + M_delta_q_r);
     - cds.previous_dydt_0' * (phases_0 - cds.previous_phases  + delta_q_r);
-    - v0(1:end-2)'         * (phi - phases_0                  + delta_q_r);
+    - v0' * (x-x0) -        - v0(1:end-2)' * delta_q_r
   ];
 
   delta_p__delta_T_and_delta_gamma = left_hand_side \ right_hand_side;
@@ -198,7 +214,7 @@ function dphidp = d_phi_d_gamma(x, period, parameters)
 function V = compute_subspace(period, parameters)
   global cds
   
-  p = min([10 cds.nphases]);
+  p = min([4 cds.nphases]);
   cds.p_extra = 2;
   cds.p = p;
 
@@ -216,7 +232,7 @@ function V = compute_subspace(period, parameters)
 
   eigenvalues = diag(eigenvalues);
   basis = zeros(cds.nphases, p + cds.p_extra);
-
+  cds.eigenvalues = eigenvalues;
   i = 0;
 
   while i <= p + cds.p_extra - 1

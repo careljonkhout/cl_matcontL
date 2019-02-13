@@ -40,10 +40,11 @@ if nargin == 1
         print_diag(0,'Number of Points = %d\n', cds.i);
         
         % save .mat file with singular points and options
-        s = cds.sout; %#ok<NASGU>
+        s = cds.sout;
         save([cds.datapath, cds.runID, '.mat'], 's', 'contopts')
         return
     end
+
     % Carel: print every point on command line
     print_diag(0,'%3d\t%2d\t %s:  '  ,cds.i,[],'  ');
     print_diag(0,'%+.6e  '      ,point.x(end-cds.nap+1:end));
@@ -68,14 +69,18 @@ elseif nargin == 2
     print_diag(0,'%+.6e  '      ,point.x(end-cds.nap+1:end));
     print_diag(0,'%.6e  '       ,norm(point.x(1:cds.ncoo)));
     print_diag(0,'%.6e  \n'     ,point.R);
+    cds.sout = [cds.sout, s];
     try
       cds.sout = [cds.sout, s];
-    catch
-      disp(cds.sout)
-      disp(size(cds.sout))
-      disp(s)
-      disp(size(s))
+    catch e
+      disp('An minor error occurred in savePoint.m')
+      disp(e)
+      disp(e.stack)
     end
+    if contopts.always_save_s
+      save([cds.datapath, cds.runID, '.mat'], 's', 'contopts')
+    end
+
     
 end
 
@@ -83,7 +88,7 @@ end
 if contopts.NewtonPicard
   failed = savePointDataFile(point.x);
 elseif isfield(point,'multipliers') %Carel
-  failed = savePointDataFile(point.x, point.v, point.h, point.multipliers);
+  failed = savePointDataFile(point.x, point.v, point.h, point.tvals', point.uvals', point.multipliers);
 else
   failed = savePointDataFile(point.x, point.v, point.h, point.tvals', point.uvals');
 end

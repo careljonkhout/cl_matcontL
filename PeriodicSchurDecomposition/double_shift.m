@@ -1,4 +1,4 @@
-function [M,Q] = double_shift(M,Q,L,U)
+function [M,Q] = double_shift(M,Q,L,U,a,b,c,d)
   N = size(M,1);
   m = size(M,3);
   n = U-L+1;
@@ -6,8 +6,8 @@ function [M,Q] = double_shift(M,Q,L,U)
   for i=1:m
     H = M(L:U,L:U,i)*H;
   end
-  lambda_1 = H(n-1,n-1) + H(n,n);
-  lambda_2 = H(n-1,n-1)*H(n,n) - H(n-1,n)*H(n,n-1);
+  lambda_1 = a+d; %H(n-1,n-1) + H(n,n);
+  lambda_2 = a*d - b*c; %H(n-1,n-1)*H(n,n) - H(n-1,n)*H(n,n-1);
   %H_bar = zeros(3,1);
   %H_bar(1) = ((H(n,n)-H(1,1))*(H(n-1,n-1)-H(1,1))-H(n,n-1)*H(n-1,n)) ... 
   %            / H(2,1)+H(1,2);

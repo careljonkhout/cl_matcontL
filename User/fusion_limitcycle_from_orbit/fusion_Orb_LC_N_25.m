@@ -120,6 +120,8 @@ function fusion_Orb_LC_N_25
   opt = contset(opt, 'Backward',       false);
   opt = contset(opt, 'Singularities',  true);
   opt = contset(opt, 'CIS_UsingCIS',   false);
+    % disable smoothing by angle:
+  opt = contset(opt, 'contL_SmoothingAngle', pi/2);
 
   ap = 3;
   p2 = [a; b; -0.72];

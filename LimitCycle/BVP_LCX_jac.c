@@ -85,8 +85,20 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 	thisfield = mxGetFieldByNumber(prhs[6],0,41);
 	pwi = mxGetPr(thisfield);	/* Extension of weights */
 	    
-    /* Sparse matrix as returnvalue */
-	plhs[0] = mxCreateSparse(ncoords+1,ncoords+1+nfreep,ncoords*ncoords,mxREAL);
+   /* Sparse matrix as returnvalue */
+  int jacobian_height = ncol * ntst * nphase + 1;
+  int jacobian_width  = jacobian_height + 1;
+  // we compute a pessimistic upper bound for the number of nonzero's (nnz)
+  // added by Carel Jonkhout, use matlab commands nnz and spy to refine further
+  int nnz_estimate  = ncol * nphase * (ncol + 1) * nphase * ntst; // main blocks
+       nnz_estimate += 2 * nphase;               // boundary conditions
+       nnz_estimate += (nfreep + 1) * jacobian_height; // last two columns
+       nnz_estimate += 1 * jacobian_width;      // bottom rows
+   
+  if (nnz_estimate > ncoords*ncoords) {
+     nnz_estimate = ncoords*ncoords;
+  }
+	plhs[0] = mxCreateSparse(ncoords+1,ncoords+1+nfreep,nnz_estimate,mxREAL);
 	pr = mxGetPr(plhs[0]);
 	ir = mxGetIr(plhs[0]);
 	jc = mxGetJc(plhs[0]);

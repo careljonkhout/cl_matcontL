@@ -109,23 +109,12 @@ options.PRC             =    0;       % DV 2018
 options.dPRC            =    0;       % DV 2018
 options.Input           =    0;       % DV 2018
 options.NewtonPicard    =    false;
-options.enable_nf_lpc   =    true;    
-% Set enable_nf_lpc to false to disable computation of the normal form 
-% for limit points of cycle. Normal form computations on large systems can
-% cause out of memory errors on continuation runs that would otherwise run fine.
-% Note: nf_lpc is only implemented for limitcycle.m
-options.enable_bialt    =    true;
-% Set enable_bialt to false to prevent bialtaa.m from running
-% bialtaa.m does computations related to bifurcations of cycles when 
-% continuing cycles with limitcycle.m
-% bialtaa uses a lot of memory. Hence it may cause trouble when continuing
-% cycles of large systems with limitcycle.m
+
                                                 
 % ActiveUParams
 % ActiveSParams
 % ActiveSParam
 % TSearchOrder
-options.TSearchOrder = 1; % Carel, needed for CorrectFirstPoint routine for cycles
 % note that cl_matcontL allows to set more options
 options.contL_DiagnosticsLevel  =    0;   % Diagnostic Level, -inf to suppress all output
 options.contL_LogFile           =    1;   % Whether a logfile will be created
@@ -138,7 +127,7 @@ options.contL_EQ_BranchingMethod = 0;    % 0: Normal Form Method, 1: Perpendicul
 options.contL_EQ_SingLinSystTol  = 0.01; % Bordered System Options
 options.IgnoreSingularity        = [];   % Boolean Array: Toggles which singularities to ignore  DV: old name 'Loc_IgnoreSings'
 
-options.MaxTestIters     =   10;         % Tolerances for bisection to detect singularities (without locators)   DV: old name 'Loc_Testf_MaxIters'
+options.MaxTestIters     =   20;         % Tolerances for bisection to detect singularities (without locators)   DV: old name 'Loc_Testf_MaxIters'
 options.contL_Testf_FunTolerance = 1e-5; % DV: similar to TestTolerance
 options.contL_Testf_VarTolerance = 1e-4; % DV: similar to TestTolerance
 
@@ -154,6 +143,38 @@ options.contL_Loc_VarTolerance   = 1e-4;
                             
 options.Multipliers               = 0;             % MP?
 options.Workspace                 = 1;             % MP?
+options.enable_nf_lpc   =    true;    
+% Set enable_nf_lpc to false to disable computation of the normal form 
+% for limit points of cycle. Normal form computations can take a long time to
+% run.
+% Note: nf_lpc is only implemented for limitcycle.m
+options.enable_nf_pd    =    true;
+% Set enable_nf_pd to false to disable computation of the normal form 
+% for period doubling point of cycle. Normal form computations on large systems
+% take a long time to run.
+% Note: nf_lpc is only implemented for limitcycle.m
+options.enable_bialt    =    true;
+% Set enable_bialt to false to prevent bialtaa.m from running
+% bialtaa.m does computations related to bifurcations of cycles when 
+% continuing cycles with limitcycle.m
+% bialtaa uses a lot of memory. Hence it may cause trouble when continuing
+% cycles of large systems with limitcycle.m
+options.nCriticalMultipliers = -1;
+% set to a specific number to set the number of multipliers that are to be 
+% considered for bifurcation detection. Bifurcation detection will be performed 
+% the largest options.nCriticalMultipliers multipliers (in modulus). So suppose
+% the trivial multiplier is the nth largest multiplier by modulus, then
+% nCriticalMultipliers should be at the very least n+2, so that a pair of
+% complex  multipliers inside the unit circle is included. See also
+% LimitCycle/limitcycleL.m. Choosing a large value will consume memory and take
+% more computation time.
+options.enable_bpc     = true;
+options.bpc_tolerance = options.contL_Userf_FunTolerance;
+options.console_output_level = 0; % set to 5 to see all debug info.
+options.newtcorrL_use_max_norm = false;
+options.always_save_s = true;
+options.SingularTestFunction = false;
+
                             %% Determine testpath
 options.Filename = [];           
 ST = dbstack('-completenames');
@@ -161,7 +182,7 @@ if length(ST) > 2
     name = ST(3).file;
     % remove .m (or other extension)
     ind = find(name == '.', 1, 'last');
-    if ~isempty(ind) && ind > length(name) - 3;
+    if ~isempty(ind) && ind > length(name) - 3
         options.TestPath = name(1:ind-1);
     else
         options.TestPath = name;
