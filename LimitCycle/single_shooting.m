@@ -140,7 +140,7 @@ function [y_end, monodromy] = monodromy_column_by_column(x, period, parameters)
   parfor i=1:cds.nphases
     fprintf('%d ',i);
     [~, monodromy_map_trajectory] = ode15s(...
-      f, [0 period], monodromy(:,i), integration_opt);
+      f, [0 period], monodromy(:,i),integration_opt);
     monodromy(:,i) = monodromy_map_trajectory(end,:);
   end 
 

@@ -12,6 +12,14 @@ if nargin > 2
     ' must be 1 or 2. The number of arguments is %d'], nargin));
 end
 
+if contopts.every_point_in_separate_mat_file
+  % the if statement is to prevent a "Directory already exists" warning
+  if ~ exist(fullfile(cds.datapath, cds.runID), 'dir')
+    mkdir(cds.datapath, cds.runID)
+  end
+  filename = fullfile(cds.datapath, cds.runID, sprintf('point %d', cds.i));
+  save(filename, 'point');
+end
 if nargin == 1
     % 'normal' point
     if cds.i == 1 % first point
@@ -73,7 +81,7 @@ elseif nargin == 2
     try
       cds.sout = [cds.sout, s];
     catch e
-      disp('An minor error occurred in savePoint.m')
+      disp('A minor error occurred in savePoint.m')
       disp(e)
       disp(e.stack)
     end
@@ -87,10 +95,12 @@ end
 
 if contopts.NewtonPicard
   failed = savePointDataFile(point.x);
-elseif isfield(point,'multipliers') %Carel
-  failed = savePointDataFile(point.x, point.v, point.h, point.tvals', point.uvals', point.multipliers);
+elseif isfield(point,'multipliers') %Care
+  failed = savePointDataFile(...
+    point.x, point.v, point.h, point.tvals', point.uvals', point.multipliers);
 else
-  failed = savePointDataFile(point.x, point.v, point.h, point.tvals', point.uvals');
+  failed = savePointDataFile(...
+    point.x, point.v, point.h, point.tvals', point.uvals');
 end
 
 

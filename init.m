@@ -1,55 +1,73 @@
 %RUN ME FIRST!
-if exist('cont','file') || exist('contL', 'file')
+if exist('contL', 'file')
   % in this case some other version of matcont might be on the path
   restoredefaultpath
   clearvars
 end
 
-addpath([cd '/BogdanovTakens/']);
-addpath([cd '/BranchPointCycle/']);
-addpath([cd '/CIS/']);
-addpath([cd '/Continuer/']);
-addpath([cd '/DataStorage/']);
-addpath([cd '/Equilibrium/']);
-addpath([cd '/Hopf/']);
-addpath([cd '/LimitPoint/']);
-addpath([cd '/LimitPointCycle/']);
-addpath([cd '/LimitCycle/']);
-addpath([cd '/LimitCycleCodim2/']);
-addpath([cd '/MultilinearForms/']);
-addpath([cd '/Options/']);
 
-addpath([cd '/SystemFileGenerator/']);
-addpath([cd '/Systems/']);
-addpath([cd '/TimeIntegration/']);
+addpath(genpath(pwd))
 
-p = mfilename('fullpath');
-p = p(1:length(p)-length(mfilename));
-p = strcat(p,'/LimitCycle');
-curdir = cd;
-cd(p);
+% addpath([cd '/BogdanovTakens/']);
+% addpath([cd '/BranchPointCycle/']);
+% addpath([cd '/CIS/']);
+% addpath([cd '/Continuer/']);
+% addpath([cd '/DataStorage/']);
+% addpath([cd '/Equilibrium/']);
+% addpath([cd '/Hopf/']);
+% addpath([cd '/LimitPoint/']);
 
-% Compile the c-files (optimized)
-if ~(exist(strcat('BVP_LC_jac.',mexext),'file'))
-if ~isempty(regexp(mexext,'64','match'))
-    mex -largeArrayDims -O BVP_LC_jac.c;
-    mex -largeArrayDims -O BVP_PD_jac.c;
-    mex -largeArrayDims -O BVP_BPC_jacC.c;
-    mex -largeArrayDims -O BVP_BPC_jacCC.c;
-    mex -largeArrayDims -O BVP_LPC_jac.c;
-    mex -largeArrayDims -O BVP_NS_jac.c;
-    mex -largeArrayDims -O BVP_LCX_jac.c;
-else
-    mex -O BVP_LC_jac.c;
-    mex -O BVP_PD_jac.c;
-    mex -O BVP_BPC_jacC.c;
-    mex -O BVP_BPC_jacCC.c;
-    mex -O BVP_LPC_jac.c;
-    mex -O BVP_NS_jac.c;
-    mex -O BVP_LCX_jac.c;
+% addpath([cd '/LimitPointCycle/']);
+% addpath([cd '/LimitCycle/']);
+% addpath([cd '/LimitCycleNewtonPicard']);
+% addpath([cd '/LimitCycle/pqzschur']);
+% addpath([cd '/LimitCycleCodim2/']);
+% addpath([cd '/MultilinearForms/']);
+% addpath([cd '/Options/']);
+% addpath([cd '/SystemFileGenerator/']);
+% addpath([cd '/Systems/']);
+% addpath([cd '/TimeIntegration/']);
+
+
+
+source_files = {
+  'BVP_LC_jac';
+  
+  'BVP_PD_jac';
+  
+  'BVP_BPC_jacC';
+  'BVP_BPC_jacCC';
+  
+  'BVP_LPC_jac';
+  'BVP_LCX_jac';
+  
+  'BVP_NS_jac';
+};
+
+path = mfilename('fullpath');
+path = path(1:end-length(mfilename));
+path = fullfile(path,'LimitCycle');
+
+for i=1:length(source_files)
+  compile_if_needed(fullfile(path,source_files{i}))
 end
+
+function compile_if_needed(file)
+  if ~(exist(strcat(file, '.', mexext),'file'))
+    compile(file);
+  end  
 end
 
-
-% Return to directory we started in
-cd (curdir);
+function compile(file)
+  path = mfilename('fullpath');
+  path = path(1:end-length(mfilename));
+  path = fullfile(path,'LimitCycle');
+  compile_options = ['-outdir ' path];
+  if ~isempty(regexp(mexext,'64','match'))
+    compile_options = [compile_options ' -largeArrayDims'];
+  end
+  compile_eval_string = ['mex ' compile_options ' -O ' file '.c '];
+  fprintf(...
+    ['The following command is being executed:\n' compile_eval_string '\n'])
+  eval(compile_eval_string);
+end

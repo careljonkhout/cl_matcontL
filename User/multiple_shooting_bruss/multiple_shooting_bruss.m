@@ -2,10 +2,10 @@
 
 run_init_if_needed
 % continuation of cycles cycles in brusselator
-odefile = @brusselator_N_2;
+odefile = @bruss_1d;
 N=2;
 L = 1.1; A = 1; B = 2.2; Dx = 0.008; Dy = 0.004;
-parameters = {L; A; B; Dx; Dy};
+parameters = {N; L; A; B; Dx; Dy};
 handles = feval(odefile);
 title_format_string = ...
   'Brusselator N:%d  L:%.0f  A:%.0f  B:%.1f  Dx:%.3f  Dy:%.3f';
@@ -18,9 +18,9 @@ cds.dydt_ode = handles{2};
 cds.jacobian_ode = handles{3};
 
 cds.probfile = odefile;
-cds.nShootingPoints = 20;
+cds.nShootingPoints = 2;
 cds.nap = 1;
-cds.ActiveParams = 4;
+cds.ActiveParams = 2;
 cds.nphases = 2*N;
 cds.ndim = cds.nShootingPoints * cds.nphases + cds.nap + 1;
 cds.P0 = cell2mat(parameters);
@@ -66,7 +66,7 @@ for i=0:cds.nShootingPoints-1
   initial_continuation_data(indices) = ...
     deval(sol, i / cds.nShootingPoints * period);
 end
-initial_continuation_data(end-1) = period;
+initial_continuation_data(end-1) = period; 
 initial_continuation_data(end)   = cds.P0(cds.ActiveParams);
 
 int_opt = odeset(int_opt, 'Events', []);
@@ -114,6 +114,7 @@ opt = contset(opt, 'Multipliers',    true);
 opt = contset(opt, 'Backward',       false);
 opt = contset(opt, 'Singularities',  false);
 opt = contset(opt, 'CIS_UsingCIS',   false);
+contopts.newtcorrL_use_max_norm = true;
 
 initial_continuation_tangent_vector = [];
 [s, datafile] = contL(@multiple_shooting, ...

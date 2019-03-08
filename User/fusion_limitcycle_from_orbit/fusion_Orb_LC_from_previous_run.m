@@ -9,25 +9,22 @@ clear('contopts')
 N = 25;                     
 odefile = str2func(sprintf('fusion_precomputed_with_sage_N_%d', N));
 
-
-
 opt = contset();
 opt = contset(opt, 'MaxNumPoints',   3);
-opt = contset(opt, 'InitStepsize',   5e-5);
+opt = contset(opt, 'InitStepsize',   1e-1);
 opt = contset(opt, 'MinStepsize',    1e-12);
-opt = contset(opt, 'MaxStepsize',    5e-5);
+opt = contset(opt, 'MaxStepsize',    1e-1);
 opt = contset(opt, 'MaxNewtonIters', 1);
 opt = contset(opt, 'MaxCorrIters',   10);
 opt = contset(opt, 'VarTolerance',   1e-6);
 opt = contset(opt, 'FunTolerance',   1e-8);
-opt = contset(opt, 'Adapt',          100000);
+opt = contset(opt, 'Adapt',          3);
 opt = contset(opt, 'MaxNumPoints',   1000);
 opt = contset(opt, 'CheckClosed',    50);
 opt = contset(opt, 'Multipliers',    true);
 opt = contset(opt, 'Backward',       false);
 opt = contset(opt, 'Singularities',  true);
 opt = contset(opt, 'CIS_UsingCIS',   false);
-% Use locator for BPC, but not for PD, LPC, and NS
 opt = contset(opt, 'Locators'    , [0 0 0 0]);
     % disable smoothing by angle:
 opt = contset(opt, 'contL_SmoothingAngle', pi/2);
@@ -54,7 +51,7 @@ s = s(end);
 [x,v] = loadPoint(dat_filename);
 par = s(end).data.parametervalues;
 ap  = s(end).data.ap;
-ntst = 10; % s(end).data.ntst;
+ntst = 320; % s(end).data.ntst;
 ncol = s(end).data.ncol;
 
 [x,v] = init_LC_LC_L(odefile, x, v, s, par, ap,ntst,ncol);

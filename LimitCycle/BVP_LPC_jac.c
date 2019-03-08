@@ -1,10 +1,26 @@
 /*
+    Carel Jonkhout: I do not know what this file is used for
+ 
     BVP_LPC_jac.c 
         MEX file corresponding to LPC_jac.m
-        Does the evaluation of the jacobian of the BVP of the LPC
+        Does the evaluation of the jacobian of the BVP s
         
     calling syntax:
         result = BVP_LPC_jac(lds.func,x,p,T,pars,nc,lds,gds.period,p2)
+ 
+        see last paragraph of (bibtex citation follows):
+        @article{dhooge2008new,
+          title={New features of the software MatCont
+          for bifurcation analysis of dynamical systems},
+          author={Dhooge, Annick and Govaerts, Willy and Kuznetsov,
+           Yu A and Meijer, Hil Ga{\'e}tan Ellart and Sautois, Bart},
+          journal={Mathematical and Computer Modelling of Dynamical Systems},
+          volume={14},
+          number={2},
+          pages={147--175},
+          year={2008},
+          publisher={Taylor \& Francis}
+        }
 */
 
 #include<math.h>
@@ -96,8 +112,24 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 	pars = mxCalloc(nfreep,sizeof(int));
 	for (i=0; i<nfreep; i++)
 		*(pars+i) = ncoords+i;
+  
+  
+  int jacobian_height = ncol * ntst * (nphase + 1) + 2;
+  int jacobian_width  = jacobian_height;
+  
+    /* we compute an upper bound for the number of nonzero's (nnz) */
+  int nnz_ub;
+  nnz_ub  = ncol * nphase * (ncol + 1) * nphase * ntst;  // main blocks
+  nnz_ub += 2 * nphase;                        // boundary conditions
+  nnz_ub += 2 * jacobian_height;               // rightmost columns
+  nnz_ub += 2 * jacobian_width;                // bottom rows
+  nnz_ub -= 4;                                  // subtract overlap
+  
     /* Sparse matrix as returnvalue */
-	plhs[0] = mxCreateSparse(ncoords+2,ncoords+2,ncoords*ncoords,mxREAL);
+  
+	plhs[0] = mxCreateSparse(jacobian_height,jacobian_width,nnz_ub,mxREAL);
+  
+  
 	pr = mxGetPr(plhs[0]);
 	ir = mxGetIr(plhs[0]);
 	jc = mxGetJc(plhs[0]);

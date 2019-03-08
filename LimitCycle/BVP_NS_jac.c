@@ -1,10 +1,26 @@
 /*
     BVP_NS_jac.c 
         MEX file corresponding to NS_jac.m
-        Does the evaluation of the jacobian of the BVP of theNS
+        Does the evaluation of the jacobian of the BVP for the continuation
+        of a Neimark Sacker bifurcation (NS)
         
     calling syntax:
         result = BVP_NS_jac(lds.func,x,p,T,k,pars,nc,lds,p2)
+ 
+        see last paragraph of (bibtex citation follows):
+        @article{dhooge2008new,
+          title={New features of the software MatCont
+          for bifurcation analysis of dynamical systems},
+          author={Dhooge, Annick and Govaerts, Willy and Kuznetsov,
+           Yu A and Meijer, Hil Ga{\'e}tan Ellart and Sautois, Bart},
+          journal={Mathematical and Computer Modelling of Dynamical Systems},
+          volume={14},
+          number={2},
+          pages={147--175},
+          year={2008},
+          publisher={Taylor \& Francis}
+        }
+ 
 */
 
 #include<math.h>

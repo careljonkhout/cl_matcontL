@@ -1,50 +1,48 @@
 function multipliers = multipliers(J)
 
 % calculate multipliers
-global lds contopts
+global lds
 
-q = size(J,1)-1;
-J = J(1:q,1:q);
-p = speye(q);
-r = lds.col_coords;
-for i=lds.tsts
-  sJ = J(r,lds.nphase+r);
-  [sl,su] = lu(sJ);
-  p(r,r) = inv(sl);
-  r = r+lds.ncol_coord;
+ntst   = lds.ntst;
+ncol   = lds.ncol;
+nphase = lds.nphase;
+
+J_blocks = zeros(nphase*ncol,nphase*(ncol+1),ntst);
+A        = zeros(nphase,     nphase,         ntst);
+B        = zeros(nphase,     nphase,         ntst);
+
+% retrieve block of jacobian first and store them as dense matrices
+% to prevent repeating expensive lookups of elements in sparse matririces
+j_row_indices = 1:ncol*nphase;
+j_col_indices = 1:((ncol+1)*nphase);
+for i=1:ntst
+  J_blocks(:,:,i) = J(j_row_indices,j_col_indices);
+  j_row_indices = j_row_indices + ncol*nphase;
+  j_col_indices = j_col_indices + ncol*nphase;
 end
-S = full(p(lds.multi_r1,:)*J(:,lds.multi_r2));
-for i=(1:(lds.ntst-1))*lds.nphase
-  r = i+lds.phases;
-  for j=r
-    f = S(r,j)/S(j-lds.nphase,j);
-    S(r,:) = S(r,:)-f*S(j-lds.nphase,:);
-  end
+
+
+p_row_indices   = (1:nphase) + (ncol-1)*nphase;
+j_col_indices_p = (1:(ncol*nphase)) + nphase;
+j_col_indices_A = (1:nphase);
+j_col_indices_B = (1:nphase) + ncol*nphase;
+for i=1:ntst
+  sJ = J_blocks(:,j_col_indices_p,i);
+  [sl,~] = lu(sJ);
+  p = inv(sl);
+  p = p(p_row_indices,:);
+  
+  A(:,:,i) = p * J_blocks(:,j_col_indices_A,i);
+  B(:,:,i) = p * J_blocks(:,j_col_indices_B,i);
 end
-r1 = (lds.ntst-1)*lds.nphase+lds.phases;
-A0 = S(r1,lds.phases);
-A1 = S(r1,r1+lds.nphase);
 
 
-multipliers = eig(-A0,A1);
-multipliers = sort(multipliers,'descend', 'ComparisonMethod', 'abs');
-
-lds.monodromy = -A1\A0;
-
-if contopts.nCriticalMultipliers > 0
-  n = contopts.nCriticalMultipliers;
-  multipliers = multipliers(1:n);
-  % if we have a pair of complex multipliers, we want to include both. Hence if
-  % the smallest multiplier in modulus of the set of critical multipliers (
-  % which we define here ) is complex, and it's conjugate is not in the set of
-  % critical multipliers, we disregard it by setting it to zero.
-  if ~ isreal(multipliers(n)) && ...
-      ~ is_a_conjugate_pair(multipliers(n), multipliers(n-1))
-      multipliers(n) = 0;
-  end
+[A,B] = pqzschur(A,B);
+multipliers = ones(lds.nphase,1);
+for i=1:lds.ntst
+  multipliers = multipliers .* diag(A(:,:,i)) ./ diag(B(:,:,i));
 end
-      
-
-function is_a_conjugate_pair = is_a_conjugate_pair(a,b)
-  is_a_conjugate_pair = abs(conj(a)-b) < 1e-14;
+multipliers = sort(multipliers,'descend', 'ComparisonMethod', 'abs');  
+print_diag(3,'multiplier with norm larger than 0.7: %.15f\n', ...
+  multipliers(abs(multipliers)>0.7));
 

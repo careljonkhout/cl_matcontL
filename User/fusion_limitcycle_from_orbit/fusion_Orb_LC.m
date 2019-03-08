@@ -1,6 +1,9 @@
 function fusion_Orb_LC
   % continuation of cycles cycles in fusion system
-  N = 75;                     
+  clc
+  clear global cds
+  clear global lds
+  N = 25;                     
   odefile = str2func(sprintf('fusion_precomputed_with_sage_N_%d', N));
   a = -1;
   b = -0.3;
@@ -120,6 +123,12 @@ function fusion_Orb_LC
   opt = contset(opt, 'Backward',       false);
   opt = contset(opt, 'Singularities',  true);
   opt = contset(opt, 'CIS_UsingCIS',   false);
+  opt = contset(opt, 'every_point_in_separate_mat_file', true);
+  opt = contset(opt, 'always_save_s', true);
+  opt = contset(opt, 'newtcorrL_use_max_norm', 'true');
+  opt = contset(opt, 'nCriticalMultipliers',     7);
+  opt = contset(opt, 'contL_DiagnosticsLevel',   5);
+  opt = contset(opt, 'console_output_level',     5);
 
   ap = 3;
   p2 = [a; b; -0.72];

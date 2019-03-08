@@ -139,7 +139,7 @@ T = x0(lds.PeriodIdx);
 lds.T = T;
 
 %-----------------------------------------------------------------
-function init_lds(odefile,x,s,ap,ntst,ncol,varargin)
+function init_lds(odefile,x,ap,ntst,ncol,varargin)
 global lds
 lds=[];
 lds.odefile = odefile;
@@ -159,7 +159,8 @@ if siz > 9
         lds.user{j}= func_handles{k};
         j=j+1;
     end
-else lds.user=[];
+else
+  lds.user=[];
 end
 lds.nphase = floor((size(x,1)-2)/(s.data.ntst*s.data.ncol+1));
 lds.ActiveParams = ap;
@@ -232,7 +233,8 @@ lds.ups = [];
 lds.vps = [];
 if size(varargin,1)>0
     lds.BranchParams = varargin{1};
-else lds.BranchParams=[];
+else
+  lds.BranchParams=[];
 end
 lds.tsts = 1:lds.ntst;
 lds.cols = 1:lds.ncol;

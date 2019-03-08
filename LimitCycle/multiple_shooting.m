@@ -61,7 +61,12 @@ function x_end = shoot(x, period, parameters)
 function jacobian = jacobian(varargin)
   global cds
   M = cds.nShootingPoints * cds.nphases;
-  jacobian = zeros(M + 1, M + 2);
+  nphases = cds.nphases;
+  m = cds.nShootingPoints;
+  nnz = m * nphases^2 + m * nphases; % main blocks
+  nnz = nnz + 2 * (M + 1); % last 2 columns
+  nnz = nnz + M + 2;   % bottom row
+  jacobian = spalloc(M + 1, M + 2,nnz);
   [y_0,period,parameters] = getComponents(varargin{1});
   y_end = zeros(M,1);
   for i=0:cds.nShootingPoints-1
@@ -73,7 +78,7 @@ function jacobian = jacobian(varargin)
   for i=0:cds.nShootingPoints-2
     indices1 = (1:cds.nphases) + i     * cds.nphases;
     indices2 = (1:cds.nphases) + (i+1) * cds.nphases;
-    jacobian(indices1, indices2) = - eye(cds.nphases);
+    jacobian(indices1, indices2) = - eye(cds.nphases); %#ok<*SPRIX>
   end
   jacobian((1:cds.nphases) + (cds.nShootingPoints-1) * cds.nphases, ...
             1:cds.nphases) = - eye(cds.nphases);

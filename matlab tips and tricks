@@ -1,0 +1,13 @@
+char array concatenation can be done the same way as array/matrix concatenation:
+['Hello ' 'World']  => 'Hello World'
+
+Learn to use the matlab debugger. Also learn to use the dbup and dbdown commands
+during debugging.
+
+You can open the source file of any function by selecting it in the code, and 
+clicking open in the context menu.
+
+You can open files from the command window with the edit command, for instance 
+"edit contL" will open contL.m
+
+add current folder and all subfolders to path: addpath(genpath(pwd))

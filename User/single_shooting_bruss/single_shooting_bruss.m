@@ -1,5 +1,6 @@
 % continuation of cycles in brusselator
-
+clear global cds
+clear global lds
 run_init_if_needed
 % continuation of cycles cycles in brusselator
 odefile = @brusselator_N_2;

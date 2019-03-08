@@ -1,10 +1,11 @@
+run_init_if_needed
 if ~ exist('x_lpc', 'var')
-  filename = 'fusion_LPC_12-Dec-2018_21_43_15';
+  filename = 'fusion_LPC_17-Feb-2019_9_40_03';
   datafile = fullfile('Data', [filename '.dat']);
   matrix_file = fullfile('Data', filename);
   load(matrix_file,'s');
   singularities_lpc = s;
-  [x_lpc, ~,~, mult_lpc] = loadPoint(datafile);
+  [x_lpc, ~] = loadPoint(datafile);
 end
 
 

@@ -1,10 +1,24 @@
 /*
     BVP_BPC_jacC.C 
         MEX file corresponding to BVPjac.m
-        Does the evaluation of the jacobian of the BVP
+        Does the evaluation of the jacobian of the BVP for locating a
+          Branch Point of Cycles
         
     calling syntax:
         result = BVP_BPC_jacC(lds.func,x,p,T,pars,nc,lds,gds.period,p2)
+         see last paragraph of (bibtex citation follows):
+        @article{dhooge2008new,
+          title={New features of the software MatCont
+          for bifurcation analysis of dynamical systems},
+          author={Dhooge, Annick and Govaerts, Willy and Kuznetsov,
+           Yu A and Meijer, Hil Ga{\'e}tan Ellart and Sautois, Bart},
+          journal={Mathematical and Computer Modelling of Dynamical Systems},
+          volume={14},
+          number={2},
+          pages={147--175},
+          year={2008},
+          publisher={Taylor \& Francis}
+        }
 */
 
 #include<math.h>
@@ -95,23 +109,21 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 	BPC_psi = mxGetPr(thisfield);	/* BPC_psi */
 	thisfield = mxGetFieldByNumber(prhs[6],0,58);
 	BPC_phi = mxGetPr(thisfield);	/* BPC_phi */
+  
+  // note that: ncoords == ncol * ntst * (nphase + 1)
+  int jacobian_height = ncoords + 1;
+  int jacobian_width  = ncoords + 1;
 
-  int jacobian_height = ncol * ntst * nphase + 1;
-  int jacobian_width  = jacobian_height + 1;
-  // we compute a pessimistic upper bound for the number of nonzero's (nnz)
-  // added by Carel Jonkhout, use matlab commands nnz and spy to refine further
-  int nnz_estimate  = ncol * nphase * (ncol + 1) * nphase * ntst; // main blocks
-      nnz_estimate += 2 * nphase;               // boundary conditions
-      nnz_estimate += (nfreep + 2) * jacobian_height; // last two columns
-      nnz_estimate += 3 * jacobian_width;      // bottom rows
-  
-  if (nnz_estimate > ncoords*ncoords) {
-    nnz_estimate = ncoords*ncoords;
-  }
-  
-  
-    /* Sparse matrix as returnvalue */
-  plhs[0] = mxCreateSparse(ncoords+1,ncoords+1,nnz_estimate,mxREAL);
+  // we compute an upper bound for the number of nonzero's (nnz)
+  int nnz_ub;
+  nnz_ub  = ncol * nphase * (ncol + 1) * nphase * ntst; // main blocks
+  nnz_ub += 2 * nphase;               // boundary conditions
+  nnz_ub += jacobian_height;          // last column
+  nnz_ub += jacobian_width;           // last row
+  nnz_ub -= 1;                        // subtract overlap
+
+  /* Sparse matrix as returnvalue */
+  plhs[0] = mxCreateSparse(jacobian_height,jacobian_width,nnz_ub,mxREAL);
 
 	pr = mxGetPr(plhs[0]);
 	ir = mxGetIr(plhs[0]);

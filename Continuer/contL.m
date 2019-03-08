@@ -55,7 +55,7 @@ cds.lastpointfound = 0;
 cds.nActTest = 0;
 if Singularities
     [cds.S , cds.SingLables] = feval(cds.curve_singmat);
-    [nSing , nTest         ] = size(cds.S);
+    nSing                    = size(cds.S,1);
     cds.S(IgnoreSings,:) = 8;
     cds.ActSing = setdiff(1:nSing, IgnoreSings);
     cds.nActSing = length(cds.ActSing);
@@ -91,7 +91,7 @@ if isequal(curvefile, @limitcycleL) || ...
         DefaultProcessor(point, 'do not save');
         point.v = find_initial_tangent_vector(x0,v0,CISdata0);
         v0 = point.v;
-        disp('found tangent vector')
+        print_diag(0,'found tangent vector')
     else
         point.v = zeros(length(x0),1);
         DefaultProcessor(point, 'do not save');
@@ -245,9 +245,6 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
       testchanges = sign(trialpoint.tvals) ~= sign(currpoint.tvals);
       testchanges2= trialpoint.tvals ~= currpoint.tvals;
       if any(testchanges)
-        if cds.i == 6
-          1
-        end
         % Every crossing that is required occurs
         % Every crossing that is not required does not occur
         % Required crossings matrix:
@@ -490,13 +487,6 @@ if isempty(v0)
     v0 = v0/norm(v0);
 end
 
-function v0 = find_initial_tangent_vector_by_nullspace(x0,v0,CISdata0)
-if isempty(v0)
-  A = contjac(x0, CISdata0);
-  if isempty(A); v0 = []; return; end
-  v0 = A(:,1:end-1)\A(:,end);
-  v0(end+1) = -1;
-end
 %------------------------------------------
 %
 %  Evaluate testfunctions
@@ -657,7 +647,7 @@ end
 
 if ((~isempty(failed1)) || (~isempty(failed2))) && (failed1 || failed2)
     print_diag(3, 'Evaluation of testfunctions failed in bisection');
-    x = []; v = []; i = 0;
+    pout = []; p1 = []; p2 = 0;
     return;
 end
 
@@ -668,7 +658,7 @@ else
 end
 p    = 1;
 failed2 = 1;
-R = [];
+%R = [];
 for i = 1:MaxIters
     if tmax < Inf
         % WM: make educated guess of where the zero point might be

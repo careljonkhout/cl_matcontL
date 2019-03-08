@@ -74,7 +74,6 @@ function point = defaultprocessor(varargin)
   if ~lds.CalcdPRC
       lds.dPRCdata = [];
   end
-  print_diag(2,'multiplier: %.16f\n',lds.multipliers)
   point.multipliers = lds.multipliers;
   point.timemesh = lds.msh;
   point.ntst = lds.ntst;
@@ -118,7 +117,7 @@ global lds
   end
   option = contset(option, 'SymDerivative', symord);
   option = contset(option, 'Workspace', 1);
-  option = contset(option, 'Locators', [1 0 0 0]);
+  option = contset(option, 'Locators', [0 0 0 0]);
   symordp = 0;
   if ~isempty(lds.JacobianP), symordp = 1; end
   if ~isempty(lds.HessiansP),  symordp = 2; end
@@ -162,36 +161,22 @@ if any(ismember([1 2 3 4 5],id))
   end
 end
 if ismember(6,id)% PD
-  if contopts.nCriticalMultipliers > 0
-    % real is needed to ensure that small complex parts induced by roundoff
-    % errors do not make the result complex.
-    % A complex valued test function would cause false positives when detecting 
-    % bifurcations.
-    out(6) = real(prod(lds.multipliers + ones(size(lds.multipliers))));
-  else
-    A = lds.monodromy;
-    A = A + eye(size(A,1));
-    out(6) = det(A);
-  end
+  % real is needed to ensure that small complex parts induced by roundoff
+  % errors do not make the result complex.
+  % A complex valued test function would cause false positives when detecting 
+  % bifurcations.
+  out(6) = real(prod(lds.multipliers + ones(size(lds.multipliers))));
 end
 if ismember(7,id) % LPC
     out(7) = v(lds.ncoords+2);
 end
 if ismember(8,id) %NS
-  if contopts.nCriticalMultipliers > 0
-    n = contopts.nCriticalMultipliers;
-    mults = lds.multipliers;
-    psi_ns = 1;
-    for i=1:n-1
-      psi_ns = psi_ns * (abs(mults(i)*mults(i+1))-1);
-    end
-    out(8) = real(psi_ns);
-  else
-    A = lds.monodromy;
-    A = A(lds.bialt_M1).*A(lds.bialt_M2)-A(lds.bialt_M3).*A(lds.bialt_M4);
-    A = A-eye(size(A,1));   
-    out(8) = det(A);
+  mults = lds.multipliers;
+  psi_ns = 1;
+  for i=1:length(mults)-1
+    psi_ns = psi_ns * (abs(mults(i)*mults(i+1))-1);
   end
+  out(8) = psi_ns;
 end
 if ~isempty(lastwarn)
     failed = [failed id];
@@ -578,32 +563,35 @@ global lds
 print_diag(5,'running %s\n',BVP_func);
 p2 = num2cell(p);
 jacx = feval(BVP_func,lds.func,x,p,T,pars,nc,lds,p2,lds.Jacobian,lds.ActiveParams,lds.JacobianP);
-
 % ---------------------------------------------------------------
 function WorkspaceInit(x,v)
-global cds lds contopts
-lds.cols_p1 = 1:(lds.ncol+1);
-lds.cols_p1_coords = 1:(lds.ncol+1)*lds.nphase;
-lds.ncol_coord = lds.ncol*lds.nphase;
-lds.col_coords = 1:lds.ncol*lds.nphase;
-lds.coords = 1:lds.ncoords;
-lds.pars = lds.ncoords+(1:2);
-lds.tsts = 1:lds.ntst;
-lds.cols = 1:lds.ncol;
-lds.phases = 1:lds.nphase;
-lds.ntstcol = lds.ntst*lds.ncol;
+global lds contopts
+ntst               = lds.ntst;
+ncol               = lds.ncol;
+nphase             = lds.nphase;
+ncoords            = lds.ncoords; % == (ntst * ncol + 1) * nphase
+lds.cols_p1        = 1:(ncol+1);
+lds.cols_p1_coords = 1:((ncol + 1) * nphase);
+lds.ncol_coord     = ncol * nphase;
+lds.col_coords     = 1:(ncol * nphase);
+lds.coords         = 1:ncoords;
+lds.pars           = ncoords+(1:2);
+lds.tsts           = 1:ntst;
+lds.cols           = 1:ncol;
+lds.phases         = 1:nphase;
+lds.ntstcol        = ntst * ncol;
+% fix rounds towards zero
+lds.idxmat         = reshape(fix((1:((ncol+1)*ntst))/(1+1/ncol))+1,ncol+1,ntst);
+lds.dt             = lds.msh(lds.tsts+1)-lds.msh(lds.tsts);
 
-lds.idxmat = reshape(fix((1:((lds.ncol+1)*lds.ntst))/(1+1/lds.ncol))+1,lds.ncol+1,lds.ntst);
-lds.dt = lds.msh(lds.tsts+1)-lds.msh(lds.tsts);
+lds.wp             = kron(lds.wpvec',eye(nphase));
+lds.pwwt           = kron(lds.wt',eye(nphase));
+lds.pwi            = lds.wi(ones(1,nphase),:);
 
-lds.wp = kron(lds.wpvec',eye(lds.nphase));
-lds.pwwt = kron(lds.wt',eye(lds.nphase));
-lds.pwi = lds.wi(ones(1,lds.nphase),:);
-
-lds.wi = nc_weight(lds.ncol)';
+lds.wi             = nc_weight(ncol)';
 
 
-lds.PD_psi = reshape(exp((1:lds.ncoords)/lds.ncoords),lds.nphase,lds.tps);
+lds.PD_psi = reshape(exp((1:ncoords)/ncoords),nphase,lds.tps);
 lds.PD_psi = lds.PD_psi/norm(lds.PD_psi(lds.coords));
 lds.PD_phi = reshape(ones(lds.ncoords,1),lds.nphase,lds.tps);
 lds.PD_phi = lds.PD_phi/sqrt(BVP_PD_jac_ic*lds.PD_phi(lds.coords)');
@@ -612,29 +600,29 @@ lds.PD_new_phi = lds.PD_phi;
 lds.PD_new_psi = lds.PD_psi;
 lds.PD_switch = 0;
 
-lds.BP_psi = reshape(exp((1:lds.ncoords)/lds.ncoords),lds.nphase,lds.tps);
+lds.BP_psi = reshape(exp((1:ncoords)/ncoords),nphase,lds.tps);
 lds.BP_psi = lds.BP_psi/norm(lds.BP_psi(lds.coords));
-lds.BP_phi = reshape(ones(lds.ncoords,1),lds.nphase,lds.tps);
+lds.BP_phi = reshape(ones(ncoords,1),nphase,lds.tps);
 lds.BP_phi = lds.BP_phi/sqrt(BVP_BPC_jac_ic*lds.BP_phi(lds.coords)');
 
-lds.BP_psi1 = reshape(ones(lds.ncoords,1),lds.nphase,lds.tps);
+lds.BP_psi1 = reshape(ones(ncoords,1),nphase,lds.tps);
 lds.BP_psi1 = (lds.BP_psi1*lds.BP_psi')*lds.BP_psi-(lds.BP_psi*lds.BP_psi')*lds.BP_psi1;
 lds.BP_psi1 = lds.BP_psi1/norm(lds.BP_psi1(lds.coords));
 
-lds.BP_phi1 = reshape(exp((1:lds.ncoords)/lds.ncoords),lds.nphase,lds.tps);
+lds.BP_phi1 = reshape(exp((1:ncoords)/ncoords),nphase,lds.tps);
 lds.BP_phi1 = (lds.BP_phi1*lds.BP_phi')*lds.BP_phi-(lds.BP_phi*lds.BP_phi')*lds.BP_phi1;
 lds.BP_phi1 = lds.BP_phi1/norm(lds.BP_phi1(lds.coords));
 
-lds.BP_new_phi = lds.BP_phi;
-lds.BP_new_psi = lds.BP_psi;
+lds.BP_new_phi  = lds.BP_phi;
+lds.BP_new_psi  = lds.BP_psi;
 lds.BP_new_psi1 = lds.BP_psi1;
 lds.BP_new_phi1 = lds.BP_phi1;
-lds.BP_switch = 0;
+lds.BP_switch   = 0;
 
 lds.BPC_switch = 0;
-lds.BPC_psi = reshape(ones(lds.ncoords+1,1),1,lds.ncoords+1);
-lds.BPC_phi1 = reshape(ones(lds.ncoords+2,1),1,lds.ncoords+2);
-lds.BPC_phi2 = reshape(ones(lds.ncoords+2,1),1,lds.ncoords+2);
+lds.BPC_psi    = reshape(ones(ncoords+1,1),1,ncoords+1);
+lds.BPC_phi1   = reshape(ones(ncoords+2,1),1,ncoords+2);
+lds.BPC_phi2   = reshape(ones(ncoords+2,1),1,ncoords+2);
 
 lds.LPC_phi=[];
 lds.LPC_psi=[];
@@ -657,16 +645,6 @@ lds.NS1_switch = 0;
 lds.NS2_switch = 0;
 
 
-if contopts.Singularities && contopts.enable_bialt
-
-  if contopts.nCriticalMultipliers > 0
-    [lds.bialt_M1,lds.bialt_M2,lds.bialt_M3,lds.bialt_M4]=bialtaa(contopts.nCriticalMultipliers);
-  else
-      % uses about three times as much memory as continuation itself
-    [lds.bialt_M1,lds.bialt_M2,lds.bialt_M3,lds.bialt_M4]=bialtaa(lds.nphase);
-  end
-end
-
 lds.CalcMultipliers = contopts.Multipliers;% contget(cds.options, 'Multipliers', 0);
 lds.CalcPRC = contopts.PRC; %contget(cds.options, 'PRC', 0);
 lds.CalcdPRC = contopts.dPRC; % contget(cds.options, 'dPRC', 0);
@@ -675,11 +653,92 @@ lds.multipliersX = [];
 lds.multipliers = nan;
 lds.monodromy = [];
 
-r = (0:(lds.ntst*lds.nphase-1));
-lds.multi_r1 = (floor(r./lds.nphase)+1)*lds.ncol_coord-lds.nphase+mod(r,lds.nphase)+1;
-r = (0:((lds.ntst+1)*lds.nphase-1));
-lds.multi_r2 = floor(r./lds.nphase)*lds.ncol_coord+mod(r,lds.nphase)+1;
+r = (0:(ntst*nphase-1));
+
+% lds.ncol_coord = ncol * nphase
+% (floor(r/.lds.nphase)+1) * lds.ncol_coord - lds.nphase ==
+% (floor(r/.lds.nphase)+1) * nphase * ncol  - lds.nphase ==
+% [        nphase * (ncol - 1) * ones(1,nphase) ...
+%      2 * nphase * (ncol - 1) * ones(1,nphase) ...
+%   ...
+%   ntst * nphase * (ncol - 1) * ones(1,nphase) ]
+%
+%  mod(r,lds.nphase) == repmat(0:nphase-1,1,ntst)
+%
+% lds.multi_r1 == 
+% [ (    1 * ncol - 1 ) * nphase + 1 ...
+%   (    1 * ncol - 1 ) * nphase + 2 ...
+%        ...
+%   (    1 * ncol - 1 ) * nphase + nphase - 1
+%   (    1 * ncol - 1 ) * nphase + nphase
+%
+%
+%   (    2 * ncol - 1 ) * nphase + 1   ...
+%   (    2 * ncol - 1 ) * nphase + 2 ...
+%        ...
+%   (    2 * ncol - 1 ) * nphase + nphase - 1
+%   (    2 * ncol - 1 ) * nphase + nphase
+%
+%
+%        ...
+%        ...
+%
+%
+%   ( ntst * ncol - 1 ) * nphase + 1
+%   ( ntst * ncol - 1 ) * nphase + 2
+%        ...
+%   ( ntst * ncol - 1 ) * nphase + nphase - 1
+%   ( ntst * ncol - 1 ) * nphase + nphase
+
+    
+
+lds.multi_r1 = (floor(r./nphase) + 1)*ncol*nphase - nphase + mod(r,nphase) + 1;
+last_index = (ntst + 1) * nphase - 1;
+r = 0:last_index;
+% floor(r/.nphase ) * ncol * nphase == 
+% [  repmat(         0 * ncol * nphase, nphase) ...
+%    repmat(         1 * ncol * nphase, nphase) ...
+%    ...
+%    repmat((ntst + 1) * ncol * nphase, nphase) ]
+% mod(r, nphase) == repmat(0:(nphase-1), (ntst + 1) * nphase))
+%
+% Hence
+%
+% lds.multi_r2 == 
+%
+%          0 * ncol * nphase + 1
+%          0 * ncol * nphase + 2
+%          ...
+%          0 * ncol * nphase + nphase
+%
+%          1 * ncol * nphase + 1
+%          1 * ncol * nphase + 2
+%          ...
+%          1 * ncol * nphase + nphase
+%
+%          2 * ncol * nphase + 1
+%          2 * ncol * nphase + 2
+%          ...
+%          2 * ncol * nphase + nphase
+%
+%          ...
+%          ...
+%
+% (ntst + 1) * ncol * nphase + 1
+% (ntst + 1) * ncol * nphase + 2
+% ...
+% (ntst + 1) * ncol * nphase + nphase
+lds.multi_r2 = floor(r./nphase) * ncol * nphase + mod(r,nphase) + 1;
 lds.BranchParam = lds.ActiveParams;
+
+mask = spalloc((ncol*ntst+1)*nphase,(ncol*ntst+1)*nphase,ntst*ncol^2*nphase^2);
+for i=1:ntst
+  indices1 = (i-1)*ncol*nphase + (1:ncol*nphase);
+  indices2 = indices1 + nphase;
+  mask(indices1,indices2) = ones(ncol*nphase);
+end
+lds.mask = mask;
+
 
 % ------------------------------------------------------
 function [x,v,s] = WorkspaceDone(x,v,s)

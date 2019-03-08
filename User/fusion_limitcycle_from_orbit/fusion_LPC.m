@@ -15,14 +15,14 @@ a = -1;
 b = -0.3;
 q_inf = lpc_point.data.x(end);
 parameter_values = [a,b,q_inf];
-ntst=20;
+ntst=80;
 ncol=4;
 
 [x0,v0]= init_LPC_LPC_L(odefile, lpc_point.data.x, lpc_point, [1 3], 20, 4);
 opt = contset();
-opt = contset(opt, 'InitStepsize',   3);
+opt = contset(opt, 'InitStepsize',   1);
 opt = contset(opt, 'MinStepsize',    1e-8);
-opt = contset(opt, 'MaxStepsize',    40);
+opt = contset(opt, 'MaxStepsize',    1);
 opt = contset(opt, 'MaxNewtonIters', 6);
 opt = contset(opt, 'MaxCorrIters',   18);
 opt = contset(opt, 'MaxTestIters',   10);
@@ -35,6 +35,8 @@ opt = contset(opt, 'Multipliers',    true);
 opt = contset(opt, 'Backward',       false);
 opt = contset(opt, 'Singularities',  false);
 opt = contset(opt, 'CIS_UsingCIS',   false);
-
+opt = contset(opt, 'newtcorrL_use_max_norm', true);
+opt = contset(opt, 'contL_SmoothingAngle', pi/2/10);
+opt = contset(opt, 'every_point_in_separate_mat_file', true);
 
 contL(@limitpointcycle,x0,v0,opt)

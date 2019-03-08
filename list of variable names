@@ -4,27 +4,49 @@ cds   = curve description structure
 lds   = limitcycle description structure
 eds   = equilibrium point description structure
 
-                          h: 0.100000000000000
-                      h_max: 0.100000000000000
-                      h_min: 1.000000000000000e-12
-                  h_inc_fac: 1.300000000000000
-                  h_dec_fac: 0.500000000000000
                   
-field of cds:
+fields of cds:
 
-cds.h      = stepsize         (may change every step)
-cds.h_max  = maximum stepsize (does not change, is copied from contopts)
-cds.h_min  = minimum stepsize (does not change, is copied from contopts)
-cds.h_inc_fac = stepsize increase factor (does not change, is copied from contopts)
-cds.h_dec_fac = stepsize decrease factor (does not change, is copied from contopts)
+cds.h          = stepsize         (may change every step)
+cds.h_max      = maximum stepsize (does not change, is copied from contopts)
+cds.h_min      = minimum stepsize (does not change, is copied from contopts)
+cds.h_inc_fac  = stepsize increase factor (does not change, is copied from contopts)
+cds.h_dec_fac  = stepsize decrease factor (does not change, is copied from contopts)
 cds.SingLabels = labels for singlarities, ( for instance 'LP', 'H' )
 cds.S          = Singularity matrix. Defines which testfunction changes correspond to which singularities
 
+fields of lds:
+
+LimitCycle/limitcycleL.m:56:    
+lds.upoldp(:,i) = T*feval(lds.func, 0, lds.ups(:,i), p1{:});
+lds.ups    = reshape(x,lds.nphase,lds.tps);
+lds.vps    = reshape(v,lds.nphase,lds.tps);
+lds.tps    = lds.ntst*lds.ncol+1; % number of points on curve
+lds.cols_p1 = 1:(lds.ncol+1);
+lds.cols_p1_coords = 1:(lds.ncol+1)*lds.nphase;
+
+the following fiels of lds are constant throughout a continuation.
+see function WorkspaceInit in limitcycleL.m
+
+lds.ncol_coord = lds.ncol*lds.nphase;
+lds.col_coords = 1:lds.ncol*lds.nphase;
+lds.coords = 1:lds.ncoords;
+lds.pars = lds.ncoords+(1:2); % indices of period and parameter
+lds.tsts = 1:lds.ntst;
+lds.cols = 1:lds.ncol;
+lds.phases = 1:lds.nphase;
+lds.ntstcol = lds.ntst*lds.ncol;
+
+
+
 fields of currpoint and trialpoint in contL.m
 
-x = continuation state vector, i.e. current values of coordinates and parameters
-v = continuation tangent vector, entries correspond to x
+x     = continuation state vector, i.e. current values of coordinates and parameters
+v     = continuation tangent vector, entries correspond to x
 iters = number of iterations spent in Newton corrections
-R = residual, i.e. value of curve function after Newton corrections
+R     = residual, i.e. value of curve function after Newton corrections
+tvals = values of test functions
+uvals = values of user functions
+h     = stepsize
 
 

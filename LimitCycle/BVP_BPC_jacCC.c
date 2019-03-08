@@ -1,10 +1,24 @@
 /*
     BVP_BPC_jacCC.c 
         MEX file corresponding to BVPjac.m
-        Does the evaluation of the jacobian of the BVP
+        Does the evaluation of the jacobian of the BVP for the continuation
+        of a branch point of cycles.
         
     calling syntax:
         result = BVP_BPC_jacCC(lds.func,x,p,T,pars,nc,lds,gds.period,p2)
+         see last paragraph of (bibtex citation follows):
+        @article{dhooge2008new,
+          title={New features of the software MatCont
+          for bifurcation analysis of dynamical systems},
+          author={Dhooge, Annick and Govaerts, Willy and Kuznetsov,
+           Yu A and Meijer, Hil Ga{\'e}tan Ellart and Sautois, Bart},
+          journal={Mathematical and Computer Modelling of Dynamical Systems},
+          volume={14},
+          number={2},
+          pages={147--175},
+          year={2008},
+          publisher={Taylor \& Francis}
+        }
 */
 
 #include<math.h>
@@ -116,22 +130,20 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 	thisfield = mxGetFieldByNumber(prhs[6],0,59);
 	BPC_phi2 = mxGetPr(thisfield);	/* BPC_phi2 */
   
-  int jacobian_height = ncol * ntst * nphase + 1;
-  int jacobian_width  = jacobian_height + 1;
-  // we compute a pessimistic upper bound for the number of nonzero's (nnz)
-  // added by Carel Jonkhout, use matlab commands nnz and spy to refine further
+  int jacobian_height = ncoords+3;
+  int jacobian_width  = ncoords+bfreep+2;
+
+  // We compute an upper bound for the number of nonzero's (nnz).
   int nnz_estimate  = ncol * nphase * (ncol + 1) * nphase * ntst; // main blocks
-      nnz_estimate += 2 * nphase;               // boundary conditions
-      nnz_estimate += (bfreep + 2) * jacobian_height; // last two columns
-      nnz_estimate += 3 * jacobian_width;      // bottom rows
+      nnz_estimate += 2 * nphase;                      // boundary conditions
+      nnz_estimate += (bfreep + 2) * jacobian_height;  // last two columns
+      nnz_estimate += 3 * jacobian_width;              // bottom rows
   
-  if (nnz_estimate > ncoords*ncoords) {
-    nnz_estimate = ncoords*ncoords;
-  }
+ 
   
    /* Sparse matrix as returnvalue */
   
-  plhs[0] = mxCreateSparse(ncoords+3,ncoords+bfreep+2,ncoords*ncoords,mxREAL);
+  plhs[0] = mxCreateSparse(ncoords+3,ncoords+bfreep+2,nnz_estimate,mxREAL);
   pr = mxGetPr(plhs[0]);
 	ir = mxGetIr(plhs[0]);
 	jc = mxGetJc(plhs[0]);

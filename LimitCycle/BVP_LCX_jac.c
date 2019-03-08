@@ -1,10 +1,28 @@
 /*
     BVP_LCX_jac.C 
         MEX file corresponding to BVPjac.m
-        Does the evaluation of the jacobian of the BVP
-        
+        Does the evaluation of the jacobian. Used for the continuation of
+        of limit point of cycles (LPC), (Neimark Sacker) NS, 
+        and period doubling (PD) bifurcations
+                  
+  
+         see last paragraph of (bibtex citation follows):
+        @article{dhooge2008new,
+          title={New features of the software MatCont
+          for bifurcation analysis of dynamical systems},
+          author={Dhooge, Annick and Govaerts, Willy and Kuznetsov,
+           Yu A and Meijer, Hil Ga{\'e}tan Ellart and Sautois, Bart},
+          journal={Mathematical and Computer Modelling of Dynamical Systems},
+          volume={14},
+          number={2},
+          pages={147--175},
+          year={2008},
+          publisher={Taylor \& Francis}
+        }
+  
     calling syntax:
         result = BVP_LCX_jac(lds.func,x,p,T,pars,nc,lds,p2,lds.Jacobian,lds.ActiveParams,lds.JacobianP)
+ *
 */
 
 #include<math.h>
@@ -86,18 +104,16 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 	pwi = mxGetPr(thisfield);	/* Extension of weights */
 	    
    /* Sparse matrix as returnvalue */
-  int jacobian_height = ncol * ntst * nphase + 1;
-  int jacobian_width  = jacobian_height + 1;
-  // we compute a pessimistic upper bound for the number of nonzero's (nnz)
-  // added by Carel Jonkhout, use matlab commands nnz and spy to refine further
-  int nnz_estimate  = ncol * nphase * (ncol + 1) * nphase * ntst; // main blocks
-       nnz_estimate += 2 * nphase;               // boundary conditions
-       nnz_estimate += (nfreep + 1) * jacobian_height; // last two columns
-       nnz_estimate += 1 * jacobian_width;      // bottom rows
+  int jacobian_height = ncoords+1;
+  int jacobian_width  = ncoords+1+nfreep;
+  /* we compute an upper bound for the number of nonzero's (nnz) */
+  /* main blocks: */
+  int nnz_estimate  = ncol * nphase * (ncol + 1) * nphase * ntst; 
+  nnz_estimate += 2 * nphase;                     /* boundary conditions */
+  nnz_estimate += (nfreep + 1) * jacobian_height; /* last two columns    */
+  nnz_estimate += 1 * jacobian_width;             /* bottom rows         */
    
-  if (nnz_estimate > ncoords*ncoords) {
-     nnz_estimate = ncoords*ncoords;
-  }
+
 	plhs[0] = mxCreateSparse(ncoords+1,ncoords+1+nfreep,nnz_estimate,mxREAL);
 	pr = mxGetPr(plhs[0]);
 	ir = mxGetIr(plhs[0]);

@@ -39,8 +39,6 @@ parameters = {a;b;q_inf};
 
 
 int_opt = odeset( ...
-  'AbsTol',      1e-10,    ...
-  'RelTol',      1e-13,    ...
   'Jacobian',     @(t,y) feval(handles{3},t,y,parameters{:}) ...
 );
 
@@ -48,9 +46,12 @@ int_opt = odeset( ...
 x0 = ones(cds.nphases,1);
 dydt = handles{2};
 f =@(t, y) dydt(t, y, parameters{:});
-[t1, x1] = ode15s(f, [0 200], x0, int_opt);
+tic
+[t1, x1] = ode15s(f, [0 400], x0, int_opt);
+toc
 
-draw_plots = false || false;
+
+draw_plots = false || true;
 if draw_plots
   figure(1)
   plot(t1,x1)
@@ -58,6 +59,8 @@ if draw_plots
   xlabel('t');
   ylabel('values at grid points');
 end
+
+return
 
 approximate_period = 12;
 
@@ -123,7 +126,7 @@ opt = contset(opt, 'MaxNewtonIters', 8);
 opt = contset(opt, 'MaxCorrIters',   10);
 opt = contset(opt, 'MaxTestIters',   10);
 opt = contset(opt, 'VarTolerance',   1e-6);
-opt = contset(opt, 'FunTolerance',   1e-6);
+opt = contset(opt, 'FunTolerance',   1e-8);
 % we don't want to adapt
 % since it is not implemented
 opt = contset(opt, 'Adapt',          1000*1000*1000);
