@@ -44,7 +44,7 @@ function x = Newton_Picard_Multiple_Shooting(x0,x,v0)
   V(:,:,1)       = V1;
    
   if ~ isfield(cds, 'V') || true
-    for i=2:m
+    for i=2:m % m == cds.nShootingPoints
       V(:,:,i) = compute_subspace(i, period, parameters);
     end
   else

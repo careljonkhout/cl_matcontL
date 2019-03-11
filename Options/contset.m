@@ -152,22 +152,7 @@ options.enable_nf_pd    =    true;
 % Set enable_nf_pd to false to disable computation of the normal form 
 % for period doubling point of cycle. Normal form computations on large systems
 % take a long time to run.
-% Note: nf_lpc is only implemented for limitcycle.m
-options.enable_bialt    =    true;
-% Set enable_bialt to false to prevent bialtaa.m from running
-% bialtaa.m does computations related to bifurcations of cycles when 
-% continuing cycles with limitcycle.m
-% bialtaa uses a lot of memory. Hence it may cause trouble when continuing
-% cycles of large systems with limitcycle.m
-options.nCriticalMultipliers = -1;
-% set to a specific number to set the number of multipliers that are to be 
-% considered for bifurcation detection. Bifurcation detection will be performed 
-% the largest options.nCriticalMultipliers multipliers (in modulus). So suppose
-% the trivial multiplier is the nth largest multiplier by modulus, then
-% nCriticalMultipliers should be at the very least n+2, so that a pair of
-% complex  multipliers inside the unit circle is included. See also
-% LimitCycle/limitcycleL.m. Choosing a large value will consume memory and take
-% more computation time.
+% Note: nf_pd is only implemented for limitcycle.m
 options.enable_bpc     = true;
 options.bpc_tolerance = options.contL_Userf_FunTolerance;
 options.console_output_level = 0; % set to 5 to see all debug info.

@@ -1,4 +1,4 @@
-function out = bruss_1d1
+function out = bruss_1d
 %
 % Odefile of 1-d Brusselator model
 % This file uses a non-constant approximate solution as a starting guess.

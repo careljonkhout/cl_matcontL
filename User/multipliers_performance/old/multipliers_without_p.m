@@ -1,4 +1,4 @@
-function multipliers = multipliers_pqz_schur(J)
+function multipliers = multipliers_without_p(J)
 
 % calculate multipliers
 global lds
@@ -9,7 +9,7 @@ nphase = lds.nphase;
 
 q = size(J,1)-1;
 J = J(1:q,1:q);
-J_blocks = zeros(nphase*ncol,nphase*(ncol+1),ntst);
+
 A        = zeros(nphase,     nphase,         ntst);
 B        = zeros(nphase,     nphase,         ntst);
 

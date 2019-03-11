@@ -139,7 +139,7 @@ T = x0(lds.PeriodIdx);
 lds.T = T;
 
 %-----------------------------------------------------------------
-function init_lds(odefile,x,ap,ntst,ncol,varargin)
+function init_lds(odefile,x,s,ap,ntst,ncol,varargin)
 global lds
 lds=[];
 lds.odefile = odefile;

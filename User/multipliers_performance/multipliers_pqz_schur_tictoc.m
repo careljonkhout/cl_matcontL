@@ -1,4 +1,4 @@
-function multipliers = multipliers(J)
+function multipliers = multipliers_pqz_schur_tictoc(J)
 
 % calculate multipliers
 global lds

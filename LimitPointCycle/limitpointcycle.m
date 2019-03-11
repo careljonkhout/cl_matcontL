@@ -138,8 +138,8 @@ global lds cds
   
   % calculate multipliers if requested
   if lds.CalcMultipliers
-    lds.multipliers = multipliers(cjac(cds.curve_func,cds.curve_jacobian,varargin{1},[]));
-    lds.multipliersX = varargin{1};
+    lds.multipliers = multipliers(cjac(cds.curve_func,cds.curve_jacobian,point.x,[]));
+    lds.multipliersX = x;
   end
   if lds.CalcMultipliers==0
       lds.multipliers = [];
@@ -176,7 +176,7 @@ global lds
   if lds.nphase < 4
       option=contset(option,'IgnoreSingularity',[bp+3 bp+4]);
   else
-      [lds.bialt_M1,lds.bialt_M2,lds.bialt_M3,lds.bialt_M4]=bialtaa(lds.nphase-2);
+%      [lds.bialt_M1,lds.bialt_M2,lds.bialt_M3,lds.bialt_M4]=bialtaa(lds.nphase-2);
   end
   option = contset(option, 'Workspace', 1);
   option = contset(option, 'Locators', [0 0 0]);
@@ -541,14 +541,14 @@ end
 
 
 function WorkspaceInit(x,v)
-global cds lds
+global cds lds contopts
 
 
 lds.LPC_new_phi = lds.LPC_phi;
 lds.LPC_new_psi = lds.LPC_psi;
 lds.LPC_switch = 0;
 
-lds.CalcMultipliers = cds.options.Multipliers;
+lds.CalcMultipliers = contopts.Multipliers;
 lds.multipliersX = [];
 lds.multipliers = nan;
 lds.monodromy = [];

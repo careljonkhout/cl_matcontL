@@ -1,4 +1,4 @@
-function multipliers = multipliers_pqz_schur(J)
+function multipliers = multipliers_sparse_blocks(J)
 
 % calculate multipliers
 global lds

@@ -1,8 +1,7 @@
-function multipliers = multipliers(J)
+function multipliers = multipliers_old(J)
 
 % calculate multipliers
-global lds contopts
-
+global lds
 q = size(J,1)-1;
 J = J(1:q,1:q);
 p = speye(q);
@@ -32,7 +31,7 @@ for i=1:lds.ntst
   eig_pqzschur = eig_pqzschur .* diag(A(:,:,i)) ./ diag(B(:,:,i));
 end
 eig_pqzschur = sort(eig_pqzschur,'descend', 'ComparisonMethod', 'abs');  
-print_diag(3,'eig_pqzschur: %.15f\n', eig_pqzschur(1:contopts.nCriticalMultipliers));
+print_diag(3,'eig_pqzschur: %.15f\n', eig_pqzschur(1:5));
 
 
 
@@ -55,23 +54,5 @@ lds.monodromy = -A1\A0;
 
 multipliers_mon = eig(lds.monodromy);
 multipliers_mon = sort(multipliers_mon,'descend', 'ComparisonMethod', 'abs');
-print_diag(3,'multiplier_mon: %.15f\n', multipliers_mon(1:contopts.nCriticalMultipliers));
-
-
-if contopts.nCriticalMultipliers > 0
-  n = contopts.nCriticalMultipliers;
-  multipliers = multipliers(1:n);
-  % if we have a pair of complex multipliers, we want to include both. Hence if
-  % the smallest multiplier in modulus of the set of critical multipliers (
-  % which we define here ) is complex, and it's conjugate is not in the set of
-  % critical multipliers, we disregard it by setting it to zero.
-  if ~ isreal(multipliers(n)) && ...
-      ~ is_a_conjugate_pair(multipliers(n), multipliers(n-1))
-      multipliers(n) = 0;
-  end
-end
-      
-
-function is_a_conjugate_pair = is_a_conjugate_pair(a,b)
-  is_a_conjugate_pair = abs(conj(a)-b) < 1e-14;
+print_diag(3,'multiplier_mon: %.15f\n', multipliers_mon(1:5));
 

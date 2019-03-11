@@ -96,7 +96,6 @@ opt = contset(opt,'Locators',            [0 0 0]);
 opt = contset(opt,'TestPath',mfilename('fullpath'));
 opt = contset(opt, 'Filename',     'testbruss_Orb_LC');
 opt = contset(opt, 'Multipliers',   1);
-opt = contset(opt, 'nCriticalMultipliers',  4);
 opt = contset(opt, 'contL_DiagnosticsLevel', 5);
 ap = 5;
 opt.TestTolerance = 1e-5;

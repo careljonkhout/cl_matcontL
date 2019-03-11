@@ -91,7 +91,6 @@ function fusion_paper_N_50
   opt = contset(opt, 'every_point_in_separate_mat_file', true);
   opt = contset(opt, 'always_save_s', true);
   opt = contset(opt, 'newtcorrL_use_max_norm', 'true');
-  opt = contset(opt, 'nCriticalMultipliers',     7);
   opt = contset(opt, 'contL_DiagnosticsLevel',   5);
   opt = contset(opt, 'console_output_level',     5);
 

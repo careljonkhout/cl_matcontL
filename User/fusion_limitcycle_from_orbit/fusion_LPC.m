@@ -17,6 +17,8 @@ q_inf = lpc_point.data.x(end);
 parameter_values = [a,b,q_inf];
 ntst=80;
 ncol=4;
+s(1).data.ntst = 80;
+s(1).data.ncol = 4;
 
 [x0,v0]= init_LPC_LPC_L(odefile, lpc_point.data.x, lpc_point, [1 3], 20, 4);
 opt = contset();
@@ -34,6 +36,7 @@ opt = contset(opt, 'CheckClosed',    50);
 opt = contset(opt, 'Multipliers',    true);
 opt = contset(opt, 'Backward',       false);
 opt = contset(opt, 'Singularities',  false);
+opt = contset(opt, 'Multipliers',    true);
 opt = contset(opt, 'CIS_UsingCIS',   false);
 opt = contset(opt, 'newtcorrL_use_max_norm', true);
 opt = contset(opt, 'contL_SmoothingAngle', pi/2/10);

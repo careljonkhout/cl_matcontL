@@ -56,8 +56,8 @@ end
 
 approximate_period = 12;
 
-cds.x0 = x1(end,:)';
-cds.dydt_0 = f(0,x0);
+cds.previous_phases = x1(end,:)';
+cds.previous_dydt_0 = f(0,x0);
 int_opt = odeset(int_opt, 'Events', @returnToPlane);
 
 [t2,x2] = ode15s(f, linspace(0,approximate_period,1000), x1(end,:), int_opt); 
@@ -88,7 +88,7 @@ end
 
 
 opt = contset();
-opt = contset(opt, 'MaxNumPoints',   80);
+opt = contset(opt, 'MaxNumPoints',   17);
 opt = contset(opt, 'InitStepsize',   1e-2);
 opt = contset(opt, 'MinStepsize',    1e-6);
 opt = contset(opt, 'MaxStepsize',    1e-1);
@@ -105,6 +105,7 @@ opt = contset(opt, 'Multipliers',    true);
 opt = contset(opt, 'Backward',       false);
 opt = contset(opt, 'Singularities',  false);
 opt = contset(opt, 'CIS_UsingCIS',   false);
+opt = contset(opt, 'contL_SmoothingAngle',   3);
 
 initial_continuation_data = [x0; period; cds.P0(cds.ActiveParams)];
 initial_continuation_tangent_vector = [];
@@ -160,8 +161,9 @@ end
 function [value, isterminal, direction] = returnToPlane(t, x)
   global cds;
   % x and should be a column vectors
-  value = cds.dydt_0'*(x-cds.x0);
-  isterminal = t > 1 && sum((x-cds.x0).^2) < cds.poincare_tolerance;
+  value = cds.previous_dydt_0'*(x-cds.previous_phases);
+  isterminal = t > 1 ...
+    && sum((x-cds.previous_phases).^2) < cds.poincare_tolerance;
   direction = 1;
 end
 

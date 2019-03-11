@@ -104,7 +104,6 @@ opt = contset(opt, 'CIS_UsingCIS',   false);
 opt = contset(opt, 'Locators'    , [1 0 0 0]);
     % disable smoothing by angle:
 opt = contset(opt, 'contL_SmoothingAngle', pi/2);
-opt = contset(opt, 'nCriticalMultipliers',   7);
 opt = contset(opt, 'contL_DiagnosticsLevel', 5);
 opt = contset(opt, 'enable_bpc'            , true);
 opt = contset(opt, 'enable_nf_lpc'         , false);

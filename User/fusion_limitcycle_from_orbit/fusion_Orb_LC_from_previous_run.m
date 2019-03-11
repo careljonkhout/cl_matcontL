@@ -28,7 +28,6 @@ opt = contset(opt, 'CIS_UsingCIS',   false);
 opt = contset(opt, 'Locators'    , [0 0 0 0]);
     % disable smoothing by angle:
 opt = contset(opt, 'contL_SmoothingAngle', pi/2);
-opt = contset(opt, 'nCriticalMultipliers',   7);
 opt = contset(opt, 'contL_DiagnosticsLevel', 5);
 opt = contset(opt, 'enable_bpc'            , true);
 opt = contset(opt, 'enable_nf_lpc'         , false);
@@ -40,6 +39,8 @@ opt = contset(opt, 'bpc_tolerance', Inf);
 opt = contset(opt, 'newtcorrL_use_max_norm', true);
 opt = contset(opt, 'MaxTestIters',   30);
 opt = contset(opt, 'SingularTestFunction',   true);
+opt = contset(opt, 'gmres',                  true);
+opt = contset(opt, 'MoorePenrose',          false);
 
 % right before alleged bpc
 filename = 'fusion_Orb_LC_from_previous_run_12-Feb-2019_14_52_13';
@@ -51,7 +52,7 @@ s = s(end);
 [x,v] = loadPoint(dat_filename);
 par = s(end).data.parametervalues;
 ap  = s(end).data.ap;
-ntst = 320; % s(end).data.ntst;
+ntst = 80; % s(end).data.ntst;
 ncol = s(end).data.ncol;
 
 [x,v] = init_LC_LC_L(odefile, x, v, s, par, ap,ntst,ncol);

@@ -1,4 +1,13 @@
-% continuation of cycles in brusselator
+% continuation of cycles in brusselator using multiple shooting with Newton
+% Picard. For a description of the algorithm see (bibtex citation follows):
+% @phdthesis{lust-phd,
+%	  author={Lust, Kurt},
+%	  title={Numerical bifurcation analysis 
+%        of periodic solutions of partial differential equations},
+%	  school={K.U.Leuven},
+%	  year={1997},
+% }
+% and continuer/Newton_Picard_Multiple_Shooting.m
 format long
 run_init_if_needed
 % continuation of cycles cycles in brusselator
@@ -47,11 +56,12 @@ int_opt = odeset( ...
 x0 = ones(cds.nphases,1);
 dydt = handles{2};
 f =@(t, y) dydt(t, y, parameters{:});
+% we compute the cycle from which we start the continuation form by integration:
 [t1, x1] = ode15s(f, [0 150], x0, int_opt);
 
-draw_plots = false || false;
+draw_plots = false;
 if draw_plots
-  figure(1)
+  figure(1) %#ok<UNRCH>
   plot(t1,x1)
   title(sprintf(title_format_string, title_format_args{:}));
   xlabel('t');
@@ -120,9 +130,10 @@ opt = contset(opt, 'Multipliers',    true);
 opt = contset(opt, 'Backward',       true);
 opt = contset(opt, 'Singularities',  false);
 opt = contset(opt, 'CIS_UsingCIS',   false);
-opt = contset(opt, 'NewtonPicard',   true);
+opt = contset(opt, 'NewtonPicard',   false);
 opt = contset(opt, 'console_output_level',   5);
 opt = contset(opt, 'contL_DiagnosticsLevel', 5);
+opt = contset(opt, 'MoorePenrose', false);
 
 
 initial_continuation_data(end-1) = period;

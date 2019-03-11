@@ -34,7 +34,6 @@ opt = contset(opt, 'Singularities',  true);
 opt = contset(opt, 'CIS_UsingCIS',   false);
     % disable smoothing by angle:
 opt = contset(opt, 'contL_SmoothingAngle', pi/2);
-opt = contset(opt, 'nCriticalMultipliers',   7);
 opt = contset(opt, 'contL_DiagnosticsLevel', 5);
 opt = contset(opt, 'enable_bpc'            , true);
 opt = contset(opt, 'console_output_level'  ,  5);

@@ -96,7 +96,7 @@ end
 
 
 opt = contset();
-opt = contset(opt, 'MaxNumPoints',   1000);
+opt = contset(opt, 'MaxNumPoints',   4);
 opt = contset(opt, 'InitStepsize',   1e-1);
 opt = contset(opt, 'MinStepsize',    1e-6);
 opt = contset(opt, 'MaxStepsize',    1e-1);

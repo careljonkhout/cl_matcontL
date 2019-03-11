@@ -1,4 +1,4 @@
-function multipliers = multipliers_pqz_schur(J)
+function multipliers = multipliers_without_p_efficient_indices(J)
 
 % calculate multipliers
 global lds

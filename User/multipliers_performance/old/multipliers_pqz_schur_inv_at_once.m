@@ -1,4 +1,4 @@
-function multipliers = multipliers_pqz_schur(J)
+function multipliers = multipliers_pqz_schur_inv_at_once(J)
 
 % calculate multipliers
 global lds

@@ -32,19 +32,3 @@ multipliers = sort(multipliers,'descend', 'ComparisonMethod', 'abs');
 
 lds.monodromy = -A1\A0;
 
-if contopts.nCriticalMultipliers > 0
-  n = contopts.nCriticalMultipliers;
-  multipliers = multipliers(1:n);
-  % if we have a pair of complex multipliers, we want to include both. Hence if
-  % the smallest multiplier in modulus of the set of critical multipliers (
-  % which we define here ) is complex, and it's conjugate is not in the set of
-  % critical multipliers, we disregard it by setting it to zero.
-  if ~ isreal(multipliers(n)) && ...
-      ~ is_a_conjugate_pair(multipliers(n), multipliers(n-1))
-      multipliers(n) = 0;
-  end
-end
-      
-
-function is_a_conjugate_pair = is_a_conjugate_pair(a,b)
-  is_a_conjugate_pair = abs(conj(a)-b) < 1e-14;
