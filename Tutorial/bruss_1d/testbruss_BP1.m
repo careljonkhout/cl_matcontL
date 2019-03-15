@@ -36,7 +36,7 @@ load('Data\testbruss_BP0.mat')
 ID = 3;
 if strcmp(s(ID).label,'BP')
     data = s(ID).data;
-    [x0,v0]      = init_BP_EP_L(@bruss_1d, [], [], [], data);
+    [x0,v0]      = init_BP_EP_L(@brusselator_1d, [], [], [], data);
     contL(@equilibriumL,x0,v0,opt);
 else
     debug('No Branch Vector\n');

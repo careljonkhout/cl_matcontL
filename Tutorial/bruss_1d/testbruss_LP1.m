@@ -40,7 +40,7 @@ ID = 2;
 if(strcmp(s(ID).label ,'LP'))
     data = s(ID).data;
     %
-    [x0,v0]      = init_LP_LP_L(@bruss_1d, [], [], ap, data);
+    [x0,v0]      = init_LP_LP_L(@brusselator_1d, [], [], ap, data);
     contL(@limitpointL,x0,v0,opt);
        
     %% Plot results

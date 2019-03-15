@@ -62,7 +62,7 @@ function point = defaultprocessor(varargin)
           lds.multipliers = multipliers(...
             cjac(cds.curve_func,cds.curve_jacobian,point.x,[]));     
       catch
-          print_diag(3, 'Failed to compute multipliers');
+          print_diag(3, 'Failed to compute multipliers\n');
       end
   end
   if lds.CalcPRC || lds.CalcdPRC

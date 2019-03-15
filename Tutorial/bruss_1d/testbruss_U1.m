@@ -39,7 +39,7 @@ data = s(ID).data;
 ap1  = 3;
 x = data.x(1:end-1);
 
-[x0,v0]      = init_EP_EP_L(@bruss_1d, x, data.P0, ap1);
+[x0,v0]      = init_EP_EP_L(@brusselator_1d, x, data.P0, ap1);
 contL(@equilibriumL,x0,v0,opt);
 
 

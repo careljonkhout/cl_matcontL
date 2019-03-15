@@ -20,7 +20,18 @@ cds.ndim = lds.ncoords+2;
 cds.oldJacX = [];
 
 lds.msh = newmsh;
-lds.finemsh = [0 reshape(repmat(lds.msh(1:lds.ntst),lds.ncol,1),1,lds.ntst*lds.ncol)+kron(lds.msh(2:(lds.ntst+1))-lds.msh(1:lds.ntst),((1/lds.ncol):(1/lds.ncol):1))];
+lds.finemsh = zeros(1,ntst*ncol+1);
+fine_mesh_index = 2;
+
+for i=1:ntst
+  mesh_interval_width = lds.msh(i+1) - lds.msh(i);
+  fine_mesh_dt        = mesh_interval_width / ncol;
+  for j=1:ncol
+    lds.finemsh(fine_mesh_index) = lds.msh(i) + j * fine_mesh_dt;
+    fine_mesh_index              = fine_mesh_index + 1;
+  end
+end
+
 lds.dt = lds.msh(lds.tsts+1)-lds.msh(lds.tsts);
 
 lds.upoldp = [];

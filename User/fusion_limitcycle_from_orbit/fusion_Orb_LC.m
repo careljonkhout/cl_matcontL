@@ -50,6 +50,11 @@ function fusion_Orb_LC
   int_opt = odeset(int_opt, ...
     'Jacobian', @(t,y) feval(handles{3},t,y,parameters{:}));
   x3 = x2;
+  % note that we compute a second limitcycle here to compute an initial
+  % tangent vector. However, due to a bugfix, it is no longer neccesary to do
+  % this, we keep it here because does work, but for an example of how to
+  % continue a limitcycle the easy way, see
+  % fusion_Orb_LC_without_user_specified_v.m
   for i = 1:15
     x0 = x3(end,:)'; % this value is used in returnToPlane
     v0 = f2(0,x0)';  % this value is used in returnToPlane

@@ -4,7 +4,7 @@ function [sout,datafile]=contL(curvefile, x0, v0, opts)
 %
 % Continues the curve from x0 with optional directional vector v0
 % options is a option-vector created with CONTSET
-% The first two parameters are mandatory.
+% The first three parameters are mandatory.
 global cds contopts
 
 %% I. Initialization
@@ -20,25 +20,25 @@ feval(cds.curve_options);
 
 [datafile, ~]  = openFiles();
 
-AdaptSteps     = contopts.Adapt;
-CheckClosed    = contopts.CheckClosed;
-%Eigenvalues    = contopts.Cont_Eigenvalues;
-MaxNumPoints   = contopts.MaxNumPoints;
-Singularities  = contopts.Singularities;
-SmoothingAngle = contopts.contL_SmoothingAngle;
-Userfunctions  = contopts.Userfunctions;
-IgnoreSings    = contopts.IgnoreSingularity;
-UseLocators    = contopts.Locators;
-UserInfo       = contopts.UserFuncInfo;
-NewtonPicard   = contopts.NewtonPicard;
+AdaptSteps         = contopts.Adapt;
+CheckClosed        = contopts.CheckClosed;
+%Eigenvalues       = contopts.Cont_Eigenvalues;
+MaxNumPoints       = contopts.MaxNumPoints;
+Singularities      = contopts.Singularities;
+SmoothingAngle     = contopts.contL_SmoothingAngle;
+Userfunctions      = contopts.Userfunctions;
+IgnoreSings        = contopts.IgnoreSingularity;
+UseLocators        = contopts.Locators;
+UserInfo           = contopts.UserFuncInfo;
+UsingNewtonPicard  = contopts.NewtonPicard;
 if contopts.contL_ParallelComputing && isempty(gcp('NoCreate'))
     parpool;   % initialize new parallel pool when no is available
 end
 
-if NewtonPicard && ( ~ isequal(curvefile,@single_shooting) ...
+if UsingNewtonPicard && ( ~ isequal(curvefile,@single_shooting) ...
                   && ~ isequal(curvefile,@multiple_shooting) )
-  print_diag(0,['Newton-Picard is only supported with single shooting' ...
-        ' or multiple shooting. Continuation will be aborted.'])
+  print_diag(0,['Newton-Picard is only implemented for single shooting' ...
+        ' or multiple shooting. Continuation will be aborted.\n'])
   return
 end
 
@@ -89,18 +89,27 @@ if isequal(curvefile, @limitcycleL) || ...
         % or else a crash will occur due to missing fields in
         % the global struct lds
         DefaultProcessor(point, 'do not save');
-        point.v = find_initial_tangent_vector(x0,v0,CISdata0);
+        %point.v = find_initial_tangent_vector(x0,v0,CISdata0);
+        point.v = find_initial_tangent_vector_by_nullspace(x0,v0,CISdata0);
         v0 = point.v;
-        print_diag(0,'found tangent vector')
+        print_diag(0,'found tangent vector\n')
     else
         point.v = zeros(length(x0),1);
         DefaultProcessor(point, 'do not save');
     end
     firstpoint = newtcorrL(x0, v0, CISdata0);
-elseif NewtonPicard
-    v0 = find_initial_tangent_vector(x0,[],1);
-    firstpoint = Newton_Picard_Corrections(x0,v0);
-    firstpoint.v = v0;
+elseif UsingNewtonPicard
+    if isempty(v0)
+      v0 = NewtonPicard.find_tangent_vector(curvefile, x0);
+    end
+    firstpoint = NewtonPicard.do_corrections(x0,v0);
+    if isempty(firstpoint)
+      print_diag(0,'Correction of first point does not converge\n');
+      return;
+    end
+      
+    
+    firstpoint.v =  NewtonPicard.find_tangent_vector(curvefile, x0);
 else
     try 
       cds.curve_func    (x0); 
@@ -119,8 +128,12 @@ else
                 return;
             end
         end
-        v0       = find_initial_tangent_vector(x0, v0, CISdata0);
-        if isempty(v0); print_diag(0,'contL: failed to find initial tangent vector.\n'); sout = []; return; end
+        v0 = find_initial_tangent_vector(x0, v0, CISdata0);
+        if isempty(v0)
+          print_diag(0,'contL: failed to find initial tangent vector.\n');
+          sout = [];
+          return;
+        end
     end
     firstpoint = newtcorrL(x0, v0, CISdata0);
 end
@@ -182,7 +195,7 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
   while true
 
     %% A. Predict
-    if NewtonPicard
+    if UsingNewtonPicard
       xpre = currpoint.x + cds.h * currpoint.v;
     else
       xpre = currpoint.x + cds.h * currpoint.v(1:cds.ndim);
@@ -190,8 +203,8 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
     reduce_stepsize = 0;
 
     %% B. Correct
-    if NewtonPicard
-       trialpoint = Newton_Picard_Corrections(xpre, currpoint.v);
+    if UsingNewtonPicard
+       trialpoint = NewtonPicard.do_corrections(xpre, currpoint.v);
       if ~ isempty(trialpoint)
         trialpoint.v = trialpoint.x - currpoint.x;
         trialpoint.v = trialpoint.v / max(abs(trialpoint.v));
@@ -485,6 +498,14 @@ if isempty(v0)
     C(end) = -1;
     v0 = bordCIS1(B,C,1);
     v0 = v0/norm(v0);
+end
+
+function v0 = find_initial_tangent_vector_by_nullspace(x0,v0,CISdata0)
+if isempty(v0)
+  A = contjac(x0, CISdata0);
+  if isempty(A); v0 = []; return; end
+  v0 = A(:,1:end-1)\A(:,end);
+  v0(end+1) = -1;
 end
 
 %------------------------------------------

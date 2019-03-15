@@ -24,6 +24,7 @@ cds.P0 = cell2mat(parameters);
 cds.options = contset();
 cds.options.PartitionMonodromy = true;
 cds.nDiscretizationPoints = 400;
+cds.preferred_basis_size = 5;
 cds.symjac = true;
 cds.usernorm = [];
 cds.probfile = odefile;
@@ -68,10 +69,24 @@ cds.previous_phases = x1(end,:)';
 cds.previous_dydt_0 = f(0,x0);
 int_opt = odeset(int_opt, 'Events', @returnToPlane);
 
-[t2,x2] = ode15s(f, 0:approximate_period, x1(end,:), int_opt); 
-period = t2(end);
-int_opt = odeset(int_opt, 'Events', []);
-[t3,x3] = ode15s(f, [0 period], x2(end,:), int_opt); 
+orbit                   = x1;
+nShootingPoints         = 20;
+active_parameter_index  = 3;
+time_integration_method = @ode15s;
+lower_bound_period      = 1;
+upper_bound_period      = 30;
+
+initial_continuation_data = init_multiple_shooting_from_orbit(...
+    orbit, ...
+    nShootingPoints, ...
+    odefile, ...
+    parameters, ...
+    active_parameter_index, ...
+    time_integration_method, ...
+    lower_bound_period, ...
+    upper_bound_period);
+[s, datafile] = contL(@multiple_shooting, ...
+  initial_continuation_data,[], opt); 
 
 
 
@@ -141,7 +156,7 @@ opt = contset(opt, 'NewtonPicard',   true);
 opt = contset(opt, 'console_output_level',   5);
 opt = contset(opt, 'contL_DiagnosticsLevel', 5);
 
-[s, datafile] = contL(@single_shooting, ...
+[s, datafile] = contL(@multiple_shooting, ...
   [cds.previous_phases; period; cds.P0(cds.ActiveParams)],[],opt); 
 
 

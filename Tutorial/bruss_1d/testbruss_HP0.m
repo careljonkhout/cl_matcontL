@@ -38,7 +38,7 @@ for i=1:N
 end
 
 %% Continuation
-[x0,v0]      = init_EP_EP_L(@bruss_1d, x0, p, ap1);
+[x0,v0]      = init_EP_EP_L(@brusselator_1d, x0, p, ap1);
 contL(@equilibriumL,x0,v0,opt);
 
 %% Plot results

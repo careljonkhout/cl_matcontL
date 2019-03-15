@@ -40,7 +40,7 @@ if(strcmp(s(ID).label ,'H '))
     data = s(ID).data;
     
     %% Continuation
-    [x0,v0]      = init_H_H_L(@bruss_1d, [], [], ap, data);
+    [x0,v0]      = init_H_H_L(@brusselator_1d, [], [], ap, data);
     contL(@hopfL,x0,v0,opt);
     
     %% Plot results

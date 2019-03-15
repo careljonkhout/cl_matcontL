@@ -1,4 +1,5 @@
-function [tmnew,upsnew,mshnew] = newmeshcycle(ups,msh,oldntst,oldncol,newntst,newncol)
+function [tmnew,upsnew,mshnew] = ...
+  newmeshcycle(ups,msh,oldntst,oldncol,newntst,~) % unused input is newncol
 %
 % tmnew:  new time mesh
 % upsnew: new ups

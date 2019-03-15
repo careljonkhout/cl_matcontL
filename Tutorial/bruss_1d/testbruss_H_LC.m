@@ -38,7 +38,7 @@ for i=1:N
 end
 
 %% Continuation
-[x0,v0]      = init_EP_EP_L(@bruss_1d, x0, p, ap);
+[x0,v0]      = init_EP_EP_L(@brusselator_1d, x0, p, ap);
 contL(@equilibriumL,x0,v0,opt);
 
 %% Continue limit cycle from Hopf

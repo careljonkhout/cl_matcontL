@@ -2,8 +2,8 @@
 format long
 run_init_if_needed
 % continuation of cycles cycles in brusselator
-odefile = @bruss_1d; %@brusselator_N_2;
-N=10;
+odefile = @brusselator_1d; %@brusselator_N_2;
+N=20;
 L = 1.1; A = 1; B = 2.2; Dx = 0.008; Dy = 0.004;
 parameters = {N; L; A; B; Dx; Dy};%parameters = {L; A; B; Dx; Dy};
 clear global cds
@@ -14,6 +14,10 @@ handles = feval(odefile);
 title_format_string = ...
   'Brusselator N:%d  L:%.0f  A:%.0f  B:%.1f  Dx:%.3f  Dy:%.3f';
 title_format_args = {N; L; A; B; Dx; Dy;};
+global contopts;
+contopts = contset();
+print_diag(0,[title_format_string '\n'], title_format_args{:});
+
 
 cds.poincare_tolerance = 1e-2;
 cds.minimum_period = 1;
@@ -37,9 +41,9 @@ cds.ncoo = cds.nphases;
     
 int_opt = odeset( ...
   'AbsTol',      1e-10,    ...
-  'RelTol',      1e-13,    ...
-  'Jacobian',     @(t,y) feval(handles{3},t,y,parameters{:}) ...
+  'RelTol',      1e-13    ...
 );
+%'Jacobian',     @(t,y) feval(handles{3},t,y,parameters{:}) ...
 
 
 x0 = ones(cds.nphases,1);
@@ -64,7 +68,7 @@ cds.previous_phases = x1(end,:)';
 cds.previous_dydt_0 = f(0,x0);
 int_opt = odeset(int_opt, 'Events', @returnToPlane);
 
-[t2,x2] = ode15s(f, linspace(0,approximate_period,1000000), x1(end,:), int_opt); 
+[t2,x2] = ode15s(f, linspace(0,approximate_period,500), x1(end,:), int_opt); 
 period = t2(end);
 fprintf('period %.15f\n', period);
 int_opt = odeset(int_opt, 'Events', []);
@@ -116,6 +120,8 @@ opt = contset(opt, 'Backward',       true);
 opt = contset(opt, 'Singularities',  false);
 opt = contset(opt, 'CIS_UsingCIS',   false);
 opt = contset(opt, 'NewtonPicard',   true);
+opt = contset(opt, 'console_output_level',   5);
+opt = contset(opt, 'contL_DiagnosticsLevel', 5);
 
 initial_continuation_data = [cds.previous_phases; period; cds.P0(cds.ActiveParams)];
 initial_continuation_tangent_vector = [];

@@ -6,27 +6,26 @@ if exist('contL', 'file')
 end
 
 
-addpath(genpath(pwd))
+%addpath(genpath(pwd))
 
-% addpath([cd '/BogdanovTakens/']);
-% addpath([cd '/BranchPointCycle/']);
-% addpath([cd '/CIS/']);
-% addpath([cd '/Continuer/']);
-% addpath([cd '/DataStorage/']);
-% addpath([cd '/Equilibrium/']);
-% addpath([cd '/Hopf/']);
-% addpath([cd '/LimitPoint/']);
+addpath([cd '/BogdanovTakens/']);
+addpath([cd '/BranchPointCycle/']);
+addpath([cd '/CIS/']);
+addpath([cd '/Continuer/']);
+addpath([cd '/DataStorage/']);
+addpath([cd '/Equilibrium/']);
+addpath([cd '/Hopf/']);
+addpath([cd '/LimitPoint/']);
 
-% addpath([cd '/LimitPointCycle/']);
-% addpath([cd '/LimitCycle/']);
-% addpath([cd '/LimitCycleNewtonPicard']);
-% addpath([cd '/LimitCycle/pqzschur']);
-% addpath([cd '/LimitCycleCodim2/']);
-% addpath([cd '/MultilinearForms/']);
-% addpath([cd '/Options/']);
-% addpath([cd '/SystemFileGenerator/']);
-% addpath([cd '/Systems/']);
-% addpath([cd '/TimeIntegration/']);
+addpath([cd '/LimitPointCycle/']);
+addpath([cd '/LimitCycle/']);
+addpath([cd '/LimitCycle/pqzschur']);
+addpath([cd '/LimitCycleCodim2/']);
+addpath([cd '/MultilinearForms/']);
+addpath([cd '/Options/']);
+addpath([cd '/SystemFileGenerator/']);
+addpath([cd '/Systems/']);
+addpath([cd '/TimeIntegration/']);
 
 
 

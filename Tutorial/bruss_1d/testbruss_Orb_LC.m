@@ -23,7 +23,7 @@ opt = contset(opt, 'Filename', 'testbruss_HP0');
 %% Start point
 N = 4; L = 1.1; A = 1; B = 3; Dx = 0.008; Dy = 0.004;
 parameters = {N; L; A; B; Dx; Dy};
-handles = bruss_1d;
+handles = brusselator_1d;
 
 integration_opt = odeset(     'AbsTol', 1e-10);
 integration_opt = odeset(integration_opt, 'RelTol', 1e-13);
@@ -41,14 +41,12 @@ end
 approximate_period = 7;
 [t2, x2] = ode15s(f, [0 approximate_period],x1(end,:)' ,integration_opt); 
 opt.TSearchOrder = 0;
-%% Continue limit cycle from Hopf
+%% Continue limit cycle from stable cycle found by time integration
 tolerance = 1e-3;
 ntst = 3;
 ncol = 4;
-odefile = @bruss_1d;
-y = x2';
+odefile = @brusselator_1d;
 ap = 4;
-[x0,v0] = initOrbLC(odefile, t2, y, cell2mat(parameters), ap, ntst, ncol,tolerance);
-% to circumvent bialtaa error comment line 603 of limitcycleL.m
+[x0,v0] = initOrbLC(odefile, t2, x2, cell2mat(parameters), ap, ntst, ncol,tolerance);
 [~, datafile] = contL(@limitcycleL,x0,v0,opt);
 

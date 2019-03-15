@@ -39,7 +39,6 @@ opt = contset(opt, 'bpc_tolerance', Inf);
 opt = contset(opt, 'newtcorrL_use_max_norm', true);
 opt = contset(opt, 'MaxTestIters',   30);
 opt = contset(opt, 'SingularTestFunction',   true);
-opt = contset(opt, 'gmres',                  true);
 opt = contset(opt, 'MoorePenrose',          false);
 
 % right before alleged bpc

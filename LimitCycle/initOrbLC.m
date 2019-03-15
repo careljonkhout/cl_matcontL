@@ -1,4 +1,5 @@
-function [x0,v0] = initOrbLC(odefile, t, y, p, ap, ntst, ncol,tolerance)
+function [x0,v0] = initOrbLC(odefile, t, y, p, ap, ntst, ncol,~)
+% unused argument is tolerance
 
 %
 %
@@ -43,38 +44,52 @@ cds.probfile = odefile;
 cds.nap = length(ap);
 cds.curve_CIS_step = [];
 
-
-
 x=y';
-xstart=round(size(x,2)/3);
+norms       = vecnorm(x-x(:,1));
+differences = diff(norms); % i.e. differences = [ norms(2) - norms(1) ...
 
-amin=sum(abs(x(:,xstart:end)-x(:,1)*ones(1,size(x(:,xstart:end),2))));
-ep=tolerance;
-amin(find(amin(:)<ep))=inf; %#ok<FNDSB>
-[pp,qq]=min(amin-(1e-4));
-if (pp==Inf)||pp<0
-   ind=[]; 
-else
-    ind = qq(1)+xstart-1;
+minimum_norm       = Inf;%tolerance;
+return_point_index = -1;
+
+for i=2:size(x,2)
+  % If the difference is negative we are returning to the starting point
+  % and hence may find the point where the cycle closes.
+  if differences(i-1) < 0 && norms(i) < minimum_norm
+    minimum_norm = norms(i);
+    return_point_index = i;
+  end
 end
-if isempty(ind)
-    warndlg('No cycle can be found!')
-    return; 
+
+if return_point_index == -1
+  error('No cycle can be found');
 end
-x=x(:,1:ind);
-t=t(1:ind)';
-tn=(t-t(1))/(t(end)-t(1));
 
-[a,x,tn] = newmeshcycle(x,tn,size(x,2)-1,1,ntst,ncol);
-x = interp(tn,1,x,a,4);
+x=x(:,1:return_point_index);
+t=t(1:return_point_index)';
+t_scaled_to_unit_interval=(t-t(1))/(t(end)-t(1));
 
-%lds.ActiveParams = 1;
-lds.ntst = ntst;
-lds.ncol = ncol;
-lds.msh = a;
-x = reshape(x,size(x,2)*size(x,1),1);
+[lds.msh,~,~] = ...
+  newmeshcycle(x,t_scaled_to_unit_interval,size(x,2)-1,1,ntst,ncol);
+
+
+
+lds.finemsh = zeros(1,ntst*ncol+1);
+fine_mesh_index = 2;
+
+for i=1:ntst
+  mesh_interval_width = lds.msh(i+1) - lds.msh(i);
+  fine_mesh_dt        = mesh_interval_width / ncol;
+  for j=1:ncol
+    lds.finemsh(fine_mesh_index) = lds.msh(i) + j * fine_mesh_dt;
+    fine_mesh_index              = fine_mesh_index + 1;
+  end
+end
+x = interp1(t_scaled_to_unit_interval,x',lds.finemsh);
+x = reshape(x',size(x,2)*size(x,1),1);
 x(end+1) = t(end)-t(1);
 
+lds.ntst = ntst;
+lds.ncol = ncol;
 lds.T = x(end);
 x(end+1) = p(ap);
 x0=x;

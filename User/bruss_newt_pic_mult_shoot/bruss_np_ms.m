@@ -11,8 +11,8 @@
 format long
 run_init_if_needed
 % continuation of cycles cycles in brusselator
-odefile = @bruss_1d; %@brusselator_N_2;
-N=10;
+odefile = @brusselator_1d; %@brusselator_N_2;
+N=5;
 L = 1.1; A = 1; B = 2.2; Dx = 0.008; Dy = 0.004;
 parameters = {N; L; A; B; Dx; Dy};%parameters = {L; A; B; Dx; Dy};
 clear global cds
@@ -25,16 +25,11 @@ title_format_string = ...
   'Brusselator N:%d  L:%.0f  A:%.0f  B:%.1f  Dx:%.3f  Dy:%.3f';
 title_format_args = {N; L; A; B; Dx; Dy;};
 
-cds.poincare_tolerance = 1e-2;
-cds.minimum_period = 1;
-cds.dydt_ode = handles{2};
-cds.jacobian_ode = handles{3};
 
-cds.probfile = odefile;
+
 cds.nap = 1;
 cds.q_systems_tolerance = 1e-10;
 cds.nphases = 2*N;
-cds.ndim = cds.nphases + cds.nap + 1;
 cds.P0 = cell2mat(parameters);
 cds.options = contset();
 cds.options.PartitionMonodromy = cds.nphases > 30;
@@ -44,6 +39,7 @@ cds.usernorm = [];
 cds.probfile = odefile;
 cds.ncoo = cds.nphases;
 cds.nShootingPoints = 4;
+cds.ndim = cds.nphases * cds.nShootingPoints + 2;
 
     
 int_opt = odeset( ...
@@ -70,22 +66,6 @@ end
 
 
 
-approximate_period = 30;
-
-cds.previous_phases = x1(end,:)';
-cds.previous_dydt_0 = f(0,x0);
-int_opt = odeset(int_opt, 'Events', @returnToPlane);
-
-sol = ode15s(f, linspace(0,approximate_period,1000), x1(end,:), int_opt); 
-period = sol.x(end);
-initial_continuation_data = zeros(cds.nphases * cds.nShootingPoints + 2,1);
-for i=0:cds.nShootingPoints-1
-  indices = (1:cds.nphases) + i * cds.nphases;
-  initial_continuation_data(indices) = ...
-    deval(sol, i / cds.nShootingPoints * period);
-end
-
-int_opt = odeset(int_opt, 'Events', []);
 
 if draw_plots
   figure(2)
@@ -130,18 +110,31 @@ opt = contset(opt, 'Multipliers',    true);
 opt = contset(opt, 'Backward',       true);
 opt = contset(opt, 'Singularities',  false);
 opt = contset(opt, 'CIS_UsingCIS',   false);
-opt = contset(opt, 'NewtonPicard',   false);
+opt = contset(opt, 'NewtonPicard',   true);
 opt = contset(opt, 'console_output_level',   5);
 opt = contset(opt, 'contL_DiagnosticsLevel', 5);
 opt = contset(opt, 'MoorePenrose', false);
 
 
-initial_continuation_data(end-1) = period;
-initial_continuation_data(end  ) = cds.P0(cds.ActiveParams);
-initial_continuation_tangent_vector = [];
+
+orbit                   = x1;
+nShootingPoints         = 4;
+active_parameter_index  = 2;
+time_integration_method = @ode15s;
+lower_bound_period      = 1;
+upper_bound_period      = 30;
+
+initial_continuation_data = init_multiple_shooting_from_orbit(...
+    orbit, ...
+    nShootingPoints, ...
+    odefile, ...
+    parameters, ...
+    active_parameter_index, ...
+    time_integration_method, ...
+    lower_bound_period, ...
+    upper_bound_period);
 [s, datafile] = contL(@multiple_shooting, ...
-  initial_continuation_data, ...
-  initial_continuation_tangent_vector, opt); 
+  initial_continuation_data,[], opt); 
 
 
 figure
@@ -188,14 +181,6 @@ for i=nMults-10:nMults
   plot(x(end,:),mult(i, :))
 end
 
-function [value, isterminal, direction] = returnToPlane(t, x)
-  global cds;
-  % x and should be a column vector
-  value = cds.previous_dydt_0'*(x-cds.previous_phases);
-  isterminal = t > cds.minimum_period ...
-    && max(abs(x-cds.previous_phases)) < cds.poincare_tolerance;
-  direction = 1;
-end
 function [time_values, trajectory] ...
   = compute_cycle(initial_condition, period, parameters)
   global cds

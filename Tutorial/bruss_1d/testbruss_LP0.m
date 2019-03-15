@@ -39,7 +39,7 @@ opt = contset(opt, 'Filename',     'testbruss_LP0');
 N = 500; L = 0.06; A = 2; B = 4.6; Dx = 0.0016; Dy = 0.008;
 p = [N, L, A, B, Dx, Dy]; ap1 = 2;
 
-[x0,v0]      = init_EP_EP_L(@bruss_1d, [], p, ap1);
+[x0,v0]      = init_EP_EP_L(@brusselator_1d, [], p, ap1);
 contL(@equilibriumL,x0,v0,opt);
 
 %% Plot results

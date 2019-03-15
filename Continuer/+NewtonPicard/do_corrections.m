@@ -1,4 +1,4 @@
-function point = Newton_Picard_Corrections(x0,v)
+function point = do_corrections(x0,v)
   
   global cds contopts
  
@@ -16,9 +16,9 @@ function point = Newton_Picard_Corrections(x0,v)
       curve_function_norm, period, corrections);
     corrections = corrections + 1;
     if     isequal(cds.curve, @single_shooting)
-      x = Newton_Picard_Single_Shooting(x0,x,v);
+      x = NewtonPicard.SingleShooting.do_one_correction(x0,x,v);
     elseif isequal(cds.curve, @multiple_shooting)
-      x = Newton_Picard_Multiple_Shooting(x0,x,v);
+      x = NewtonPicard.MultipleShooting.do_one_correction(x0,x,v);
     else
       print_diag(0,'Newton_Picard_Corrections: wrong curvefile.\n');
       point = [];
