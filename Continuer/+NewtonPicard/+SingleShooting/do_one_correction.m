@@ -1,92 +1,13 @@
 function x = do_one_correction(x0,x,v0)
+  global cds;
 
-  global cds
-  
-  active_par_val               = x(end);
-  period                       = x(end-1);
-  phases_0                     = x(1:end-2);
-  parameters                   = cds.P0;
-  parameters(cds.ActiveParams) = active_par_val;
-  parameters                   = num2cell(parameters);
-  
-  integration_opt = odeset(...
-    'AbsTol',      1e-10,    ...
-    'RelTol',      1e-10,    ...
-    'BDF',         'off',   ...
-    'MaxOrder',     5,      ...
-    'NormControl',  'off',  ...
-    'Refine',       1,      ...
-    'Jacobian',     @(t,y) feval(cds.jacobian_ode,t,y,parameters{:}) ...
-  );
-  
+  [V, reduced_jacobian, delta_q_gamma, delta_q_r, M_delta_q_r, ...
+          phases_0, phi, period, active_par_val] = ...
+          NewtonPicard.SingleShooting.compute_reduced_jacobian(x);
 
-  cds.cycle_trajectory = ode15s(...
-    @(t, y) cds.dydt_ode(t, y, parameters{:}), ...
-    linspace(0, period, cds.nDiscretizationPoints), ...
-    phases_0, integration_opt);
-
-  phi = deval(cds.cycle_trajectory,period);
-
-  
-  if ~ isfield(cds, 'V')
-    cds.V = NewtonPicard.SingleShooting.compute_subspace(period, parameters);
-    V = cds.V;
-    basis_size = size(V,2);
-  else
-    cds.V = NewtonPicard.SingleShooting.continue_subspace(period, parameters);
-    V = cds.V;
-    basis_size = size(V,2);
-  end
-
-
-  MV = zeros(cds.nphases,basis_size);
-  
-  int_opt = odeset(...
-    'AbsTol',       1e-10,    ...
-    'RelTol',       1e-10,    ...
-    'BDF',          'off',   ...
-    'MaxOrder',     5,      ...
-    'NormControl',  'off',  ...
-    'Refine',       1, ...
-    'Jacobian',     @(t,y) feval(cds.jacobian_ode, ...
-                      t, deval(cds.cycle_trajectory,t), parameters{:}) ...
-  );                
-  dydt_monodromy_map = @(t, y) ...
-    cds.jacobian_ode(t, deval(cds.cycle_trajectory,t), parameters{:}) * y;
-  % The function monodromy_map cannot be used here, since it depends on
-  % the global variable cds, and global variables are not copied so the
-  % the workspace of the workers that parfor uses.
-  for i=1:basis_size
-    [~,trajectory] = ode15s(dydt_monodromy_map, [0 period], V(:,i), int_opt);
-    MV(:,i) = trajectory(end,:)';
-  end
-
-  S = V'*MV;
-  
-  
-  % the r in q_r means residual
-  [delta_q_r,     M_delta_q_r] = ...
-    NewtonPicard.SingleShooting.solve_Q_system(V, phi - phases_0, ...
-    period, parameters);
-
-  d_phi_d_gamma_val = d_phi_d_gamma(phases_0,period,parameters);
-  [delta_q_gamma, M_delta_q_gamma] = ...
-    NewtonPicard.SingleShooting.solve_Q_system(V, d_phi_d_gamma_val, ...
-    period, parameters);
-  
-
-  
-  d_phi_d_T = cds.dydt_ode(0,phi,parameters{:});
-  
-
-  d_s_d_T      = 0;
-  d_s_d_gamma  = 0;
-
-  
   left_hand_side = [
-    S - eye(basis_size)         V'* d_phi_d_T     V' * (d_phi_d_gamma_val + M_delta_q_gamma);
-    cds.previous_dydt_0' * V    d_s_d_T           d_s_d_gamma                               ;
-    v0(1:end-2)' * V            v0(end-1)         v0(end)                                   ;
+    reduced_jacobian;
+    v0(1:end-2)' * V       v0(end-1:end)';
   ];
 
   right_hand_side = [
@@ -94,11 +15,11 @@ function x = do_one_correction(x0,x,v0)
     - cds.previous_dydt_0' * (phases_0 - cds.previous_phases  + delta_q_r);
     - v0' * (x-x0)          - v0(1:end-2)' * delta_q_r
   ];
-
+  
   delta_p__delta_T_and_delta_gamma = left_hand_side \ right_hand_side;
-  delta_p     = delta_p__delta_T_and_delta_gamma(1:end-2);
-  delta_T     = delta_p__delta_T_and_delta_gamma(end-1);
-  delta_gamma = delta_p__delta_T_and_delta_gamma(end);
+  delta_p         = delta_p__delta_T_and_delta_gamma(1:end-2);
+  delta_T         = delta_p__delta_T_and_delta_gamma(end-1);
+  delta_gamma     = delta_p__delta_T_and_delta_gamma(end);
 
   
   delta_q         = delta_q_r + delta_gamma * delta_q_gamma;
@@ -106,32 +27,7 @@ function x = do_one_correction(x0,x,v0)
   period          = period + delta_T;
   active_par_val  = active_par_val + delta_gamma;
   x = [phases; period; active_par_val];
-  %v = find_tangent_vector(phases_0, period, parameters, V);
 
-    
-function x_end = shoot(x, period, parameters)
-  global cds
-  f =@(t, y) cds.dydt_ode(t, y, parameters{:});
-  integration_opt = odeset(...
-    'AbsTol',      1e-10,    ...
-    'RelTol',      1e-10,    ...
-    'BDF',         'off',   ...
-    'MaxOrder',     5,      ...
-    'NormControl',  'off',  ...
-    'Refine',       1,      ...
-    'Jacobian',     @(t,y) feval(cds.jacobian_ode,t,y,parameters{:}) ...
-  );
-  [~, trajectory] = ode15s(f, [0 period], x, integration_opt);
-  x_end = trajectory(end,:)';
- 
-function dphidp = d_phi_d_gamma(x, period, parameters)
-  global cds
-  ap = cds.ActiveParams;
-  h = 1e-6;
-  parameters{ap} = parameters{ap} - h;
-  phi_1 = shoot(x, period, parameters);
-  parameters{ap} = parameters{ap} + 2*h;
-  phi_2 = shoot(x, period, parameters);
-  dphidp = (phi_2 - phi_1)/h/2; 
+
 
   

@@ -1,9 +1,10 @@
-function [V, reduced_jacobian, delta_q_gamma, ...
-                               delta_q_r,     G_delta_q_r...
-                               ] = compute_reduced_jacobian(x)
+function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
+          phases_0, phi, period, active_par_val] = compute_reduced_jacobian(x)
 
   global cds
-  [phases_0,period,parameters] = getComponents(x);
+  [phases_0,period,parameters] = ...
+    NewtonPicard.MultipleShooting.extract_phases_period_and_parameters(x);
+  active_par_val = parameters{cds.ActiveParams};
   
   integration_opt = odeset(...
     'AbsTol',      1e-10,    ...
@@ -184,29 +185,6 @@ function [V, reduced_jacobian, delta_q_gamma, ...
     lhs_2_1    d_s_d_T           d_s_d_gamma ;
   ];
 
-end
-
-
-% extracts 
-% - y ( the current approximation of points on the cycle )
-% - period
-% - parameters ( of the ode system in which cycles are continued )
-% from the continuation state vector x.
-% The non-active parameters, i.e. the parameters that do not change during
-% the continuation are extracted from the global struct cds
-% (i.e.) curve description structure.
-% The parameters are returned as a cell array, so that that can be passed to
-% cds.dydt_ode in an syntactically elegant manner.
-
-function [y,period,parameters] = getComponents(x)
-  global cds
-  y                            = x(1:cds.nphases*cds.nShootingPoints);
-  y                            = reshape(y,cds.nphases,cds.nShootingPoints);
-  period                       = x(end-1);
-  parameter_value              = x(end);
-  parameters                   = cds.P0;
-  parameters(cds.ActiveParams) = parameter_value;
-  parameters                   = num2cell(parameters);
 end
 
 

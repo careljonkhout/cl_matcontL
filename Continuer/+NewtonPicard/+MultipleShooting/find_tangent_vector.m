@@ -11,9 +11,7 @@ function v = find_tangent_vector(x)
   global cds
   m = cds.nShootingPoints;
   
-  
-  [V, reduced_jacobian, delta_q_gamma, ...
-                        delta_q_r,     ~ ] = ...
+  [V, reduced_jacobian, delta_q_gamma, delta_q_r, ~, ~, ~, ~, ~] = ...
     NewtonPicard.MultipleShooting.compute_reduced_jacobian(x);
   
   basis_size = size(V,2);
