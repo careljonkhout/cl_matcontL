@@ -11,17 +11,21 @@
 function [delta_q, M_delta_q] = ...
              solve_Q_system(V, rhs, period, parameters)
   global contopts;
-  delta_q    = rhs - V*V'*rhs;
-  M_delta_q = NewtonPicard.SingleShooting.monodromy_map( ...
-        delta_q, period, parameters);
+  %delta_q    = zeros(size(V,1),1);
+  M_delta_q  = zeros(size(V,1),1);
+  %residual   = rhs + M_delta_q - delta_q;
+  %residual   = residual - V * V' *residual;
+  %if max(abs(residual)) < contopts.PicardTolerance
+  %  return;
+  %end
   for iteration_number = 1:contopts.MaxPicardIterations
     delta_q = M_delta_q + rhs;
-    delta_q = delta_q - V*V'*rhs;
+    delta_q = delta_q - V*V'*delta_q;
     M_delta_q = NewtonPicard.SingleShooting.monodromy_map( ...
         delta_q, period, parameters);
     residual = rhs + M_delta_q - delta_q;
     residual = residual - V*V'*residual;
-    print_diag(5,'residual %.5e\n', max(abs(residual)));
+    print_diag(5,'q_system residual %.5e\n', max(abs(residual)));
     if max(abs(residual)) < contopts.PicardTolerance
       break
     end

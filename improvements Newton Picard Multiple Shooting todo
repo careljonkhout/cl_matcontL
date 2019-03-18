@@ -1,1 +1,6 @@
 - optimize shooting points selection
+- start form hopf
+- implement a check, for single shooting:
+  - is has happened to me that a single shooting continuation steps onto a 
+    equilibrium. To prevent this, there is a certain check that can be made:
+     f(0,phases_0,parameter) >= treshold

@@ -1,6 +1,5 @@
 % continuation of cycles in fusion system
-
-
+close all
 run_init_if_needed
 
 N = 25;
@@ -14,7 +13,7 @@ clear global cds
 clear global lds
 
 global cds
-cds.poincare_tolerance = 1e-4;
+cds.poincare_tolerance = 1e-1;
 cds.minimum_period = 1;
 cds.nphases = 3*(N-1);
 cds.nap = 1;
@@ -40,6 +39,8 @@ parameters = {a;b;q_inf};
 
 
 int_opt = odeset( ...
+  'AbsTol'  ,    1e-13, ...
+  'RelTol'  ,    1e-13, ...
   'Jacobian',     @(t,y) feval(handles{3},t,y,parameters{:}) ...
 );
 
@@ -68,15 +69,11 @@ cds.previous_phases = x1(end,:)';
 cds.previous_dydt_0 = f(0,x0);
 int_opt = odeset(int_opt, 'Events', @returnToPlane);
 
-[t2,x2] = ode15s(f, 0:approximate_period, x1(end,:), int_opt); 
+[t2,x2] = ode15s(f, linspace(0,approximate_period,1000), x1(end,:), int_opt); 
 period = t2(end);
+print_diag(0,'period: %.7f\n', period);
 int_opt = odeset(int_opt, 'Events', []);
-[t3,x3] = ode15s(f, [0 period], x2(end,:), int_opt); 
 
-
-
-% use poincare section to converge to 
-%[t3,x3] = ode15s(f, 0:5*approximate_period,x1(end,:)',integration_opt);
 
 
 if draw_plots
@@ -90,9 +87,11 @@ if draw_plots
   ylabel('x_1,x_2,y_1,y_2');
 end
 
+
 if draw_plots
-  figure(3)
+  figure
   hold on;
+  [t3,x3] = ode15s(f, linspace(0,period,100), x1(end,:), int_opt); 
   plot(t3,x3)
    title(sprintf( ...
     'fusion N:%d a:%.2f b:%.2f q_{inf}:%.2f', ...
@@ -103,7 +102,7 @@ end
 
 
 if draw_plots
-  figure(3)
+  figure(4)
   plot(x2(:,1),x2(:,2))
   title(sprintf( ...
     'fusion N:%d a:%.2f b:%.2f q_{inf}:%.2f', ...
@@ -119,9 +118,9 @@ end
 
 
 opt = contset();
-opt = contset(opt, 'InitStepsize',   5e-1);
+opt = contset(opt, 'InitStepsize',   1e-2);
 opt = contset(opt, 'MinStepsize',    1e-10);
-opt = contset(opt, 'MaxStepsize',    5e-1);
+opt = contset(opt, 'MaxStepsize',    1e-2);
 opt = contset(opt, 'MaxNewtonIters', 8);
 opt = contset(opt, 'MaxCorrIters',   10);
 opt = contset(opt, 'MaxTestIters',   10);
@@ -130,7 +129,7 @@ opt = contset(opt, 'FunTolerance',   1e-8);
 % we don't want to adapt
 % since it is not implemented
 opt = contset(opt, 'Adapt',          1000*1000*1000);
-opt = contset(opt, 'MaxNumPoints',   100*1000);
+opt = contset(opt, 'MaxNumPoints',   10);
 opt = contset(opt, 'contL_SmoothingAngle', 10);
 opt = contset(opt, 'CheckClosed',    50000);
 opt = contset(opt, 'Multipliers',    true);
@@ -140,6 +139,8 @@ opt = contset(opt, 'CIS_UsingCIS',   false);
 opt = contset(opt, 'NewtonPicard',   true);
 opt = contset(opt, 'console_output_level',   5);
 opt = contset(opt, 'contL_DiagnosticsLevel', 5);
+opt = contset(opt, 'every_point_in_separate_mat_file', true);
+
 
 [s, datafile] = contL(@single_shooting, ...
   [cds.previous_phases; period; cds.P0(cds.ActiveParams)],[],opt); 
@@ -183,7 +184,7 @@ function [value, isterminal, direction] = returnToPlane(t, x)
   value = cds.previous_dydt_0'*(x-cds.previous_phases);
   isterminal = t > cds.minimum_period ...
     && max(abs(x-cds.previous_phases)) < cds.poincare_tolerance;
-  direction = 1;
+  direction = -1;
 end
 
 function [t,x] = compute_cycle(x, period, parameters)
@@ -192,10 +193,6 @@ function [t,x] = compute_cycle(x, period, parameters)
   integration_opt = odeset(...
     'AbsTol',      1e-10,    ...
     'RelTol',      1e-10,    ...
-    'BDF',         'off',   ...
-    'MaxOrder',     5,      ...
-    'NormControl',  'off',  ...
-    'Refine',       1,      ...
     'Jacobian',     @(t,y) feval(cds.jacobian_ode,t,y,parameters{:}) ...
   );
   [t,x] = ode15s(f, [0 period], x, integration_opt);

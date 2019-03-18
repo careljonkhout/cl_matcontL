@@ -147,17 +147,29 @@ function [y_end, monodromy] = monodromy_column_by_column(x, period, parameters)
 function init(~,~)
 %----------------------------------------------------------
 function out=defaultprocessor(varargin)
-  global cds
-  x = varargin{1}.x;
+  global cds contopts
+  point = varargin{1};
+  
+  if contopts.Multipliers
+    point.multipliers = ...
+      NewtonPicard.SingleShooting.compute_multipliers(point.x);
+  end
+    
+  x = point.x;
+  % needed for phase condition:
   cds.previous_phases          = x(1:end-2);
+  
   active_par_val               = x(end);
   parameters                   = cds.P0;
   parameters(cds.ActiveParams) = active_par_val;
   parameters                   = num2cell(parameters);
+  
+  % needed for phase condition:
   cds.previous_dydt_0          = cds.dydt_ode(0, ...
                                     cds.previous_phases,parameters{:});
-  out                          = varargin{1};
-  savePoint(varargin{1});
+  
+  out                          = point;
+  savePoint(point);
 
 function options
 

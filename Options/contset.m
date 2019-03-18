@@ -160,7 +160,7 @@ options.newtcorrL_use_max_norm = false;
 options.always_save_s = true;
 options.SingularTestFunction = false;
 options.every_point_in_separate_mat_file = false;
-options.MaxPicardIterations = 15;
+options.MaxPicardIterations = 7;
 options.PicardTolerance     = 1e-10;
 
                             %% Determine testpath

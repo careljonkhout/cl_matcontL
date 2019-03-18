@@ -1,5 +1,5 @@
 function v = find_tangent_vector(curvefile, x)
-  if     isequal(curvefile,@single_shooting)
+  if     isequal(curvefile, @single_shooting)
     v = NewtonPicard.SingleShooting.find_tangent_vector(x);
   elseif isequal(curvefile, @multiple_shooting)
     v = NewtonPicard.MultipleShooting.find_tangent_vector(x);
@@ -9,4 +9,5 @@ function v = find_tangent_vector(curvefile, x)
           'The Newton-Picard method does not support %s'];
     error(error_format_string, func2str(curvefile));
   end
+  v = v / max(abs(v));
 end

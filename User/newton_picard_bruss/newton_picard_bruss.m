@@ -3,7 +3,7 @@ format long
 run_init_if_needed
 % continuation of cycles cycles in brusselator
 odefile = @brusselator_1d; %@brusselator_N_2;
-N=20;
+N=50;
 L = 1.1; A = 1; B = 2.2; Dx = 0.008; Dy = 0.004;
 parameters = {N; L; A; B; Dx; Dy};%parameters = {L; A; B; Dx; Dy};
 clear global cds
@@ -100,7 +100,7 @@ end
 
 
 opt = contset();
-opt = contset(opt, 'MaxNumPoints',   4);
+opt = contset(opt, 'MaxNumPoints',   8);
 opt = contset(opt, 'InitStepsize',   1e-1);
 opt = contset(opt, 'MinStepsize',    1e-6);
 opt = contset(opt, 'MaxStepsize',    1e-1);
