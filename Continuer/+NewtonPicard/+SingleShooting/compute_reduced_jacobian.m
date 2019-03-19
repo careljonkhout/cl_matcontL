@@ -24,7 +24,7 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, M_delta_q_r, ...
   );
   
 
-  cds.cycle_trajectory = ode15s(...
+  cds.cycle_trajectory = cds.integrator(...
     @(t, y) cds.dydt_ode(t, y, parameters{:}), ...
     linspace(0, period, cds.nDiscretizationPoints), ...
     phases_0, integration_opt);
@@ -61,7 +61,7 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, M_delta_q_r, ...
   % the global variable cds, and global variables are not copied so the
   % the workspace of the workers that parfor uses.
   for i=1:basis_size
-    [~,trajectory] = ode15s(dydt_monodromy_map, [0 period], V(:,i), int_opt);
+    [~,trajectory] = cds.integrator(dydt_monodromy_map, [0 period], V(:,i), int_opt);
     MV(:,i) = trajectory(end,:)';
   end
 
@@ -107,7 +107,7 @@ function x_end = shoot(x, period, parameters)
     'Refine',       1,      ...
     'Jacobian',     @(t,y) feval(cds.jacobian_ode,t,y,parameters{:}) ...
   );
-  [~, trajectory] = ode15s(f, [0 period], x, integration_opt);
+  [~, trajectory] = cds.integrator(f, [0 period], x, integration_opt);
   x_end = trajectory(end,:)';
  
 function dphidp = d_phi_d_gamma(x, period, parameters)

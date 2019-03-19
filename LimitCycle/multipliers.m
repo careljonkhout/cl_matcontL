@@ -42,7 +42,28 @@ multipliers = ones(lds.nphase,1);
 for i=1:lds.ntst
   multipliers = multipliers .* diag(A(:,:,i)) ./ diag(B(:,:,i));
 end
-multipliers = sort(multipliers,'descend', 'ComparisonMethod', 'abs');  
-print_diag(3,'multiplier with norm larger than 0.7: %.15f\n', ...
-  multipliers(abs(multipliers)>0.7));
+multipliers = sort(multipliers,'descend', 'ComparisonMethod', 'abs');
+
+critical_multipliers = multipliers(abs(multipliers)>0.85);
+text = 'multipliers with norm larger than 0.85:\n';
+for i=1:length(critical_multipliers)
+  m = critical_multipliers(i);
+  if abs(imag(m)) > 1e-8
+    % Call me crazy, but I'd like a space between a + or - and a number.
+    % This is the only way I know how to do this.
+    if  sign(imag(m)) > 1
+      sign_text = '+';
+    else
+      sign_text = '-';
+    end
+    % This text will not be so long that it will negatively impact performance.
+    % Therefore, the 'array grows on every loop iteration'-warning is ignored
+    text  = [ text sprintf('%.15f %s %.15fi\n', ...
+              real(m), sign_text, abs(imag(m))) ]; %#ok<AGROW>
+  else
+    text  = [ text sprintf('%.15f\n', real(m)) ]; %#ok<AGROW>
+  end
+end
+
+print_diag(3,text);
 

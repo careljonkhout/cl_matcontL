@@ -18,7 +18,7 @@ lds = [];
 if isempty(cds) || ~isfield(cds,'options')
     cds.options = contset();
 end
-cds.curve = @equilibrium;
+cds.curve = @equilibriumL;
 curvehandles = feval(cds.curve);
 cds.curve_func = curvehandles{1};
 cds.curve_jacobian = curvehandles{4};
@@ -28,7 +28,7 @@ eds.func = func_handles{2};
 eds.Jacobian  = func_handles{3};
 eds.JacobianP = func_handles{4};
 if ~isfield(eds,'ActiveParams')
-    init_EP_EP(odefile,x,p,ap);
+    init_EP_EP_L(odefile,x,p,ap);
 end
 
 init_lds(odefile,x,p,ap,ntst,ncol);
@@ -75,7 +75,7 @@ end
 nphase = lds.nphase;
 A = A(1:nphase,1:nphase);
 % calculate eigenvalues and eigenvectors
-[V,D] = eig(A);
+[V,D] = eigs(A);
 % find pair of complex eigenvalues
 d = diag(D);
 smallest_sum = Inf;

@@ -6,3 +6,9 @@
      f(0,phases_0,parameter) >= treshold
 
 - adapt size of small subspace
+
+
+orthogonal collocation
+  - adding a field to lds is very likely to cause crashes, due to the way 
+    fields are read form the lds structure in the mex files. It would be nice to 
+    fix this.

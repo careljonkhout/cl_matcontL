@@ -42,7 +42,7 @@ function V = continue_subspace(period, parameters)
         % The function monodromy_map cannot be used here, since it depends on
         % the global variable cds, and global variables are not copied so the
         % the workspace of the workers that parfor uses.
-        [~,trajectory] = ode15s(...
+        [~,trajectory] = cds.integrator(...
           dydt_monodromy_map, [0 period], V_extended(:,i), int_opt);
         W(:,i) = trajectory(end,:)';
       end
@@ -52,7 +52,7 @@ function V = continue_subspace(period, parameters)
         % We try again with ordinary for.
         fprintf('Parfor aborted, retrying with ordinary for.\n');
         for i=p_eff+1:size(V_extended,2)
-          [~,trajectory] = ode15s(...
+          [~,trajectory] = cds.integrator(...
             dydt_monodromy_map, [0 period], V_extended(:,i), int_opt);
           W(:,i) = trajectory(end,:)';
         end

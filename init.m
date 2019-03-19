@@ -23,6 +23,7 @@ addpath([cd '/LimitCycle/pqzschur']);
 addpath([cd '/LimitCycleCodim2/']);
 addpath([cd '/MultilinearForms/']);
 addpath([cd '/Options/']);
+addpath([cd '/PeriodDoubling/']);
 addpath([cd '/SystemFileGenerator/']);
 addpath([cd '/Systems/']);
 addpath([cd '/TimeIntegration/']);

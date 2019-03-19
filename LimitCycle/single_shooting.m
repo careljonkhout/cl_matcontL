@@ -44,7 +44,7 @@ function x_end = shoot(x, period, parameters)
     'Refine',       1,      ...
     'Jacobian',     @(t,y) feval(cds.jacobian_ode,t,y,parameters{:}) ...
   );
-  [~, trajectory] = ode15s(f, [0 period], x, integration_opt);
+  [~, trajectory] = cds.integrator(f, [0 period], x, integration_opt);
   x_end = trajectory(end,:)';
 
 function jacobian = jacobian(varargin)
@@ -99,7 +99,7 @@ function [y_end, monodromy] = monodromy_full(x, period, parameters)
   );
 
   x_with_monodromy = [x; reshape(eye(nphases),[nphases^2 1])];
-  [~, trajectory] = ode15s(...
+  [~, trajectory] = cds.integrator(...
     f, [0 period], x_with_monodromy, integration_opt);
   y_end = trajectory(end,1:nphases)';
   monodromy = trajectory(end,nphases+1:end);
@@ -131,16 +131,18 @@ function [y_end, monodromy] = monodromy_column_by_column(x, period, parameters)
     'Jacobian',     @(t,y) feval(cds.jacobian_ode,t,y,parameters{:}) ...
   );
   f = @(t, y) cds.dydt_ode(t, y, parameters{:});
-  cycle = ode15s(f, linspace(0,period,cds.nDiscretizationPoints), x, integration_opt);
+  cycle = cds.integrator(f, linspace(0,period,cds.nDiscretizationPoints), ...
+    x, integration_opt);
   y_end = deval(cycle,period);
   monodromy = eye(cds.nphases);
   integration_opt = odeset(integration_opt, 'Jacobian', ...
     @(t,y) feval(cds.jacobian_ode, t, deval(cycle,t), parameters{:}));
   f = @(t, y) cds.jacobian_ode(t, deval(cycle,t), parameters{:}) * y;
+  integrator = cds.itegrator;
   parfor i=1:cds.nphases
     fprintf('%d ',i);
-    [~, monodromy_map_trajectory] = ode15s(...
-      f, [0 period], monodromy(:,i),integration_opt);
+    [~, monodromy_map_trajectory] = integrator(...
+      f, [0 period], monodromy(:,i),integration_opt); %#ok<PFBNS>
     monodromy(:,i) = monodromy_map_trajectory(end,:);
   end 
 

@@ -272,8 +272,10 @@ function CISdata = CIS_step(X, CISdata1)
 CISdata = contCIS_step(A, CISdata1);
 
 % Eigenvalues                            % MP 9/2018
-s.data.eigenvals = [CISdata.evl_r; CISdata.evl_l];
+if ~ isempty(CISdata)
+  s.data.eigenvals = [CISdata.evl_r; CISdata.evl_l];
 
-eval_r = CISdata.evl_r;
-eval_l = CISdata.evl_l;  
-in_log_file(eval_r,eval_l); % MP
+  eval_r = CISdata.evl_r;
+  eval_l = CISdata.evl_l;  
+  in_log_file(eval_r,eval_l); % MP
+end

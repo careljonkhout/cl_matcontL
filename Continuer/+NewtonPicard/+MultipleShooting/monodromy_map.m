@@ -17,6 +17,6 @@ function Mx  = monodromy_map(i, phases_0, time_interval, parameters)
   );                
   dydt_mon = @(t, y) ...
     cds.jacobian_ode(t, deval(cds.trajectories(i), t), parameters{:}) * y;
-  [~,trajectory] = ode15s(dydt_mon, [0 time_interval], phases_0, int_opt);
+  [~,trajectory] = cds.integrator(dydt_mon, [0 time_interval], phases_0, int_opt);
   Mx = trajectory(end,:)';
 end

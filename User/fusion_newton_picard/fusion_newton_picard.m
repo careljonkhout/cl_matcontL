@@ -71,6 +71,9 @@ int_opt = odeset(int_opt, 'Events', @returnToPlane);
 
 [t2,x2] = ode15s(f, linspace(0,approximate_period,1000), x1(end,:), int_opt); 
 period = t2(end);
+
+global contopts
+contopts = contset();
 print_diag(0,'period: %.7f\n', period);
 int_opt = odeset(int_opt, 'Events', []);
 
@@ -129,7 +132,7 @@ opt = contset(opt, 'FunTolerance',   1e-8);
 % we don't want to adapt
 % since it is not implemented
 opt = contset(opt, 'Adapt',          1000*1000*1000);
-opt = contset(opt, 'MaxNumPoints',   10);
+opt = contset(opt, 'MaxNumPoints',   500);
 opt = contset(opt, 'contL_SmoothingAngle', 10);
 opt = contset(opt, 'CheckClosed',    50000);
 opt = contset(opt, 'Multipliers',    true);

@@ -117,8 +117,6 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
   thisfield = mxGetFieldByNumber(lds,0,41);
   pwi = mxGetPr(thisfield);	/* Extension of weights */
   
-  
-  
   int jacobian_height = ncoords + 1;
   int jacobian_width  = ncoords + 2;
   

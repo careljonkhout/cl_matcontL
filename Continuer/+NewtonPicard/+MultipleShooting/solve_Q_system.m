@@ -35,13 +35,14 @@ function [delta_q, G_delta_q] = ...
 %   end
   G_delta_q  = zeros(cds.nphases,m);
   delta_q    = zeros(cds.nphases,m);
+
   for iteration_number = 1:15
    
     for i=2:m
       delta_q(:,i) = G_delta_q(:,i-1) + rhs(:,i-1);
       delta_q(:,i) = delta_q(:,i) - V(:,:,i) * V(:,:,i)' * delta_q(:,i);
       G_delta_q(:,i) = NewtonPicard.MultipleShooting.monodromy_map(i, ...
-        delta_q(:,i), partial_period, parameters);
+        delta_q(:,i), partial_period, parameters, );
     end
     condensed_residual = G_delta_q(:,m) + rhs(:,m);
     condensed_residual = condensed_residual ...

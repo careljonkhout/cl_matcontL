@@ -174,7 +174,9 @@ if ismember(8,id) %NS
   mults = lds.multipliers;
   psi_ns = 1;
   for i=1:length(mults)-1
-    psi_ns = psi_ns * (abs(mults(i)*mults(i+1))-1);
+    for j=i+1:length(mults)
+      psi_ns = psi_ns * (abs(mults(i)*mults(j))-1);
+    end
   end
   out(8) = psi_ns;
 end
@@ -564,7 +566,7 @@ print_diag(5,'running %s\n',BVP_func);
 p2 = num2cell(p);
 jacx = feval(BVP_func,lds.func,x,p,T,pars,nc,lds,p2,lds.Jacobian,lds.ActiveParams,lds.JacobianP);
 % ---------------------------------------------------------------
-function WorkspaceInit(x,v)
+function WorkspaceInit(~,~) % unused arguments are x and v
 global lds contopts
 ntst               = lds.ntst;
 ncol               = lds.ncol;
@@ -651,93 +653,8 @@ lds.CalcdPRC = contopts.dPRC; % contget(cds.options, 'dPRC', 0);
 lds.PRCInput = contopts.Input; %contget(cds.options, 'Input', 0);
 lds.multipliersX = [];
 lds.multipliers = nan;
-lds.monodromy = [];
 
-r = (0:(ntst*nphase-1));
-
-% lds.ncol_coord = ncol * nphase
-% (floor(r/.lds.nphase)+1) * lds.ncol_coord - lds.nphase ==
-% (floor(r/.lds.nphase)+1) * nphase * ncol  - lds.nphase ==
-% [        nphase * (ncol - 1) * ones(1,nphase) ...
-%      2 * nphase * (ncol - 1) * ones(1,nphase) ...
-%   ...
-%   ntst * nphase * (ncol - 1) * ones(1,nphase) ]
-%
-%  mod(r,lds.nphase) == repmat(0:nphase-1,1,ntst)
-%
-% lds.multi_r1 == 
-% [ (    1 * ncol - 1 ) * nphase + 1 ...
-%   (    1 * ncol - 1 ) * nphase + 2 ...
-%        ...
-%   (    1 * ncol - 1 ) * nphase + nphase - 1
-%   (    1 * ncol - 1 ) * nphase + nphase
-%
-%
-%   (    2 * ncol - 1 ) * nphase + 1   ...
-%   (    2 * ncol - 1 ) * nphase + 2 ...
-%        ...
-%   (    2 * ncol - 1 ) * nphase + nphase - 1
-%   (    2 * ncol - 1 ) * nphase + nphase
-%
-%
-%        ...
-%        ...
-%
-%
-%   ( ntst * ncol - 1 ) * nphase + 1
-%   ( ntst * ncol - 1 ) * nphase + 2
-%        ...
-%   ( ntst * ncol - 1 ) * nphase + nphase - 1
-%   ( ntst * ncol - 1 ) * nphase + nphase
-
-    
-
-lds.multi_r1 = (floor(r./nphase) + 1)*ncol*nphase - nphase + mod(r,nphase) + 1;
-last_index = (ntst + 1) * nphase - 1;
-r = 0:last_index;
-% floor(r/.nphase ) * ncol * nphase == 
-% [  repmat(         0 * ncol * nphase, nphase) ...
-%    repmat(         1 * ncol * nphase, nphase) ...
-%    ...
-%    repmat((ntst + 1) * ncol * nphase, nphase) ]
-% mod(r, nphase) == repmat(0:(nphase-1), (ntst + 1) * nphase))
-%
-% Hence
-%
-% lds.multi_r2 == 
-%
-%          0 * ncol * nphase + 1
-%          0 * ncol * nphase + 2
-%          ...
-%          0 * ncol * nphase + nphase
-%
-%          1 * ncol * nphase + 1
-%          1 * ncol * nphase + 2
-%          ...
-%          1 * ncol * nphase + nphase
-%
-%          2 * ncol * nphase + 1
-%          2 * ncol * nphase + 2
-%          ...
-%          2 * ncol * nphase + nphase
-%
-%          ...
-%          ...
-%
-% (ntst + 1) * ncol * nphase + 1
-% (ntst + 1) * ncol * nphase + 2
-% ...
-% (ntst + 1) * ncol * nphase + nphase
-lds.multi_r2 = floor(r./nphase) * ncol * nphase + mod(r,nphase) + 1;
 lds.BranchParam = lds.ActiveParams;
-
-mask = spalloc((ncol*ntst+1)*nphase,(ncol*ntst+1)*nphase,ntst*ncol^2*nphase^2);
-for i=1:ntst
-  indices1 = (i-1)*ncol*nphase + (1:ncol*nphase);
-  indices2 = indices1 + nphase;
-  mask(indices1,indices2) = ones(ncol*nphase);
-end
-lds.mask = mask;
 
 
 % ------------------------------------------------------

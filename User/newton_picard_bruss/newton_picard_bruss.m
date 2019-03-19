@@ -3,7 +3,7 @@ format long
 run_init_if_needed
 % continuation of cycles cycles in brusselator
 odefile = @brusselator_1d; %@brusselator_N_2;
-N=50;
+N=10;
 L = 1.1; A = 1; B = 2.2; Dx = 0.008; Dy = 0.004;
 parameters = {N; L; A; B; Dx; Dy};%parameters = {L; A; B; Dx; Dy};
 clear global cds
@@ -19,10 +19,11 @@ contopts = contset();
 print_diag(0,[title_format_string '\n'], title_format_args{:});
 
 
-cds.poincare_tolerance = 1e-2;
+cds.poincare_tolerance = 1e-1;
 cds.minimum_period = 1;
 cds.dydt_ode = handles{2};
 cds.jacobian_ode = handles{3};
+cds.integrator = @ode45;
 
 cds.probfile = odefile;
 cds.nap = 1;
@@ -49,7 +50,7 @@ int_opt = odeset( ...
 x0 = ones(cds.nphases,1);
 dydt = handles{2};
 f =@(t, y) dydt(t, y, parameters{:});
-[t1, x1] = ode15s(f, [0 150], x0, int_opt);
+[t1, x1] = cds.integrator(f, [0 150], x0, int_opt);
 
 draw_plots = false || false;
 if draw_plots
@@ -68,7 +69,8 @@ cds.previous_phases = x1(end,:)';
 cds.previous_dydt_0 = f(0,x0);
 int_opt = odeset(int_opt, 'Events', @returnToPlane);
 
-[t2,x2] = ode15s(f, linspace(0,approximate_period,500), x1(end,:), int_opt); 
+[t2,x2] = cds.integrator(f, ...
+  linspace(0,approximate_period,500), x1(end,:), int_opt); 
 period = t2(end);
 fprintf('period %.15f\n', period);
 int_opt = odeset(int_opt, 'Events', []);
@@ -100,7 +102,7 @@ end
 
 
 opt = contset();
-opt = contset(opt, 'MaxNumPoints',   8);
+opt = contset(opt, 'MaxNumPoints',   2);
 opt = contset(opt, 'InitStepsize',   1e-1);
 opt = contset(opt, 'MinStepsize',    1e-6);
 opt = contset(opt, 'MaxStepsize',    1e-1);
@@ -122,6 +124,7 @@ opt = contset(opt, 'CIS_UsingCIS',   false);
 opt = contset(opt, 'NewtonPicard',   true);
 opt = contset(opt, 'console_output_level',   5);
 opt = contset(opt, 'contL_DiagnosticsLevel', 5);
+opt = contset(opt, 'every_point_in_separate_mat_file', true);
 
 initial_continuation_data = [cds.previous_phases; period; cds.P0(cds.ActiveParams)];
 initial_continuation_tangent_vector = [];
