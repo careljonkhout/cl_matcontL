@@ -1,7 +1,7 @@
 function V = compute_subspace(period, parameters)
-  global cds
+  global cds 
   
-  p = min([4 cds.nphases]);
+  p = min([cds.preferred_basis_size cds.nphases]);
   cds.p_extra = 2;
   cds.p = p;
 

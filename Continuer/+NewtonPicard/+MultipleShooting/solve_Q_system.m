@@ -22,7 +22,7 @@
 function [delta_q, G_delta_q] = ...
              solve_Q_system(V, rhs, partial_period, parameters)
   global cds contopts;
-  m = cds.nShootingPoints;
+  m = cds.nMeshPoints;
   for i=1:m
     ni = next_index_in_cycle(i,m);
     rhs(:,i) = rhs(:,i) - V(:,:,ni) * V(:,:,ni)' * rhs(:,i);
@@ -42,7 +42,7 @@ function [delta_q, G_delta_q] = ...
       delta_q(:,i) = G_delta_q(:,i-1) + rhs(:,i-1);
       delta_q(:,i) = delta_q(:,i) - V(:,:,i) * V(:,:,i)' * delta_q(:,i);
       G_delta_q(:,i) = NewtonPicard.MultipleShooting.monodromy_map(i, ...
-        delta_q(:,i), partial_period, parameters, );
+        delta_q(:,i), partial_period, parameters);
     end
     condensed_residual = G_delta_q(:,m) + rhs(:,m);
     condensed_residual = condensed_residual ...

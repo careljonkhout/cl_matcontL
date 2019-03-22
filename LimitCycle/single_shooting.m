@@ -33,15 +33,11 @@ function func = curve_func(varargin)
 %---------------------
   
 function x_end = shoot(x, period, parameters)
-  global cds
+  global cds contopts
   f =@(t, y) cds.dydt_ode(t, y, parameters{:});
   integration_opt = odeset(...
-    'AbsTol',      1e-10,    ...
-    'RelTol',      1e-10,    ...
-    'BDF',         'off',   ...
-    'MaxOrder',     5,      ...
-    'NormControl',  'off',  ...
-    'Refine',       1,      ...
+    'AbsTol',      contopts.shoot_abs_tol,    ...
+    'RelTol',      contopts.shoot_rel_tol,    ...
     'Jacobian',     @(t,y) feval(cds.jacobian_ode,t,y,parameters{:}) ...
   );
   [~, trajectory] = cds.integrator(f, [0 period], x, integration_opt);
@@ -57,16 +53,16 @@ function jacobian = jacobian(varargin)
   parameters(cds.ActiveParams) = active_par_val;
   parameters                   = num2cell(parameters);
   [y_end, monodromy] = compute_monodromy(phases, period, parameters);
-  jacobian = [monodromy-eye(cds.nphases); cds.previous_dydt_0'];
-  % add d_phi_d_T and d_s_d_T
-  d_phi_d_T = cds.dydt_ode(0,y_end,parameters{:});
-  d_s_d_T = cds.previous_dydt_0' * d_phi_d_T;
-  jacobian = [jacobian [d_phi_d_T; d_s_d_T]];
-  dphidp = d_phi_d_p(phases, period, parameters);
-  dsdp = cds.previous_dydt_0'*dphidp;
-  jacobian = [jacobian [dphidp; dsdp]];
+  jacobian     = [monodromy-eye(cds.nphases); cds.previous_dydt_0'];
+  % add d_phi__d_T and d_s__d_T
+  d_phi_d_T    = cds.dydt_ode(0,y_end,parameters{:});
+  d_s_d_T      = cds.previous_dydt_0' * d_phi_d_T;
+  jacobian     = [jacobian [d_phi_d_T; d_s_d_T]];
+  d_phi__d_p   = compute_d_phi_d_p(phases, period, parameters);
+  d_s__d_p     = cds.previous_dydt_0' * d_phi__d_p;
+  jacobian     = [jacobian [d_phi__d_p; d_s__d_p]];
   
-function dphidp = d_phi_d_p(x, period, parameters)
+function dphidp = compute_d_phi_d_p(x, period, parameters)
   global cds
   ap = cds.ActiveParams;
   h = 1e-6;
@@ -74,7 +70,9 @@ function dphidp = d_phi_d_p(x, period, parameters)
   phi_1 = shoot(x, period, parameters);
   parameters{ap} = parameters{ap} + 2*h;
   phi_2 = shoot(x, period, parameters);
-  dphidp = (phi_2 - phi_1)/h/2;  
+  dphidp = (phi_2 - phi_1)/h/2;
+  
+
   
 function [y_end, monodromy] = compute_monodromy(x, period, parameters)
   global cds
@@ -91,11 +89,7 @@ function [y_end, monodromy] = monodromy_full(x, period, parameters)
   f =@(t, y) dydt_monodromy_full(t, y, parameters);
   integration_opt = odeset(...
     'AbsTol',      1e-10,    ...
-    'RelTol',      1e-10,    ...
-    'BDF',         'off',   ...
-    'MaxOrder',     5,      ...
-    'NormControl',  'off',  ...
-    'Refine',       1 ... % todo add jacobian   
+    'RelTol',      1e-10    ... % todo add jpattern
   );
 
   x_with_monodromy = [x; reshape(eye(nphases),[nphases^2 1])];
@@ -120,14 +114,10 @@ function [y_end, monodromy] = monodromy_full(x, period, parameters)
   
   
 function [y_end, monodromy] = monodromy_column_by_column(x, period, parameters)
-  global cds;
+  global cds contopts;
   integration_opt = odeset(...
-    'AbsTol',      1e-10,    ...
-    'RelTol',      1e-10,    ...
-    'BDF',         'off',   ...
-    'MaxOrder',     5,      ...
-    'NormControl',  'off',  ...
-    'Refine',       1,      ...
+    'AbsTol',      contopts.jacobian_abs_tol,    ...
+    'RelTol',      contopts.jacobian_rel_tol,    ...
     'Jacobian',     @(t,y) feval(cds.jacobian_ode,t,y,parameters{:}) ...
   );
   f = @(t, y) cds.dydt_ode(t, y, parameters{:});

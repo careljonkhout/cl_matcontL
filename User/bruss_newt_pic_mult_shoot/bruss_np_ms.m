@@ -38,8 +38,8 @@ cds.symjac = false;
 cds.usernorm = [];
 cds.probfile = odefile;
 cds.ncoo = cds.nphases;
-cds.nShootingPoints = 4;
-cds.ndim = cds.nphases * cds.nShootingPoints + 2;
+cds.nMeshPoints = 2;
+cds.ndim = cds.nphases * cds.nMeshPoints + 2;
 
     
 int_opt = odeset( ...
@@ -92,15 +92,15 @@ end
 
 opt = contset();
 opt = contset(opt, 'MaxNumPoints',   1000);
-opt = contset(opt, 'InitStepsize',   1e-1);
+opt = contset(opt, 'InitStepsize',   1e-2);
 opt = contset(opt, 'MinStepsize',    1e-6);
-opt = contset(opt, 'MaxStepsize',    1e-1);
+opt = contset(opt, 'MaxStepsize',    1e-2);
 opt = contset(opt, 'MaxNewtonIters', 3);
 opt = contset(opt, 'MaxCorrIters',   10);
 opt = contset(opt, 'MaxTestIters',   10);
 opt = contset(opt, 'VarTolerance',   1e-6);
 opt = contset(opt, 'FunTolerance',   1e-9);
-opt = contset(opt, 'NewtonPicardBasisTolerance',   1e-1);
+opt = contset(opt, 'NewtonPicardBasisTolerance',   1e-6);
 opt = contset(opt, 'contL_SmoothingAngle',   3);
 % we don't want to adapt
 % since it is not implemented
@@ -114,11 +114,12 @@ opt = contset(opt, 'NewtonPicard',   true);
 opt = contset(opt, 'console_output_level',   5);
 opt = contset(opt, 'contL_DiagnosticsLevel', 5);
 opt = contset(opt, 'MoorePenrose', false);
+opt = contset(opt, 'contL_ParallelComputing', false);
 
 
 
 orbit                   = x1;
-nShootingPoints         = 4;
+nMeshPoints         = 4;
 active_parameter_index  = 2;
 time_integration_method = @ode15s;
 lower_bound_period      = 1;
@@ -126,7 +127,7 @@ upper_bound_period      = 30;
 
 initial_continuation_data = init_multiple_shooting_from_orbit(...
     orbit, ...
-    nShootingPoints, ...
+    nMeshPoints, ...
     odefile, ...
     parameters, ...
     active_parameter_index, ...

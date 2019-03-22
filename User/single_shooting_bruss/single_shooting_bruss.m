@@ -17,7 +17,9 @@ global cds
 cds.poincare_tolerance = 1e-4;
 cds.dydt_ode = handles{2};
 cds.jacobian_ode = handles{3};
-
+cds.jacobian_params = handles{4};
+cds.p = 4;
+cds.integrator = @ode15s;
 cds.probfile = odefile;
 cds.nap = 1;
 cds.ActiveParams = 4;

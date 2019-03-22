@@ -111,7 +111,7 @@ opt = contset(opt, 'MaxCorrIters',   4);
 opt = contset(opt, 'MaxTestIters',   10);
 opt = contset(opt, 'VarTolerance',   1e-6);
 opt = contset(opt, 'FunTolerance',   1e-6);
-opt = contset(opt, 'NewtonPicardBasisTolerance',   1e-1);
+opt = contset(opt, 'NewtonPicardBasisTolerance',   1e-6);
 opt = contset(opt, 'contL_SmoothingAngle',   3);
 % we don't want to adapt
 % since it is not implemented
@@ -125,6 +125,7 @@ opt = contset(opt, 'NewtonPicard',   true);
 opt = contset(opt, 'console_output_level',   5);
 opt = contset(opt, 'contL_DiagnosticsLevel', 5);
 opt = contset(opt, 'every_point_in_separate_mat_file', true);
+opt = contset(opt, 'PicardTolerance', 1e-8);
 
 initial_continuation_data = [cds.previous_phases; period; cds.P0(cds.ActiveParams)];
 initial_continuation_tangent_vector = [];

@@ -1,5 +1,6 @@
 % continuation of cycles in fusion system
-close all
+
+
 run_init_if_needed
 
 N = 25;
@@ -13,7 +14,7 @@ clear global cds
 clear global lds
 
 global cds
-cds.poincare_tolerance = 1e-1;
+cds.poincare_tolerance = 1e-4;
 cds.minimum_period = 1;
 cds.nphases = 3*(N-1);
 cds.nap = 1;
@@ -23,13 +24,13 @@ cds.P0 = cell2mat(parameters);
 cds.options = contset();
 cds.options.PartitionMonodromy = true;
 cds.nDiscretizationPoints = 400;
+cds.preferred_basis_size = 5;
 cds.symjac = true;
 cds.usernorm = [];
 cds.probfile = odefile;
 cds.dydt_ode = handles{2};
 cds.jacobian_ode = handles{3};
 cds.ncoo = cds.nphases;
-cds.integrator = @ode15s;
 
 
 a = -1;
@@ -37,11 +38,12 @@ b = -0.3;
 q_inf = -0.72;
 parameters = {a;b;q_inf};
 
+load('point 16.mat');
+parameters{3} = point.x(end);
+
 
 
 int_opt = odeset( ...
-  'AbsTol'  ,    1e-8, ...
-  'RelTol'  ,    1e-8, ...
   'Jacobian',     @(t,y) feval(handles{3},t,y,parameters{:}) ...
 );
 
@@ -50,10 +52,10 @@ x0 = ones(cds.nphases,1);
 dydt = handles{2};
 f =@(t, y) dydt(t, y, parameters{:});
 
-[t1, x1] = ode15s(f, [0 400], x0, int_opt);
+[t1, x1] = ode15s(f, [0 400], point.x(1:end-2), int_opt);
 
 
-draw_plots = false && true;
+draw_plots = false || true;
 if draw_plots
   figure(1)
   plot(t1,x1)
@@ -64,20 +66,72 @@ end
 
 
 
-approximate_period = 12;
 
-cds.previous_phases = x1(end,:)';
-cds.previous_dydt_0 = f(0,x0);
-int_opt = odeset(int_opt, 'Events', @returnToPlane);
 
-[t2,x2] = ode15s(f, linspace(0,approximate_period,1000), x1(end,:), int_opt); 
-period = t2(end);
+opt = contset();
+opt = contset(opt, 'InitStepsize',   5e-1);
+opt = contset(opt, 'MinStepsize',    1e-10);
+opt = contset(opt, 'MaxStepsize',    5e-1);
+opt = contset(opt, 'MaxNewtonIters', 8);
+opt = contset(opt, 'MaxCorrIters',   10);
+opt = contset(opt, 'MaxTestIters',   10);
+opt = contset(opt, 'VarTolerance',   1e-6);
+opt = contset(opt, 'FunTolerance',   1e-8);
+% we don't want to adapt
+% since it is not implemented
+opt = contset(opt, 'Adapt',          1000*1000*1000);
+opt = contset(opt, 'MaxNumPoints',   100*1000);
+opt = contset(opt, 'contL_SmoothingAngle', 10);
+opt = contset(opt, 'CheckClosed',    50000);
+opt = contset(opt, 'Multipliers',    true);
+opt = contset(opt, 'Backward',       false);
+opt = contset(opt, 'Singularities',  false);
+opt = contset(opt, 'CIS_UsingCIS',   false);
+opt = contset(opt, 'NewtonPicard',   true);
+opt = contset(opt, 'every_point_in_separate_mat_file', true);
+opt = contset(opt, 'console_output_level',   5);
+opt = contset(opt, 'contL_DiagnosticsLevel', 5);
+opt = contset(opt, 'Multipliers', true);
 
-global contopts
-contopts = contset();
-print_diag(0,'period: %.7f\n', period);
-int_opt = odeset(int_opt, 'Events', []);
+tol = 1e-9;
 
+opt = contset(opt, 'trajectory_abs_tol'   , tol);
+opt = contset(opt, 'trajectory_rel_tol'   , tol);
+opt = contset(opt, 'MV_abs_tol'           , tol);
+opt = contset(opt, 'MV_rel_tol'           , tol);
+opt = contset(opt, 'shoot_abs_tol'        , tol);
+opt = contset(opt, 'shoot_rel_tol'        , tol);
+opt = contset(opt, 'monodromy_map_abs_tol', tol);
+opt = contset(opt, 'monodromy_map_rel_tol', tol);
+
+orbit                   = x1;
+nMeshPoints         = 20;
+active_parameter_index  = 3;
+time_integration_method = @ode15s;
+lower_bound_period      = 1;
+upper_bound_period      = 30;
+
+time_integration_options = odeset( ...
+    'AbsTol',      tol,    ...
+    'RelTol',      tol);
+
+initial_continuation_data = init_multiple_shooting_from_orbit(...
+    orbit, ...
+    nMeshPoints, ...
+    odefile, ...
+    parameters, ...
+    active_parameter_index, ...
+    time_integration_method, ...
+    lower_bound_period, ...
+    upper_bound_period, ...
+    time_integration_options);
+[s, datafile] = contL(@multiple_shooting, ...
+  initial_continuation_data,[], opt); 
+
+
+
+% use poincare section to converge to 
+%[t3,x3] = ode15s(f, 0:5*approximate_period,x1(end,:)',integration_opt);
 
 
 if draw_plots
@@ -91,11 +145,9 @@ if draw_plots
   ylabel('x_1,x_2,y_1,y_2');
 end
 
-
 if draw_plots
-  figure
+  figure(3)
   hold on;
-  [t3,x3] = ode15s(f, linspace(0,period,100), x1(end,:), int_opt); 
   plot(t3,x3)
    title(sprintf( ...
     'fusion N:%d a:%.2f b:%.2f q_{inf}:%.2f', ...
@@ -106,7 +158,7 @@ end
 
 
 if draw_plots
-  figure(4)
+  figure(3)
   plot(x2(:,1),x2(:,2))
   title(sprintf( ...
     'fusion N:%d a:%.2f b:%.2f q_{inf}:%.2f', ...
@@ -121,33 +173,8 @@ end
 
 
 
-opt = contset();
-opt = contset(opt, 'InitStepsize',   5e-2);
-opt = contset(opt, 'MinStepsize',    1e-10);
-opt = contset(opt, 'MaxStepsize',    5e-2);
-opt = contset(opt, 'MaxNewtonIters', 8);
-opt = contset(opt, 'MaxCorrIters',   10);
-opt = contset(opt, 'MaxTestIters',   10);
-opt = contset(opt, 'VarTolerance',   1e-6);
-opt = contset(opt, 'FunTolerance',   1e-5);
-% we don't want to adapt
-% since it is not implemented
-opt = contset(opt, 'Adapt',          1000*1000*1000);
-opt = contset(opt, 'MaxNumPoints',   500);
-opt = contset(opt, 'contL_SmoothingAngle', 10);
-opt = contset(opt, 'CheckClosed',    50000);
-opt = contset(opt, 'Multipliers',    true);
-opt = contset(opt, 'Backward',       false);
-opt = contset(opt, 'Singularities',  false);
-opt = contset(opt, 'CIS_UsingCIS',   false);
-opt = contset(opt, 'NewtonPicard',   true);
-opt = contset(opt, 'console_output_level',   5);
-opt = contset(opt, 'contL_DiagnosticsLevel', 5);
-opt = contset(opt, 'every_point_in_separate_mat_file', true);
-opt = contset(opt, 'PicardTolerance', 1e-8);
 
-
-[s, datafile] = contL(@single_shooting, ...
+[s, datafile] = contL(@multiple_shooting, ...
   [cds.previous_phases; period; cds.P0(cds.ActiveParams)],[],opt); 
 
 
@@ -189,7 +216,7 @@ function [value, isterminal, direction] = returnToPlane(t, x)
   value = cds.previous_dydt_0'*(x-cds.previous_phases);
   isterminal = t > cds.minimum_period ...
     && max(abs(x-cds.previous_phases)) < cds.poincare_tolerance;
-  direction = -1;
+  direction = 1;
 end
 
 function [t,x] = compute_cycle(x, period, parameters)
@@ -198,6 +225,10 @@ function [t,x] = compute_cycle(x, period, parameters)
   integration_opt = odeset(...
     'AbsTol',      1e-10,    ...
     'RelTol',      1e-10,    ...
+    'BDF',         'off',   ...
+    'MaxOrder',     5,      ...
+    'NormControl',  'off',  ...
+    'Refine',       1,      ...
     'Jacobian',     @(t,y) feval(cds.jacobian_ode,t,y,parameters{:}) ...
   );
   [t,x] = ode15s(f, [0 period], x, integration_opt);

@@ -3,7 +3,7 @@
 run_init_if_needed
 % continuation of cycles cycles in brusselator
 odefile = @brusselator_1d;
-N=10;
+N=5;
 L = 1.1; A = 1; B = 2.2; Dx = 0.008; Dy = 0.004;
 parameters = {N; L; A; B; Dx; Dy};
 handles = feval(odefile);
@@ -16,13 +16,15 @@ global cds
 cds.poincare_tolerance = 1e-4;
 cds.dydt_ode = handles{2};
 cds.jacobian_ode = handles{3};
+cds.integrator = @ode15s;
+cds.p = 3;
 
 cds.probfile = odefile;
-cds.nShootingPoints = 2;
+cds.nMeshPoints = 6;
 cds.nap = 1;
 cds.ActiveParams = 2;
 cds.nphases = 2*N;
-cds.ndim = cds.nShootingPoints * cds.nphases + cds.nap + 1;
+cds.ndim = cds.nMeshPoints * cds.nphases + cds.nap + 1;
 cds.P0 = cell2mat(parameters);
 cds.options = contset();
 cds.options.PartitionMonodromy = false;
@@ -31,6 +33,7 @@ cds.symjac = false;
 cds.usernorm = [];
 cds.probfile = odefile;
 cds.ncoo = cds.nphases;
+
 
     
 int_opt = odeset( ...
@@ -60,11 +63,12 @@ int_opt = odeset(int_opt, 'Events', @returnToPlane);
 
 sol = ode15s(f, linspace(0,approximate_period,1000), x1(end,:), int_opt); 
 period = sol.x(end);
-initial_continuation_data = zeros(cds.nphases * cds.nShootingPoints + 2,1);
-for i=0:cds.nShootingPoints-1
+cds.mesh = linspace(0, 1, cds.nMeshPoints+1);
+initial_continuation_data = zeros(cds.nphases * cds.nMeshPoints + 2,1);
+for i=0:cds.nMeshPoints-1
   indices = (1:cds.nphases) + i * cds.nphases;
   initial_continuation_data(indices) = ...
-    deval(sol, i / cds.nShootingPoints * period);
+    deval(sol, i / cds.nMeshPoints * period);
 end
 initial_continuation_data(end-1) = period; 
 initial_continuation_data(end)   = cds.P0(cds.ActiveParams);
@@ -108,16 +112,18 @@ opt = contset(opt, 'FunTolerance',   1e-6);
 opt = contset(opt, 'contL_SmoothingAngle', pi/2);
 % we don't want to adapt
 % since it is not implemented
-opt = contset(opt, 'Adapt',          1000*1000*1000);
+opt = contset(opt, 'Adapt',          3);
 opt = contset(opt, 'CheckClosed',    50);
 opt = contset(opt, 'Multipliers',    true);
 opt = contset(opt, 'Backward',       false);
 opt = contset(opt, 'Singularities',  false);
 opt = contset(opt, 'CIS_UsingCIS',   false);
+opt = contset(opt, 'console_output_level',   5);
+opt = contset(opt, 'contL_DiagnosticsLevel', 5);
 contopts.newtcorrL_use_max_norm = true;
 
 initial_continuation_tangent_vector = [];
-[s, datafile] = contL(@multiple_shooting, ...
+[s, datafile] = contL(@multiple_shooting_variable_mesh, ...
   initial_continuation_data, ...
   initial_continuation_tangent_vector, opt); 
 

@@ -32,11 +32,12 @@ UseLocators        = contopts.Locators;
 UserInfo           = contopts.UserFuncInfo;
 UsingNewtonPicard  = contopts.NewtonPicard;
 if contopts.contL_ParallelComputing && isempty(gcp('NoCreate'))
-    parpool;   % initialize new parallel pool when no is available
+  % initialize new parallel pool when none is available
+  parpool(contopts.num_cores);   
 end
 
-if UsingNewtonPicard && ( ~ isequal(curvefile,@single_shooting) ...
-                  && ~ isequal(curvefile,@multiple_shooting) )
+if UsingNewtonPicard && ( ~ isequal(curvefile, @single_shooting) ...
+                       && ~ isequal(curvefile, @multiple_shooting) )
   print_diag(0,['Newton-Picard is only implemented for single shooting' ...
         ' or multiple shooting. Continuation will be aborted.\n'])
   return
@@ -443,12 +444,12 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
 
   if (mod(cds.i,AdaptSteps)==0) || tfUpdate
 
-    [res,x2,v2,trialpoint.CISdata] = feval(cds.curve_adapt, ...
+    [has_changed,x2,v2,trialpoint.CISdata] = feval(cds.curve_adapt, ...
         trialpoint.x, trialpoint.v, trialpoint.CISdata, tfUpdate);
     trialpoint.x = x2;
     trialpoint.v = v2;
 
-    if res == 1 && Singularities
+    if has_changed && Singularities
       % recompute testvals            
       [trialpoint.tvals,~] = EvalTestFunc(0,trialpoint);
     end
@@ -549,8 +550,8 @@ global cds contopts
 
 % zero locations of testf i is stored in testzero(:,i)
 
-% if 1 zero/tf check if nonzero/tf _is_ nonzero at that point
-% if more zero/tf then glue, nonzero/tf is kind of a problem because can always be found
+% if 1 zero/tf check if nonzero/tf _is_ nonzero at that point if more zero/tf
+% then glue, nonzero/tf is kind of a problem because can always be found
 idx = find( cds.S(si,:)==0 );
 nzs = find( cds.S(si,:)==1 );
 nconst = find( cds.S(si,:)==2 );  % DV
@@ -646,7 +647,8 @@ point = feval(cds.curve_defaultprocessor, varargin{:});
 %LocateTestFunction(id,x1,v1,x2,v2)
 %
 %----------------------------------------------
-%function [x,v,R,i,p1,p2] = LocateTestFunction(id, p1, p2, MaxIters, FunTolerance, VarTolerance)
+% function [x,v,R,i,p1,p2] =
+%LocateTestFunction(id, p1, p2, MaxIters, FunTolerance, VarTolerance)
 function [pout,p1,p2] = LocateTestFunction(id, p1, p2)
 tic
 global contopts cds

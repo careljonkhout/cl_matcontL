@@ -13,6 +13,7 @@ clear global cds
 clear global lds
 
 global cds
+cds.preferred_basis_size = 6;
 cds.poincare_tolerance = 1e-1;
 cds.minimum_period = 1;
 cds.nphases = 3*(N-1);
@@ -36,100 +37,26 @@ a = -1;
 b = -0.3;
 q_inf = -0.72;
 parameters = {a;b;q_inf};
-
-
-
-int_opt = odeset( ...
-  'AbsTol'  ,    1e-8, ...
-  'RelTol'  ,    1e-8, ...
-  'Jacobian',     @(t,y) feval(handles{3},t,y,parameters{:}) ...
-);
-
-
-x0 = ones(cds.nphases,1);
-dydt = handles{2};
-f =@(t, y) dydt(t, y, parameters{:});
-
-[t1, x1] = ode15s(f, [0 400], x0, int_opt);
-
-
-draw_plots = false && true;
-if draw_plots
-  figure(1)
-  plot(t1,x1)
-  title('fusion');
-  xlabel('t');
-  ylabel('values at grid points');
-end
-
-
-
-approximate_period = 12;
-
-cds.previous_phases = x1(end,:)';
-cds.previous_dydt_0 = f(0,x0);
-int_opt = odeset(int_opt, 'Events', @returnToPlane);
-
-[t2,x2] = ode15s(f, linspace(0,approximate_period,1000), x1(end,:), int_opt); 
-period = t2(end);
-
-global contopts
-contopts = contset();
-print_diag(0,'period: %.7f\n', period);
-int_opt = odeset(int_opt, 'Events', []);
-
-
-
-if draw_plots
-  figure(2)
-  hold on;
-  plot(t2,x2)
-   title(sprintf( ...
-    'fusion N:%d a:%.2f b:%.2f q_{inf}:%.2f', ...
-    title_string_args{:}));
-  xlabel('t')
-  ylabel('x_1,x_2,y_1,y_2');
-end
-
-
-if draw_plots
-  figure
-  hold on;
-  [t3,x3] = ode15s(f, linspace(0,period,100), x1(end,:), int_opt); 
-  plot(t3,x3)
-   title(sprintf( ...
-    'fusion N:%d a:%.2f b:%.2f q_{inf}:%.2f', ...
-    title_string_args{:}));
-  xlabel('t')
-  ylabel('n_1, ..., n_{N-1},U_1, ..., U_{N-1},z_1,...,z_{N-1}');
-end
-
-
-if draw_plots
-  figure(4)
-  plot(x2(:,1),x2(:,2))
-  title(sprintf( ...
-    'fusion N:%d a:%.2f b:%.2f q_{inf}:%.2f', ...
-    title_string_args{:}));
-  xlabel('n_1')
-  ylabel('U_1')
-
-  drawnow
-end
+%load('/home/carel/Documents/cl_matcontL/User/fusion_newton_picard/Data/fusion_np_from_previous_19-Mar-2019_18_22_19/point 16.mat')
+%load('/home/carel/Documents/cl_matcontL/User/fusion_newton_picard/Data/fusion_np_from_previous_19-Mar-2019_20_35_42/point 61.mat')
+load('/home/carel/Documents/cl_matcontL/User/fusion_newton_picard/Data/fusion_np_from_previous_20-Mar-2019_20_03_57/point 10.mat')
+parameters{3} = point.x(end);
+cds.previous_phases = point.x(1:end-2);
+cds.previous_dydt_0 = cds.dydt_ode(0,cds.previous_phases,parameters{:});
 
 %% Continue limit cycle from orbit
 
 
 
 opt = contset();
-opt = contset(opt, 'InitStepsize',   5e-2);
+opt = contset(opt, 'InitStepsize',   7.5e-3);
 opt = contset(opt, 'MinStepsize',    1e-10);
-opt = contset(opt, 'MaxStepsize',    5e-2);
+opt = contset(opt, 'MaxStepsize',    7.5e-3);
 opt = contset(opt, 'MaxNewtonIters', 8);
 opt = contset(opt, 'MaxCorrIters',   10);
 opt = contset(opt, 'MaxTestIters',   10);
 opt = contset(opt, 'VarTolerance',   1e-6);
-opt = contset(opt, 'FunTolerance',   1e-5);
+opt = contset(opt, 'FunTolerance',   1e-6);
 % we don't want to adapt
 % since it is not implemented
 opt = contset(opt, 'Adapt',          1000*1000*1000);
@@ -144,12 +71,42 @@ opt = contset(opt, 'NewtonPicard',   true);
 opt = contset(opt, 'console_output_level',   5);
 opt = contset(opt, 'contL_DiagnosticsLevel', 5);
 opt = contset(opt, 'every_point_in_separate_mat_file', true);
-opt = contset(opt, 'PicardTolerance', 1e-8);
+opt = contset(opt, 'contL_ParallelComputing', false);
+preferredNumworkers = 2;
+if opt.contL_ParallelComputing
+  pool = gcp('nocreate');
+  if isempty(pool)
+    parpool(preferredNumworkers);
+  elseif pool.NumWorkers ~= preferredNumworkers
+    % shutdown existing pool
+    delete(pool);
+    % create new pool
+    parpool(preferredNumworkers);
+  end
+end
+opt = contset(opt, 'PicardTolerance', 1e-6);
 
 
-[s, datafile] = contL(@single_shooting, ...
-  [cds.previous_phases; period; cds.P0(cds.ActiveParams)],[],opt); 
+tol = 1e-13;
 
+opt = contset(opt, 'orbit_abs_tol'            , tol);
+opt = contset(opt, 'orbit_rel_tol'            , tol);
+opt = contset(opt, 'MV_abs_tol'               , tol);
+opt = contset(opt, 'MV_rel_tol'               , tol);
+opt = contset(opt, 'shoot_abs_tol'            , tol);
+opt = contset(opt, 'shoot_rel_tol'            , tol);
+opt = contset(opt, 'monodromy_map_abs_tol'    , tol);
+opt = contset(opt, 'monodromy_map_rel_tol'    , tol);
+opt = contset(opt, 'continue_subspace_rel_tol', tol);
+opt = contset(opt, 'continue_subspace_abs_tol', tol);
+opt = contset(opt, 'jacobian_rel_tol'         , tol);
+opt = contset(opt, 'jacobian_abs_tol'         , tol);
+
+
+
+
+[s, datafile] = contL(@single_shooting, point.x,point.v,opt); 
+return;
 
 figure
 hold on;
