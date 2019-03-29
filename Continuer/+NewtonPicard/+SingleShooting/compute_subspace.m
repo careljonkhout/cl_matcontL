@@ -4,12 +4,11 @@ function V = compute_subspace(period, parameters)
   p = min([cds.preferred_basis_size cds.nphases]);
   cds.p_extra = 2;
   cds.p = p;
-
+  cds.mv_count = 0;
   [eigenvectors, eigenvalues, no_convergence] = eigs( ...
     @(x) NewtonPicard.SingleShooting.monodromy_map(x, period, parameters), ...
     cds.nphases, p + cds.p_extra);
-
-
+  print_diag(0,'computing subspace mv_count: %d\n', cds.mv_count);
   if no_convergence
     V = [];
     fprintf(['Newton_Picard_Correction.m:', ...

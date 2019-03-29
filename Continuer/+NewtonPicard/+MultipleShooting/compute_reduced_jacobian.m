@@ -3,14 +3,14 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
             compute_reduced_jacobian(x)
 
   global cds contopts
-  [phases_0,period,parameters] = ...
+  [phases_0, period, parameters] = ...
     NewtonPicard.MultipleShooting.extract_phases_period_and_parameters(x);
   
   active_par_val = parameters{cds.ActiveParams};
   
   integration_opt = odeset(...
-    'AbsTol',       contopts.orbit_abs_tol,    ...
-    'RelTol',       contopts.orbit_rel_tol,    ...
+    'AbsTol',       contopts.integration_abs_tol,    ...
+    'RelTol',       contopts.integration_rel_tol,    ...
     'Jacobian',     @(t,y) feval(cds.jacobian_ode,t,y,parameters{:}) ...
   );
   
@@ -20,10 +20,13 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
   integrator            = cds.integrator;
   dydt_ode              = @(t,y) cds.dydt_ode(t, y, parameters{:});
   nDiscretizationPoints = cds.nDiscretizationPoints;
-  
+  mesh                  = cds.mesh;
+  % compute length of each mesh interval:
+  delta_t               = period * diff(mesh);
   
   try 
     if contopts.contL_ParallelComputing
+     
       parfor i=1:m
         % The function monodromy_map cannot be used here, since it depends on
         % the global variable cds, and global variables are not copied so the
@@ -32,8 +35,7 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
           @(t, y) feval(dydt_ode,t, y), ...
           linspace(0, period, nDiscretizationPoints), ...
           phases_0(:,i), integration_opt);
-
-        phases_T_i(:,i) = deval(orbits(i), period/m);
+        phases_T_i(:,i) = deval(orbits(i), delta_t(i));
       end
       cds.orbits = orbits;
     end
@@ -59,7 +61,7 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
         linspace(0, period, nDiscretizationPoints), ...
         phases_0(:,i), integration_opt);
 
-      phases_T_i(:,i) = deval(cds.orbits(i), period/m);
+      phases_T_i(:,i) = deval(cds.orbits(i), delta_t(i));
     end
   end
   
@@ -67,25 +69,21 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
   
   cds.p = cds.preferred_basis_size;
 
-  if ~ isfield(cds, 'V')
-    V1             = compute_subspace(1,period, parameters);
+  if ~ isfield(cds, 'V') || true
+    V1             = compute_subspace(1, period, parameters);
     basis_size     = size(V1,2);
     cds.basis_size = basis_size;
     V              = zeros(cds.nphases,basis_size,m);
     V(:,:,1)       = V1;
     for i=2:m % m == cds.nMeshPoints
-
-      %compute_subspace(i, period, parameters);
       for j = 1:size(V,2)
         V(:,j,i) = NewtonPicard.MultipleShooting.monodromy_map(...
-          i-1, V(:,j,i-1), period/m, parameters);
+          i-1, V(:,j,i-1), delta_t(i-1), parameters);
       end
       V(:,:,i) = orth(V(:,:,i));
     end
-    cds.V = V;
-    V = NewtonPicard.MultipleShooting.continue_subspaces(period, parameters);
   else
-   V = NewtonPicard.MultipleShooting.continue_subspaces(period, parameters);
+    V = NewtonPicard.MultipleShooting.continue_subspaces(delta_t, parameters);
   end
   cds.V = V;
   basis_size     = size(V,2);
@@ -95,12 +93,12 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
   MV = zeros(cds.nphases,basis_size,cds.nMeshPoints);
  
   int_opt = odeset(...
-    'AbsTol', contopts.MV_abs_tol,    ...
-    'RelTol', contopts.MV_rel_tol );
+    'AbsTol', contopts.integration_abs_tol,    ...
+    'RelTol', contopts.integration_rel_tol );
 
   % the variable name F_0_pp corresponds with L^0_pp in Lust
   % we compute the number of nonzero's (nnz):
-  nnz = m* basis_size * basis_size; % blocks on diagonal;
+  nnz = m * basis_size * basis_size; % blocks on diagonal;
   nnz = nnz + m * basis_size;       % identity matrices on superdiagonal
   F_0_pp = spalloc(m*basis_size,m*basis_size,nnz);
   
@@ -111,19 +109,22 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
     dydt_partial_mon = @(t, y) ...
       cds.jacobian_ode(t,deval(cds.orbits(i),t),parameters{:}) * y;
     
-    % The function partial_monodromy_map cannot be used here, in case we want to 
-    % use parfor, since it depends on
-    % the global variable cds, and global variables are not copied so the
-    % the workspace of the workers that parfor uses.
+    % The function partial_monodromy_map cannot be used here, in case we want to
+    % use parfor, since it depends on the global variable cds, and global
+    % variables are not copied so the the workspace of the workers that parfor
+    % uses.
     for j=1:basis_size
       [~,orbit] = ...
-        cds.integrator(dydt_partial_mon, [0 period/m], V(:,j,i), int_opt);
+        cds.integrator(dydt_partial_mon, [0 delta_t(i)], V(:,j,i), int_opt);
       MV(:,j,i) = orbit(end,:)';
     end
 
     indices = basis_size*(i-1) + (1:basis_size);
     ni = next_index_in_cycle(i,m);
     F_0_pp(indices,indices)= V(:,:,ni)' * MV(:,:,i); %#ok<SPRIX>
+    % Indexation might be slow, but it is not the bottleneck in the code. (The
+    % bottle neck is time-integration). Therefore we ignore the <SPRIX> code
+    % analyzer warnings.
     
     if i < m
       F_0_pp(indices, indices + basis_size) = - eye(basis_size); %#ok<SPRIX>
@@ -138,12 +139,13 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
   
   indices = 1:basis_size;
   for i=1:m
-    b_T_i             = cds.dydt_ode(0, phases_T_i(:,i), parameters{:}) / m;
+    b_T_i             = cds.dydt_ode(0, phases_T_i(:,i), parameters{:}) * ...
+                          delta_t(i) / period;
     V_T__b_T(indices) = V(:,:,next_index_in_cycle(i,m))' * b_T_i;
     indices           = indices + basis_size;
   end
   
- 
+
   rhs_delta_q_gamma = zeros(cds.nphases,m);
  
   V_T__b_g = zeros(basis_size * m,1);
@@ -151,8 +153,8 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
   
   indices = 1:basis_size;
   for i=1:m
-    b_g_i                  = d_phi_d_gamma(phases_0(:,i), period/m, parameters);
-    
+    b_g_i                  = d_phi_d_gamma(phases_0(:,i), ...
+                                           delta_t(i), parameters);
     
     ni                     = next_index_in_cycle(i,m);
     V_T__b_g(indices)      = V(:,:,ni)' * b_g_i;
@@ -172,24 +174,21 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
     rhs_delta_q_r(:,i) = r - V(:,:,ni) * V(:,:,ni)' * r;
   end
   
-  partial_period = period / m; % m == cds.nShootingpoints
-  
-  
-  [delta_q_gamma,G_delta_q_gamma] = ...
+  [delta_q_gamma, G_delta_q_gamma] = ...
     NewtonPicard.MultipleShooting.solve_Q_system(V, ...
-    rhs_delta_q_gamma, partial_period, parameters);
+    rhs_delta_q_gamma, delta_t, parameters);
 
-  [delta_q_r    ,G_delta_q_r]     = ...
+  [delta_q_r    , G_delta_q_r]     = ...
     NewtonPicard.MultipleShooting.solve_Q_system(V, ...
-    rhs_delta_q_r, partial_period, parameters);
+    rhs_delta_q_r, delta_t, parameters);
   
   
   V_T_d_phi_d_T = zeros(basis_size*m,1);
   for i=1:m % m == cds.nMeshPoints
     indices = (i-1)*basis_size + (1:basis_size);
     ni = next_index_in_cycle(i,m);
-    V_T_d_phi_d_T(indices) ...
-      = V(:,:,ni)' * cds.dydt_ode(0,phases_T_i(:,i),parameters{:}) /m;
+    V_T_d_phi_d_T(indices) = ( V(:,:,ni)' * ...
+      cds.dydt_ode(0,phases_T_i(:,i),parameters{:}) ) * delta_t(i) / period;
   end
  
   lhs_1_3 = V_T__b_g;
@@ -204,37 +203,40 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
   d_s_d_gamma  = 0;
 
   lhs_2_1 = [cds.previous_dydt_0' * V(:,:,1)    zeros(1,(m-1)*basis_size)];
-
+  
+  
+  
+  
   reduced_jacobian = [
     F_0_pp     V_T_d_phi_d_T     lhs_1_3     ;
-    lhs_2_1    d_s_d_T           d_s_d_gamma ;
+    lhs_2_1    d_s_d_T           d_s_d_gamma + cds.previous_dydt_0' * delta_q_gamma(:,1);
   ];
 
 end
 
 
     
-function x_end = shoot(x, period, parameters)
+function x_end = shoot(x, delta_t, parameters)
   global cds contopts
   f =@(t, y) cds.dydt_ode(t, y, parameters{:});
   integration_opt = odeset(...
-    'AbsTol',      contopts.shoot_abs_tol,    ...
-    'RelTol',      contopts.shoot_rel_tol,    ...
+    'AbsTol',      contopts.integration_abs_tol,    ...
+    'RelTol',      contopts.integration_rel_tol,    ...
     'Jacobian',     @(t,y) feval(cds.jacobian_ode,t,y,parameters{:}) ...
   );
-  [~, orbit] = cds.integrator(f, [0 period], x, integration_opt);
+  [~, orbit] = cds.integrator(f, [0 delta_t], x, integration_opt);
   x_end = orbit(end,:)';
 end
 
  
-function dphidp = d_phi_d_gamma(x, partial_period, parameters)
+function dphidp = d_phi_d_gamma(x, delta_t, parameters)
   global cds
   ap = cds.ActiveParams;
   h = 1e-6;
   parameters{ap} = parameters{ap} - h;
-  phi_1 = shoot(x, partial_period, parameters);
+  phi_1 = shoot(x, delta_t, parameters);
   parameters{ap} = parameters{ap} + 2*h;
-  phi_2 = shoot(x, partial_period, parameters);
+  phi_2 = shoot(x, delta_t, parameters);
   dphidp = (phi_2 - phi_1)/h/2;
 end
 
@@ -279,11 +281,3 @@ function index = next_index_in_cycle(i,m)
     index = 1;
   end
 end
-
-function index = previous_index_in_cycle(i,m) %#ok<DEFNU>
-  index = i - 1;
-  if index == 0
-    index = m;
-  end
-end
-  

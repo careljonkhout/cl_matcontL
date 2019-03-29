@@ -1,12 +1,13 @@
 % based on page 208 of Kurt Lust PhD thesis
 
-function V = continue_subspaces(period, parameters)
+function V = continue_subspaces(delta_t, parameters)
   global cds contopts
   m = cds.nMeshPoints;         
   extended_basis_size = cds.p + 4;
   V_extended = zeros([cds.nphases extended_basis_size m+1]);
   V_extended(:,:,1) = [cds.V(:,:,1) ...
     rand(cds.nphases, extended_basis_size - size(cds.V,2))];
+  
   p_eff = 0;
   iteration = 0;
   
@@ -42,8 +43,8 @@ function V = continue_subspaces(period, parameters)
     
     for i=1:m % m == cds.nMeshPoints
       int_opt = odeset(...
-        'AbsTol',       contopts.continue_subspace_abs_tol,    ...
-        'RelTol',       contopts.continue_subspace_rel_tol,    ...
+        'AbsTol',       contopts.integration_abs_tol,    ...
+        'RelTol',       contopts.integration_rel_tol,    ...
         'Jacobian',     @(t,y) feval(cds.jacobian_ode, ...
                           t, deval(cds.orbits(i),t), parameters{:}) ...
       );
@@ -53,11 +54,11 @@ function V = continue_subspaces(period, parameters)
             
       for j = p_eff+1:size(V_extended, 2)
         V_extended(:,j , i+1) = monodromy_map(integrator, ...
-          dydt_monodromy_map, V_extended(:,j,i), period/m, int_opt);
+          dydt_monodromy_map, V_extended(:,j,i), delta_t(i), int_opt);
       end
     end
       
-    U = V_extended(:,:,1)'*V_extended(:,:,m+1);
+    U = V_extended(:,:,1)' * V_extended(:,:,m+1);
     [Y,S] = schur(U);
     % order schur vectors
     [~,I] = sort(abs(ordeig(S)));
@@ -71,7 +72,7 @@ function V = continue_subspaces(period, parameters)
     while k ~= 0
       basis_norm = svds( ...
         V_extended(:,1:k,m+1) - V_extended(:,1:k,1) * S(1:k,1:k), 1);
-      print_diag(3,'k: %d basis_norm: %.10f\n',k,basis_norm);
+      print_diag(3,'k: %d basis_norm: %.10f\n', k, basis_norm);
       if basis_norm < contopts.NewtonPicardBasisTolerance
         break
       end

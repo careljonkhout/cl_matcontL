@@ -1,4 +1,3 @@
-- optimize shooting points selection
 - start form hopf
 - implement a check, for single shooting:
   - is has happened to me that a single shooting continuation steps onto a 
@@ -6,7 +5,7 @@
      f(0,phases_0,parameter) >= treshold
 
 - adapt size of small subspace
-
+- compute tangent vector at every step, instead of using secant vector.
 
 orthogonal collocation
   - adding a field to lds is very likely to cause crashes, due to the way 

@@ -12,7 +12,7 @@ function test_sparse_v_dense_jac_monodromy
   period = point.x(end-1);
   parameters{3} = point.x(end);
   global contopts cds
-  tol = 1e-9;
+  tol = 1e-11;
   contopts.abs_tol = tol;
   contopts.rel_tol = tol;
   contopts.monodromy_map_abs_tol = tol;
@@ -27,11 +27,11 @@ function test_sparse_v_dense_jac_monodromy
   cds.integrator = @ode15s;
   cds.jacobian_ode = handles{3};
   
-  
+  pattern = feval(handles{3},0,ones(cds.nphases,1),parameters{:});
   
   integration_opt = odeset(...
-    'AbsTol',      contopts.shoot_abs_tol,    ...
-    'RelTol',      contopts.shoot_rel_tol,    ...
+    'AbsTol',      contopts.abs_tol,    ...
+    'RelTol',      contopts.rel_tol,    ...
     'Jacobian',     @(t,y) feval(handles{3},t,y,parameters{:}) ...
   );
   
@@ -52,11 +52,9 @@ function test_sparse_v_dense_jac_monodromy
   
   disp('by integrating dense jacobian');
   tic
-  [~, multiplier_matrix] = eigs(monodromy_map, cds.nphases,5);
+  monodromy_map(f(0,x0));
   toc
-  
-  multipliers = diag(multiplier_matrix);
-  disp(multipliers);
+
 
   end
   odefile = str2func(sprintf('fusion_precomputed_with_sage_N_%d_sparse_jac', N));
@@ -68,11 +66,18 @@ function test_sparse_v_dense_jac_monodromy
   
   disp('by integrating sparse jacobian');
   tic
-  [~, multiplier_matrix] = eigs(monodromy_map, cds.nphases,5);
+  Mx = monodromy_map(f(0,x0));
   toc
-  multipliers = diag(multiplier_matrix);
-  disp(multipliers);
-  
+  plot(Mx ./ f(0,x0));
+
+  pattern = feval(handles{3},0,ones(3*(N-1)),parameters{:})';
+  monodromy_map = @(x) monodromy_map_pattern(x, period, parameters);
+  disp('with JPattern');
+  tic
+  Mx = monodromy_map(f(0,x0));
+  toc
+  figure
+  plot(Mx ./ f(0,x0));
   
   function x_end = shoot(x, period, ~)
     [~, orbit] = ode15s(f, [0 period], x, integration_opt);
@@ -91,7 +96,6 @@ function test_sparse_v_dense_jac_monodromy
   end
 
   function Mx = monodromy_map_from_jac(phases_0, period, parameters)
-    fprintf('%d ',i); i = i+1;
     int_opt = odeset(...
       'AbsTol',       contopts.monodromy_map_abs_tol, ...
       'RelTol',       contopts.monodromy_map_rel_tol, ...
@@ -103,6 +107,19 @@ function test_sparse_v_dense_jac_monodromy
     tic
     [~,orbit] = ode15s(dydt_mon, [0 period], phases_0, int_opt);
     toc
+    Mx = orbit(end,:)';
+  end
+
+  
+  function Mx = monodromy_map_pattern(phases_0, period, parameters)
+    int_opt = odeset(...
+      'AbsTol',       contopts.monodromy_map_abs_tol, ...
+      'RelTol',       contopts.monodromy_map_rel_tol, ...
+      'JPattern',     pattern ...
+    );                
+    dydt_mon = @(t, y) ...
+      feval(handles{3},t, deval(cds.cycle_orbit,t), parameters{:})' * y;
+    [~,orbit] = ode15s(dydt_mon, [0 period], phases_0, int_opt);
     Mx = orbit(end,:)';
   end
 end

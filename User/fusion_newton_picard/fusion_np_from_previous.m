@@ -37,9 +37,9 @@ a = -1;
 b = -0.3;
 q_inf = -0.72;
 parameters = {a;b;q_inf};
-%load('/home/carel/Documents/cl_matcontL/User/fusion_newton_picard/Data/fusion_np_from_previous_19-Mar-2019_18_22_19/point 16.mat')
+load('/home/carel/Documents/cl_matcontL/User/fusion_newton_picard/Data/fusion_np_from_previous_19-Mar-2019_18_22_19/point 16.mat')
 %load('/home/carel/Documents/cl_matcontL/User/fusion_newton_picard/Data/fusion_np_from_previous_19-Mar-2019_20_35_42/point 61.mat')
-load('/home/carel/Documents/cl_matcontL/User/fusion_newton_picard/Data/fusion_np_from_previous_20-Mar-2019_20_03_57/point 10.mat')
+%load('/home/carel/Documents/cl_matcontL/User/fusion_newton_picard/Data/fusion_np_from_previous_20-Mar-2019_20_03_57/point 10.mat')
 parameters{3} = point.x(end);
 cds.previous_phases = point.x(1:end-2);
 cds.previous_dydt_0 = cds.dydt_ode(0,cds.previous_phases,parameters{:});
@@ -65,7 +65,7 @@ opt = contset(opt, 'contL_SmoothingAngle', 10);
 opt = contset(opt, 'CheckClosed',    50000);
 opt = contset(opt, 'Multipliers',    true);
 opt = contset(opt, 'Backward',       false);
-opt = contset(opt, 'Singularities',  false);
+opt = contset(opt, 'Singularities',  true);
 opt = contset(opt, 'CIS_UsingCIS',   false);
 opt = contset(opt, 'NewtonPicard',   true);
 opt = contset(opt, 'console_output_level',   5);
@@ -87,7 +87,7 @@ end
 opt = contset(opt, 'PicardTolerance', 1e-6);
 
 
-tol = 1e-13;
+tol = 1e-9;
 
 opt = contset(opt, 'orbit_abs_tol'            , tol);
 opt = contset(opt, 'orbit_rel_tol'            , tol);

@@ -9,9 +9,9 @@ global cds contopts
 
 %% I. Initialization
 if size(x0, 2) > 1
-    error('Initial point must be a column vector')
+  error('Initial point must be a column vector')
 elseif isempty(x0)
-    error('Initial point must be non-empty')
+  error('Initial point must be non-empty')
 end
 if isempty(opts); contopts = contset(); else; contopts = opts; end
 
@@ -55,21 +55,21 @@ cds.lastpointfound = 0;
 %% determine active singularities and testfunctions
 cds.nActTest = 0;
 if Singularities
-    [cds.S , cds.SingLables] = feval(cds.curve_singmat);
-    nSing                    = size(cds.S,1);
-    cds.S(IgnoreSings,:) = 8;
-    cds.ActSing = setdiff(1:nSing, IgnoreSings);
-    cds.nActSing = length(cds.ActSing);
-    cds.ActTest  = find( sum((cds.S~=8),1) > 0 );
+  [cds.S , cds.SingLables] = feval(cds.curve_singmat);
+  nSing                    = size(cds.S,1);
+  cds.S(IgnoreSings,:) = 8;
+  cds.ActSing = setdiff(1:nSing, IgnoreSings);
+  cds.nActSing = length(cds.ActSing);
+  cds.ActTest  = find( sum((cds.S~=8),1) > 0 );
 end
 
 %% userfunctions
 if Userfunctions
-    if length(contopts.UserFuncInfo) == length(cds.userf)
-        cds.nUserf = length(cds.userf);     % DV: Does this work properly??
-    else
-        error('Wrong user info specified');
-    end
+  if length(contopts.UserFuncInfo) == length(cds.userf)
+     cds.nUserf = length(cds.userf);     % DV: Does this work properly??
+  else
+     error('Wrong user info specified');
+  end
 end
 
 %% Algorithm starts here
@@ -80,23 +80,17 @@ cds.newtcorrL_needs_CISdata = 0;
 
 if isequal(curvefile, @limitcycleL) || ...
    isequal(curvefile, @limitpointcycle)
-
     point.x = x0;
     CISdata0 = 1;
     if isempty(v0)
         point.v = zeros(length(x0),1);
-        % must run defaultprocessor before computing jacobian
-        % in find_initial_tangent_vector_by_nullspace(x0,v0);
-        % or else a crash will occur due to missing fields in
-        % the global struct lds
-        DefaultProcessor(point, 'do not save');
+        
         %point.v = find_initial_tangent_vector(x0,v0,CISdata0);
         point.v = find_initial_tangent_vector_by_nullspace(x0,v0,CISdata0);
         v0 = point.v;
         print_diag(0,'found tangent vector\n')
     else
         point.v = zeros(length(x0),1);
-        DefaultProcessor(point, 'do not save');
     end
     firstpoint = newtcorrL(x0, v0, CISdata0);
 elseif UsingNewtonPicard
@@ -108,8 +102,6 @@ elseif UsingNewtonPicard
       print_diag(0,'Correction of first point does not converge\n');
       return;
     end
-      
-    
     firstpoint.v =  NewtonPicard.find_tangent_vector(curvefile, x0);
 else
     try 
@@ -214,7 +206,11 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
       trialpoint = newtcorrL(xpre, currpoint.v, currpoint.CISdata);
     end
     if isempty(trialpoint)
-      print_diag(0, 'contL: newtcorrL failed\n')
+      if UsingNewtonPicard 
+        print_diag(0, 'contL: NewtonPicard.do_corrections failed\n')
+      else
+        print_diag(0, 'contL: newtcorrL failed\n')
+      end
       reduce_stepsize = 1;
     end
     
@@ -223,7 +219,16 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
       trialpoint.h = cds.h;
       trialpoint.angle = innerangle(currpoint.v,trialpoint.v);
       if trialpoint.angle > SmoothingAngle
-        print_diag(0, 'contL: Innerangle too large\n ');
+        print_diag(0, 'contL: Innerangle too large\n');
+        reduce_stepsize = 1;
+      end
+    end
+    
+    % In single shooting, the corrector might "correct" the period down to
+    % (almost) zero. This is of course not correct
+    if isequal(curvefile, @single_shooting)
+      if trialpoint.x(end-1)/currpoint.x(end-1) < 0.5
+        print_diag(0, 'contL: period decreasing too much\n');
         reduce_stepsize = 1;
       end
     end
@@ -529,10 +534,10 @@ else
     [out,failed] = feval(cds.curve_testf, id, point.x, point.v, point.CISdata);
     %out = out(id);
 end
-print_diag(1,'tf eval at period: %.16f param: %.16f\n', ...
+print_diag(5,'tf eval at period: %.16f param: %.16f\n', ...
   point.x(end-1),  point.x(end))
 print_diag(1,'Test Functions: [')
-print_diag(1,' %+.16e',out)
+print_diag(1,' %+.5e',out)
 print_diag(1,']\n')
 
 %--< END OF TESTF EVAL >--
@@ -899,7 +904,11 @@ while i<=MaxTestIters
             return
         end
     end
-    p3 = newtcorrL(x3,v3, CISdata3);
+    if contopts.NewtonPicard
+      error('not yet implemented')
+    else
+      p3 = newtcorrL(x3,v3, CISdata3);
+    end
     if isempty(p3)
         return
     end

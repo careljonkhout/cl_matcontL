@@ -18,7 +18,7 @@ global contopts;
 contopts = contset();
 print_diag(0,[title_format_string '\n'], title_format_args{:});
 
-
+cds.preferred_basis_size = 5;
 cds.poincare_tolerance = 1e-1;
 cds.minimum_period = 1;
 cds.dydt_ode = handles{2};
@@ -102,12 +102,12 @@ end
 
 
 opt = contset();
-opt = contset(opt, 'MaxNumPoints',   2);
-opt = contset(opt, 'InitStepsize',   1e-1);
+opt = contset(opt, 'MaxNumPoints',   10000);
+opt = contset(opt, 'InitStepsize',   5e-2);
 opt = contset(opt, 'MinStepsize',    1e-6);
-opt = contset(opt, 'MaxStepsize',    1e-1);
+opt = contset(opt, 'MaxStepsize',    5e-2);
 opt = contset(opt, 'MaxNewtonIters', 3);
-opt = contset(opt, 'MaxCorrIters',   4);
+opt = contset(opt, 'MaxCorrIters',   6);
 opt = contset(opt, 'MaxTestIters',   10);
 opt = contset(opt, 'VarTolerance',   1e-6);
 opt = contset(opt, 'FunTolerance',   1e-6);
@@ -119,11 +119,11 @@ opt = contset(opt, 'Adapt',          1000*1000*1000);
 opt = contset(opt, 'CheckClosed',    1000);
 opt = contset(opt, 'Multipliers',    true);
 opt = contset(opt, 'Backward',       true);
-opt = contset(opt, 'Singularities',  false);
+opt = contset(opt, 'Singularities',  true);
 opt = contset(opt, 'CIS_UsingCIS',   false);
 opt = contset(opt, 'NewtonPicard',   true);
-opt = contset(opt, 'console_output_level',   5);
-opt = contset(opt, 'contL_DiagnosticsLevel', 5);
+opt = contset(opt, 'console_output_level',   4);
+opt = contset(opt, 'contL_DiagnosticsLevel', 4);
 opt = contset(opt, 'every_point_in_separate_mat_file', true);
 opt = contset(opt, 'PicardTolerance', 1e-8);
 

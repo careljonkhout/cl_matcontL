@@ -1,4 +1,4 @@
-function out = multiple_shooting_variable_mesh
+function out = multiple_shooting
 %
 % Curve file of cycle continuation with multiple shooting
 %
@@ -9,7 +9,7 @@ function out = multiple_shooting_variable_mesh
     out{5}  = [];%@hessians;
     out{6}  = [];%@testf;
     out{7}  = [];%@userf;
-    out{8}  = [];%@process;
+    out{8}  = @process;
     out{9}  = [];%@singmat;
     out{10} = [];%@locate;
     out{11} = @init;
@@ -47,11 +47,11 @@ end
 %---------------------
   
 function x_end = shoot(x, mesh_index, period, parameters)
-  global cds
+  global cds contopts
   f =@(t, y) cds.dydt_ode(t, y, parameters{:});
   integration_opt = odeset(...
-    'AbsTol',      1e-10,    ...
-    'RelTol',      1e-10,    ...
+    'AbsTol',       contopts.integration_abs_tol,    ...
+    'RelTol',       contopts.integration_rel_tol,    ...
     'Jacobian',     @(t,y) feval(cds.jacobian_ode,t,y,parameters{:}) ...
   );
   time_interval = period * [cds.mesh(mesh_index) cds.mesh(mesh_index+1)];
@@ -126,16 +126,12 @@ end
     
     
 function [y_end, monodromy] = monodromy_full(x, mesh_index, period, parameters)
-  global cds
+  global cds contopts
   nphases = cds.nphases;
   f =@(t, y) dydt_monodromy_full(t, y, parameters);
   integration_opt = odeset(...
-    'AbsTol',      1e-10,    ...
-    'RelTol',      1e-10,    ...
-    'BDF',         'off',   ...
-    'MaxOrder',     5,      ...
-    'NormControl',  'off',  ...
-    'Refine',       1 ... % todo add jacobian   
+    'AbsTol',      contopts.integration_abs_tol,    ...
+    'RelTol',      contopts.integration_rel_tol     ... % todo add JPattern   
   );
   time_interval = period * [cds.mesh(mesh_index)  cds.mesh(mesh_index+1)];
   x_with_monodromy = [x; reshape(eye(nphases),[nphases^2 1])];
@@ -161,10 +157,10 @@ end
   
 function [y_end, monodromy] = ...
   monodromy_column_by_column(x, mesh_index, period, parameters)
-  global cds;
+  global cds contopts;
   integration_opt = odeset(...
-    'AbsTol',      1e-10,    ...
-    'RelTol',      1e-10,    ...
+    'AbsTol',       contopts.integration_abs_tol,    ...
+    'RelTol',       contopts.integration_rel_tol,    ...
     'Jacobian',     @(t,y) feval(cds.jacobian_ode,t,y,parameters{:}) ...
   );
   f = @(t, y) cds.dydt_ode(t, y, parameters{:});
@@ -191,7 +187,7 @@ end
 function point = defaultprocessor(varargin)
   global cds contopts
   point = varargin{1};
-  
+  point.mesh = cds.mesh;
   if contopts.Multipliers
     point.multipliers = ...
       NewtonPicard.MultipleShooting.compute_multipliers(point.x);
@@ -216,12 +212,32 @@ end
 
 function [has_changed, x, v, CISData] = adapt(varargin)
   global cds
-  has_changed = false;
-  x = varargin{1};
-  v = varargin{2};
+  has_changed = true;
+  x       = varargin{1};
+  v       = varargin{2};
   CISData = varargin{3};
+  period  = x(end-1);
+  print_diag(3,'curve_function with old time mesh: %.3e\n', ...
+    max(abs(curve_func(x))));
+  % We reposition the mesh points in time:
   cds.mesh = find_mesh_points_multiple_shooting(x);
-  disp(cds.mesh);
+  
+  % We update coordinates of the points on the cycle to correspond to the new
+  % time mesh. Note that the first point does not change.
+  indices = (1:cds.nphases) + cds.nphases;
+  for i=2:cds.nMeshPoints
+    x(indices) = interp1( ...
+      cds.t_cycle, cds.y_cycle,period * cds.mesh(i), 'spline');
+    indices = indices + cds.nphases;
+  end
+  print_diag(4, 'new_time_mesh:');
+  print_diag(3, ' %.4f', cds.mesh );
+  print_diag(4, '\n');
+  print_diag(4, 'curve_function new time mesh: %.3e\n', ...
+    max(abs(curve_func(x))));
+  %x = NewtonPicard.MultipleShooting.corrections_without_tangent(x);
+  %print_diag(3,'curve_function new time mesh: %.3e\n', ...
+  %  max(abs(curve_func(x))));
 end
 
 function [y,period,parameters] = getComponents(x)
@@ -237,35 +253,16 @@ end
 function mesh_points = find_mesh_points_multiple_shooting(x)
   global cds contopts
   int_opt = odeset( ...
-    'AbsTol', contopts.int_abs_tol, ...
-    'RelTol', contopts.int_rel_tol  ...
+    'AbsTol', contopts.integration_abs_tol, ...
+    'RelTol', contopts.integration_rel_tol  ...
   );
-  [phases_0, period, parameters] = getComponents(x);
-  dydt       = @(t,x) cds.dydt_ode(t, x, parameters{:});
-  indices = 1:cds.nphases;
-  t_cycle = [];
-  y_cycle = [];
-  for i=1:cds.nMeshPoints
-    time_interval = period * [cds.mesh(i) cds.mesh(i+1)];
-    [t_mesh_interval, y_mesh_interval] = ...
-      cds.integrator(dydt, time_interval, phases_0(indices), int_opt);
-    if i < cds.nMeshPoints
-      t_cycle = [t_cycle; t_mesh_interval(1:end-1,:)]; %#ok<AGROW>
-      y_cycle = [y_cycle; y_mesh_interval(1:end-1,:)]; %#ok<AGROW>
-    else
-      t_cycle = [t_cycle; t_mesh_interval(1:end  ,:)]; %#ok<AGROW>
-      y_cycle = [y_cycle; y_mesh_interval(1:end  ,:)]; %#ok<AGROW>
-    end
-    % We do not knwo the end size of t_cycle and y_cycle beforehand, therefore,
-    % we ignore the 'variable appears to change size on every loop iteration' -
-    % warning.
-    indices = indices + cds.nphases;
-  end
-  cycle_gradient_norm = @(t,x) ...
-    norm(cds.dydt_ode(t, interp1(t_cycle,y_cycle,t), parameters{:}));
+  [~, period, parameters] = getComponents(x);
+  NewtonPicard.MultipleShooting.compute_stiched_orbit(x);
+  cycle_gradient_norm = @(t,x) norm(cds.dydt_ode(...
+      t, interp1(cds.t_cycle,cds.y_cycle,t,'spline'), parameters{:}));
   
   time_points = linspace(0,period,100*cds.nMeshPoints);
-  [t,x] = ode45(cycle_gradient_norm, time_points, 0);
+  [t,x] = ode45(cycle_gradient_norm, time_points, 0, int_opt);
   cycle_gradient_integral = x(end);
   x = mod(x, cycle_gradient_integral / cds.nMeshPoints);
   mesh_points = zeros(cds.nMeshPoints + 1, 1);
@@ -279,4 +276,8 @@ function mesh_points = find_mesh_points_multiple_shooting(x)
   mesh_points = mesh_points / period;
 end
 
-  
+function [failed, s] = process(si, singpoint, s) %#ok<INUSL>
+  % to be implemented later
+  failed = false;
+end
+

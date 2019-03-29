@@ -33,6 +33,7 @@ cds.symjac = false;
 cds.usernorm = [];
 cds.probfile = odefile;
 cds.ncoo = cds.nphases;
+cds.mv_count = 0;
 
     
 int_opt = odeset( ...
@@ -108,6 +109,8 @@ opt = contset(opt, 'Backward',       false);
 opt = contset(opt, 'Singularities',  false);
 opt = contset(opt, 'CIS_UsingCIS',   false);
 opt = contset(opt, 'contL_SmoothingAngle',   3);
+opt = contset(opt, 'console_output_level',   5);
+opt = contset(opt, 'contL_DiagnosticsLevel', 5);
 
 initial_continuation_data = [x0; period; cds.P0(cds.ActiveParams)];
 initial_continuation_tangent_vector = [];

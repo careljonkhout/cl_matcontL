@@ -30,5 +30,5 @@ function [delta_q, M_delta_q] = ...
       break
     end
   end
-  print_diag(5,'did %d iterations in solve_q_systems\n',iteration_number);
+  print_diag(4,'did %d iterations in solve_q_systems\n',iteration_number);
 end

@@ -9,12 +9,15 @@
 % }
 function V = continue_subspace(period, parameters)
   global cds contopts
-  V_extended = [cds.V rand(cds.nphases, cds.p + cds.p_extra - size(cds.V,2))];
+  mv_count = 0;
+  V_extended = [cds.V ...
+    rand(cds.nphases, cds.p + 2 - size(cds.V,2))];
   %V_extended = [rand(cds.nphases, cds.p + cds.p_extra)];
   p = cds.p;
+  
   int_opt = odeset(...
-    'AbsTol',       contopts.continue_subspace_abs_tol,    ...
-    'RelTol',       contopts.continue_subspace_rel_tol,    ...
+    'AbsTol',       contopts.integration_abs_tol,    ...
+    'RelTol',       contopts.integration_rel_tol,    ...
     'Jacobian',     @(t,y) feval(cds.jacobian_ode, ...
                       t, deval(cds.cycle_orbit,t), parameters{:}) ...
   );                
@@ -28,9 +31,8 @@ function V = continue_subspace(period, parameters)
   while p_eff < p && iteration < contopts.NewtonPicardMaxSubspaceIterations
     iteration = iteration + 1;
     if  iteration > 3
-      fprintf('subspace iteration %d\n',iteration);
-      W_unlocked = orth(W(:,p_eff+1:end));
-      V_extended(:,p_eff+1:p_eff+1+size(W_unlocked,2)-1) = W_unlocked;
+     
+      V_extended(:,p_eff+1:end) = orth(W(:,p_eff+1:end));
       %V_extended = orth(W);
     end
     integrator = cds.integrator;
@@ -43,12 +45,10 @@ function V = continue_subspace(period, parameters)
           [~,orbit] = feval(integrator, ...
             dydt_monodromy_map, [0 period], V_extended(:,i), int_opt);
           W(:,i) = orbit(end,:)';
-
         end
         parfor_failed = false;
       catch error
-        if (strcmp(error.identifier, ...
-            'MATLAB:remoteparfor:AllParforWorkersAborted'))
+        if (strcmp(error.identifier,'MATLAB:remoteparfor:AllParforWorkersAborted'))
           % Something went wrong with the parfor workers.
           % We try again with ordinary for.
           fprintf('Parfor aborted, retrying with ordinary for.\n');
@@ -59,13 +59,14 @@ function V = continue_subspace(period, parameters)
         end
       end
     end
-    if (~ contopts.contL_ParallelComputing) || parfor_failed
+    
+    if ~ contopts.contL_ParallelComputing || parfor_failed
       for i=p_eff+1:size(V_extended,2)
-        [~,orbit] = integrator(dydt_monodromy_map, ...
-          [0 period], V_extended(:,i), int_opt);
-        
+        [~,orbit] = cds.integrator(...
+          dydt_monodromy_map, [0 period], V_extended(:,i), int_opt);
         W(:,i) = orbit(end,:)';
-      end
+        mv_count = mv_count +1;
+      end     
     end
         
       
@@ -78,23 +79,18 @@ function V = continue_subspace(period, parameters)
     V_extended = V_extended * Y;
     W = W * Y;
     k = size(V_extended,2) - 1;
- 
-    while k ~= 0
-      % note: svds(A,1) is a built-in matlab function
-      % that computes the largest singular value of A   
-      basis_norm = svds(W(:,1:k) - V_extended(:,1:k) * S(1:k,1:k), 1);
-      print_diag(3,'k: %d subspace norm at k: %.10f\n', ...
-        k, basis_norm);
-      if basis_norm < contopts.NewtonPicardBasisTolerance 
-        break
-      end
+    % note: svds(A,1) is a built-in matlab function
+    % that computes the largest singular value of A    
+    while k >= 1 ...
+        && (S(k+1,k) ~= 0 || S(k+1,k) == 0 ...
+        && svds(W(:,1:k) - V_extended(:,1:k) * S(1:k,1:k), 1) >= contopts.NewtonPicardBasisTolerance )
       k = k - 1;
+
     end
+    fprintf('subspace iteration %d mv_count: %d\n',iteration,mv_count);
     p_eff = k;
-    print_diag(3,'p_eff: %d subspace norm at k=p_eff: %.10f\n', ...
-      p_eff, basis_norm);
+    %fprintf('p_eff: %d subspace norm at k=p_eff: %.10f\n', p_eff, svds(W(:,1:p_eff) - V_extended(:,1:p_eff) * S(1:p_eff,1:p_eff), 1));
   end
-  V_extended_orth = orth(V_extended);
-  V = V_extended_orth(:,1:p_eff);
+  V = V_extended(:,1:p_eff);
   
   

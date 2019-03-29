@@ -12,31 +12,32 @@ global cds
 cds.ActiveParams = 2; %4;
 handles = feval(odefile);
 title_format_string = ...
-  'Brusselator 2D N:%d  L:%.0f  A:%.0f  B:%.2f  Dx:%.3f  Dy:%.3f';
+  'Brusselator 2D N:%d  L:%.2f  A:%.2f  B:%.2f  Dx:%.3f  Dy:%.3f';
 title_format_args = {N; L; A; B; Dx; Dy;};
+cds.preferred_basis_size = 15;
 global contopts;
 contopts = contset();
 print_diag(0,[title_format_string '\n'], title_format_args{:});
 
 
-cds.poincare_tolerance = 1e-1;
-cds.minimum_period = 1;
-cds.dydt_ode = handles{2};
-cds.jacobian_ode = handles{3};
-
-cds.probfile = odefile;
-cds.nap = 1;
-
-cds.nphases = 2*N*N;
-cds.ndim = cds.nphases + cds.nap + 1;
-cds.P0 = cell2mat(parameters);
-cds.options = contset();
-cds.options.PartitionMonodromy = cds.nphases > 30;
-cds.nDiscretizationPoints = 1000;
-cds.symjac = false;
-cds.usernorm = [];
-cds.probfile = odefile;
-cds.ncoo = cds.nphases;
+% cds.poincare_tolerance = 1e-1;
+% cds.minimum_period = 1;
+% cds.dydt_ode = handles{2};
+% cds.jacobian_ode = handles{3};
+% 
+% cds.probfile = odefile;
+% cds.nap = 1;
+% 
+ cds.nphases = 2*N*N;
+% cds.ndim = cds.nphases + cds.nap + 1;
+% cds.P0 = cell2mat(parameters);
+% cds.options = contset();
+% cds.options.PartitionMonodromy = cds.nphases > 30;
+% cds.nDiscretizationPoints = 1000;
+% cds.symjac = false;
+% cds.usernorm = [];
+% cds.probfile = odefile;
+% cds.ncoo = cds.nphases;
 
     
 int_opt = odeset( ...
@@ -51,56 +52,24 @@ dydt = handles{2};
 f =@(t, y) dydt(t, y, parameters{:});
 [t1, x1] = ode15s(f, [0 150], x0, int_opt);
 
-draw_plots = true || false;
-if draw_plots
-  figure(1)
-  plot(t1,x1)
-  title(sprintf(title_format_string, title_format_args{:}));
-  xlabel('t');
-  ylabel('x_1,x_2,y_1,y_2');
-end
+initial_continuation_data = init_single_shooting( ...
+  'point_on_limitcycle',     x1(end,:)', ...
+  'odefile',                 odefile,  ...
+  'ode_parameters',          parameters, ...
+  'active_parameter_index',  cds.ActiveParams, ...
+  'lower_bound_period',      1, ...
+  'upper_bound_period',      30, ...
+  'poincare_tolerance',      1e-1, ...
+  'subspace_size',           8);
 
 
 
-approximate_period = 30;
-
-cds.previous_phases = x1(end,:)';
-cds.previous_dydt_0 = f(0,x0);
-int_opt = odeset(int_opt, 'Events', @returnToPlane);
-
-[t2,x2] = ode15s(f, linspace(0,approximate_period,500), x1(end,:), int_opt); 
-period = t2(end);
-fprintf('period %.15f\n', period);
-int_opt = odeset(int_opt, 'Events', []);
-
-fprintf('curve function value: %.15f\n',norm(x2(1,:)-x2(end,:)))
-
-
-if draw_plots
-  figure(2)
-  plot(t2,x2)
-  title(sprintf(title_format_string, title_format_args{:}));
-  xlabel('t')
-  ylabel('x_1,x_2,y_1,y_2');
-end
-
-
-
-if draw_plots
-  figure(4)
-  plot(x2(:,1),x2(:,N+1))
-  title(sprintf(title_format_string, title_format_args{:}));
-  xlabel('x_1')
-  ylabel('y_N')
-
-  drawnow
-end
 
 %% Continue limit cycle from orbit
 
 
 opt = contset();
-opt = contset(opt, 'MaxNumPoints',   8);
+opt = contset(opt, 'MaxNumPoints',   100);
 opt = contset(opt, 'InitStepsize',   1e-1);
 opt = contset(opt, 'MinStepsize',    1e-6);
 opt = contset(opt, 'MaxStepsize',    1e-1);
@@ -109,21 +78,18 @@ opt = contset(opt, 'MaxCorrIters',   4);
 opt = contset(opt, 'MaxTestIters',   10);
 opt = contset(opt, 'VarTolerance',   1e-6);
 opt = contset(opt, 'FunTolerance',   1e-6);
-opt = contset(opt, 'NewtonPicardBasisTolerance',   1e-1);
+opt = contset(opt, 'NewtonPicardBasisTolerance',   1e-6);
 opt = contset(opt, 'contL_SmoothingAngle',   3);
-% we don't want to adapt
-% since it is not implemented
-opt = contset(opt, 'Adapt',          1000*1000*1000);
 opt = contset(opt, 'CheckClosed',    1000);
 opt = contset(opt, 'Multipliers',    true);
-opt = contset(opt, 'Backward',       true);
-opt = contset(opt, 'Singularities',  false);
+opt = contset(opt, 'Backward',       false);
+opt = contset(opt, 'Singularities',  true);
 opt = contset(opt, 'CIS_UsingCIS',   false);
 opt = contset(opt, 'NewtonPicard',   true);
-opt = contset(opt, 'console_output_level',   5);
-opt = contset(opt, 'contL_DiagnosticsLevel', 5);
+opt = contset(opt, 'console_output_level',   4);
+opt = contset(opt, 'contL_DiagnosticsLevel', 4);
 
-initial_continuation_data = [cds.previous_phases; period; cds.P0(cds.ActiveParams)];
+
 initial_continuation_tangent_vector = [];
 [s, datafile] = contL(@single_shooting, ...
   initial_continuation_data, ...

@@ -4,7 +4,7 @@ by Carel Jonkhout
 
 These are some guidelines I used when formatting code in cl_matcontL
 
-- maximum line length is 80. Break long lines with dots ( ... ) like so:
+----- maximum line length is 80. Break long lines with dots ( ... ) like so:
 
 write this:
 
@@ -16,18 +16,17 @@ instead of this:
 some_function(very_long_argument1, very_long_argument2, very_long_argument3, very_long_argument4)
 
 
-- Indentation size is 2
+----- Indentation size is 2
 
-- put spaces in function calls after a comma, if arguments are more complex
-  then simple variable references.
-so:
-this is ok: some_function(a,b,c,d)
-this is not: some_function(a+b,c+d)
-please puts a space after the comma: some_function(a+b, c+d)
+----- Put spaces in function calls after a comma
+
+----- Fix code analyzer warnings, or put and ignore warning directive 
+( i.e. %#ok<SPRIX> ), and comment on why the warning was ignored.
 
 
+----- do not use fprintf or disp, but print_diag
 
-tip:
+Try to debug using the debugger.
 
 do your print-and-run-debugging using:
 

@@ -55,9 +55,9 @@ f =@(t, y) dydt(t, y, parameters{:});
 % we compute the cycle from which we start the continuation form by integration:
 [t1, x1] = ode15s(f, [0 150], x0, int_opt);
 
-draw_plots = false;
+draw_plots = eval('false'); % eval is to avoid a code analyzer warning
 if draw_plots
-  figure(1) %#ok<UNRCH>
+  figure(1)
   plot(t1,x1)
   title(sprintf(title_format_string, title_format_args{:}));
   xlabel('t');
@@ -96,15 +96,15 @@ opt = contset(opt, 'InitStepsize',   1e-2);
 opt = contset(opt, 'MinStepsize',    1e-6);
 opt = contset(opt, 'MaxStepsize',    1e-2);
 opt = contset(opt, 'MaxNewtonIters', 3);
-opt = contset(opt, 'MaxCorrIters',   10);
+opt = contset(opt, 'MaxCorrIters',   20);
 opt = contset(opt, 'MaxTestIters',   10);
-opt = contset(opt, 'VarTolerance',   1e-6);
-opt = contset(opt, 'FunTolerance',   1e-9);
+opt = contset(opt, 'VarTolerance',   1e-5);
+opt = contset(opt, 'FunTolerance',   1e-5);
 opt = contset(opt, 'NewtonPicardBasisTolerance',   1e-6);
 opt = contset(opt, 'contL_SmoothingAngle',   3);
 % we don't want to adapt
 % since it is not implemented
-opt = contset(opt, 'Adapt',          1000*1000*1000);
+opt = contset(opt, 'Adapt',          1);
 opt = contset(opt, 'CheckClosed',    1000);
 opt = contset(opt, 'Multipliers',    true);
 opt = contset(opt, 'Backward',       true);
@@ -119,7 +119,7 @@ opt = contset(opt, 'contL_ParallelComputing', false);
 
 
 orbit                   = x1;
-nMeshPoints         = 4;
+nMeshPoints             = 4;
 active_parameter_index  = 2;
 time_integration_method = @ode15s;
 lower_bound_period      = 1;
@@ -168,7 +168,8 @@ for i=1:size(x,2)
   ylabel('U_1')
 end
 
-return
+eval('return') % eval is avoid a code-analyzer warning
+
 figure
 plot(x(end,:),x(end-1,:))
 title(sprintf(title_format_string, title_format_args{:}));

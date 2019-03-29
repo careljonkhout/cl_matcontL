@@ -77,7 +77,6 @@ elseif nargin == 2
     print_diag(0,'%+.6e  '      ,point.x(end-cds.nap+1:end));
     print_diag(0,'%.6e  '       ,norm(point.x(1:cds.ncoo)));
     print_diag(0,'%.6e  \n'     ,point.R);
-    cds.sout = [cds.sout, s];
     try
       cds.sout = [cds.sout, s];
     catch e
@@ -95,7 +94,7 @@ end
 
 if contopts.NewtonPicard
   failed = savePointDataFile(point.x);
-elseif isfield(point,'multipliers') %Care
+elseif isfield(point,'multipliers') %Carel
   failed = savePointDataFile(...
     point.x, point.v, point.h, point.tvals', point.uvals', point.multipliers);
 else
@@ -115,7 +114,7 @@ global cds
 %writes number of lines to save
 try
     failed = 0;
-    fprintf(cds.dataFID,'%d\n',nargin); %Number data entried to read in a block.
+    fprintf(cds.dataFID,'%d\n',nargin); %Number data entries to read in a block.
     for i = 1:nargin
         sz = size(varargin{i});
         fprintf(cds.dataFID,'%d %d\n',sz);

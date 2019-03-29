@@ -18,14 +18,21 @@ function x = do_one_correction(x0,x,v0)
   
   lhs_3_1 = zeros(1,basis_size * m);
   for i=1:m % m == cds.nMeshPoints
-    indices_lhs_3_1 = (i-1)*basis_size  + (1:basis_size);
-    indices_v0      = (i-1)*cds.nphases + (1:cds.nphases);
+    indices_lhs_3_1          = (i-1)*basis_size  + (1:basis_size);
+    indices_v0               = (i-1)*cds.nphases + (1:cds.nphases);
     lhs_3_1(indices_lhs_3_1) = v0(indices_v0)' * V(:,:,i);
+  end
+  
+  c_n__delta_q_gamma = 0;
+  
+  for i=1:m
+    indices_v0          = (i-1)*cds.nphases + (1:cds.nphases);
+    c_n__delta_q_gamma  = c_n__delta_q_gamma + v0(indices_v0)' * delta_q_gamma(:,i);
   end
   
   left_hand_side = [
     reduced_jacobian;
-    lhs_3_1    v0(end-1)         v0(end)     ;
+    lhs_3_1    v0(end-1)         v0(end) + c_n__delta_q_gamma;
   ];
 
 

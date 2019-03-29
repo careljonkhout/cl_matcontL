@@ -30,6 +30,7 @@ cds.dydt_ode = handles{2};
 cds.jacobian_ode = handles{3};
 cds.ncoo = cds.nphases;
 cds.integrator = @ode15s;
+cds.preferred_basis_size = 5;
 
 
 a = -1;
@@ -138,7 +139,7 @@ opt = contset(opt, 'contL_SmoothingAngle', 10);
 opt = contset(opt, 'CheckClosed',    50000);
 opt = contset(opt, 'Multipliers',    true);
 opt = contset(opt, 'Backward',       false);
-opt = contset(opt, 'Singularities',  false);
+opt = contset(opt, 'Singularities',  true);
 opt = contset(opt, 'CIS_UsingCIS',   false);
 opt = contset(opt, 'NewtonPicard',   true);
 opt = contset(opt, 'console_output_level',   5);

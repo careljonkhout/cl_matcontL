@@ -7,7 +7,7 @@ function x = do_one_correction(x0,x,v0)
 
   left_hand_side = [
     reduced_jacobian;
-    v0(1:end-2)' * V       v0(end-1:end)';
+    v0(1:end-2)' * V       v0(end-1)       v0(end) + v0(1:end-2)' * delta_q_gamma;
   ];
 
   right_hand_side = [

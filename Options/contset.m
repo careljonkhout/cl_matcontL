@@ -160,27 +160,18 @@ options.newtcorrL_use_max_norm           = false;
 options.always_save_s                    = true;
 options.SingularTestFunction             = false;
 options.every_point_in_separate_mat_file = false;
-options.MaxPicardIterations              = 7;
+options.MaxPicardIterations              = 15;
 options.PicardTolerance                  = 1e-10;
 % set the number of cores to be used in parallel computing to the number of
 % physical cores on the local machine. Only relevant if contL_ParallelComputing
 % is true.
 options.num_cores                        = feature('numcores');
-
-options.orbit_abs_tol             = 1e-12;
-options.orbit_rel_tol             = 1e-12;
-options.MV_abs_tol                = 1e-11;
-options.MV_rel_tol                = 1e-11;
-options.shoot_abs_tol             = 1e-11;
-options.shoot_rel_tol             = 1e-11;
-options.monodromy_map_abs_tol     = 1e-11;
-options.monodromy_map_rel_tol     = 1e-11;
-options.continue_subspace_abs_tol = 1e-12;
-options.continue_subspace_rel_tol = 1e-12;
-options.jacobian_abs_tol          = 1e-12;
-options.jacobian_rel_tol          = 1e-12;
-options.int_abs_tol               = 1e-9;
-options.int_rel_tol               = 1e-9;
+% Tolerances for time integration in single shooting, multiple shooting and
+% continuation of single shooting and multiple shooting with Newton Picard
+% Integration tolerances smaller than 1e-13 may give 'unable to meet tolerances'
+% warnings.
+options.integration_abs_tol               = 1e-9;
+options.integration_rel_tol               = 1e-9;
                             %% Determine testpath
 options.Filename = [];           
 ST = dbstack('-completenames');

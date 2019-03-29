@@ -78,8 +78,8 @@ function initial_continuation_data = init_multiple_shooting_from_orbit(...
     time_integration_options); 
   
   
-  period = new_orbit.x(end);
-  initial_continuation_data = zeros(cds.nphases * nMeshPoints + 2,1);
+  period                    = new_orbit.x(end);
+  initial_continuation_data = zeros(cds.nphases * nMeshPoints + 2, 1);
   for i=0:nMeshPoints-1
     indices = (1:cds.nphases) + i * cds.nphases;
     initial_continuation_data(indices) = ...
@@ -91,10 +91,11 @@ function initial_continuation_data = init_multiple_shooting_from_orbit(...
   
   cds.previous_phases = point_on_limitcycle;
   cds.previous_dydt_0 = tangent_to_limitcycle;
-  cds.nMeshPoints = nMeshPoints;
+  cds.nMeshPoints     = nMeshPoints;
   cds.dydt_ode        = dydt_ode;
   cds.jacobian_ode    = jacobian_ode;
   cds.integrator      = time_integration_method;
+  cds.mesh            = linspace(0, 1, nMeshPoints + 1);
  
   function [value, isterminal, direction] = returnToPlane(t, x)
     % x and should be a column vector

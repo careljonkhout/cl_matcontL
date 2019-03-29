@@ -51,14 +51,42 @@ function test_sparse_v_dense_jac
   [t,x] = seulexMex(f, [0 t_end], x0, int_opt);
   toc
  
+    int_opt = odeset( ...
+    'AbsTol',      contopts.abs_tol,    ...
+    'RelTol',      contopts.rel_tol,    ...
+    'Jacobian',    @(t,x) feval(handles{3},0,x,parameters{:}) ...
+  );
+
+  int_opt.RecomputeJACFactor = 0.01;
+  dydt = handles{2};
+  f =@(t, y) dydt(t, y, parameters{:});
+  disp("seulexMex with Jacobian")
+  tic
+  [t,x] = seulexMex(f, [0 t_end], x0, int_opt);
+  toc
+ 
+  
   int_opt = odeset( ...
+    'AbsTol',      contopts.abs_tol,    ...
+    'RelTol',      contopts.rel_tol,    ...
+    'JPattern',    feval(handles{3},0,x0,parameters{:}));
+ %   'Jacobian',    @(t,x) feval(handles{3},0,x,parameters{:}) ...
+  %);
+
+
+ 
+  disp("with Jpattern and Jacobian")
+  tic
+  sol = ode15s(f, [0 t_end], x0, int_opt);
+  toc
+  disp(sol.stats)
+  
+    int_opt = odeset( ...
     'AbsTol',      contopts.abs_tol,    ...
     'RelTol',      contopts.rel_tol,    ...
     'JPattern',    feval(handles{3},0,x0,parameters{:}) ...
   );
 
-
- 
   disp("with Jpattern")
   tic
   sol = ode15s(f, [0 t_end], x0, int_opt);

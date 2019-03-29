@@ -69,14 +69,14 @@ end
 
 
 opt = contset();
-opt = contset(opt, 'InitStepsize',   5e-1);
+opt = contset(opt, 'InitStepsize',   1e-1);
 opt = contset(opt, 'MinStepsize',    1e-10);
-opt = contset(opt, 'MaxStepsize',    5e-1);
+opt = contset(opt, 'MaxStepsize',    1e-1);
 opt = contset(opt, 'MaxNewtonIters', 8);
 opt = contset(opt, 'MaxCorrIters',   10);
 opt = contset(opt, 'MaxTestIters',   10);
 opt = contset(opt, 'VarTolerance',   1e-6);
-opt = contset(opt, 'FunTolerance',   1e-8);
+opt = contset(opt, 'FunTolerance',   1e-6);
 % we don't want to adapt
 % since it is not implemented
 opt = contset(opt, 'Adapt',          1000*1000*1000);
@@ -95,8 +95,8 @@ opt = contset(opt, 'Multipliers', true);
 
 tol = 1e-9;
 
-opt = contset(opt, 'trajectory_abs_tol'   , tol);
-opt = contset(opt, 'trajectory_rel_tol'   , tol);
+opt = contset(opt, 'orbit_abs_tol'   , tol);
+opt = contset(opt, 'orbit_rel_tol'   , tol);
 opt = contset(opt, 'MV_abs_tol'           , tol);
 opt = contset(opt, 'MV_rel_tol'           , tol);
 opt = contset(opt, 'shoot_abs_tol'        , tol);

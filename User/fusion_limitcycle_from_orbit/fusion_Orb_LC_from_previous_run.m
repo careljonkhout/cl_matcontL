@@ -10,7 +10,7 @@ N = 25;
 odefile = str2func(sprintf('fusion_precomputed_with_sage_N_%d', N));
 
 opt = contset();
-opt = contset(opt, 'MaxNumPoints',   3);
+opt = contset(opt, 'MaxNumPoints',   5);
 opt = contset(opt, 'InitStepsize',   1e-1);
 opt = contset(opt, 'MinStepsize',    1e-12);
 opt = contset(opt, 'MaxStepsize',    1e-1);
@@ -42,6 +42,7 @@ opt = contset(opt, 'SingularTestFunction',   true);
 opt = contset(opt, 'MoorePenrose',          false);
 
 % right before alleged bpc
+
 filename = 'fusion_Orb_LC_from_previous_run_12-Feb-2019_14_52_13';
 %filename = 'fusion_Orb_LC_with_bifurcations_12-Feb-2019_14_25_42';
 mat_filename = fullfile('Data',[filename '.mat']);
