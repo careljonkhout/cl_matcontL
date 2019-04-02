@@ -11,13 +11,16 @@
 function [delta_q, M_delta_q] = ...
              solve_Q_system(V, rhs, period, parameters)
   global contopts;
-  %delta_q    = zeros(size(V,1),1);
+  
+  residual   = rhs - V * V' *rhs;
+  if max(abs(residual)) < contopts.PicardTolerance
+    print_diag(4,'did no iterations in solve_q_system\n');
+    return;
+  end
+  
+  
   M_delta_q  = zeros(size(V,1),1);
-  %residual   = rhs + M_delta_q - delta_q;
-  %residual   = residual - V * V' *residual;
-  %if max(abs(residual)) < contopts.PicardTolerance
-  %  return;
-  %end
+  minimal_residual = Inf;
   for iteration_number = 1:contopts.MaxPicardIterations
     delta_q = M_delta_q + rhs;
     delta_q = delta_q - V*V'*delta_q;
@@ -25,10 +28,17 @@ function [delta_q, M_delta_q] = ...
         delta_q, period, parameters);
     residual = rhs + M_delta_q - delta_q;
     residual = residual - V*V'*residual;
-    print_diag(5,'q_system residual %.5e\n', max(abs(residual)));
-    if max(abs(residual)) < contopts.PicardTolerance
+    residual_norm = max(abs(residual));
+    print_diag(5,'q_system residual %.5e\n', residual_norm);
+    if residual_norm < contopts.PicardTolerance
       break
+    elseif residual_norm < minimal_residual
+      minimal_residual = residual_norm;
+    else
+      print_diag(4,'poor convergence in solve_q_system. residual: %.5e\n', ...
+                    residual_norm);
+	    break
     end
   end
-  print_diag(4,'did %d iterations in solve_q_systems\n',iteration_number);
+  print_diag(4,'did %d iterations in solve_q_system\n',iteration_number);
 end

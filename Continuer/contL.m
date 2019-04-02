@@ -200,7 +200,8 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
        trialpoint = NewtonPicard.do_corrections(xpre, currpoint.v);
       if ~ isempty(trialpoint)
         trialpoint.v = trialpoint.x - currpoint.x;
-        trialpoint.v = trialpoint.v / max(abs(trialpoint.v));
+        trialpoint.v = NewtonPicard.find_tangent_vector(curvefile,trialpoint.x,trialpoint.v);
+        %trialpoint.v = trialpoint.v / max(abs(trialpoint.v));
       end
     else
       trialpoint = newtcorrL(xpre, currpoint.v, currpoint.CISdata);
@@ -222,14 +223,14 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
         print_diag(0, 'contL: Innerangle too large\n');
         reduce_stepsize = 1;
       end
-    end
-    
-    % In single shooting, the corrector might "correct" the period down to
-    % (almost) zero. This is of course not correct
-    if isequal(curvefile, @single_shooting)
-      if trialpoint.x(end-1)/currpoint.x(end-1) < 0.5
-        print_diag(0, 'contL: period decreasing too much\n');
-        reduce_stepsize = 1;
+  
+      % In single shooting, the corrector might "correct" the period down to
+      % (almost) zero. This is of course not correct
+      if isequal(curvefile, @single_shooting)
+        if trialpoint.x(end-1)/currpoint.x(end-1) < 0.5
+          print_diag(0, 'contL: period decreasing too much\n');
+          reduce_stepsize = 1;
+        end
       end
     end
 
@@ -480,7 +481,11 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
       DefaultProcessor(currpoint);
       break;
   end
+  if contopts.pause && mod(cds.i, contopts.nsteps_before_pause) == 0
+    pause
+  end
 end % end of main continuation loop
+
 %% III. Finalization
 sout = cds.sout;
 
@@ -532,7 +537,6 @@ elseif isempty(id)  % DV
     failed = 0;
 else
     [out,failed] = feval(cds.curve_testf, id, point.x, point.v, point.CISdata);
-    %out = out(id);
 end
 print_diag(5,'tf eval at period: %.16f param: %.16f\n', ...
   point.x(end-1),  point.x(end))
@@ -690,7 +694,7 @@ failed2 = 1;
 for i = 1:MaxIters
     if tmax < Inf
         % WM: make educated guess of where the zero point might be
-        r = abs(t1/(t1-t2))^p;
+        r = abs(t1(id)/(t1(id)-t2(id)))^p;
         if r <= 0.1 || r >= 0.9
             r=0.5;
         end
@@ -710,7 +714,14 @@ for i = 1:MaxIters
             return
         end
     end
-    p3 = newtcorrL(x3,v3, CISdata3);
+    if contopts.NewtonPicard
+      p3 = NewtonPicard.do_corrections(x3,v3);
+      if id == 7 % if we are locating a limit point of cycles (LPC)
+        p3.v = NewtonPicard.find_tangent_vector(cds.curve,x3,v3);
+      end
+    else
+      p3 = newtcorrL(x3,v3, CISdata3);
+    end
     if isempty(p3)
         print_diag(3, 'newtcorrL algorithm failed during bisection')
         return
@@ -758,111 +769,6 @@ print_diag(1,'Time spent in bisection: %f\n', toc);
 %--< END OF locatetestfunction>--
 %---------------------------------------------
 
-%
-%LocateTestFunction(id,x1,v1,x2,v2)
-%
-%----------------------------------------------
-%function [x,v,R,i,p1,p2] = LocateTestFunction(id, p1, p2, MaxIters, FunTolerance, VarTolerance)
-function [pout,p1,p2] = LocateTestFunction2(id, p1, p2)
-tic
-global contopts cds
-
-pout = [];
-MaxIters  = contopts.MaxTestIters;            % DV MP: Use new options
-
-FunTolerance  = contopts.contL_Testf_FunTolerance;   % MP:
-VarTolerance  = contopts.contL_Testf_VarTolerance;   % MP:
-if isequal(cds.curve, @limitcycleL) && 1 <= id && id <= 5
-  FunTolerance = contopts.bpc_tolerance; 
-end
-
-% default locator: bisection
-%print_diag(3,'Locating by test function %d\n', id);
-
-[t1, failed1]   = EvalTestFunc(id, p1);
-[t2, failed2]   = EvalTestFunc(id, p2);
-
-if ((~isempty(failed1)) || (~isempty(failed2))) && (failed1 || failed2)
-    print_diag(3, 'Evaluation of testfunctions failed in bisection');
-    pout = [];
-    return;
-end
-
-tmax = 10 * max(abs(t1), abs(t2));
-p    = 1;
-failed2 = 1;
-R = [];
-for i = 1:MaxIters
-    if tmax < Inf
-        % WM: make educated guess of where the zero point might be
-        r = abs(t1/(t1-t2))^p;
-        if r <= 0.1 || r >= 0.9
-            r=0.5;
-        end
-    else
-        r=0.5;          % r = 0.5; %  -> 'normal' way
-    end
-%     r = 0.5; % DV:TEST
-    
-    x3 = p1.x + r*(p2.x-p1.x);
-    v3 = p1.v + r*(p2.v-p1.v);
-    v3 = v3/norm(v3);
-    CISdata3 = [];
-    if cds.newtcorrL_needs_CISdata 
-        CISdata3 = feval(cds.curve_CIS_step, x3, p1.CISdata);
-        if isempty(CISdata3)
-            print_diag(3, 'CIS algorithm failed during bisection')
-            return
-        end
-    end
-    p3 = newtcorrL(x3,v3, CISdata3);
-    if isempty(p3)
-        print_diag(3, 'newtcorrL algorithm failed during bisection')
-        return
-    end
-    
-    p3.CISdata = feval(cds.curve_CIS_step, p3.x, p1.CISdata);
-    [tval, failed] = EvalTestFunc(id,p3);
-    if failed
-        print_diag(3, 'Evaluation of testfunctions failed in bisection');
-        return;
-    end
-    
-    %JH: Changed to make the check for relative difference. 9/25/06
-    %dist1 = norm(x-x1);
-    %dist2 = norm(x-x2);
-    dist1 = 2*norm(p3.x-p1.x)/(norm(p1.x)+norm(p3.x));
-    dist2 = 2*norm(p3.x-p2.x)/(norm(p2.x)+norm(p3.x));
-    
-    if abs(tval(id)) > tmax
-        print_diag(3,'Testfunction behaving badly.\n');
-        break;
-    end
-    
-    if (abs(tval(id)) <= FunTolerance && min(dist1,dist2) < VarTolerance)
-        failed2 = 0;
-        pout = p3;
-        break;
-    elseif sign(tval(id))==sign(t2(id))
-        p2 = p3;
-        t2 = tval;
-        p  = 1.02;
-    else
-        p1 = p3;
-        t1 = tval;
-        p  = 0.98;
-    end
-end
-
-if failed2  % DV: When MaxIters is reached without meeting tolerances
-    pout = [];
-end
-
-print_diag(1,'Time spent in bisection: %f\n', toc);
-
-%--< END OF locatetestfunction2>--
-
-
 %----------------------------------------------
 %
 %LocateUserFunction(id,x1,v1,x2,v2)
@@ -879,8 +785,6 @@ t1 = feval(cds.curve_userf, id, userinf, p1.x);
 t2 = feval(cds.curve_userf, id, userinf, p2.x);
 tmax = 10*max(abs(t1),abs(t2));
 p = 1;
-
-failed2  = 1;
 
 MaxTestIters  = contopts.contL_Userf_MaxIters;            % DV: Use new options
 FunTolerance  = contopts.contL_Userf_FunTolerance;
@@ -932,7 +836,6 @@ while i<=MaxTestIters
     end
     
     if (abs(tval(id)) <= FunTolerance && min(dist1,dist2) < VarTolerance)
-        failed2 = 0;
         pout = p3;
         break;
     elseif sign(tval(id))==sign(t2(id))
@@ -944,10 +847,5 @@ while i<=MaxTestIters
         t1 = tval;
         p  = 0.98;
     end
-end
-
-if failed2
-    x=[];
-    v=[];
 end
 %--< END OF locateuserfunction>--

@@ -31,7 +31,8 @@ function [delta_q, G_delta_q] = solve_Q_system(V, rhs, delta_t, parameters)
 %   end
   G_delta_q  = zeros(cds.nphases,m);
   delta_q    = zeros(cds.nphases,m);
-
+  
+  minimum_residual = Inf;
   for iteration_number = 1:contopts.MaxPicardIterations
    
     for i=2:m %  m == cds.nMeshPoints;
@@ -43,13 +44,18 @@ function [delta_q, G_delta_q] = solve_Q_system(V, rhs, delta_t, parameters)
     condensed_residual = G_delta_q(:,m) + rhs(:,m);
     condensed_residual = condensed_residual ...
                          - V(:,:,1) * V(:,:,1)' * condensed_residual;
-    if max(max(abs(delta_q(:,1) - condensed_residual))) ...
-        < contopts.PicardTolerance
+    residual_norm = max(max(abs(delta_q(:,1) - condensed_residual)));
+    if residual_norm < contopts.PicardTolerance
       break
-    else
+    elseif residual_norm < minimum_residual
+      minimum_residual = residual_norm;
       delta_q(:,1) = condensed_residual;
       G_delta_q(:,1) = NewtonPicard.MultipleShooting.monodromy_map( ...
         1, delta_q(:,1), delta_t(1), parameters);
+    else % if residual_norm >= minumim_residual
+      print_diag(4,'poor convergence in solve_q_system. residual: %.5e\n', ...
+                    residual_norm);
+	    break
     end
   end
   print_diag(5,'did %d iterations in solve_q_system\n',iteration_number);

@@ -172,6 +172,17 @@ options.num_cores                        = feature('numcores');
 % warnings.
 options.integration_abs_tol               = 1e-9;
 options.integration_rel_tol               = 1e-9;
+options.multipliers_abs_tol               = 1e-9;
+options.multipliers_rel_tol               = 1e-9;
+
+options.basis_shrink_threshold            = 1e-4;
+options.basis_grow_threshold              = 1e-3;
+
+options.multiplier_print_threshold = 0.8;
+options.pause                      = false;
+options.nsteps_before_pause        = 10; % or special to pause at special points 
+                                              
+
                             %% Determine testpath
 options.Filename = [];           
 ST = dbstack('-completenames');

@@ -1,11 +1,9 @@
-function str=multipliers2str(multipliers)
+function str = multipliers2str(multipliers)
   str = '';
   for i=1:length(multipliers)
     m = multipliers(i);
-    if abs(imag(m)) > 1e-8
-      % Call me crazy, but I'd like a space between a + or - and a number.
-      % This is the only way I know how to do this.
-      if  sign(imag(m)) > 1
+    if ~ isreal(m)
+      if  sign(imag(m)) > 0
         sign_text = '+';
       else
         sign_text = '-';

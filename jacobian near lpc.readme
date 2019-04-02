@@ -1,0 +1,8 @@
+A Jacobian matrix of a continuation step near an LPC point. periodic qz 
+currently (april 1st 2019) fails to converge
+
+system: fusion_precomputed_with_sage_N_25
+ntst:   80
+ncol:   4
+a:      -1
+b:      -0.3

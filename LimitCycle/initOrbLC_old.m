@@ -43,6 +43,7 @@ cds.symhess = 0;
 cds.probfile = odefile;
 cds.nap = length(ap);
 cds.curve_CIS_step = [];
+cds.integration = @ode15s; % needed for multipliers_variational
 
 x=y';
 norms       = vecnorm(x-x(:,1));

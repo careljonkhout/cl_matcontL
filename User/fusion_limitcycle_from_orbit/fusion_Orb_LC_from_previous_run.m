@@ -22,13 +22,15 @@ opt = contset(opt, 'Adapt',          3);
 opt = contset(opt, 'MaxNumPoints',   1000);
 opt = contset(opt, 'CheckClosed',    50);
 opt = contset(opt, 'Multipliers',    true);
-opt = contset(opt, 'Backward',       false);
+opt = contset(opt, 'Backward',       true);
 opt = contset(opt, 'Singularities',  true);
 opt = contset(opt, 'CIS_UsingCIS',   false);
 opt = contset(opt, 'Locators'    , [0 0 0 0]);
     % disable smoothing by angle:
 opt = contset(opt, 'contL_SmoothingAngle', pi/2);
 opt = contset(opt, 'contL_DiagnosticsLevel', 5);
+opt = contset(opt, 'contL_Testf_FunTolerance', 1e-2);
+opt = contset(opt, 'contL_Testf_VarTolerance', 1e-2);
 opt = contset(opt, 'enable_bpc'            , true);
 opt = contset(opt, 'enable_nf_lpc'         , false);
 opt = contset(opt, 'enable_nf_pd'          , false);
@@ -43,8 +45,8 @@ opt = contset(opt, 'MoorePenrose',          false);
 
 % right before alleged bpc
 
-filename = 'fusion_Orb_LC_from_previous_run_12-Feb-2019_14_52_13';
-%filename = 'fusion_Orb_LC_with_bifurcations_12-Feb-2019_14_25_42';
+%filename = 'fusion_Orb_LC_from_previous_run_12-Feb-2019_14_52_13';
+filename = 'fusion_Orb_LC_with_bifurcations_12-Feb-2019_14_25_42';
 mat_filename = fullfile('Data',[filename '.mat']);
 dat_filename = fullfile('Data',[filename '.dat']);
 load(mat_filename,'s');

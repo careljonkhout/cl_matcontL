@@ -150,7 +150,7 @@ function out = defaultprocessor(varargin)
   
   if contopts.NewtonPicard
     update_multipliers_if_needed(point.x)
-    if abs(cds.multipliers(end)) > 0.3
+    if abs(cds.multipliers(end)) > contopts.basis_grow_threshold
       basis_size_changed = true;
       print_diag(2, 'expanding basis\n');
       nMults_to_compute = cds.preferred_basis_size + 10;
@@ -161,7 +161,7 @@ function out = defaultprocessor(varargin)
       
       i = length(cds.multipliers);
      
-      while abs(cds.multipliers(i)) < 0.1
+      while abs(cds.multipliers(i)) < contopts.basis_grow_threshold / 3
         i = i - 1;
       end
       if i < length(cds.multipliers)
@@ -170,10 +170,10 @@ function out = defaultprocessor(varargin)
       cds.preferred_basis_size = i;
       cds.p                    = i;
       cds.multipliers = cds.multipliers(1:i);
-    elseif abs(cds.multipliers(end)) < 0.01
+    elseif abs(cds.multipliers(end)) < contopts.basis_shrink_threshold
       basis_size_changed = true;
       i = length(cds.multipliers);
-      while abs(cds.multipliers(i)) < 0.01
+      while abs(cds.multipliers(i)) < contopts.basis_shrink_threshold
         i = i - 1;
       end
       cds.preferred_basis_size = i;
@@ -188,7 +188,7 @@ function out = defaultprocessor(varargin)
   end
   
   if basis_size_changed
-    point.tvals = testf(1:8,point.x,[],[]);
+    point.tvals = testf(1:8,point.x,point.v,[]);
     print_diag(1,'Test Functions: [')
     print_diag(1,' %+.5e',point.tvals)
     print_diag(1,']\n')
@@ -221,7 +221,11 @@ function update_multipliers_if_needed(x)
   end
 end
 
-function [out, failed] = testf(ids, x0, ~, ~) 
+
+% test functions are used for detecting AND location singularities by bisection
+% when detecting ids will be cds.ActTest, and when locating ids will contain
+% only those ids relevant to the bifurcation that is being located.
+function [out, failed] = testf(ids, x0, v, ~) 
   % unused arguments are v and CISdata
   global cds
   
@@ -231,9 +235,7 @@ function [out, failed] = testf(ids, x0, ~, ~)
   LPC_id = 7; % id for limit point of cycles test function
   NS_id  = 8; % id for Neimarck-Sacker test function
   
- 
-  
-  if any(ismember([PD_id LPC_id NS_id],ids))
+  if any(ismember([PD_id NS_id],ids))
     update_multipliers_if_needed(x0)
   end
   if any(ismember(1:5,ids))
@@ -248,11 +250,7 @@ function [out, failed] = testf(ids, x0, ~, ~)
     out(6) = real(prod(cds.multipliers + ones(size(cds.multipliers))));
   end
   if ismember(LPC_id, ids)
-    distance_to_one = abs(cds.multipliers-1);
-    [~,i]           = min(distance_to_one);
-    multipliers     = cds.multipliers;
-    multipliers(i)  = 0;
-    out(7) = prod(real(multipliers) - ones(size(multipliers)));
+    out(7) = v(end);
   end
   if ismember(NS_id, ids)
     mults = cds.multipliers;
@@ -277,7 +275,7 @@ function [S,L] = singmat
   S = [ 0 0 0 0 8 8 8 8
         8 8 8 8 8 0 8 8
         8 8 8 8 8 8 0 8
-        8 8 8 8 1 8 1 0];
+        8 8 8 8 0 8 1 0];
 
 
   L = [ 'BPC';'PD '; 'LPC'; 'NS ' ];

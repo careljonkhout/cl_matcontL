@@ -1,6 +1,6 @@
 function out = limitcycleL
 %
-% Limit cycle curve definition file for a problem in odefile, using
+% Limit cycle curve definition file for a problem in an odefile, using
 % discretization by orthogonal collocation. (a.k.a. spline collocation)
 % 
 
@@ -101,11 +101,14 @@ function option = options
   option = contset(option, 'SymDerivativeP', symordp); 
 end
 %-------------------------------------------------------------------------------
+% test functions are used for detecting AND location singularities by bisection
+% when detecting ids will be 1:8, and when locating ids will contain only those
+% ids relevant to the bifurcation that is being located.
 function [out, failed] = testf(id, x0, v, ~) % unused argument is CISdata
   global lds contopts
 
   [x,p,T] = rearr(x0);
-  out(8) = 0;
+  out = ones(1,8);
   failed = [];
   lastwarn('');
 
@@ -144,7 +147,7 @@ function [out, failed] = testf(id, x0, v, ~) % unused argument is CISdata
     out(6) = real(prod(lds.multipliers + ones(size(lds.multipliers))));
   end
   if ismember(7,id) % LPC
-      out(7) = v(lds.ncoords+2);
+    out(7) = v(lds.ncoords+2);
   end
   if ismember(8,id) %NS
     mults = lds.multipliers;
@@ -169,8 +172,11 @@ function update_multipliers_if_needed(x)
     try
       lds.multipliers = multipliers(...
           cjac(cds.curve_func,cds.curve_jacobian,x,[]));     
-    catch
-      print_diag(3, 'LimitcycleL: Failed to compute multipliers\n');
+    catch error
+      % One could try to use multipliers_variational.
+      % lds.multipliers = multipliers_variational(x);
+      print_diag(0, 'LimitcycleL: Failed to compute multipliers\n');
+      print_diag(1,  getReport(error));
     end
   end
 end
@@ -546,9 +552,10 @@ end
 %-------------------------------------------------------------------------------
 function jacx = BVP_jac(BVP_func,x,p,T,pars,nc)
   global lds
-  print_diag(5,'running %s\n',BVP_func);
+  print_diag(4,'running %s\n',BVP_func);
   p2 = num2cell(p);
-  jacx = feval(BVP_func,lds.func,x,p,T,pars,nc,lds,p2,lds.Jacobian,lds.ActiveParams,lds.JacobianP);
+  jacx = feval(BVP_func,lds.func,x,p,T,pars,nc,lds,p2,lds.Jacobian, ...
+                lds.ActiveParams,lds.JacobianP);
 end
 %-------------------------------------------------------------------------------
 function WorkspaceInit(x,v)
@@ -632,10 +639,10 @@ function WorkspaceInit(x,v)
   lds.NS2_switch = 0;
 
 
-  lds.CalcMultipliers = contopts.Multipliers;% contget(cds.options, 'Multipliers', 0);
-  lds.CalcPRC = contopts.PRC; %contget(cds.options, 'PRC', 0);
-  lds.CalcdPRC = contopts.dPRC; % contget(cds.options, 'dPRC', 0);
-  lds.PRCInput = contopts.Input; %contget(cds.options, 'Input', 0);
+  lds.CalcMultipliers = contopts.Multipliers;
+  lds.CalcPRC = contopts.PRC;
+  lds.CalcdPRC = contopts.dPRC;
+  lds.PRCInput = contopts.Input;
   lds.multipliersX = [];
   lds.multipliers = nan;
 
@@ -646,11 +653,11 @@ function WorkspaceInit(x,v)
 end
 %-------------------------------------------------------------------------------
 function jac = BVP_BPCjac(BVP_func,x,p,T,pars,nc) %#ok<DEFNU> 
-  % caller is commented out
   global lds
   p2 = num2cell(p);
-  print_diag(5,'running %s\n', BVP_func)
-  jac = feval(BVP_func,lds.func,x,p,T,pars,nc,lds,p2,lds.Jacobian,lds.ActiveParams,lds.JacobianP,lds.BranchParam); 
+  print_diag(4,'running %s\n', BVP_func)
+  jac = feval(BVP_func,lds.func,x,p,T,pars,nc,lds,p2,lds.Jacobian,...
+              lds.ActiveParams,lds.JacobianP,lds.BranchParam); 
 end
 %-------------------------------------------------------------------------------
 function CISdata = CIS_first_point(~) % unused argument is x

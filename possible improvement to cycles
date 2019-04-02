@@ -1,13 +1,20 @@
-- start form hopf
-- implement a check, for single shooting:
-  - is has happened to me that a single shooting continuation steps onto a 
-    equilibrium. To prevent this, there is a certain check that can be made:
-     f(0,phases_0,parameter) >= treshold
-
-- adapt size of small subspace
-- compute tangent vector at every step, instead of using secant vector.
-
-orthogonal collocation
+Orthogonal Collocation
   - adding a field to lds is very likely to cause crashes, due to the way 
     fields are read form the lds structure in the mex files. It would be nice to 
     fix this.
+
+  
+ 
+Newton Picard
+ 
+ - test to see if nDiscretizationPoints can be removed (I think it can be removed)
+ - compute tangent vector at every step, instead of using secant vector.
+ - implement starting form hopf
+ - better subspace continuation/computation. Use trivial eigenvalue/eigenvector pair
+ 
+
+All cycles:
+
+- create separate test functions for locating and detection of bifurcations.
+ This prevent the detection of neutral saddles, which are irrelevant.
+
