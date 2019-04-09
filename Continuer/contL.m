@@ -1,4 +1,4 @@
-function [sout,datafile]=contL(curvefile, x0, v0, opts)
+function [sout,datafile]=contL(curvefile, x0, v0, opts, varargin)
 %
 % CONTINUE(cds.curve, x0, v0, options)
 %
@@ -13,7 +13,15 @@ if size(x0, 2) > 1
 elseif isempty(x0)
   error('Initial point must be non-empty')
 end
-if isempty(opts); contopts = contset(); else; contopts = opts; end
+if nargin < 4 || isempty(opts)
+  contopts = contset();
+else
+  contopts = opts;
+end
+
+if nargin == 5
+  callback = varargin{1};
+end
 
 loadCurveFile(curvefile);
 feval(cds.curve_options);
@@ -290,7 +298,9 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
             reduce_stepsize = 1;
           else
             si = find(singsdetected==1);  % singularity detected!
-            NeedToLocate = 1;
+            % Carel Jonkhout: neutral cycles are time consuming distractions,
+            % therefore I ignore them.
+            NeedToLocate = 1 && ( ~ is_neutral_saddle_cycle(si));
           end
         end
       end
@@ -460,7 +470,9 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
       [trialpoint.tvals,~] = EvalTestFunc(0,trialpoint);
     end
   end
-
+  if nargin >= 5
+    callback(currpoint, trialpoint)
+  end
   if trialpoint.v'*currpoint.v < 0,  trialpoint.v = -trialpoint.v; end
   currpoint = trialpoint;
 
@@ -484,6 +496,7 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
   if contopts.pause && mod(cds.i, contopts.nsteps_before_pause) == 0
     pause
   end
+ 
 end % end of main continuation loop
 
 %% III. Finalization
@@ -667,9 +680,7 @@ MaxIters  = contopts.MaxTestIters;            % DV MP: Use new options
 
 FunTolerance  = contopts.contL_Testf_FunTolerance;   % MP:
 VarTolerance  = contopts.contL_Testf_VarTolerance;   % MP:
-if isequal(cds.curve, @limitcycleL) && 1 <= id && id <= 5
-  FunTolerance = contopts.bpc_tolerance; 
-end
+
 
 % default locator: bisection
 %print_diag(3,'Locating by test function %d\n', id);
@@ -683,8 +694,12 @@ if ((~isempty(failed1)) || (~isempty(failed2))) && (failed1 || failed2)
     return;
 end
 
-if contopts.SingularTestFunction
+
+% the point where the testfunctions of braching points of cycles currently has a
+% vertical asymptote, hence in this case we set tmax to inf.
+if isequal(cds.curve, @limitcycleL) && 1 <= id && id <= 5
   tmax = Inf;
+  FunTolerance = Inf;
 else
   tmax = 10 * max(abs(t1), abs(t2));
 end
@@ -716,7 +731,7 @@ for i = 1:MaxIters
     end
     if contopts.NewtonPicard
       p3 = NewtonPicard.do_corrections(x3,v3);
-      if id == 7 % if we are locating a limit point of cycles (LPC)
+      if id == 6 % if we are locating a limit point of cycles (LPC)
         p3.v = NewtonPicard.find_tangent_vector(cds.curve,x3,v3);
       end
     else

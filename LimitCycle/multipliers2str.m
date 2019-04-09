@@ -1,8 +1,21 @@
 function str = multipliers2str(multipliers)
-  str = '';
+  global contopts
+  
+  distance_to_one = abs(multipliers - 1);
+  accuracy        = min(distance_to_one);
+  print_diag(0,'deviation of trivial multiplier: %.2e\n', accuracy);
+  
+  if contopts.NewtonPicard
+    print_diag(0, 'basis size: %d\n', length(multipliers));
+  end
+  
+  threshold = contopts.multiplier_print_threshold;
+  multipliers = multipliers(abs(multipliers) > threshold);
+  str = sprintf('multipliers with norm larger than %.3f:\n', threshold);
+  
   for i=1:length(multipliers)
     m = multipliers(i);
-    if ~ isreal(m)
+    if abs(imag(m)) > contopts.real_v_complex_threshold
       if  sign(imag(m)) > 0
         sign_text = '+';
       else

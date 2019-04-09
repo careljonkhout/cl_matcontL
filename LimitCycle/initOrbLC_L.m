@@ -56,7 +56,7 @@ else
     ind = qq(1)+xstart-1;
 end
 if isempty(ind)
-    warndlg('No cycle can be found!')
+    error('No cycle can be found!')
     return; 
 end
 x=x(:,1:ind);

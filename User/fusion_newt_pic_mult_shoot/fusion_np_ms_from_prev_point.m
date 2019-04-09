@@ -85,7 +85,7 @@ opt = contset(opt, 'contL_SmoothingAngle', 10);
 opt = contset(opt, 'CheckClosed',    50000);
 opt = contset(opt, 'Multipliers',    true);
 opt = contset(opt, 'Backward',       false);
-opt = contset(opt, 'Singularities',  false);
+opt = contset(opt, 'Singularities',  true);
 opt = contset(opt, 'CIS_UsingCIS',   false);
 opt = contset(opt, 'NewtonPicard',   true);
 opt = contset(opt, 'every_point_in_separate_mat_file', true);
@@ -95,14 +95,10 @@ opt = contset(opt, 'Multipliers', true);
 
 tol = 1e-9;
 
-opt = contset(opt, 'orbit_abs_tol'   , tol);
-opt = contset(opt, 'orbit_rel_tol'   , tol);
-opt = contset(opt, 'MV_abs_tol'           , tol);
-opt = contset(opt, 'MV_rel_tol'           , tol);
-opt = contset(opt, 'shoot_abs_tol'        , tol);
-opt = contset(opt, 'shoot_rel_tol'        , tol);
-opt = contset(opt, 'monodromy_map_abs_tol', tol);
-opt = contset(opt, 'monodromy_map_rel_tol', tol);
+opt = contset(opt, 'integration_abs_tol', tol);
+opt = contset(opt, 'integration_rel_tol', tol);
+opt = contset(opt, 'multipliers_abs_tol', 1e-10);
+opt = contset(opt, 'multipliers_rel_tol', 1e-10);
 
 orbit                   = x1;
 nMeshPoints         = 20;

@@ -20,14 +20,14 @@ out{14} = @CIS_first_point;
 out{15} = @CIS_step;
 
 %% -------------------------------------------------------
-function func = curve_func(X, CISdata)
+function func = curve_func(X, ~) % unused argument is CISdata
 
 global cds
 [x,p] = rearr(X); p = num2cell(p);
 func = feval(cds.func,0, x, p{:});
 
 %% ---------------------------------------------------------------
-function jac = jacobian(X, CISdata)
+function jac = jacobian(X, ~) % unused argument is CISdata
 
 [x0,p] = rearr(X); p = num2cell(p);
 jac = [ejac(x0,p) ejacp(x0,p)];
@@ -40,11 +40,10 @@ point = varargin{1};
 if nargin > 1 && cds.i ~= 1
     cds.tfUpdate = 1;     % Need to update test functions
 end
-failed = savePoint(varargin{:});
+savePoint(varargin{:});
 
 %% -------------------------------------------------------------
 function options                % DV
-global contopts
 % DV:  change options in the global variable if necessary
 % DV: Do not use input and output arguments anymore
 
@@ -215,7 +214,7 @@ end
 print_diag(1,'Time spent in locator function: %f\n', toc);
 
 %% ------------------------------------------------------------
-function varargout = init(x,v)
+function varargout = init(~,~) % unused arguments are x and v
 
 % Placeholder
 varargout{1} = 0;

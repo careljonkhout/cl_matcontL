@@ -16,5 +16,15 @@ Newton Picard
 All cycles:
 
 - create separate test functions for locating and detection of bifurcations.
- This prevent the detection of neutral saddles, which are irrelevant.
+  This prevent the detection of neutral saddles, which are irrelevant.
+
+- reuse the Jacobian (in ortho col case) or subspace computation (in newt pic case)
+  that is computed to compute the tangent vector to compute the multipliers
+  (instead of recomputing)
+
+- BPC detection could be added by checking if a multiplier crossed the unit 
+  at one, and excluding the LPC case.
+
+- I have observed that the continuer does not detect a singlarity if a singularity
+  was detected in the previous step.
 

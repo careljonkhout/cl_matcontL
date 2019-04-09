@@ -33,6 +33,6 @@ function multipliers = compute_multipliers(x, nMults_to_compute)
   if nargin == 1
     print_diag(0,'deviation of trivial multiplier: %.2e\n', accuracy);
   end
-  print_diag(2, multipliers2str(multipliers));
+  print_diag(2, ['multipliers:\n' multipliers2str(multipliers)]);
   
 end

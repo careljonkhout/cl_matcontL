@@ -3,8 +3,8 @@ format long
 run_init_if_needed
 % continuation of cycles cycles in brusselator
 odefile = @brusselator_1d; %@brusselator_N_2;
-N=10;
-L = 1.1; A = 1; B = 2.2; Dx = 0.008; Dy = 0.004;
+N = 31;
+L = 1.1; A = 2; B = 5.45; Dx = 0.008; Dy = 0.004;
 parameters = {N; L; A; B; Dx; Dy};%parameters = {L; A; B; Dx; Dy};
 clear global cds
 clear global lds
@@ -103,12 +103,12 @@ end
 
 opt = contset();
 opt = contset(opt, 'MaxNumPoints',   10000);
-opt = contset(opt, 'InitStepsize',   5e-2);
+opt = contset(opt, 'InitStepsize',   1e-1);
 opt = contset(opt, 'MinStepsize',    1e-6);
 opt = contset(opt, 'MaxStepsize',    5e-2);
 opt = contset(opt, 'MaxNewtonIters', 3);
 opt = contset(opt, 'MaxCorrIters',   6);
-opt = contset(opt, 'MaxTestIters',   10);
+opt = contset(opt, 'MaxTestIters',   20);
 opt = contset(opt, 'VarTolerance',   1e-6);
 opt = contset(opt, 'FunTolerance',   1e-6);
 opt = contset(opt, 'NewtonPicardBasisTolerance',   1e-6);
@@ -118,7 +118,7 @@ opt = contset(opt, 'contL_SmoothingAngle',   3);
 opt = contset(opt, 'Adapt',          1000*1000*1000);
 opt = contset(opt, 'CheckClosed',    1000);
 opt = contset(opt, 'Multipliers',    true);
-opt = contset(opt, 'Backward',       true);
+opt = contset(opt, 'Backward',       false);
 opt = contset(opt, 'Singularities',  true);
 opt = contset(opt, 'CIS_UsingCIS',   false);
 opt = contset(opt, 'NewtonPicard',   true);
@@ -128,10 +128,11 @@ opt = contset(opt, 'every_point_in_separate_mat_file', true);
 opt = contset(opt, 'PicardTolerance', 1e-8);
 
 initial_continuation_data = [cds.previous_phases; period; cds.P0(cds.ActiveParams)];
+hold on;
 initial_continuation_tangent_vector = [];
 [s, datafile] = contL(@single_shooting, ...
   initial_continuation_data, ...
-  initial_continuation_tangent_vector, opt); 
+  initial_continuation_tangent_vector, opt,  @plot_T_versus_param); 
 
 
 figure

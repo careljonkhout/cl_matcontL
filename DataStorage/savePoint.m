@@ -11,7 +11,11 @@ if nargin > 2
   error(fprintf(['Wrong number of arguments. Number of arguments' ...
     ' must be 1 or 2. The number of arguments is %d'], nargin));
 end
-
+if isequal(cds.curve, @limitcycleL) || ...
+   isequal(cds.curve, @single_shooting) || ...
+   isequal(cds.curve, @multiple_shooting) 
+   print_diag(0,'period: %.6f\n', point.x(end-1));
+end
 if contopts.every_point_in_separate_mat_file
   % the if statement is to prevent a "Directory already exists" warning
   if ~ exist(fullfile(cds.datapath, cds.runID), 'dir')
@@ -19,6 +23,7 @@ if contopts.every_point_in_separate_mat_file
   end
   filename = fullfile(cds.datapath, cds.runID, sprintf('point %d', cds.i));
   save(filename, 'point');
+
 end
 if nargin == 1
     % 'normal' point
@@ -85,6 +90,7 @@ elseif nargin == 2
       disp(e.stack)
     end
     if contopts.always_save_s
+      s = cds.sout;
       save([cds.datapath, cds.runID, '.mat'], 's', 'contopts')
     end
 

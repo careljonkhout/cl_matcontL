@@ -1,4 +1,3 @@
-% test of Neimark Sacker bifurcation detection using orhtogonal collocation
 clc
 clear global
 N = 25;                     
@@ -24,7 +23,7 @@ init_single_shooting_extend_curve( ...
   'subspace_size',                          10 ...
 );
 
-disp(initial_continuation_data(end-1))
+
 opt = contset();
 opt = contset(opt, 'MaxNumPoints',            100);
 opt = contset(opt, 'InitStepsize',            0.1);
@@ -34,8 +33,8 @@ opt = contset(opt, 'MaxNewtonIters',          8);
 opt = contset(opt, 'MaxCorrIters',            10);
 opt = contset(opt, 'MaxTestIters',            10);
 opt = contset(opt, 'Backward',                true);
-opt = contset(opt, 'VarTolerance',            1e-3);
-opt = contset(opt, 'FunTolerance',            1e-3);
+opt = contset(opt, 'VarTolerance',            1e-6);
+opt = contset(opt, 'FunTolerance',            3e-6);
 opt = contset(opt, 'Adapt',                   3);
 opt = contset(opt, 'Multipliers',             true);
 opt = contset(opt, 'Singularities',           true);
@@ -44,8 +43,10 @@ opt = contset(opt, 'contL_DiagnosticsLevel',  5);
 opt = contset(opt, 'MoorePenrose',            false);
 opt = contset(opt, 'contL_SmoothingAngle',    1);
 opt = contset(opt, 'NewtonPicard',            true);
-opt = contset(opt, 'integration_rel_tol',              1e-9);
-opt = contset(opt, 'integration_abs_tol',              1e-9);
+opt = contset(opt, 'integration_rel_tol',              1e-12);
+opt = contset(opt, 'integration_abs_tol',              1e-12);
+opt = contset(opt, 'multipliers_rel_tol',                1e-13);
+opt = contset(opt, 'multipliers_abs_tol',                1e-13);
 opt = contset(opt, 'enable_bpc',                       false);
 opt = contset(opt, 'every_point_in_separate_mat_file', true);
  

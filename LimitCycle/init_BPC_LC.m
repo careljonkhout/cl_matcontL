@@ -1,4 +1,4 @@
-function [x,v] = init_BPC_LC(odefile, x, v, s, ntst, ncol, h)
+function [x,v] = init_BPC_LC(odefile, x, v, s, ntst, ncol, nphase, h)
 %
 % [x0,v0] = init_BPC_LC(odefile, x, v, s, ap, ntst, ncol, h)
 %
@@ -48,19 +48,18 @@ if siz > 9
     end
 end
 
-lds.nphase = (size(x,1)-2)/(s.data.ntst*s.data.ncol+1);
+lds.nphase = nphase;
 lds.BranchParam = lds.ActiveParams;
 lds.ActiveParams = lds.ActiveParams;
 lds.P0 = s.data.parametervalues;
 set_ntst_ncol(s.data.ntst,s.data.ncol,s.data.timemesh);
 % get x and v
 n_par = size(lds.ActiveParams,2);
-x0 = x(:,s.index);
-oldv = v(:,s.index);
+x0 = x;
+oldv = v;
 if n_par==2
     x0(end-n_par+1:end)=lds.P0(lds.ActiveParams);
 else
-    x0(end-n_par+1) = lds.T;
     x0(end) = lds.P0(lds.ActiveParams);
 end
 % generate a new mesh and interpolate

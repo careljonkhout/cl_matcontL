@@ -1,4 +1,4 @@
-function [ varargout ] = loadfile( filename, varargin )
+function [ varargout ] = loadPoint( filename, varargin )
 % Loads a continuer point from a data file
 %   [ failed ] = saveOutput( x,v,h,f,eigs,nsub,asub, etc.... )
 % This adds a block to the data file cds.datafile with the folowing

@@ -3,7 +3,7 @@ function test_sparse_v_dense_jac
   clc
   clear global cds
   clear global lds
-  N = 50;                     
+  N = 3;                     
   odefile = str2func(sprintf('fusion_precomputed_with_sage_N_%d', N));
   a = -1;
   b = -0.3;
@@ -109,7 +109,7 @@ function test_sparse_v_dense_jac
   
    f =@(t, y) dydt(t, y, parameters{:});
    
-  if (N==25)
+  if (N==25 || N==3)
     odefile = str2func(sprintf('fusion_precomputed_with_sage_N_%d_sparse_jac', N));
     handles = feval(odefile);
 

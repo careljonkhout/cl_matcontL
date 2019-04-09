@@ -1,0 +1,8 @@
+function plot_T_versus_param(currpoint, trialpoint)
+  curr_T      = currpoint.x(end-1);
+  trial_T     = trialpoint.x(end-1);
+  curr_param  = currpoint.x(end);
+  trial_param = trialpoint.x(end);
+  plot([curr_param trial_param],[curr_T trial_T],'b');
+  drawnow
+end

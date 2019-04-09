@@ -254,11 +254,13 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
         for (l=0; l<(ncol+1); l++)
           *(xtmp+k) = *(xtmp+k) + (*(x+(*(range1+l))*nphase+k)) * (*(wt+j*(ncol+1)+l));
       }
+    //  mexPrintf("line 257\n");
+    //  mexPrintf("number of elements in evalrhs[2]: %d\n", mxGetNumberOfElements(evalrhs[2]));
       
       /* Call to Matlab for evaluation of rhs */
       mexCallMATLAB(1,evallhs,3+mxGetNumberOfElements(prhs[2]),evalrhs,"feval");
       frhstmp = mxGetPr(evallhs[0]);
-      
+    //  mexPrintf("line 261\n");
       for (k=0; k<nphase; k++)
         *(frhs+j*nphase+k) = *(frhstmp+k);
       mxDestroyArray(evallhs[0]);

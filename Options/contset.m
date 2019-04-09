@@ -1,24 +1,29 @@
-function opt = contset(opt, name, value) %#ok<INUSD>
+function opt = contset(opt, varargin)
 
 if nargin == 0
-    opt = defaultOptions();
-    return
+  opt = defaultOptions();
+  return
 end
+i=1;
+% todo check if fields are the same
+while i < nargin
+  name = varargin{i};
+  if ~ischar(name)
+    error('argument %d must be a string',i);
+  end
 
-if ~ischar(name)
-    error('2nd argument must be a string');
-end
-
-if ~isfield(defaultOptions(), name)
+  if ~isfield(defaultOptions(), name)
     if isUnsupportedOption(name)
-        warning(['Option "', name, '" currently not supported by cl_matcontL'])
+      warning(['Option "', name, '" currently not supported by cl_matcontL'])
     else
-        error(['Unrecognized option ' name])
+      error(['Unrecognized option ' name])
     end
-else
-  eval(['opt.', name, '= value;']);
+  else
+    value = varargin{i+1};
+    opt.(name) = value;
+  end
+  i = i + 2;
 end
-
 %----------------------------------------------------
 function options = defaultOptions()
                             %% BVP Options
@@ -147,18 +152,21 @@ options.enable_nf_lpc   =    true;
 % Set enable_nf_lpc to false to disable computation of the normal form 
 % for limit points of cycle. Normal form computations can take a long time to
 % run.
-% Note: nf_lpc is only implemented for limitcycle.m
+% Note: nf_lpc is only implemented for limitcycleL.m
 options.enable_nf_pd    =    true;
 % Set enable_nf_pd to false to disable computation of the normal form 
 % for period doubling point of cycle. Normal form computations on large systems
 % take a long time to run.
-% Note: nf_pd is only implemented for limitcycle.m
+% Note: nf_pd is only implemented for limitcycleL.m
+options.enable_nf_ns    =    true;
+% Set enable_nf_ns to false to disable computation of the normal form 
+% for Neimark Sacker. Normal form computations on large systems
+% take a long time to run.
+% Note: nf_pd is only implemented for limitcycleL.m
 options.enable_bpc                       = true;
-options.bpc_tolerance                    = options.contL_Userf_FunTolerance;
 options.console_output_level             = 0; % set to 5 to see all debug info.
 options.newtcorrL_use_max_norm           = false;
 options.always_save_s                    = true;
-options.SingularTestFunction             = false;
 options.every_point_in_separate_mat_file = false;
 options.MaxPicardIterations              = 15;
 options.PicardTolerance                  = 1e-10;
@@ -181,6 +189,7 @@ options.basis_grow_threshold              = 1e-3;
 options.multiplier_print_threshold = 0.8;
 options.pause                      = false;
 options.nsteps_before_pause        = 10; % or special to pause at special points 
+options.real_v_complex_threshold   = 1e-13;
                                               
 
                             %% Determine testpath

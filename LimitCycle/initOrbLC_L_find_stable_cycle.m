@@ -68,19 +68,22 @@ function point_on_cycle = converge_to_cycle(in)
   cds.nphases  = length(in.initial_point);
 
  
-  time_integration_options = odeset(in.time_integration_options, ...
-    'Jacobian',     @(t,y) jacobian_ode(0, y, in.ode_parameters{:}));
+  if ~ isempty(jacobian_ode)
+    in.time_integration_options = odeset(in.time_integration_options, ...
+      'Jacobian',     @(t,y) jacobian_ode(0, y, in.ode_parameters{:}));
+  end
   
   solution = feval(in.time_integration_method, ...
       @(t,y) dydt_ode(0, y, in.ode_parameters{:}), ...
       [0, in.time_to_converge_to_cycle], ...
       in.initial_point, ...
-      time_integration_options); 
+      in.time_integration_options); 
   
   if in.show_plot
-    orbit_to_cycle_t = linspace(0, in.time_to_converge_to_cycle, 500);
-    orbit_to_cycle_x = deval(solution, orbit_to_cycle_t);
-    plot(orbit_to_cycle_t, orbit_to_cycle_x-solution.y(:,1))
+    orbit_t = linspace(0, solution.x(end), 500);
+    orbit_x = deval(solution, orbit_t);
+    plot(orbit_t, orbit_x)
+    plot(orbit_t, orbit_x-solution.y(:,1))
     xlabel('t')
     ylabel('phase variables')
     pause
@@ -102,15 +105,19 @@ function [solution_t, solution_x] = compute_periodic_solution(in)
 
   tangent_to_limitcycle ...   
     = dydt_ode(0,in.point_on_limitcycle, in.ode_parameters{:});
-  time_integration_options = odeset(in.time_integration_options, ...
-    'Events',       @returnToPlane, ...
-    'Jacobian',     @(t,y) jacobian_ode(0, y, in.ode_parameters{:}));
+  in.time_integration_options = odeset(in.time_integration_options, ...
+    'Events',       @returnToPlane);
+  
+  if ~ isempty(jacobian_ode)
+    in.time_integration_options = odeset(in.time_integration_options, ...
+      'Jacobian',     @(t,y) jacobian_ode(0, y, in.ode_parameters{:}));
+  end
   
   solution = feval(in.time_integration_method, ...
     @(t,y) dydt_ode(0, y, in.ode_parameters{:}), ...
     [0,in.upper_bound_period], ...
     in.point_on_limitcycle, ...
-    time_integration_options); 
+    in.time_integration_options); 
   
   period                    = solution.x(end);
   

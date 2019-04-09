@@ -1,7 +1,7 @@
 function multipliers = multipliers(J)
 
 % calculate multipliers
-global lds contopts
+global lds
 
 ntst   = lds.ntst;
 ncol   = lds.ncol;
@@ -71,11 +71,5 @@ end
 
 multipliers = sort(multipliers, 'descend', 'ComparisonMethod', 'abs');
 
-critical_multipliers = ...
-  multipliers(abs(multipliers) > contopts.multiplier_print_threshold);
-text = sprintf('multipliers with norm larger than %.3f:\n', ...
-                contopts.multiplier_print_threshold);
-text = [text multipliers2str(critical_multipliers)];
-
-print_diag(3,text);
+print_diag(0,multipliers2str(multipliers));
 

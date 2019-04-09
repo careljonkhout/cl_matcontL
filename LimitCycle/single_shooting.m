@@ -1,25 +1,30 @@
+% Curve file of cycle continuation by single shooting
 function out = single_shooting
-%
-% Curve file of cycle continuation with single shooting
-%
-    out{1}  = @curve_func;
-    out{2}  = @defaultprocessor;
-    out{3}  = @options;
-    out{4}  = @jacobian;
-    out{5}  = [];%@hessians;
-    out{6}  = @testf;
-    out{7}  = [];%@userf;
-    out{8}  = @process_singularity;
-    out{9}  = @singmat;
-    out{10} = [];%@locate;
-    out{11} = @init;
-    out{12} = [];%@done;
-    out{13} = @adapt;
-    out{14} = @curve_CIS_first_point;
-    out{15} = @curve_CIS_step;
+  out{1}  = @curve_function;
+  out{2}  = @defaultprocessor;
+  out{3}  = @options;
+  out{4}  = @jacobian;
+  out{5}  = [];%@hessians;
+  out{6}  = @testfunctions;
+  out{7}  = [];%@userf;
+  out{8}  = @process_singularity;
+  out{9}  = @singularity_matrix;
+  out{10} = [];%@locate;
+  out{11} = @init;
+  out{12} = [];%@done;
+  out{13} = @adapt;
+  out{14} = @curve_CIS_first_point;
+  out{15} = @curve_CIS_step;
 end
-
-function func = curve_func(varargin)
+%-------------------------------------------------------------------------------
+% Computes the curve function. if curve_function(x) == 0, then x corresponds to
+% a point on the limitcycle. This point will be near the point from the previous
+% continuation step, due to the phase condition. The phase condition is that the
+% next point must lie on the plane P through the current point x, where P is
+% perpendicular to the tangent vector to the limit cycle at x. The phase
+% condition is necessary to uniquely define the next point, and is used to limit
+% the phase shift from one step to the next.
+function f = curve_function(varargin)
   global cds
   x = varargin{1};
   active_par_val               = x(end);
@@ -29,10 +34,14 @@ function func = curve_func(varargin)
   parameters(cds.ActiveParams) = active_par_val;
   parameters                   = num2cell(parameters);
   phases_end                   = shoot(phases_0, period, parameters);
-  func = [phases_end - phases_0; 
-          (phases_0 - cds.previous_phases)' * cds.previous_dydt_0  ]; 
+  f = [phases_end - phases_0; 
+      (phases_0 - cds.previous_phases)' * cds.previous_dydt_0  ]; 
 end
-
+%-------------------------------------------------------------------------------
+% Computes the solution of the initial value problem x(0) = x, x'(t) = f(x),
+% where f is defined by cds.dydt_ode, and returns x(period). The initial value
+% problem is solved using solver from the matlab ode suite or a fully compatible
+% alternative. The specific solver is specified by cds.integrator.
 function x_end = shoot(x, period, parameters)
   global cds contopts
   f =@(t, y) cds.dydt_ode(t, y, parameters{:});
@@ -44,7 +53,9 @@ function x_end = shoot(x, period, parameters)
   [~, trajectory] = cds.integrator(f, [0 period], x, integration_opt);
   x_end = trajectory(end,:)';
 end
-
+%-------------------------------------------------------------------------------
+% Computes the jacobian of the curvefunction at evaluated at varargin{1}.
+% This function is not accesible from outside this file.
 function jacobian = jacobian(varargin)
   global cds
   cont_state                   = varargin{1};
@@ -64,18 +75,22 @@ function jacobian = jacobian(varargin)
   d_s__d_p     = cds.previous_dydt_0' * d_phi__d_p;
   jacobian     = [jacobian [d_phi__d_p; d_s__d_p]];
 end
-
+%-------------------------------------------------------------------------------
+% Computes the derivative of the curve function w.r.t. the active parameter,
+% evaluated at x. This function is not accesible from outside this file.
 function dphidp = compute_d_phi_d_p(x, period, parameters)
   global cds
   ap = cds.ActiveParams;
   h = 1e-6;
-  parameters{ap} = parameters{ap} - h;
+  parameters{ap} = parameters{ap} - h;0
   phi_1 = shoot(x, period, parameters);
   parameters{ap} = parameters{ap} + 2*h;
   phi_2 = shoot(x, period, parameters);
   dphidp = (phi_2 - phi_1)/h/2;
 end
-  
+%-------------------------------------------------------------------------------
+% Computes the monodromy matrix of the current approximation of the cycle 
+% starting from the point x near the cycle.
 function [y_end, monodromy] = compute_monodromy(x, period, parameters)
   global cds
   if ~ cds.options.PartitionMonodromy
@@ -84,7 +99,24 @@ function [y_end, monodromy] = compute_monodromy(x, period, parameters)
     [y_end, monodromy] = monodromy_column_by_column(x, period, parameters);
   end
 end 
-    
+%-------------------------------------------------------------------------------
+% Computes the monodromy matrix of the current approximation of the cycle
+% starting from the point x near the cycle. The matrix is computed by
+% integrating one N + N^2 dimensional system defined by:
+%
+% x'    = f(x, parameters)
+% x(0)  = x
+% M'(x) = f_x(x, parameters) * M
+% M(0)  = I
+%
+% where M is the monodromy matrix and N is the number of 1 dimensional equations
+% in the system of ODE's. My (Carel Jonkhout) estimation, based on a couple of
+% experiments, is that this is only efficient for N upto about 10. (This is
+% probably system dependent) Otherwise, is seems to be more efficient to
+% integrate x and each column of M separately.
+%
+% This method is for testing purposes only. For actual continuation of cycles it
+% is recomended to use NewtonPicard or orthogonal collocation.
 function [y_end, monodromy] = monodromy_full(x, period, parameters)
   global cds contopts
   nphases = cds.nphases;
@@ -101,7 +133,7 @@ function [y_end, monodromy] = monodromy_full(x, period, parameters)
   monodromy = trajectory(end,nphases+1:end);
   monodromy = reshape(monodromy, [nphases nphases]);
 end
-
+%-------------------------------------------------------------------------------
 function dydt_mon = dydt_monodromy_full(t,y, parameters)
   global cds
   y_ode = y(1:cds.nphases);
@@ -113,9 +145,8 @@ function dydt_mon = dydt_monodromy_full(t,y, parameters)
         cds.jacobian_ode(t, y_ode, parameters{:}) * y_mon, ...
         [cds.nphases^2 1]) 
   ];
- end
-  
-  
+end
+%-------------------------------------------------------------------------------   
 function [y_end, monodromy] = monodromy_column_by_column(x, period, parameters)
   global cds contopts;
   integration_opt = odeset(...
@@ -139,9 +170,9 @@ function [y_end, monodromy] = monodromy_column_by_column(x, period, parameters)
     monodromy(:,i) = monodromy_map_trajectory(end,:);
   end 
 end
-
+%-------------------------------------------------------------------------------
 function init(~,~); end
-
+%-------------------------------------------------------------------------------
 function out = defaultprocessor(varargin)
   global cds contopts
   point = varargin{1};
@@ -188,7 +219,7 @@ function out = defaultprocessor(varargin)
   end
   
   if basis_size_changed
-    point.tvals = testf(1:8,point.x,point.v,[]);
+    point.tvals = testfunctions(cds.ActTest,point.x,point.v,[]);
     print_diag(1,'Test Functions: [')
     print_diag(1,' %+.5e',point.tvals)
     print_diag(1,']\n')
@@ -211,7 +242,7 @@ function out = defaultprocessor(varargin)
   out                          = point;
   savePoint(point, varargin{2:end});
 end
-  
+%-------------------------------------------------------------------------------
 function update_multipliers_if_needed(x)
   global cds
   if ~ isfield(cds,'multipliersX') || all(cds.multipliersX ~= x)
@@ -220,39 +251,39 @@ function update_multipliers_if_needed(x)
                        cds.preferred_basis_size);
   end
 end
-
-
+%-------------------------------------------------------------------------------
 % test functions are used for detecting AND location singularities by bisection
-% when detecting ids will be cds.ActTest, and when locating ids will contain
-% only those ids relevant to the bifurcation that is being located.
-function [out, failed] = testf(ids, x0, v, ~) 
+% when detecting ids_testf_requested will be cds.ActTest, and when locating
+% ids_testf_requested will contain only those ids of the testfunctions relevant
+% to the bifurcation that is being located.
+function [out, failed] = testfunctions(ids_testf_requested, x0, v, ~) 
   % unused arguments are v and CISdata
-  global cds
+  global cds contopts
   
   failed = false;
+  BPC_ids = 1:4;
+  PD_id  = 5; % id for period doubling test function
+  LPC_id = 6; % id for limit point of cycles test function
+  NS_ids  = 7:8; % id for Neimarck-Sacker test function
   
-  PD_id  = 6; % id for period doubling test function
-  LPC_id = 7; % id for limit point of cycles test function
-  NS_id  = 8; % id for Neimarck-Sacker test function
-  
-  if any(ismember([PD_id NS_id],ids))
+  if any(ismember([PD_id NS_ids],ids_testf_requested))
     update_multipliers_if_needed(x0)
   end
-  if any(ismember(1:5,ids))
+  if any(ismember(BPC_ids,ids_testf_requested))
     % detection of Branching points of cycles is currently not implemented
-    out(1:5) = ones(5,1);
+    out(BPC_ids) = ones(length(BPC_ids),1);
   end
-  if ismember(PD_id, ids)
+  if ismember(PD_id, ids_testf_requested)
     % real is needed to ensure that small complex parts induced by roundoff
     % errors do not make the result complex.
     % A complex valued test function would cause false positives when detecting 
     % bifurcations.
-    out(6) = real(prod(cds.multipliers + ones(size(cds.multipliers))));
+    out(PD_id) = real(prod(cds.multipliers + ones(size(cds.multipliers))));
   end
-  if ismember(LPC_id, ids)
-    out(7) = v(end);
+  if ismember(LPC_id, ids_testf_requested)
+    out(LPC_id) = v(end);
   end
-  if ismember(NS_id, ids)
+  if any(ismember(NS_ids, ids_testf_requested))
     mults = cds.multipliers;
     psi_ns = 1;
     for i = 1 : (length(mults) - 1)
@@ -260,33 +291,45 @@ function [out, failed] = testf(ids, x0, v, ~)
         psi_ns = psi_ns * (real(mults(i) * mults(j)) - 1);
       end
     end
-    out(8) = psi_ns;
+    mults = cds.multipliers;
+    complex_mults = mults(abs(imag(mults)) > contopts.real_v_complex_threshold);
+    
+    unstable_complex_mults = complex_mults(abs(complex_mults) > 1);
+    
+    out(NS_ids) = [psi_ns length(unstable_complex_mults)];
   end
+  
 end
+%-------------------------------------------------------------------------------
+% defines which changes in testfunctions correspond to which singularity type
+% 0 == require sign-change
+% 1 == require sign-non-change
+% 2 == require change
+% anything else: no requirement
+% columns correspond to testfunctions
+% rows correspond to singularities BPC, PD, LPC, and NS respectively
+function [S,L] = singularity_matrix
 
-function [S,L] = singmat
-  % defines which changes in testfunctions correspond to which singularity type
-  % 0 == require sign-change
-  % 1 == require sign-non-change
-  % 2 == require change
-  % anything else: no requirement
-  % columns correspond to testfunctions
-  % rows correspond to singularities BPC, PD, LPC, and NS respectively
   S = [ 0 0 0 0 8 8 8 8
+        8 8 8 8 0 8 8 8
         8 8 8 8 8 0 8 8
-        8 8 8 8 8 8 0 8
-        8 8 8 8 0 8 1 0];
+        8 8 8 8 8 1 0 2];
 
 
   L = [ 'BPC';'PD '; 'LPC'; 'NS ' ];
 end
-  
+%-------------------------------------------------------------------------------
+% After a singularity is detected and located, the contL calls this function.
+% Usually a normal form coefficient (nfc) is computed, via a function call from
+% this function. However, for continuation of cycles by single shooting or
+% multiple shooting, the computation of normal form coefficients is not
+% implemented yet.
 function [failed,s] = process_singularity(id,point,s)
-  global cds
+  global cds contopts
   x = point.x;
   switch id
   case 1
-    % note: as of march 2019 detection for BPC not yet implemented 
+    % note: as of march 2019 detection for BPC is not yet implemented 
     format_string = 'Branch Point cycle(period = %e, parameter = %e)\n'; 
     print_diag(0, format_string, x(end-1), x(end));
     s.msg  = sprintf('Branch Point cycle'); 
@@ -300,23 +343,23 @@ function [failed,s] = process_singularity(id,point,s)
     print_diag(0, format_string, x(end-1), x(end));
   case 4
     d = cds.multipliers;
-    smallest_sum = Inf;
-    for jk=1:cds.nphases-1
-      [val,idx] = min(abs(d(jk+1:cds.nphases)*d(jk)-1));
-      if val < smallest_sum
+    smallest = Inf;
+    % we find the pair of multipliers whose product is closest to one, and check
+    % to see these the multipliers have a nonzero imaginary part.
+    for jk=1:length(d)-1
+      [val,idx] = min(abs(d(jk+1:length(d))*d(jk)-1));
+      if val < smallest
         idx2 = jk+idx;
-        smallest_sum = val;
+        smallest = val;
       end
     end
-    singularity_is_neutral_saddle = imag(d(idx2)) == 0;
+    threshold = contopts.real_v_complex_threshold;
+    singularity_is_neutral_saddle = abs(imag(d(idx2))) < threshold;
     if singularity_is_neutral_saddle
       s.msg = 'Neutral saddle cycle';
       format_string = 'Neutral Saddle Cycle (period = %e, parameter = %e)\n';
-      % A neutral saddle is not really a bifurcation, therefore we use priority 
-      % 1 instead of 0, so that it is only logged if 
-      % contopts.contL_DiagnosticsLevel is set higher than the default value
-      % which is zero.
-      print_diag(1, format_string, x(end-1), x(end));
+      % A neutral saddle is not really a bifurcation
+      print_diag(0, format_string, x(end-1), x(end));
     else
       s.msg = 'Neimark Sacker';
       format_string = 'Neimark-Sacker (period = %e, parameter = %e)\n';
@@ -326,22 +369,22 @@ function [failed,s] = process_singularity(id,point,s)
   end
   failed = 0;
 end  
-
+%-------------------------------------------------------------------------------
 function options; end
-
-function CISdata = curve_CIS_first_point(x) %#ok<INUSD>
+%-------------------------------------------------------------------------------
+function CISdata = curve_CIS_first_point(~) % unused argument is x
   CISdata = 1;
 end
-  
-function CISdata = curve_CIS_step(x, CISdata_in) %#ok<INUSD>
+%-------------------------------------------------------------------------------
+function CISdata = curve_CIS_step(~, ~) 
+  % unused arguments are x an CISdata_in
   CISdata = 1;
 end
-
+%-------------------------------------------------------------------------------
 function [has_changed,x2,v2,CISdata] = adapt(x,v,~,~)
+  % unused arguments are CISdata, and tfUpdate
   x2 = x;
   v2 = v;
   CISdata = [];
   has_changed = false;
-  % unused arguments are v, CISdata, and tfUpdate
-
 end

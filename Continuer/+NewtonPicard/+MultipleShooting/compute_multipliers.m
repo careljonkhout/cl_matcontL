@@ -1,4 +1,4 @@
-function multipliers = compute_multipliers(x)
+function multipliers = compute_multipliers(x, nMults_to_compute)
   global cds contopts;
   print_diag(3,'computing multipliers\n');
   [~, period, parameters] = ...
@@ -9,7 +9,7 @@ function multipliers = compute_multipliers(x)
                                              contopts.multipliers_abs_tol);
   
   [~, multiplier_matrix, no_convergence] = eigs( ...
-               @(x) monodromy_map(x, period, parameters), cds.nphases, cds.p);
+     @(x) monodromy_map(x, period, parameters), cds.nphases, nMults_to_compute);
   multipliers = diag(multiplier_matrix);
   
   if no_convergence

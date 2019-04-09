@@ -511,6 +511,10 @@ r = (0:(lds.ntst*lds.nphase-1));
 lds.multi_r1 = (floor(r./lds.nphase)+1)*lds.ncol_coord-lds.nphase+mod(r,lds.nphase)+1;
 r = (0:((lds.ntst+1)*lds.nphase-1));
 lds.multi_r2 = floor(r./lds.nphase)*lds.ncol_coord+mod(r,lds.nphase)+1;
+if isempty(v)
+  v = zeros(size(x));
+end
+update_upoldp(x,v);
 
 % ------------------------------------------------------
 
@@ -528,3 +532,16 @@ J(end,end)=0;
   b = []; b(lds.ncoords+1)=1;
   q=J\b'; q=q(1:end-1);q=q/norm(q);
   p=J'\b';p=p(1:end-1);p=p/norm(p);
+%-------------------------------------------------------------------------------
+function update_upoldp(x, v)
+global lds           
+[x,p,T] = rearr(x); 
+v       = rearr(v);
+lds.ups = reshape(x,lds.nphase,lds.tps);
+lds.vps = reshape(v,lds.nphase,lds.tps);
+% update upoldp
+p1 = num2cell(p);
+for i=1:lds.tps
+  lds.upoldp(:,i) = T * feval(lds.func, 0, lds.ups(:,i), p1{:});
+end
+

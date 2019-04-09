@@ -1,25 +1,22 @@
-function out = multiple_shooting
-%
 % Curve file of cycle continuation with multiple shooting
-%
-    out{1}  = @curve_func;
-    out{2}  = @defaultprocessor;
-    out{3}  = @options;
-    out{4}  = @jacobian;
-    out{5}  = [];%@hessians;
-    out{6}  = [];%@testf;
-    out{7}  = [];%@userf;
-    out{8}  = @process;
-    out{9}  = [];%@singmat;
-    out{10} = [];%@locate;
-    out{11} = @init;
-    out{12} = [];%@done;
-    out{13} = @adapt;
-    out{14} = @curve_CIS_first_point;
-    out{15} = @curve_CIS_step;
-%---------------------------------------------------------  
+function out = multiple_shooting
+  out{1}  = @curve_func;
+  out{2}  = @defaultprocessor;
+  out{3}  = @options;
+  out{4}  = @jacobian;
+  out{5}  = [];%@hessians;
+  out{6}  = @testfunctions;
+  out{7}  = [];%@userf;
+  out{8}  = @process_singularity;
+  out{9}  = @singularity_matrix;
+  out{10} = [];%@locate;
+  out{11} = @init;
+  out{12} = [];%@done;
+  out{13} = @adapt;
+  out{14} = @curve_CIS_first_point;
+  out{15} = @curve_CIS_step;  
 end
-
+%-------------------------------------------------------------------------------
 function func = curve_func(varargin)
   global cds
   [y_0, period, parameters] = getComponents(varargin{1});
@@ -44,8 +41,7 @@ function func = curve_func(varargin)
   func = [r
           (y_0(1:cds.nphases) - cds.previous_phases)' * cds.previous_dydt_0 ]; 
 end
-%---------------------
-  
+%-------------------------------------------------------------------------------
 function x_end = shoot(x, mesh_index, period, parameters)
   global cds contopts
   f =@(t, y) cds.dydt_ode(t, y, parameters{:});
@@ -58,7 +54,7 @@ function x_end = shoot(x, mesh_index, period, parameters)
   [~, trajectory] = ode15s(f, time_interval, x, integration_opt);
   x_end = trajectory(end,:)';
 end
-
+%-------------------------------------------------------------------------------
 function jacobian = jacobian(varargin)
   global cds
   M = cds.nMeshPoints * cds.nphases;
@@ -102,7 +98,7 @@ function jacobian = jacobian(varargin)
   % specify d_s_d_T = jacobian(N+1,N+1) = 0;
   % specify d_s_d_p = jacobian(N+1,N+2) = 0;
 end
-  
+%-------------------------------------------------------------------------------
 function d_phi_d_p = compute_d_phi_d_p(x, mesh_index, period, parameters)
   global cds
   ap = cds.ActiveParams;
@@ -113,8 +109,9 @@ function d_phi_d_p = compute_d_phi_d_p(x, mesh_index, period, parameters)
   phi_2 = shoot(x, mesh_index, period, parameters);
   d_phi_d_p = (phi_2 - phi_1)/h/2;  
 end
-
-function [y_end, monodromy] = compute_monodromy(x, mesh_index, period, parameters)
+%-------------------------------------------------------------------------------
+function [y_end, monodromy] = ...
+                            compute_monodromy(x, mesh_index, period, parameters)
   global cds
   if ~ cds.options.PartitionMonodromy
     [y_end, monodromy] = monodromy_full(x, mesh_index, period, parameters);
@@ -123,8 +120,7 @@ function [y_end, monodromy] = compute_monodromy(x, mesh_index, period, parameter
       monodromy_column_by_column(x, mesh_index, period, parameters);
   end
 end
-    
-    
+%-------------------------------------------------------------------------------
 function [y_end, monodromy] = monodromy_full(x, mesh_index, period, parameters)
   global cds contopts
   nphases = cds.nphases;
@@ -140,7 +136,7 @@ function [y_end, monodromy] = monodromy_full(x, mesh_index, period, parameters)
   monodromy = trajectory(end,nphases+1:end);
   monodromy = reshape(monodromy, [nphases nphases]);
 end
-
+%-------------------------------------------------------------------------------
 function dydt_mon = dydt_monodromy_full(t, y, parameters)
   global cds
   y_ode = y(1:cds.nphases);
@@ -153,10 +149,9 @@ function dydt_mon = dydt_monodromy_full(t, y, parameters)
         [cds.nphases^2 1]) 
   ];
 end
-  
-  
+%------------------------------------------------------------------------------- 
 function [y_end, monodromy] = ...
-  monodromy_column_by_column(x, mesh_index, period, parameters)
+                   monodromy_column_by_column(x, mesh_index, period, parameters)
   global cds contopts;
   integration_opt = odeset(...
     'AbsTol',       contopts.integration_abs_tol,    ...
@@ -179,37 +174,146 @@ function [y_end, monodromy] = ...
     monodromy(:,i) = monodromy_map_trajectory(end,:);
   end 
 end
-
-function init(~,~)
+%-------------------------------------------------------------------------------
+%-------------------------------------------------------------------------------
+% test functions are used for detecting AND location singularities by bisection
+% when detecting ids_testf_requested will be cds.ActTest, and when locating
+% ids_testf_requested will contain only those ids of the testfunctions relevant
+% to the bifurcation that is being located.
+function [out, failed] = testfunctions(ids_testf_requested, x0, v, ~) 
+  % unused arguments are v and CISdata
+  global cds
+  
+  failed = false;
+  BPC_ids = 1:4;
+  PD_id  = 5; % id for period doubling test function
+  LPC_id = 6; % id for limit point of cycles test function
+  NS_id  = 7; % id for Neimarck-Sacker test function
+  
+  if any(ismember([PD_id NS_id],ids_testf_requested))
+    update_multipliers_if_needed(x0)
+  end
+  if any(ismember(BPC_ids,ids_testf_requested))
+    % detection of Branching points of cycles is currently not implemented
+    out(BPC_ids) = ones(length(BPC_ids),1);
+  end
+  if ismember(PD_id, ids_testf_requested)
+    % real is needed to ensure that small complex parts induced by roundoff
+    % errors do not make the result complex.
+    % A complex valued test function would cause false positives when detecting 
+    % bifurcations.
+    out(PD_id) = real(prod(cds.multipliers + ones(size(cds.multipliers))));
+  end
+  if ismember(LPC_id, ids_testf_requested)
+    out(LPC_id) = v(end);
+  end
+  if ismember(NS_id, ids_testf_requested)
+    mults = cds.multipliers;
+    psi_ns = 1;
+    for i = 1 : (length(mults) - 1)
+      for j = (i + 1) : length(mults)
+        psi_ns = psi_ns * (real(mults(i) * mults(j)) - 1);
+      end
+    end
+    out(NS_id) = psi_ns;
+  end
 end
+%-------------------------------------------------------------------------------
+% defines which changes in testfunctions correspond to which singularity type
+% 0 == require sign-change
+% 1 == require sign-non-change
+% 2 == require change
+% anything else: no requirement
+% columns correspond to testfunctions
+% rows correspond to singularities BPC, PD, LPC, and NS respectively
+function [S,L] = singularity_matrix
 
-%----------------------------------------------------------
+  S = [ 0 0 0 0 8 8 8
+        8 8 8 8 0 8 8
+        8 8 8 8 8 0 8
+        8 8 8 8 8 1 0];
+
+
+  L = [ 'BPC';'PD '; 'LPC'; 'NS ' ];
+end
+%-------------------------------------------------------------------------------
+% After a singularity is detected and located, the contL calls this function.
+% Usually a normal form coefficient (nfc) is computed, via a function call from
+% this function. However, for continuation of cycles by single shooting or
+% multiple shooting, the computation of normal form coefficients is not
+% implemented yet.
+function [failed,s] = process_singularity(id,point,s)
+  global cds
+  x = point.x;
+  switch id
+  case 1
+    % note: as of march 2019 detection for BPC not yet implemented 
+    format_string = 'Branch Point cycle(period = %e, parameter = %e)\n'; 
+    print_diag(0, format_string, x(end-1), x(end));
+    s.msg  = sprintf('Branch Point cycle'); 
+  case 2
+    format_string = 'Period Doubling (period = %e, parameter = %e)\n';
+    print_diag(0, format_string, x(end-1), x(end));
+    s.msg  = 'Period Doubling';
+  case 3
+    s.msg = 'Limit point cycle';
+    format_string = 'Limit point cycle (period = %e, parameter = %e)\n';
+    print_diag(0, format_string, x(end-1), x(end));
+  case 4
+    d = cds.multipliers;
+    smallest_sum = Inf;
+    for jk=1:cds.nphases-1
+      [val,idx] = min(abs(d(jk+1:cds.nphases)*d(jk)-1));
+      if val < smallest_sum
+        idx2 = jk+idx;
+        smallest_sum = val;
+      end
+    end
+    singularity_is_neutral_saddle = imag(d(idx2)) == 0;
+    if singularity_is_neutral_saddle
+      s.msg = 'Neutral saddle cycle';
+      format_string = 'Neutral Saddle Cycle (period = %e, parameter = %e)\n';
+      % A neutral saddle is not really a bifurcation, therefore we use priority 
+      % 1 instead of 0, so that it is only logged if 
+      % contopts.contL_DiagnosticsLevel is set higher than the default value
+      % which is zero.
+      print_diag(1, format_string, x(end-1), x(end));
+    else
+      s.msg = 'Neimark Sacker';
+      format_string = 'Neimark-Sacker (period = %e, parameter = %e)\n';
+      print_diag(0, format_string, x(end-1) ,x(end));
+      %print_diag(0, 'Normal form coefficient = %d\n', s.data.nscoefficient);
+    end
+  end
+  failed = 0;
+end  
+%-------------------------------------------------------------------------------
+function init(~,~); end
+%-------------------------------------------------------------------------------
 function point = defaultprocessor(varargin)
-  global cds contopts
+  global cds
   point = varargin{1};
   point.mesh = cds.mesh;
-  if contopts.Multipliers
-    point.multipliers = ...
-      NewtonPicard.MultipleShooting.compute_multipliers(point.x);
-  end
+
   [y, ~, parameters]      = getComponents(point.x);
   cds.previous_phases     = y(1:cds.nphases);
   cds.previous_dydt_0     = cds.dydt_ode(0, cds.previous_phases, parameters{:});
 
+  adjust_basis_size(point);
   savePoint(point);
 end
-
-function options
-end
-
-function CISdata = curve_CIS_first_point(x) %#ok<INUSD>
+%-------------------------------------------------------------------------------
+function options; end
+%-------------------------------------------------------------------------------
+function CISdata = curve_CIS_first_point(~) % unused argument is x 
   CISdata = 1;
 end
-
-function CISdata = curve_CIS_step(x, CISdata_in) %#ok<INUSD>
+%-------------------------------------------------------------------------------
+function CISdata = curve_CIS_step(~,~) 
+  % unused arguments are x and CIS_data_in
   CISdata = 1;
 end
-
+%-------------------------------------------------------------------------------
 function [has_changed, x, v, CISData] = adapt(varargin)
   global cds
   has_changed = true;
@@ -238,8 +342,60 @@ function [has_changed, x, v, CISData] = adapt(varargin)
   %x = NewtonPicard.MultipleShooting.corrections_without_tangent(x);
   %print_diag(3,'curve_function new time mesh: %.3e\n', ...
   %  max(abs(curve_func(x))));
+  
 end
-
+%-------------------------------------------------------------------------------
+function adjust_basis_size(point)
+  global cds contopts;
+  basis_size_changed = false;
+  
+  if contopts.NewtonPicard
+    update_multipliers_if_needed(point.x)
+    if abs(cds.multipliers(end)) > contopts.basis_grow_threshold
+      basis_size_changed = true;
+      print_diag(2, 'expanding basis\n');
+      nMults_to_compute = cds.preferred_basis_size + 10;
+      nMults_to_compute = min(nMults_to_compute, cds.nphases);
+      cds.multipliersX = point.x;
+      cds.multipliers = NewtonPicard.MultipleShooting.compute_multipliers(...
+        point.x, nMults_to_compute);
+      
+      i = length(cds.multipliers);
+     
+      while abs(cds.multipliers(i)) < contopts.basis_grow_threshold / 3
+        i = i - 1;
+      end
+      if i < length(cds.multipliers)
+        i = i + 1;
+      end
+      cds.preferred_basis_size = i;
+      cds.p                    = i;
+      cds.multipliers = cds.multipliers(1:i);
+    elseif abs(cds.multipliers(end)) < contopts.basis_shrink_threshold
+      basis_size_changed = true;
+      i = length(cds.multipliers);
+      while abs(cds.multipliers(i)) < contopts.basis_shrink_threshold
+        i = i - 1;
+      end
+      cds.preferred_basis_size = i;
+      cds.p = i;
+      cds.multipliers = cds.multipliers(1:i);
+    end
+  end
+  
+  if contopts.Multipliers || contopts.NewtonPicard
+    update_multipliers_if_needed(point.x)
+    point.multipliers = cds.multipliers;
+  end
+  
+  if basis_size_changed
+    point.tvals = testfunctions(cds.ActTest,point.x,point.v,[]);
+    print_diag(1,'testfunctions: [')
+    print_diag(1,' %+.5e',point.tvals)
+    print_diag(1,']\n')
+  end
+end
+%-------------------------------------------------------------------------------
 function [y,period,parameters] = getComponents(x)
   global cds
   y                            = x(1:cds.nphases*cds.nMeshPoints);
@@ -249,7 +405,7 @@ function [y,period,parameters] = getComponents(x)
   parameters(cds.ActiveParams) = parameter_value;
   parameters                   = num2cell(parameters);
 end
-
+%-------------------------------------------------------------------------------
 function mesh_points = find_mesh_points_multiple_shooting(x)
   global cds contopts
   int_opt = odeset( ...
@@ -275,9 +431,13 @@ function mesh_points = find_mesh_points_multiple_shooting(x)
   end
   mesh_points = mesh_points / period;
 end
-
-function [failed, s] = process(si, singpoint, s) %#ok<INUSL>
-  % to be implemented later
-  failed = false;
+%-------------------------------------------------------------------------------
+function update_multipliers_if_needed(x)
+  global cds
+  if ~ isfield(cds,'multipliersX') || all(cds.multipliersX ~= x)
+    cds.multipliersX = x;
+    cds.multipliers = NewtonPicard.MultipleShooting.compute_multipliers(x, ...
+                       cds.preferred_basis_size);
+  end
 end
-
+%-------------------------------------------------------------------------------

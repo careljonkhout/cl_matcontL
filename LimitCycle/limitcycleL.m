@@ -243,20 +243,49 @@ function [failed,s] = process_singularity(id, point, s)
       print_diag(0, format_string, x(end-1), x(end));
     end
   case 4
-    s.data.nscoefficient = nf_NS(x);
-    if strcmp(s.data.nscoefficient,'Neutral saddle')
-      s.msg = 'Neutral saddle cycle';
-      format_string = 'Neutral Saddle Cycle (period = %e, parameter = %e)\n';
-      % A neutral saddle is not really a bifurcation, therefore we use priority 
-      % 1 instead of 0, so that it is only logged if 
-      % contopts.contL_DiagnosticsLevel is set higher than the default value
-      % which is zero.
-      print_diag(1, format_string, x(end-1), x(end));
+
+    if contopts.enable_nf_ns
+      s.data.nscoefficient = nf_NS(x);
+      if strcmp(s.data.nscoefficient,'Neutral saddle')
+        s.msg = 'Neutral saddle cycle';
+        format_string = 'Neutral Saddle Cycle (period = %e, parameter = %e)\n';
+        % A neutral saddle is not really a bifurcation, therefore we use priority 
+        % 1 instead of 0, so that it is only logged if 
+        % contopts.contL_DiagnosticsLevel is set higher than the default value
+        % which is zero.
+        print_diag(1, format_string, x(end-1), x(end));
+      else
+        s.msg = 'Neimark Sacker';
+        format_string = 'Neimark-Sacker (period = %e, parameter = %e)\n';
+        print_diag(0, format_string, x(end-1) ,x(end));
+        print_diag(0, 'Normal form coefficient = %d\n', s.data.nscoefficient);
+      end
     else
-      s.msg = 'Neimark Sacker';
-      format_string = 'Neimark-Sacker (period = %e, parameter = %e)\n';
-      print_diag(0, format_string, x(end-1) ,x(end));
-      print_diag(0, 'Normal form coefficient = %d\n', s.data.nscoefficient);
+      d = lds.multipliers;
+      smallest_sum = Inf;
+      for jk=1:lds.nphase-1
+        [val,idx] = min(abs(d(jk+1:lds.nphase)*d(jk)-1));
+        if val < smallest_sum
+          idx2 = jk+idx;
+          smallest_sum = val;
+        end
+      end
+      singularity_is_neutral_saddle = ...
+        abs(imag(d(idx2))) < contopts.real_v_complex_threshold;
+      if singularity_is_neutral_saddle
+        s.msg = 'Neutral saddle cycle';
+        format_string = 'Neutral Saddle Cycle (period = %e, parameter = %e)\n';
+        % A neutral saddle is not really a bifurcation, therefore we use priority 
+        % 1 instead of 0, so that it is only logged if 
+        % contopts.contL_DiagnosticsLevel is set higher than the default value
+        % which is zero.
+        print_diag(1, format_string, x(end-1), x(end));
+      else
+        s.msg = 'Neimark Sacker';
+        format_string = 'Neimark-Sacker (period = %e, parameter = %e)\n';
+        print_diag(0, format_string, x(end-1) ,x(end));
+        %print_diag(0, 'Normal form coefficient = %d\n', s.data.nscoefficient);
+      end
     end
   end
   failed = 0;
