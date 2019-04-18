@@ -9,7 +9,7 @@ function out = multiple_shooting
   out{7}  = [];%@userf;
   out{8}  = @process_singularity;
   out{9}  = @singularity_matrix;
-  out{10} = [];%@locate;
+  out{10} = @locate;
   out{11} = @init;
   out{12} = [];%@done;
   out{13} = @adapt;
@@ -20,19 +20,19 @@ end
 function func = curve_func(varargin)
   global cds
   [y_0, period, parameters] = getComponents(varargin{1});
-  y_end = zeros(cds.nphases * cds.nMeshPoints,1);
-  for i=0:cds.nMeshPoints-1
+  y_end = zeros(cds.nphases * cds.nMeshIntervals,1);
+  for i=0:cds.nMeshIntervals-1
     indices = (1:cds.nphases) + i * cds.nphases;
-    delta_t = period * [cds.mesh(i+1) cds.mesh(i+2)];
+    delta_t = period * (cds.mesh(i+2) - cds.mesh(i+1));
     y_end(indices) = NewtonPicard.shoot(y_0(indices), delta_t, parameters);
   end
-  r = zeros(cds.nphases * cds.nMeshPoints,1); % residuals
-  for i=0:cds.nMeshPoints-2
+  r = zeros(cds.nphases * cds.nMeshIntervals,1); % residuals
+  for i=0:cds.nMeshIntervals-2
     indices1 = (1:cds.nphases) + i     * cds.nphases;
     indices2 = (1:cds.nphases) + (i+1) * cds.nphases;
     r(indices1) = y_end(indices1) - y_0(indices2);
   end
-  r((1:cds.nphases)+(cds.nMeshPoints-1)*cds.nphases) ... 
+  r((1:cds.nphases)+(cds.nMeshIntervals-1)*cds.nphases) ... 
     = y_end(end-cds.nphases+1:end) - y_0(1:cds.nphases);
 %  cds.cycle_trajectory = ode15s(...
 %    @(t, y) cds.dydt_ode(t, y, parameters{:}), ...
@@ -44,40 +44,40 @@ end
 %-------------------------------------------------------------------------------
 function jacobian = jacobian(varargin)
   global cds
-  M = cds.nMeshPoints * cds.nphases;
+  M = cds.nMeshIntervals * cds.nphases;
   nphases = cds.nphases;
-  m = cds.nMeshPoints;
+  m = cds.nMeshIntervals;
   nnz = m * nphases^2 + m * nphases; % main blocks
   nnz = nnz + 2 * (M + 1);           % last 2 columns
   nnz = nnz + M + 2;                 % bottom row
   jacobian = spalloc(M + 1, M + 2,nnz);
   [y_0, period, parameters] = getComponents(varargin{1});
   y_end = zeros(M,1);
-  for i=0:cds.nMeshPoints-1
+  for i=0:cds.nMeshIntervals-1
     indices = (1:cds.nphases) + i * cds.nphases;
     [y_end(indices), jacobian(indices,indices)] = ...
       compute_monodromy(y_0(indices), i+1, period, parameters);
   end
   
-  for i=0:cds.nMeshPoints-2
+  for i=0:cds.nMeshIntervals-2
     indices1 = (1:cds.nphases) + i     * cds.nphases;
     indices2 = (1:cds.nphases) + (i+1) * cds.nphases;
     jacobian(indices1, indices2) = - eye(cds.nphases); %#ok<*SPRIX>
     % This jacobian function is used for testing only, therefore, we ignore the
     % "this sparse indexing operation is likely to be slow"-warning.
   end
-  jacobian((1:cds.nphases) + (cds.nMeshPoints-1) * cds.nphases, ...
+  jacobian((1:cds.nphases) + (cds.nMeshIntervals-1) * cds.nphases, ...
             1:cds.nphases) = - eye(cds.nphases);
-  for i=0:cds.nMeshPoints-1
+  for i=0:cds.nMeshIntervals-1
     % compute d_y_d_T
     indices = (1:cds.nphases) + i * cds.nphases;
     jacobian(indices,M+1) = cds.dydt_ode(0, y_end(indices), parameters{:}) * ...
       (cds.mesh(i+2) - cds.mesh(i+1));
   end
-  for i=0:cds.nMeshPoints-1
+  for i=0:cds.nMeshIntervals-1
     % compute d_y_d_p
     indices = (1:cds.nphases) + i * cds.nphases;
-    delta_t = period * [cds.mesh(i+1) cds.mesh(i+2)];
+    delta_t = period * (cds.mesh(i+2) - cds.mesh(i+1));
     jacobian(indices,M+2) = ...
        NewtonPicard.compute_d_phi_d_p(y_0(indices), delta_t, parameters);
   end
@@ -285,7 +285,13 @@ function point = defaultprocessor(varargin)
   savePoint(point);
 end
 %-------------------------------------------------------------------------------
-function options; end
+function options
+  global contopts
+  [sing_mat, ~]                           = singularity_matrix();
+  locators_logical_array                  = false(size(sing_mat,1),1);
+  locators_logical_array(Constants.NS_id) = true;
+  contopts = contset(contopts, 'Locators', locators_logical_array);
+end
 %-------------------------------------------------------------------------------
 function CISdata = curve_CIS_first_point(~) % unused argument is x 
   CISdata = 1;
@@ -311,7 +317,7 @@ function [has_changed, x, v, CISData] = adapt(varargin)
   % We update coordinates of the points on the cycle to correspond to the new
   % time mesh. Note that the first point does not change.
   indices = (1:cds.nphases) + cds.nphases;
-  for i=2:cds.nMeshPoints
+  for i=2:cds.nMeshIntervals
     x(indices) = interp1( ...
       cds.t_cycle, cds.y_cycle,period * cds.mesh(i), 'spline');
     indices = indices + cds.nphases;
@@ -380,7 +386,7 @@ end
 %-------------------------------------------------------------------------------
 function [y,period,parameters] = getComponents(x)
   global cds
-  y                            = x(1:cds.nphases*cds.nMeshPoints);
+  y                            = x(1:cds.nphases*cds.nMeshIntervals);
   period                       = x(end-1);
   parameter_value              = x(end);
   parameters                   = cds.P0;
@@ -399,11 +405,11 @@ function mesh_points = find_mesh_points_multiple_shooting(x)
   cycle_gradient_norm = @(t,x) norm(cds.dydt_ode(...
       t, interp1(cds.t_cycle,cds.y_cycle,t,'spline'), parameters{:}));
   
-  time_points = linspace(0,period,100*cds.nMeshPoints);
+  time_points = linspace(0,period,100*cds.nMeshIntervals);
   [t,x] = ode45(cycle_gradient_norm, time_points, 0, int_opt);
   cycle_gradient_integral = x(end);
-  x = mod(x, cycle_gradient_integral / cds.nMeshPoints);
-  mesh_points = zeros(cds.nMeshPoints + 1, 1);
+  x = mod(x, cycle_gradient_integral / cds.nMeshIntervals);
+  mesh_points = zeros(cds.nMeshIntervals + 1, 1);
   mesh_points_index = 2;
   for i=2:size(x)
     if x(i-1) > x(i)
@@ -423,3 +429,13 @@ function update_multipliers_if_needed(x)
   end
 end
 %-------------------------------------------------------------------------------
+function p_out = locate(id, p1,p2)
+  switch id   
+    case Constants.NS_id
+      p_out = locate_NS(p1, p2, @testfunctions);
+    otherwise
+      error('No locator defined for singularity %d', id);
+  end
+end
+%-------------------------------------------------------------------------------
+

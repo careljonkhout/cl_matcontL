@@ -16,7 +16,7 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
     'Jacobian',     @(t,y) feval(cds.jacobian_ode,t,y,parameters{:}) ...
   );
   
-  m          = cds.nMeshPoints;
+  m          = cds.nMeshIntervals;
   phases_T_i = zeros(cds.nphases,m);
   
   integrator            = cds.integrator;
@@ -77,7 +77,7 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
     cds.basis_size = basis_size;
     V              = zeros(cds.nphases,basis_size,m);
     V(:,:,1)       = V1;
-    for i=2:m % m == cds.nMeshPoints
+    for i=2:m % m == cds.nMeshIntervals
       for j = 1:size(V,2)
         V(:,j,i) = NewtonPicard.MultipleShooting.monodromy_map(...
           i-1, V(:,j,i-1), delta_t(i-1), parameters);
@@ -92,7 +92,7 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
   cds.basis_size = basis_size;
   
 
-  MV = zeros(cds.nphases,basis_size,cds.nMeshPoints);
+  MV = zeros(cds.nphases,basis_size,cds.nMeshIntervals);
  
   int_opt = odeset(...
     'AbsTol', contopts.integration_abs_tol,    ...
@@ -104,7 +104,7 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
   nnz = nnz + m * basis_size;       % identity matrices on superdiagonal
   F_0_pp = spalloc(m*basis_size,m*basis_size,nnz);
   
-  for i=1:m % note that: m == cds.nMeshPoints
+  for i=1:m % note that: m == cds.nMeshIntervals
     int_opt = odeset(int_opt, ...
       'Jacobian', @(t,y) feval(cds.jacobian_ode, ...
                     t,   deval(cds.orbits(i),t), parameters{:}));
@@ -155,7 +155,7 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
   
   indices = 1:basis_size;
   for i=1:m
-    b_g_i                  = NewtonPicard.d_phi_d_p(phases_0(:,i), ...
+    b_g_i                  = NewtonPicard.compute_d_phi_d_p(phases_0(:,i), ...
                                            delta_t(i), parameters);
     
     ni                     = next_index_in_cycle(i,m);
@@ -170,7 +170,7 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
   
   rhs_delta_q_r = zeros(cds.nphases,m);
   
-  for i=1:m % m == cds.nMeshPoints
+  for i=1:m % m == cds.nMeshIntervals
     ni                 = next_index_in_cycle(i,m);
     r                  = phases_T_i(:,i) - phases_0(:,ni);
     rhs_delta_q_r(:,i) = r - V(:,:,ni) * V(:,:,ni)' * r;
@@ -186,7 +186,7 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
   
   
   V_T_d_phi_d_T = zeros(basis_size*m,1);
-  for i=1:m % m == cds.nMeshPoints
+  for i=1:m % m == cds.nMeshIntervals
     indices = (i-1)*basis_size + (1:basis_size);
     ni = next_index_in_cycle(i,m);
     V_T_d_phi_d_T(indices) = ( V(:,:,ni)' * ...
@@ -195,7 +195,7 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
  
   lhs_1_3 = V_T__b_g;
   
-  for i=1:m % m == cds.nMeshPoints
+  for i=1:m % m == cds.nMeshIntervals
     indices           = (i-1)*basis_size + (1:basis_size);
     ni                = next_index_in_cycle(i,m);
     lhs_1_3(indices)  = lhs_1_3(indices) + V(:,:,ni)' * G_delta_q_gamma(:,i);

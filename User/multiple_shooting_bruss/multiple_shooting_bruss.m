@@ -20,11 +20,11 @@ cds.integrator = @ode15s;
 cds.p = 3;
 
 cds.probfile = odefile;
-cds.nMeshPoints = 6;
+cds.nMeshIntervals = 6;
 cds.nap = 1;
 cds.ActiveParams = 2;
 cds.nphases = 2*N;
-cds.ndim = cds.nMeshPoints * cds.nphases + cds.nap + 1;
+cds.ndim = cds.nMeshIntervals * cds.nphases + cds.nap + 1;
 cds.P0 = cell2mat(parameters);
 cds.options = contset();
 cds.options.PartitionMonodromy = false;
@@ -63,12 +63,12 @@ int_opt = odeset(int_opt, 'Events', @returnToPlane);
 
 sol = ode15s(f, linspace(0,approximate_period,1000), x1(end,:), int_opt); 
 period = sol.x(end);
-cds.mesh = linspace(0, 1, cds.nMeshPoints+1);
-initial_continuation_data = zeros(cds.nphases * cds.nMeshPoints + 2,1);
-for i=0:cds.nMeshPoints-1
+cds.mesh = linspace(0, 1, cds.nMeshIntervals+1);
+initial_continuation_data = zeros(cds.nphases * cds.nMeshIntervals + 2,1);
+for i=0:cds.nMeshIntervals-1
   indices = (1:cds.nphases) + i * cds.nphases;
   initial_continuation_data(indices) = ...
-    deval(sol, i / cds.nMeshPoints * period);
+    deval(sol, i / cds.nMeshIntervals * period);
 end
 initial_continuation_data(end-1) = period; 
 initial_continuation_data(end)   = cds.P0(cds.ActiveParams);

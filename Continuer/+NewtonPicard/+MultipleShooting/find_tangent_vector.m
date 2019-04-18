@@ -9,7 +9,7 @@
 % most variable names are derived from variable names in \cite{lust-phd}.
 function v = find_tangent_vector(x)
   global cds
-  m = cds.nMeshPoints;
+  m = cds.nMeshIntervals;
   
   [V, reduced_jacobian, delta_q_gamma, delta_q_r, ~, ~, ~, ~, ~] = ...
     NewtonPicard.MultipleShooting.compute_reduced_jacobian(x);
@@ -22,7 +22,7 @@ function v = find_tangent_vector(x)
   delta_gamma = delta_p__delta_T_and_delta_gamma(end);
 
   V_delta_p = zeros(cds.nphases*m,1);
-  for i=1:m % m == cds.nMeshPoints
+  for i=1:m % m == cds.nMeshIntervals
     indices1 = (i-1) * cds.nphases + (1:cds.nphases);
     indices2 = (i-1) * basis_size  + (1:basis_size );
     V_delta_p(indices1) = V(:,:,i) * delta_p(indices2);

@@ -24,11 +24,11 @@ function compute_stiched_orbit(x, abs_tol, rel_tol)
   t_cycle = [];
   y_cycle = [];
   indices = 1:cds.nphases;
-  for i=1:cds.nMeshPoints
+  for i=1:cds.nMeshIntervals
     time_interval = period * [cds.mesh(i) cds.mesh(i+1)];
     [t_mesh_interval, y_mesh_interval] = ...
       cds.integrator(dydt, time_interval, phases_0(indices), int_opt);
-    if i < cds.nMeshPoints
+    if i < cds.nMeshIntervals
       t_cycle = [t_cycle; t_mesh_interval(1:end-1,:)]; %#ok<AGROW>
       y_cycle = [y_cycle; y_mesh_interval(1:end-1,:)]; %#ok<AGROW>
     else

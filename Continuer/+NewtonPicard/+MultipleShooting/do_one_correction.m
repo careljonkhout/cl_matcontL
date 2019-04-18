@@ -14,10 +14,10 @@ function x = do_one_correction(x0,x,v0)
           phases_0, phi, period, active_par_val] = ...
     NewtonPicard.MultipleShooting.compute_reduced_jacobian(x);
   basis_size = size(V,2);
-  m = cds.nMeshPoints;
+  m = cds.nMeshIntervals;
   
   lhs_3_1 = zeros(1,basis_size * m);
-  for i=1:m % m == cds.nMeshPoints
+  for i=1:m % m == cds.nMeshIntervals
     indices_lhs_3_1          = (i-1)*basis_size  + (1:basis_size);
     indices_v0               = (i-1)*cds.nphases + (1:cds.nphases);
     lhs_3_1(indices_lhs_3_1) = v0(indices_v0)' * V(:,:,i);

@@ -14,7 +14,7 @@ function x = one_correction_without_tangent(x)
           phases_0, phi, period, active_par_val] = ...
     NewtonPicard.MultipleShooting.compute_reduced_jacobian(x);
   basis_size = size(V,2);
-  m = cds.nMeshPoints;
+  m = cds.nMeshIntervals;
  
 
 

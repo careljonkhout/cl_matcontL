@@ -2,7 +2,7 @@
 
 function V = continue_subspaces(delta_t, parameters)
   global cds contopts
-  m = cds.nMeshPoints;         
+  m = cds.nMeshIntervals;         
   extended_basis_size = cds.p + 4;
   V_extended = zeros([cds.nphases extended_basis_size m+1]);
   V_extended(:,:,1) = [cds.V(:,:,1) ...
@@ -41,7 +41,7 @@ function V = continue_subspaces(delta_t, parameters)
 
     integrator = cds.integrator;
     
-    for i=1:m % m == cds.nMeshPoints
+    for i=1:m % m == cds.nMeshIntervals
       int_opt = odeset(...
         'AbsTol',       contopts.integration_abs_tol,    ...
         'RelTol',       contopts.integration_rel_tol,    ...
@@ -84,7 +84,7 @@ function V = continue_subspaces(delta_t, parameters)
     V_extended(:,:,1) = V_extended(:,:,m+1);
   end
   V = zeros(cds.nphases,p_eff,m);
-  for i=1:m % m == cds.nMeshPoints
+  for i=1:m % m == cds.nMeshIntervals
     V_i_orth = orth(V_extended(:,:,i));
     V(:,:,i) = V_i_orth(:,1:p_eff);
   end

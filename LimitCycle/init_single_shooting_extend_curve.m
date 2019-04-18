@@ -7,7 +7,6 @@ function init_single_shooting_extend_curve(varargin)
   lc_input.ode_parameters                      = [];
   lc_input.active_parameter_index              = [];
   lc_input.time_integration_method             = @ode15s;
-  lc_input.time_integration_options            = odeset();
   lc_input.subspace_size                       = [];
   lc_input.nDiscretizationPoints               = 100;
   

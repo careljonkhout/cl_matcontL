@@ -11,12 +11,13 @@ function multipliers = compute_multipliers(x, nMults_to_compute)
   if ~ isempty(cds.jacobian_ode)
     integration_opt = odeset(integration_opt, ...
     'Jacobian',     @(t,y) feval(cds.jacobian_ode,t,y,parameters{:}));
-     cds.cycle_orbit = cds.integrator(...
-      @(t, y) cds.dydt_ode(t, y, parameters{:}), ...
-      linspace(0, period, cds.nDiscretizationPoints), ...
-      phases(:,1), integration_opt);
   end
-
+  
+  cds.cycle_orbit = cds.integrator(...
+       @(t, y) cds.dydt_ode(t, y, parameters{:}), ...
+       linspace(0, period, cds.nDiscretizationPoints), ...
+       phases(:,1), ...
+       integration_opt);
  
   
   monodromy_map = @(x) NewtonPicard.SingleShooting.monodromy_map( ...
@@ -32,11 +33,6 @@ function multipliers = compute_multipliers(x, nMults_to_compute)
     print_diag(2, 'multipliers did not converge\n');
     return
   end
-  distance_to_one = abs(multipliers - 1);
-  accuracy        = min(distance_to_one);
-  if nargin == 1
-    print_diag(0,'deviation of trivial multiplier: %.2e\n', accuracy);
-  end
-  print_diag(2, multipliers2str(multipliers));
   
+  print_diag(2, multipliers2str(multipliers));
 end

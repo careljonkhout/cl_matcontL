@@ -38,8 +38,8 @@ cds.symjac = false;
 cds.usernorm = [];
 cds.probfile = odefile;
 cds.ncoo = cds.nphases;
-cds.nMeshPoints = 2;
-cds.ndim = cds.nphases * cds.nMeshPoints + 2;
+cds.nMeshIntervals = 2;
+cds.ndim = cds.nphases * cds.nMeshIntervals + 2;
 
     
 int_opt = odeset( ...

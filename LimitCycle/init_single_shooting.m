@@ -57,6 +57,8 @@
 % allows for default values for init_single_shooting to be set in a nice way
 function initial_continuation_data = init_single_shooting(varargin)
 
+  contopts = contset();
+
   ss_input.point_on_limitcycle      = [];
   ss_input.odefile                  = [];
   ss_input.ode_parameters           = [];
@@ -64,7 +66,9 @@ function initial_continuation_data = init_single_shooting(varargin)
   ss_input.time_integration_method  = @ode15s;
   ss_input.lower_bound_period       = [];
   ss_input.upper_bound_period       = [];
-  ss_input.time_integration_options = odeset();
+  ss_input.time_integration_options = odeset( ...
+    'AbsTol', contopts.integration_abs_tol, ...
+    'RelTol', contopts.integration_rel_tol);
   ss_input.poincare_tolerance       = 1e-2;
   ss_input.nDiscretizationPoints    = 100;
   ss_input.subspace_size            = [];
@@ -87,7 +91,7 @@ function initial_continuation_data = init_single_shooting(varargin)
       error(['You must specifiy ' fields{i} '.'])
     end
   end
-  initial_continuation_data = do_init_single_shooting(ss_input);
+  initial_continuation_data = init_single_shooting_internal(ss_input);
 end
 
 

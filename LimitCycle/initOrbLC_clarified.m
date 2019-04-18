@@ -1,4 +1,4 @@
-function [x0,v0] = initOrbLC(odefile, t, y, p, ap, ntst, ncol,~)
+function [x0,v0] = initOrbLC_old(odefile, t, y, p, ap, ntst, ncol,~)
 % unused argument is tolerance
 
 %
