@@ -131,9 +131,7 @@ opt = contset(opt, 'MaxCorrIters',   10);
 opt = contset(opt, 'MaxTestIters',   10);
 opt = contset(opt, 'VarTolerance',   1e-6);
 opt = contset(opt, 'FunTolerance',   1e-5);
-% we don't want to adapt
-% since it is not implemented
-opt = contset(opt, 'Adapt',          1000*1000*1000);
+opt = contset(opt, 'Filename',       mfilename);
 opt = contset(opt, 'MaxNumPoints',   500);
 opt = contset(opt, 'contL_SmoothingAngle', 10);
 opt = contset(opt, 'CheckClosed',    50000);

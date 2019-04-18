@@ -1,4 +1,4 @@
-function [sout,datafile]=contL(curvefile, x0, v0, opts, varargin)
+function [sout, datafile] = contL(curvefile, x0, v0, opts, varargin)
 %
 % CONTINUE(cds.curve, x0, v0, options)
 %
@@ -65,10 +65,10 @@ cds.nActTest = 0;
 if Singularities
   [cds.S , cds.SingLables] = feval(cds.curve_singmat);
   nSing                    = size(cds.S,1);
-  cds.S(IgnoreSings,:) = 8;
-  cds.ActSing = setdiff(1:nSing, IgnoreSings);
-  cds.nActSing = length(cds.ActSing);
-  cds.ActTest  = find( sum((cds.S~=8),1) > 0 );
+  cds.S(IgnoreSings,:)     = Constants.ignore;
+  cds.ActSing              = setdiff(1:nSing, IgnoreSings);
+  cds.nActSing             = length(cds.ActSing);
+  cds.ActTest              = find( sum((cds.S ~= Constants.ignore),1) > 0 );
 end
 
 %% userfunctions
@@ -88,19 +88,11 @@ cds.newtcorrL_needs_CISdata = 0;
 
 if isequal(curvefile, @limitcycleL) || ...
    isequal(curvefile, @limitpointcycle)
-    point.x = x0;
-    CISdata0 = 1;
     if isempty(v0)
-        point.v = zeros(length(x0),1);
-        
-        %point.v = find_initial_tangent_vector(x0,v0,CISdata0);
-        point.v = find_initial_tangent_vector_by_nullspace(x0,v0,CISdata0);
-        v0 = point.v;
+        v0 = find_initial_tangent_vector(x0, v0, 1);
         print_diag(0,'found tangent vector\n')
-    else
-        point.v = zeros(length(x0),1);
     end
-    firstpoint = newtcorrL(x0, v0, CISdata0);
+    firstpoint = newtcorrL(x0, v0, 1);
 elseif UsingNewtonPicard
     if isempty(v0)
       v0 = NewtonPicard.find_tangent_vector(curvefile, x0);
@@ -140,21 +132,20 @@ else
 end
 
 if isempty(firstpoint)
-    print_diag(0,'contL: no convergence at x0.\n');
-    sout = [];
-    return;
+  print_diag(0,'contL: no convergence at x0.\n');
+  sout = [];
+  return;
 end
 firstpoint.h = cds.h;
 
 %% CIS data algorithm
-% if contopts.CIS_UsingCIS                    % MP 2018
-    firstpoint.CISdata = feval(cds.curve_CIS_first_point, x0);
-    if isempty(firstpoint.CISdata)
-        print_diag(0,'contL: failed to intialize CIS algorithm.\n'); 
-        sout = []; 
-        return; 
-    end
-% end                                          % MP 2018
+
+firstpoint.CISdata = feval(cds.curve_CIS_first_point, x0);
+if isempty(firstpoint.CISdata)
+  print_diag(0,'contL: failed to intialize CIS algorithm.\n'); 
+  sout = []; 
+  return; 
+end
 
 
 %% Direction Vector Determination
@@ -270,31 +261,44 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
       singsdetected = [];
       % WM: the testvals arrays are not copied anymore, instead
       % WM: use sign function and compare instead of multiply (for speed).
-      testchanges = sign(trialpoint.tvals) ~= sign(currpoint.tvals);
-      testchanges2= trialpoint.tvals ~= currpoint.tvals;
-      if any(testchanges)
+
+      print_diag(2,'comparing values of test functions:\n')
+      print_diag(2,'currpoint :');
+      print_diag(2,'%.4f ',currpoint.tvals);
+      print_diag(2,'\n');
+      print_diag(2,'trailpoint:');
+      print_diag(2,'%.4f ',trialpoint.tvals);
+      print_diag(2,'\n');
+      
+      signchanges = sign(trialpoint.tvals) ~= sign(currpoint.tvals);
+      changes     =      trialpoint.tvals  ~=      currpoint.tvals;
+      if any(signchanges) || any(changes)
         % Every crossing that is required occurs
         % Every crossing that is not required does not occur
         % Required crossings matrix:
-        S_true   = double(cds.S(:,cds.ActTest)' == 0);
+        S_true   = double(cds.S(:,cds.ActTest)' == Constants.sign_change);
         % Required noncrossings matrix:
-        S_false  = double(cds.S(:,cds.ActTest)' == 1);
+        S_false  = double(cds.S(:,cds.ActTest)' == Constants.sign_constant);
         % DV: Required to change value (not sign):
-        S_change = double(cds.S(:,cds.ActTest)' == 2);  
-
+        S_change = double(cds.S(:,cds.ActTest)' == Constants.value_change);  
         all_sings_detected = ...
-            (  testchanges * S_true  == sum(S_true)  ) & ...
-            ( ~testchanges * S_false == sum(S_false) ) & ...
-            ( testchanges2 * S_change== sum(S_change)); % DV
+            (  signchanges * S_true       == sum(S_true)       ) & ...
+            ( ~signchanges * S_false      == sum(S_false)      ) & ...
+            (  changes     * S_change     == sum(S_change)     );
         singsdetected(cds.ActSing) = ...
           all_sings_detected(cds.ActSing); %#ok<AGROW>
+        % The length of the array singsdetected is not very long. Therefore we
+        % ignore the 'array length will grow on each iteration'-warning. The
+        % length of the the array singsdetected is equal to the number types of
+        % bifurcations that can occur on the current curve. The number of types
+        % of bifurations is usually less than 10 and never more than 100.
 
         if sum(singsdetected) > 1
           print_diag(3, 'More than one singularity detected: ')
           reduce_stepsize = 1;
         elseif sum(singsdetected) == 1
           if special_step
-            print_diag(3, 'Singularity detected at special step: ')
+            print_diag (3, 'Singularity detected at special step: ')
             reduce_stepsize = 1;
           else
             si = find(singsdetected==1);  % singularity detected!
@@ -404,7 +408,7 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
       if ~ failed
         singpoint.h = norm(currpoint.x - singpoint.x);
         if Userfunctions
-          [point.uvals, ~] = cds.curve_userf(0, UserInfo, singpoint.x);
+          [singpoint.uvals, ~] = cds.curve_userf(0, UserInfo, singpoint.x);
         end
         DefaultProcessor(singpoint, s);
       end
@@ -522,14 +526,6 @@ if isempty(v0)
     C(end) = -1;
     v0 = bordCIS1(B,C,1);
     v0 = v0/norm(v0);
-end
-
-function v0 = find_initial_tangent_vector_by_nullspace(x0,v0,CISdata0)
-if isempty(v0)
-  A = contjac(x0, CISdata0);
-  if isempty(A); v0 = []; return; end
-  v0 = A(:,1:end-1)\A(:,end);
-  v0(end+1) = -1;
 end
 
 %------------------------------------------
@@ -731,7 +727,8 @@ for i = 1:MaxIters
     end
     if contopts.NewtonPicard
       p3 = NewtonPicard.do_corrections(x3,v3);
-      if id == 6 % if we are locating a limit point of cycles (LPC)
+      if id == Constants.lpc_id 
+        % if we are locating a limit point of cycles (LPC)
         p3.v = NewtonPicard.find_tangent_vector(cds.curve,x3,v3);
       end
     else

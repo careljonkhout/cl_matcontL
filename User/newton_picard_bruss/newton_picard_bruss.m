@@ -12,7 +12,7 @@ global cds
 cds.ActiveParams = 2; %4;
 handles = feval(odefile);
 title_format_string = ...
-  'Brusselator N:%d  L:%.0f  A:%.0f  B:%.1f  Dx:%.3f  Dy:%.3f';
+  'Brusselator N:%d  L:%.2f  A:%.0f  B:%.1f  Dx:%.3f  Dy:%.3f';
 title_format_args = {N; L; A; B; Dx; Dy;};
 global contopts;
 contopts = contset();
@@ -104,7 +104,7 @@ end
 opt = contset();
 opt = contset(opt, 'MaxNumPoints',   10000);
 opt = contset(opt, 'InitStepsize',   1e-1);
-opt = contset(opt, 'MinStepsize',    1e-6);
+opt = contset(opt, 'MinStepsize',    1e-10);
 opt = contset(opt, 'MaxStepsize',    5e-2);
 opt = contset(opt, 'MaxNewtonIters', 3);
 opt = contset(opt, 'MaxCorrIters',   6);

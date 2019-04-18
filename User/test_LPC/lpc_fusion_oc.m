@@ -1,4 +1,4 @@
-% test of Neimark Sacker bifurcation detection using orhtogonal collocation
+% test of limit point bifurcation detection using orhtogonal collocation
 clc
 clear global
 N = 25;                     
@@ -8,7 +8,6 @@ b = -0.3;
 q_inf = -0.72;
 
 ode_parameters = {a ; b; q_inf};
-
 
 
 initial_continuation_data = initOrbLC_L_find_stable_cycle( ...
@@ -25,10 +24,10 @@ initial_continuation_data = initOrbLC_L_find_stable_cycle( ...
 
 disp(initial_continuation_data(end-1))
 opt = contset();
-opt = contset(opt, 'MaxNumPoints',            100);
-opt = contset(opt, 'InitStepsize',            1);
+opt = contset(opt, 'MaxNumPoints',            5000);
+opt = contset(opt, 'InitStepsize',            0.25);
 opt = contset(opt, 'MinStepsize',             1e-6);
-opt = contset(opt, 'MaxStepsize',             1);
+opt = contset(opt, 'MaxStepsize',             0.25);
 opt = contset(opt, 'MaxNewtonIters',          8);
 opt = contset(opt, 'MaxCorrIters',            10);
 opt = contset(opt, 'MaxTestIters',            10);
@@ -42,8 +41,11 @@ opt = contset(opt, 'console_output_level',    3);
 opt = contset(opt, 'contL_DiagnosticsLevel',  3);
 opt = contset(opt, 'MoorePenrose',            false);
 opt = contset(opt, 'contL_SmoothingAngle',    1);
-opt = contset(opt, 'enable_bpc',              false);
+opt = contset(opt, 'enable_bpc',              false, ...
+                   'enable_nf_pd',            false, ...
+                   'enable_nf_lpc',           true, ...
+                   'enable_nf_ns',            false);
 
  
 
-contL(@limitcycleL, initial_continuation_data, [], opt);
+contL(@limitcycleL, initial_continuation_data, [], opt, @plot_T_versus_param);

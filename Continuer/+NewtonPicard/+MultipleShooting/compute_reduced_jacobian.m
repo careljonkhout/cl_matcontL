@@ -155,7 +155,7 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
   
   indices = 1:basis_size;
   for i=1:m
-    b_g_i                  = d_phi_d_gamma(phases_0(:,i), ...
+    b_g_i                  = NewtonPicard.d_phi_d_p(phases_0(:,i), ...
                                            delta_t(i), parameters);
     
     ni                     = next_index_in_cycle(i,m);
@@ -214,32 +214,6 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
     lhs_2_1    d_s_d_T           d_s_d_gamma + cds.previous_dydt_0' * delta_q_gamma(:,1);
   ];
 
-end
-
-
-    
-function x_end = shoot(x, delta_t, parameters)
-  global cds contopts
-  f =@(t, y) cds.dydt_ode(t, y, parameters{:});
-  integration_opt = odeset(...
-    'AbsTol',      contopts.integration_abs_tol,    ...
-    'RelTol',      contopts.integration_rel_tol,    ...
-    'Jacobian',     @(t,y) feval(cds.jacobian_ode,t,y,parameters{:}) ...
-  );
-  [~, orbit] = cds.integrator(f, [0 delta_t], x, integration_opt);
-  x_end = orbit(end,:)';
-end
-
- 
-function dphidp = d_phi_d_gamma(x, delta_t, parameters)
-  global cds
-  ap = cds.ActiveParams;
-  h = 1e-6;
-  parameters{ap} = parameters{ap} - h;
-  phi_1 = shoot(x, delta_t, parameters);
-  parameters{ap} = parameters{ap} + 2*h;
-  phi_2 = shoot(x, delta_t, parameters);
-  dphidp = (phi_2 - phi_1)/h/2;
 end
 
   

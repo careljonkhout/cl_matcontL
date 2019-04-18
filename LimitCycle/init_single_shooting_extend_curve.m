@@ -30,11 +30,11 @@ function init_single_shooting_extend_curve(varargin)
   end
 
   
-  do_init_single_shooting(lc_input);
+  do_init_single_shooting_extend_curve(lc_input);
               
 end
 
-function do_init_single_shooting(in)
+function do_init_single_shooting_extend_curve(in)
     
   global cds  
   handles                = feval(in.odefile);

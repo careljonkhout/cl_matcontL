@@ -1,4 +1,8 @@
 function plot_T_versus_param(currpoint, trialpoint)
+  if isempty(findobj('type', 'figure'))
+    figure
+  end
+  hold on;
   curr_T      = currpoint.x(end-1);
   trial_T     = trialpoint.x(end-1);
   curr_param  = currpoint.x(end);

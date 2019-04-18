@@ -28,3 +28,7 @@ All cycles:
 - I have observed that the continuer does not detect a singlarity if a singularity
   was detected in the previous step.
 
+
+see also todo comments in the code. use "find files" in matlab 
+or rgrep in linux/cygwin to find them quickly.
+

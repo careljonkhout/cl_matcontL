@@ -23,8 +23,8 @@ function func = curve_func(varargin)
   y_end = zeros(cds.nphases * cds.nMeshPoints,1);
   for i=0:cds.nMeshPoints-1
     indices = (1:cds.nphases) + i * cds.nphases;
-    y_end(indices) = ...
-      shoot(y_0(indices), i+1, period, parameters);
+    delta_t = period * [cds.mesh(i+1) cds.mesh(i+2)];
+    y_end(indices) = NewtonPicard.shoot(y_0(indices), delta_t, parameters);
   end
   r = zeros(cds.nphases * cds.nMeshPoints,1); % residuals
   for i=0:cds.nMeshPoints-2
@@ -40,19 +40,6 @@ function func = curve_func(varargin)
 %    phases_0, integration_opt);
   func = [r
           (y_0(1:cds.nphases) - cds.previous_phases)' * cds.previous_dydt_0 ]; 
-end
-%-------------------------------------------------------------------------------
-function x_end = shoot(x, mesh_index, period, parameters)
-  global cds contopts
-  f =@(t, y) cds.dydt_ode(t, y, parameters{:});
-  integration_opt = odeset(...
-    'AbsTol',       contopts.integration_abs_tol,    ...
-    'RelTol',       contopts.integration_rel_tol,    ...
-    'Jacobian',     @(t,y) feval(cds.jacobian_ode,t,y,parameters{:}) ...
-  );
-  time_interval = period * [cds.mesh(mesh_index) cds.mesh(mesh_index+1)];
-  [~, trajectory] = ode15s(f, time_interval, x, integration_opt);
-  x_end = trajectory(end,:)';
 end
 %-------------------------------------------------------------------------------
 function jacobian = jacobian(varargin)
@@ -90,24 +77,14 @@ function jacobian = jacobian(varargin)
   for i=0:cds.nMeshPoints-1
     % compute d_y_d_p
     indices = (1:cds.nphases) + i * cds.nphases;
-    jacobian(indices,M+2) = compute_d_phi_d_p(...
-      y_0(indices), i+1, period, parameters);
+    delta_t = period * [cds.mesh(i+1) cds.mesh(i+2)];
+    jacobian(indices,M+2) = ...
+       NewtonPicard.compute_d_phi_d_p(y_0(indices), delta_t, parameters);
   end
   % specify d_s_d_y
   jacobian(M+1,1:cds.nphases) = cds.previous_dydt_0';
   % specify d_s_d_T = jacobian(N+1,N+1) = 0;
   % specify d_s_d_p = jacobian(N+1,N+2) = 0;
-end
-%-------------------------------------------------------------------------------
-function d_phi_d_p = compute_d_phi_d_p(x, mesh_index, period, parameters)
-  global cds
-  ap = cds.ActiveParams;
-  h = 1e-6;
-  parameters{ap} = parameters{ap} - h;
-  phi_1 = shoot(x, mesh_index, period, parameters);
-  parameters{ap} = parameters{ap} + 2*h;
-  phi_2 = shoot(x, mesh_index, period, parameters);
-  d_phi_d_p = (phi_2 - phi_1)/h/2;  
 end
 %-------------------------------------------------------------------------------
 function [y_end, monodromy] = ...
@@ -175,48 +152,46 @@ function [y_end, monodromy] = ...
   end 
 end
 %-------------------------------------------------------------------------------
-%-------------------------------------------------------------------------------
-% test functions are used for detecting AND location singularities by bisection
-% when detecting ids_testf_requested will be cds.ActTest, and when locating
+% Test functions are used for detecting AND location singularities by bisection.
+% When detecting ids_testf_requested will be cds.ActTest, and when locating
 % ids_testf_requested will contain only those ids of the testfunctions relevant
 % to the bifurcation that is being located.
 function [out, failed] = testfunctions(ids_testf_requested, x0, v, ~) 
   % unused arguments are v and CISdata
-  global cds
+  global cds contopts
   
   failed = false;
-  BPC_ids = 1:4;
-  PD_id  = 5; % id for period doubling test function
-  LPC_id = 6; % id for limit point of cycles test function
-  NS_id  = 7; % id for Neimarck-Sacker test function
   
-  if any(ismember([PD_id NS_id],ids_testf_requested))
+  const = Constants;
+  
+  if any(ismember([const.BPC_id const.PD_id const.NS_id], ids_testf_requested))
     update_multipliers_if_needed(x0)
   end
-  if any(ismember(BPC_ids,ids_testf_requested))
-    % detection of Branching points of cycles is currently not implemented
-    out(BPC_ids) = ones(length(BPC_ids),1);
+  if any(ismember(const.BPC_id, ids_testf_requested))
+    mults = cds.multipliers;
+    distance_to_one = abs(mults - 1);
+    [~,index]       = min(distance_to_one);
+    mults(index) = 0;
+    out(const.BPC_id) = real(prod(mults - ones(size(mults))));
   end
-  if ismember(PD_id, ids_testf_requested)
+  if ismember(const.PD_id, ids_testf_requested)
     % real is needed to ensure that small complex parts induced by roundoff
     % errors do not make the result complex.
     % A complex valued test function would cause false positives when detecting 
     % bifurcations.
-    out(PD_id) = real(prod(cds.multipliers + ones(size(cds.multipliers))));
+    out(const.PD_id) = real(prod(cds.multipliers + ones(size(cds.multipliers))));
   end
-  if ismember(LPC_id, ids_testf_requested)
-    out(LPC_id) = v(end);
+  if ismember(const.LPC_id, ids_testf_requested)
+    out(const.LPC_id) = v(end);
   end
-  if ismember(NS_id, ids_testf_requested)
-    mults = cds.multipliers;
-    psi_ns = 1;
-    for i = 1 : (length(mults) - 1)
-      for j = (i + 1) : length(mults)
-        psi_ns = psi_ns * (real(mults(i) * mults(j)) - 1);
-      end
-    end
-    out(NS_id) = psi_ns;
+  if any(ismember(const.NS_id, ids_testf_requested))
+    mults                  = cds.multipliers;
+    threshold              = contopts.real_v_complex_threshold;
+    complex_mults          = mults(abs(imag(mults)) > threshold);
+    unstable_complex_mults = complex_mults(abs(complex_mults) > 1); 
+    out(const.NS_id)       = length(unstable_complex_mults);
   end
+  
 end
 %-------------------------------------------------------------------------------
 % defines which changes in testfunctions correspond to which singularity type
@@ -228,12 +203,19 @@ end
 % rows correspond to singularities BPC, PD, LPC, and NS respectively
 function [S,L] = singularity_matrix
 
-  S = [ 0 0 0 0 8 8 8
-        8 8 8 8 0 8 8
-        8 8 8 8 8 0 8
-        8 8 8 8 8 1 0];
+  
+  sign_change    = Constants.sign_change;
+  sign_constant  = Constants.sign_constant;
+  value_change   = Constants.value_change;
+  o              = Constants.ignore; 
 
-
+  S = [ 
+  % BPC_testfunc PD_testfunc  LPC_testfunc   NS_testfunc
+    sign_change  o            sign_constant  o            % BPC    
+    o            sign_change  o              o            % PD   
+    o            o            sign_change    o            % LPC   
+    o            o            o              value_change % NS
+  ];
   L = [ 'BPC';'PD '; 'LPC'; 'NS ' ];
 end
 %-------------------------------------------------------------------------------

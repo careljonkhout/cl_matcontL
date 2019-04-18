@@ -188,8 +188,8 @@ options.basis_grow_threshold              = 1e-3;
 
 options.multiplier_print_threshold = 0.8;
 options.pause                      = false;
-options.nsteps_before_pause        = 10; % or special to pause at special points 
-options.real_v_complex_threshold   = 1e-13;
+options.nsteps_before_pause        = 10; 
+options.real_v_complex_threshold   = 1e-11;
                                               
 
                             %% Determine testpath

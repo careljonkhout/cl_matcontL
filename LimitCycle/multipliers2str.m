@@ -6,9 +6,12 @@ function str = multipliers2str(multipliers)
   print_diag(0,'deviation of trivial multiplier: %.2e\n', accuracy);
   
   if contopts.NewtonPicard
-    print_diag(0, 'basis size: %d\n', length(multipliers));
+    print_diag(0, 'number of multipliers: %d\n', length(multipliers));
   end
   
+  % Printing every multiplier that is computed would produce too much output,
+  % therefore we print only the multipliers of which the norm is above a
+  % threshold that can be configured by the user.
   threshold = contopts.multiplier_print_threshold;
   multipliers = multipliers(abs(multipliers) > threshold);
   str = sprintf('multipliers with norm larger than %.3f:\n', threshold);

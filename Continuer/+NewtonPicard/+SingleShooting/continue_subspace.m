@@ -72,18 +72,23 @@ function V = continue_subspace(period, parameters)
       
     U = V_extended'*W;
     [Y,S] = schur(U);
-    % order schur vectors
-    [~,I] = sort(abs(ordeig(S)));
-    I(I) = 1:length(I);
-    [Y,S] = ordschur(Y,S,I);
+    % Order schur vectors find the permutation whose inverse sorts the Schur
+    % vectors by absolute value of the associated eigenvalues in descending
+    % order:
+    [~, permutation] = sort(abs(ordeig(S)));
+    % Invert permutation:
+    permutation(permutation) = 1:length(permutation);
+    % Apply the permutation to sort the Schur vector in the required order:
+    [Y,S] = ordschur(Y,S,permutation);
     V_extended = V_extended * Y;
     W = W * Y;
     k = size(V_extended,2) - 1;
-    % note: svds(A,1) is a built-in matlab function
-    % that computes the largest singular value of A    
+    % note: svds(A,1) is a built-in matlab function that computes the largest
+    % singular value of A
     while k >= 1 ...
         && (S(k+1,k) ~= 0 || S(k+1,k) == 0 ...
-        && svds(W(:,1:k) - V_extended(:,1:k) * S(1:k,1:k), 1) >= contopts.NewtonPicardBasisTolerance )
+        && svds(W(:,1:k) - V_extended(:,1:k) * S(1:k,1:k), 1) ...
+              >= contopts.NewtonPicardBasisTolerance )
       k = k - 1;
 
     end

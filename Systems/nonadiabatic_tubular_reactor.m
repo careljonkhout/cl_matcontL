@@ -1,10 +1,10 @@
 function out = nonadiabatic_tubular_reactor
 %
-% Odefile of 1-d cubic quintic Ginzburg Landau equation
-% discretized using a finite differences on a equidistant mesh
+% Odefile of a space discretization of a 1-d nonadiabatic tubular reactor.
+% Discretized using a finite differences on a equidistant mesh.
 
   out{1} = @init;
-  out{2} = @fun_eval;
+  out{2} = @d_u__d_t;
   out{3} = [];%@jacobian;
   out{4} = [];%@jacobianp;
   out{5} = [];
@@ -16,16 +16,21 @@ function out = nonadiabatic_tubular_reactor
   out{11} = []; %@user function 1
 end
 % ----------------------------------------------------------------------
-function du = fun_eval(~,x,D,P_em,P_eh,BETA,phi_0,GAMMA,B) % ignored parameter is t (time)
-  N = length(x) / 2;
+function du = d_u__d_t(~,u,D,P_em,P_eh,BETA,phi_0,GAMMA,B)
+  % ignored parameter is t (time)
+  N = length(u) / 2;
   h = 1 / (N-1);
-  u = reshape(x,2,N);
+  u = reshape(u,2,N);
   du = zeros(2,N);
   for i=1:N
     du(:,i) = reaction_term(u(:,i));
   end
   P = [P_em; P_eh];
-  % at the left boundary, the term due to the derivative u_x is given by left
+  % u(:,i) corresponds to the values of y and phi at (i-1)*h. Thus, u(:,1)
+  % corresponds to y(x=0) and phi(x=0), and u(:,N) corresponds to y(x=1) and
+  % phi(x=1).
+  %
+  % At the left boundary, the term due to the derivative u_x is given by left
   % the Neumann BC:
   du(:,1) = du(:,1) + P .* (u(:,1) - 1);
   % at the right boundary, the term due to the derivative u_x is given by the

@@ -39,7 +39,9 @@ opt = contset(opt, 'Singularities',           true);
 opt = contset(opt, 'console_output_level',    5);
 opt = contset(opt, 'contL_DiagnosticsLevel',  0);
 opt = contset(opt, 'MoorePenrose',            false);
-opt = contset(opt, 'contL_SmoothingAngle',    pi);
+opt = contset(opt, 'contL_SmoothingAngle',    pi, ...
+                   'pause',                   true, ...
+                   'nsteps_before_pause',     20);
 
 global contopts
 contopts = opt;

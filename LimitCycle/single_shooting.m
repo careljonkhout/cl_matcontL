@@ -9,7 +9,7 @@ function out = single_shooting
   out{7}  = [];%@userf;
   out{8}  = @process_singularity;
   out{9}  = @singularity_matrix;
-  out{10} = [];%@locate;
+  out{10} = @locate;
   out{11} = @init;
   out{12} = [];%@done;
   out{13} = @adapt;
@@ -33,25 +33,10 @@ function f = curve_function(varargin)
   parameters                   = cds.P0;
   parameters(cds.ActiveParams) = active_par_val;
   parameters                   = num2cell(parameters);
+  shoot                        = @NewtonPicard.shoot;
   phases_end                   = shoot(phases_0, period, parameters);
   f = [phases_end - phases_0; 
       (phases_0 - cds.previous_phases)' * cds.previous_dydt_0  ]; 
-end
-%-------------------------------------------------------------------------------
-% Computes the solution of the initial value problem x(0) = x, x'(t) = f(x),
-% where f is defined by cds.dydt_ode, and returns x(period). The initial value
-% problem is solved using solver from the matlab ode suite or a fully compatible
-% alternative. The specific solver is specified by cds.integrator.
-function x_end = shoot(x, period, parameters)
-  global cds contopts
-  f =@(t, y) cds.dydt_ode(t, y, parameters{:});
-  integration_opt = odeset(...
-    'AbsTol',      contopts.integration_abs_tol,    ...
-    'RelTol',      contopts.integration_rel_tol,    ...
-    'Jacobian',     @(t,y) feval(cds.jacobian_ode,t,y,parameters{:}) ...
-  );
-  [~, trajectory] = cds.integrator(f, [0 period], x, integration_opt);
-  x_end = trajectory(end,:)';
 end
 %-------------------------------------------------------------------------------
 % Computes the jacobian of the curvefunction at evaluated at varargin{1}.
@@ -68,26 +53,15 @@ function jacobian = jacobian(varargin)
   [y_end, monodromy] = compute_monodromy(phases, period, parameters);
   jacobian     = [monodromy-eye(cds.nphases); cds.previous_dydt_0'];
   % add d_phi__d_T and d_s__d_T
-  d_phi_d_T    = cds.dydt_ode(0,y_end,parameters{:});
-  d_s_d_T      = cds.previous_dydt_0' * d_phi_d_T;
-  jacobian     = [jacobian [d_phi_d_T; d_s_d_T]];
-  d_phi__d_p   = compute_d_phi_d_p(phases, period, parameters);
-  d_s__d_p     = cds.previous_dydt_0' * d_phi__d_p;
-  jacobian     = [jacobian [d_phi__d_p; d_s__d_p]];
+  d_phi_d_T         = cds.dydt_ode(0,y_end,parameters{:});
+  d_s_d_T           = cds.previous_dydt_0' * d_phi_d_T;
+  jacobian          = [jacobian [d_phi_d_T; d_s_d_T]];
+  compute_d_phi_d_p = @NewtonPicard.compute_d_phi_d_p;
+  d_phi__d_p        = compute_d_phi_d_p(phases, period, parameters);
+  d_s__d_p          = cds.previous_dydt_0' * d_phi__d_p;
+  jacobian          = [jacobian [d_phi__d_p; d_s__d_p]];
 end
-%-------------------------------------------------------------------------------
-% Computes the derivative of the curve function w.r.t. the active parameter,
-% evaluated at x. This function is not accesible from outside this file.
-function dphidp = compute_d_phi_d_p(x, period, parameters)
-  global cds
-  ap = cds.ActiveParams;
-  h = 1e-6;
-  parameters{ap} = parameters{ap} - h;0
-  phi_1 = shoot(x, period, parameters);
-  parameters{ap} = parameters{ap} + 2*h;
-  phi_2 = shoot(x, period, parameters);
-  dphidp = (phi_2 - phi_1)/h/2;
-end
+
 %-------------------------------------------------------------------------------
 % Computes the monodromy matrix of the current approximation of the cycle 
 % starting from the point x near the cycle.
@@ -252,8 +226,8 @@ function update_multipliers_if_needed(x)
   end
 end
 %-------------------------------------------------------------------------------
-% test functions are used for detecting AND location singularities by bisection
-% when detecting ids_testf_requested will be cds.ActTest, and when locating
+% Test functions are used for detecting AND location singularities by bisection.
+% When detecting ids_testf_requested will be cds.ActTest, and when locating
 % ids_testf_requested will contain only those ids of the testfunctions relevant
 % to the bifurcation that is being located.
 function [out, failed] = testfunctions(ids_testf_requested, x0, v, ~) 
@@ -261,42 +235,35 @@ function [out, failed] = testfunctions(ids_testf_requested, x0, v, ~)
   global cds contopts
   
   failed = false;
-  BPC_ids = 1:4;
-  PD_id  = 5; % id for period doubling test function
-  LPC_id = 6; % id for limit point of cycles test function
-  NS_ids  = 7:8; % id for Neimarck-Sacker test function
   
-  if any(ismember([PD_id NS_ids],ids_testf_requested))
+  const = Constants;
+  
+  if any(ismember([const.BPC_id const.PD_id const.NS_id], ids_testf_requested))
     update_multipliers_if_needed(x0)
   end
-  if any(ismember(BPC_ids,ids_testf_requested))
-    % detection of Branching points of cycles is currently not implemented
-    out(BPC_ids) = ones(length(BPC_ids),1);
+  if any(ismember(const.BPC_id, ids_testf_requested))
+    mults = cds.multipliers;
+    distance_to_one = abs(mults - 1);
+    [~,index]       = min(distance_to_one);
+    mults(index) = 0;
+    out(const.BPC_id) = real(prod(mults - ones(size(mults))));
   end
-  if ismember(PD_id, ids_testf_requested)
+  if ismember(const.PD_id, ids_testf_requested)
     % real is needed to ensure that small complex parts induced by roundoff
     % errors do not make the result complex.
     % A complex valued test function would cause false positives when detecting 
     % bifurcations.
-    out(PD_id) = real(prod(cds.multipliers + ones(size(cds.multipliers))));
+    out(const.PD_id) = real(prod(cds.multipliers + ones(size(cds.multipliers))));
   end
-  if ismember(LPC_id, ids_testf_requested)
-    out(LPC_id) = v(end);
+  if ismember(const.LPC_id, ids_testf_requested)
+    out(const.LPC_id) = v(end);
   end
-  if any(ismember(NS_ids, ids_testf_requested))
-    mults = cds.multipliers;
-    psi_ns = 1;
-    for i = 1 : (length(mults) - 1)
-      for j = (i + 1) : length(mults)
-        psi_ns = psi_ns * (real(mults(i) * mults(j)) - 1);
-      end
-    end
-    mults = cds.multipliers;
-    complex_mults = mults(abs(imag(mults)) > contopts.real_v_complex_threshold);
-    
-    unstable_complex_mults = complex_mults(abs(complex_mults) > 1);
-    
-    out(NS_ids) = [psi_ns length(unstable_complex_mults)];
+  if any(ismember(const.NS_id, ids_testf_requested))
+    mults                  = cds.multipliers;
+    threshold              = contopts.real_v_complex_threshold;
+    complex_mults          = mults(abs(imag(mults)) > threshold);
+    unstable_complex_mults = complex_mults(abs(complex_mults) > 1); 
+    out(const.NS_id)       = length(unstable_complex_mults);
   end
   
 end
@@ -310,12 +277,19 @@ end
 % rows correspond to singularities BPC, PD, LPC, and NS respectively
 function [S,L] = singularity_matrix
 
-  S = [ 0 0 0 0 8 8 8 8
-        8 8 8 8 0 8 8 8
-        8 8 8 8 8 0 8 8
-        8 8 8 8 8 1 0 2];
+  
+  sign_change    = Constants.sign_change;
+  sign_constant  = Constants.sign_constant;
+  value_change   = Constants.value_change;
+  o              = Constants.ignore; 
 
-
+  S = [ 
+  % BPC_testfunc PD_testfunc  LPC_testfunc   NS_testfunc
+    sign_change  o            sign_constant  o            % BPC    
+    o            sign_change  o              o            % PD   
+    o            o            sign_change    o            % LPC   
+    o            o            o              value_change % NS
+  ];
   L = [ 'BPC';'PD '; 'LPC'; 'NS ' ];
 end
 %-------------------------------------------------------------------------------
@@ -329,7 +303,6 @@ function [failed,s] = process_singularity(id,point,s)
   x = point.x;
   switch id
   case 1
-    % note: as of march 2019 detection for BPC is not yet implemented 
     format_string = 'Branch Point cycle(period = %e, parameter = %e)\n'; 
     print_diag(0, format_string, x(end-1), x(end));
     s.msg  = sprintf('Branch Point cycle'); 
@@ -370,7 +343,10 @@ function [failed,s] = process_singularity(id,point,s)
   failed = 0;
 end  
 %-------------------------------------------------------------------------------
-function options; end
+function options
+  global contopts
+  contopts = contset(contopts, 'Locators', [0 0 0 1]);
+end
 %-------------------------------------------------------------------------------
 function CISdata = curve_CIS_first_point(~) % unused argument is x
   CISdata = 1;
@@ -387,4 +363,96 @@ function [has_changed,x2,v2,CISdata] = adapt(x,v,~,~)
   v2 = v;
   CISdata = [];
   has_changed = false;
+end
+%-------------------------------------------------------------------------------
+function p_out = locate(id, p1,p2)
+  switch id   
+    case Constants.NS_id
+      p_out = locateNS(p1, p2);
+    otherwise
+      error('No locator defined for singularity %d', id);
+  end
+end
+%-------------------------------------------------------------------------------
+function p_out = locateNS(p1, p2)
+
+  tic
+  global contopts
+  
+  ns_id = 4;
+
+  p_out = [];
+  
+  MaxIters      = contopts.MaxTestIters;          
+  VarTolerance  = contopts.contL_Testf_VarTolerance;
+
+
+  [t1, failed1] = testfunctions(ns_id, p1.x, p1.v, 0);
+  t1 = t1(ns_id);
+  % todo: prevent computation of things have already been computed
+  [t2, failed2] = testfunctions(ns_id, p2.x, p2.v, 0);
+  t2 = t2(ns_id);
+  print_diag(3,'t1:%d t2:%d\n',t1,t2);
+  if ((~isempty(failed1)) || (~isempty(failed2))) && (failed1 || failed2)
+    print_diag(3, 'Evaluation of testfunctions failed in bisection');
+    return;
+  end
+
+  for i = 1:MaxIters
+    % todo: perhaps it is possible to locate using secant method, instead of
+    % simple bisection.
+    x3 = p1.x + (p2.x-p1.x)/2;
+    v3 = p1.v + (p2.v-p1.v)/2;
+    v3 = v3/norm(v3);
+    if contopts.NewtonPicard
+      p3 = NewtonPicard.do_corrections(x3,v3);
+      if isempty(p3)
+        print_diag(3, 'NewtonPicard algorithm failed during bisection')
+        return
+      end
+    else
+      p3 = newtcorrL(x3,v3,1);
+      if isempty(p3)
+        print_diag(3, 'newtcorrL algorithm failed during bisection')
+        return
+      end
+    end
+    
+    
+    [tval, failed] = testfunctions(ns_id, p3.x, p3.v, 0);
+    tval = tval(ns_id);
+    if failed
+      print_diag(3, 'Evaluation of testfunctions failed in bisection');
+      return;
+    end
+    
+    %JH: Changed to make the check for relative difference. 9/25/06
+    %dist1 = norm(x-x1);
+    %dist2 = norm(x-x2);
+    dist1 = 2 * norm(p3.x-p1.x) / (norm(p1.x)+norm(p3.x));
+    dist2 = 2 * norm(p3.x-p2.x) / (norm(p2.x)+norm(p3.x));
+    
+    
+    if min(dist1,dist2) < VarTolerance
+      failed2 = 0;
+      p_out = p3;
+      break;
+    elseif tval == t1
+      p1 = p3;
+    elseif tval == t2
+      p2 = p3;
+    else
+      print_diag(1, ...
+        ['Error in locating NS in function locateNS in ' mfilename '\n']);
+      return;
+    end
+  end
+
+  if failed2
+    print_diag(1, ['Maximum number of iterations reached ' ...
+      ' without meeting tolerance in locateNS in ' mfilename ]);
+  end
+
+  print_diag(1,'Time spent in bisection: %f\n', toc);
+
 end

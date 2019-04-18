@@ -1,5 +1,5 @@
 function loadCurveFile(curve)
-global cds contopts
+global cds
 
 cds.curve = curve;
 
@@ -19,10 +19,7 @@ cds.curve_init             = curvehandles{11}; %not used - Slot to initializer f
 cds.curve_done             = curvehandles{12};
 cds.curve_adapt            = curvehandles{13};
 
-% if ~contopts.CIS_UsingCIS      % DV 2018
-%     cds.curve_CIS_first_point    = [];
-%     cds.curve_CIS_step           = [];
-% else
-    cds.curve_CIS_first_point    = curvehandles{14};
-    cds.curve_CIS_step           = curvehandles{15};
-% end
+
+cds.curve_CIS_first_point    = curvehandles{14};
+cds.curve_CIS_step           = curvehandles{15};
+
