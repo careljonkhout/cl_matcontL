@@ -34,10 +34,6 @@ function func = curve_func(varargin)
   end
   r((1:cds.nphases)+(cds.nMeshIntervals-1)*cds.nphases) ... 
     = y_end(end-cds.nphases+1:end) - y_0(1:cds.nphases);
-%  cds.cycle_trajectory = ode15s(...
-%    @(t, y) cds.dydt_ode(t, y, parameters{:}), ...
-%    linspace(0, period, cds.nDiscretizationPoints), ...
-%    phases_0, integration_opt);
   func = [r
           (y_0(1:cds.nphases) - cds.previous_phases)' * cds.previous_dydt_0 ]; 
 end
@@ -47,6 +43,7 @@ function jacobian = jacobian(varargin)
   M = cds.nMeshIntervals * cds.nphases;
   nphases = cds.nphases;
   m = cds.nMeshIntervals;
+  % compute number of nonzero's (nnz)
   nnz = m * nphases^2 + m * nphases; % main blocks
   nnz = nnz + 2 * (M + 1);           % last 2 columns
   nnz = nnz + M + 2;                 % bottom row
@@ -108,7 +105,8 @@ function [y_end, monodromy] = monodromy_full(x, mesh_index, period, parameters)
   );
   time_interval = period * [cds.mesh(mesh_index)  cds.mesh(mesh_index+1)];
   x_with_monodromy = [x; reshape(eye(nphases),[nphases^2 1])];
-  [~, trajectory] = ode15s(f, time_interval, x_with_monodromy, integration_opt);
+  [~, trajectory] = cds.integrator( ...
+                        f, time_interval, x_with_monodromy, integration_opt);
   y_end = trajectory(end,1:nphases)';
   monodromy = trajectory(end,nphases+1:end);
   monodromy = reshape(monodromy, [nphases nphases]);
@@ -137,16 +135,16 @@ function [y_end, monodromy] = ...
   );
   f = @(t, y) cds.dydt_ode(t, y, parameters{:});
   time_interval = period * [cds.mesh(mesh_index) cds.mesh(mesh_index+1)];
-  cycle         = ode15s(f, time_interval, x, integration_opt);
+  cycle         = cds.integrator(f, time_interval, x, integration_opt);
   y_end         = deval(cycle,period);
   monodromy     = eye(cds.nphases);
   integration_opt = odeset(integration_opt, 'Jacobian', ...
     @(t,y) feval(cds.jacobian_ode, t, deval(cycle,t), parameters{:}));
   f = @(t, y) cds.jacobian_ode(t, deval(cycle,t), parameters{:}) * y;
-  
+  integrator = cds.integrator;
   parfor i=1:cds.nphases
     print_diag(1,'computing column %d of monodromy matrix ',i);
-    [~, monodromy_map_trajectory] = ode15s(...
+    [~, monodromy_map_trajectory] = feval(integrator,...
       f, time_interval, monodromy(:,i), integration_opt);
     monodromy(:,i) = monodromy_map_trajectory(end,:);
   end 

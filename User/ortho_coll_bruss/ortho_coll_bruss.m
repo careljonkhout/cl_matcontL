@@ -43,6 +43,7 @@ if draw_plots
   ylabel('x_1,x_2,y_1,y_2');
 end
 
+plot(x2(1:N))
 
 % approximate_period should between the period and twice the period for the
 % orthogonal collocation initializer

@@ -1,16 +1,8 @@
-load('/home/carel/Documents/cl_matcontL/User/newton_picard_bruss/Data/newton_picard_bruss_09-Apr-2019_21_45_60/point 8.mat')
+load('/home/carel/Documents/cl_matcontL/User/newton_picard_bruss/Data/newton_picard_bruss_19-Apr-2019_15_24_52/point 49.mat')
 
-  lc_input.initial_continuation_state          = [];
-  lc_input.initial_continuation_tangent_vector = [];
-  lc_input.odefile                             = [];
-  lc_input.ode_parameters                      = [];
-  lc_input.active_parameter_index              = [];
-  lc_input.time_integration_method             = @ode15s;
-  lc_input.time_integration_options            = odeset();
-  lc_input.subspace_size                       = [];
-  lc_input.nDiscretizationPoints               = 100;
 
-N = 31;
+
+N = (length(point.x)-2)/2;
 L = 1.1; A = 2; B = 5.45; Dx = 0.008; Dy = 0.004;
 ode_parameters = {N; L; A; B; Dx; Dy};%parameters = {L; A; B; Dx; Dy};
 ode_parameters{2} = point.x(end);
@@ -35,7 +27,6 @@ opt = contset(opt, 'VarTolerance',   1e-6);
 opt = contset(opt, 'FunTolerance',   1e-6);
 opt = contset(opt, 'NewtonPicardBasisTolerance',   1e-6);
 opt = contset(opt, 'contL_SmoothingAngle',   3);
-opt = contset(opt, 'Locators', [0 0 0 1]);
 % we don't want to adapt
 % since it is not implemented
 opt = contset(opt, 'Adapt',          1000*1000*1000);

@@ -33,7 +33,6 @@ print_diag(0,[title_format_string '\n'], title_format_args{:});
 % cds.P0 = cell2mat(parameters);
 % cds.options = contset();
 % cds.options.PartitionMonodromy = cds.nphases > 30;
-% cds.nDiscretizationPoints = 1000;
 % cds.symjac = false;
 % cds.usernorm = [];
 % cds.probfile = odefile;

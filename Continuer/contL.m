@@ -727,22 +727,26 @@ for i = 1:MaxIters
     end
     if contopts.NewtonPicard
       p3 = NewtonPicard.do_corrections(x3,v3);
-      if id == Constants.lpc_id 
+      if isempty(p3)
+        print_diag(3, 'Newton-Picard corrections failed during bisection\n')
+        return        
+      end
+      if id == Constants.LPC_id 
         % if we are locating a limit point of cycles (LPC)
-        p3.v = NewtonPicard.find_tangent_vector(cds.curve,x3,v3);
+        p3.v = NewtonPicard.find_tangent_vector(cds.curve, p3.x, p3.v);
       end
     else
       p3 = newtcorrL(x3,v3, CISdata3);
-    end
-    if isempty(p3)
-        print_diag(3, 'newtcorrL algorithm failed during bisection')
+      if isempty(p3)
+        print_diag(3, 'newtcorrL algorithm failed during bisection\n')
         return
+      end
     end
     
     p3.CISdata = feval(cds.curve_CIS_step, p3.x, p1.CISdata);
     [tval, failed] = EvalTestFunc(id,p3);
     if failed
-        print_diag(3, 'Evaluation of testfunctions failed in bisection');
+        print_diag(3, 'Evaluation of testfunctions failed in bisection\n');
         return;
     end
     

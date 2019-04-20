@@ -25,7 +25,6 @@ cds.ndim = cds.nphases + cds.nap + 1;
 cds.P0 = cell2mat(parameters);
 cds.options = contset();
 cds.options.PartitionMonodromy = false;
-cds.nDiscretizationPoints = 1000;
 cds.symjac = false;
 cds.usernorm = [];
 cds.probfile = odefile;

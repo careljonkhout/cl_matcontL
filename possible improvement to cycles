@@ -3,30 +3,18 @@ Orthogonal Collocation
     fields are read form the lds structure in the mex files. It would be nice to 
     fix this.
 
-  
- 
 Newton Picard
  
- - test to see if nDiscretizationPoints can be removed (I think it can be removed)
- - compute tangent vector at every step, instead of using secant vector.
  - implement starting form hopf
  - better subspace continuation/computation. Use trivial eigenvalue/eigenvector pair
  
 
 All cycles:
 
-- create separate test functions for locating and detection of bifurcations.
-  This prevent the detection of neutral saddles, which are irrelevant.
-
 - reuse the Jacobian (in ortho col case) or subspace computation (in newt pic case)
   that is computed to compute the tangent vector to compute the multipliers
   (instead of recomputing)
 
-- BPC detection could be added by checking if a multiplier crossed the unit 
-  at one, and excluding the LPC case.
-
-- I have observed that the continuer does not detect a singlarity if a singularity
-  was detected in the previous step.
 
 
 see also todo comments in the code. use "find files" in matlab 

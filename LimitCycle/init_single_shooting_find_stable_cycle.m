@@ -18,7 +18,6 @@ function initial_continuation_data = ...
   input.poincare_tolerance        = 5e-2;
   input.show_plot                 = false;
   input.subspace_size             = [];
-  input.nDiscretizationPoints     = 100;
   
   i=1;
   while i <= nargin
@@ -37,7 +36,7 @@ function initial_continuation_data = ...
       error(['You must specifiy ' fields{i} '.'])
     end
   end
-
+ 
   input.point_on_limitcycle = converge_to_cycle(input);
   
   initial_continuation_data = init_single_shooting_internal(input);    
@@ -66,7 +65,7 @@ function point_on_cycle = converge_to_cycle(in)
   if in.show_plot
     orbit_to_cycle_t = linspace(0, in.time_to_converge_to_cycle, 500);
     orbit_to_cycle_x = deval(solution, orbit_to_cycle_t);
-    plot(orbit_to_cycle_t, orbit_to_cycle_x-solution.y(:,1))
+     plot(orbit_to_cycle_t, orbit_to_cycle_x-solution.y(:,1))
     xlabel('t')
     ylabel('phase variables')
     pause

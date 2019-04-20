@@ -78,9 +78,9 @@ end
 % starting from the point x near the cycle. The matrix is computed by
 % integrating one N + N^2 dimensional system defined by:
 %
-% x'    = f(x, parameters)
-% x(0)  = x
-% M'(x) = f_x(x, parameters) * M
+% x'(t) = f(x(t), parameters)
+% M'(t) = f_x(x(t), parameters) * M(t)
+% x(0)  = x_0
 % M(0)  = I
 %
 % where M is the monodromy matrix and N is the number of 1 dimensional equations
@@ -91,7 +91,7 @@ end
 %
 % This method is for testing purposes only. For actual continuation of cycles it
 % is recomended to use NewtonPicard or orthogonal collocation.
-function [y_end, monodromy] = monodromy_full(x, period, parameters)
+function [y_end, monodromy] = monodromy_full(x_0, period, parameters)
   global cds contopts
   nphases = cds.nphases;
   f =@(t, y) dydt_monodromy_full(t, y, parameters);
@@ -100,7 +100,7 @@ function [y_end, monodromy] = monodromy_full(x, period, parameters)
     'RelTol',      contopts.integration_abs_tol     ... % todo add JPattern
   );
 
-  x_with_monodromy = [x; reshape(eye(nphases),[nphases^2 1])];
+  x_with_monodromy = [x_0; reshape(eye(nphases),[nphases^2 1])];
   [~, trajectory] = cds.integrator(...
     f, [0 period], x_with_monodromy, integration_opt);
   y_end = trajectory(end,1:nphases)';
@@ -129,8 +129,7 @@ function [y_end, monodromy] = monodromy_column_by_column(x, period, parameters)
     'Jacobian',     @(t,y) feval(cds.jacobian_ode,t,y,parameters{:}) ...
   );
   f = @(t, y) cds.dydt_ode(t, y, parameters{:});
-  cycle = cds.integrator(f, linspace(0,period,cds.nDiscretizationPoints), ...
-    x, integration_opt);
+  cycle = cds.integrator(f, [p period], x, integration_opt);
   y_end = deval(cycle,period);
   monodromy = eye(cds.nphases);
   integration_opt = odeset(integration_opt, 'Jacobian', ...

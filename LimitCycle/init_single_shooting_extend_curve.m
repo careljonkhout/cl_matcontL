@@ -8,7 +8,6 @@ function init_single_shooting_extend_curve(varargin)
   lc_input.active_parameter_index              = [];
   lc_input.time_integration_method             = @ode15s;
   lc_input.subspace_size                       = [];
-  lc_input.nDiscretizationPoints               = 100;
   
   i=1;
   while i <= nargin
@@ -58,7 +57,6 @@ function do_init_single_shooting_extend_curve(in)
   cds.jacobian_ode    = jacobian_ode;
   cds.integrator      = in.time_integration_method;
   cds.preferred_basis_size  = in.subspace_size;
-  cds.nDiscretizationPoints = in.nDiscretizationPoints;
   cds.p               = in.subspace_size;
   cds.mv_count        = 0;
  

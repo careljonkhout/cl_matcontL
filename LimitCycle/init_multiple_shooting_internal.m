@@ -1,3 +1,6 @@
+% Intended to be called by other functions. Use init_multiple_shooting, or
+% init_multiple_shooting_find_stable_cycle as a convenient way to set up to
+% inputs for this function, and call it.
 function initial_continuation_data = init_multiple_shooting_internal(in)
   global cds
   
@@ -18,7 +21,7 @@ function initial_continuation_data = init_multiple_shooting_internal(in)
   
   new_orbit = feval(in.time_integration_method, ...
     @(t,y) dydt_ode(0, y, in.ode_parameters{:}), ...
-    linspace(0,in.upper_bound_period,in.nDiscretizationPoints), ...
+    [0 in.upper_bound_period], ...
     in.point_on_limitcycle, ...
     in.time_integration_options); 
   
@@ -52,7 +55,6 @@ function initial_continuation_data = init_multiple_shooting_internal(in)
   cds.jacobian_ode    = jacobian_ode;
   cds.integrator      = in.time_integration_method;
   cds.preferred_basis_size  = in.subspace_size;
-  cds.nDiscretizationPoints = in.nDiscretizationPoints;
   cds.p               = in.subspace_size;
   cds.mv_count        = 0;
  

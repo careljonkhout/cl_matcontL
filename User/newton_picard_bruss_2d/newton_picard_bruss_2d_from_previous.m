@@ -20,24 +20,8 @@ contopts = contset();
 print_diag(0,[title_format_string '\n'], title_format_args{:});
 
 
-% cds.poincare_tolerance = 1e-1;
-% cds.minimum_period = 1;
-% cds.dydt_ode = handles{2};
-% cds.jacobian_ode = handles{3};
-% 
-% cds.probfile = odefile;
-% cds.nap = 1;
-% 
- cds.nphases = 2*N*N;
-% cds.ndim = cds.nphases + cds.nap + 1;
-% cds.P0 = cell2mat(parameters);
-% cds.options = contset();
-% cds.options.PartitionMonodromy = cds.nphases > 30;
-% cds.nDiscretizationPoints = 1000;
-% cds.symjac = false;
-% cds.usernorm = [];
-% cds.probfile = odefile;
-% cds.ncoo = cds.nphases;
+
+nphases = 2*N*N;
 
     
 int_opt = odeset( ...
@@ -47,7 +31,7 @@ int_opt = odeset( ...
 %'Jacobian',     @(t,y) feval(handles{3},t,y,parameters{:}) ...
 
 
-x0 = ones(cds.nphases,1);
+x0 = ones(nphases,1);
 dydt = handles{2};
 f =@(t, y) dydt(t, y, parameters{:});
 [t1, x1] = ode15s(f, [0 150], x0, int_opt);

@@ -3,19 +3,17 @@ function p_out = locate_NS(p1, p2, testfunctions)
   tstart = tic;
   global contopts
   
-  ns_id = 4;
-
   p_out = [];
   
   MaxIters      = contopts.MaxTestIters;          
   VarTolerance  = contopts.contL_Testf_VarTolerance;
 
 
-  [t1, failed1] = testfunctions(ns_id, p1.x, p1.v, 0);
-  t1 = t1(ns_id);
+  [t1, failed1] = testfunctions(Constants.NS_id, p1.x, p1.v, 0);
+  t1 = t1(Constants.NS_id);
   % todo: prevent computation of things have already been computed
-  [t2, failed2] = testfunctions(ns_id, p2.x, p2.v, 0);
-  t2 = t2(ns_id);
+  [t2, failed2] = testfunctions(Constants.NS_id, p2.x, p2.v, 0);
+  t2 = t2(Constants.NS_id);
   print_diag(3,'t1:%d t2:%d\n',t1,t2);
   if ((~isempty(failed1)) || (~isempty(failed2))) && (failed1 || failed2)
     print_diag(3, 'Evaluation of testfunctions failed in bisection');
@@ -43,8 +41,8 @@ function p_out = locate_NS(p1, p2, testfunctions)
     end
     
     
-    [tval, failed] = testfunctions(ns_id, p3.x, p3.v, 0);
-    tval = tval(ns_id);
+    [tval, failed] = testfunctions(Constants.NS_id, p3.x, p3.v, 0);
+    tval = tval(Constants.NS_id);
     if failed
       print_diag(3, 'Evaluation of testfunctions failed in bisection');
       return;
