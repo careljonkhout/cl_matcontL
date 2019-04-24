@@ -27,10 +27,10 @@ void mexFunction(int nlhs, mxArray *plhs[],
         mexErrMsgIdAndTxt("fusion_dydt_125:nlhs","One output required.");
     }
 
-    int numel_xxxxx = mxGetNumberOfElements(prhs[input_xxxxx]);
-
-    if( !mxIsDouble(prhs[input_xxxxx]) || numel_xxxxx != 3*(N-1)) {
-        mexErrMsgIdAndTxt("fusion_dydt_125:notDouble", "Input vector xxxxx must have 147 == 3*(N-1) elements");
+	 
+    if( !mxIsDouble(prhs[input_xxxxx]) || 
+         mxGetNumberOfElements(prhs[input_xxxxx]) != 3*(N-1) ) {
+        mexErrMsgIdAndTxt("fusion_dydt_125:notDouble","Input vector xxxxx must have 147 == 3*(N-1) elements.");
     }
 
     /* make sure the input "a" is scalar */

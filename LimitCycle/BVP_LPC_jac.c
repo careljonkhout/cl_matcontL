@@ -280,7 +280,7 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
             
 			/* Call to Matlab for evaluation of jacobian */
-			mexCallMATLAB(1,jaclhs,5,jacrhs,"cjac");
+			mexCallMATLAB(1,jaclhs,5,jacrhs,"cjac_densely_stored");
 			frhstmp = mxGetPr(jaclhs[0]);
 
 			/* Store jacobian */

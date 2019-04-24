@@ -9,6 +9,13 @@ function point = do_corrections(x0,v)
     point = [];
     return;
   end
+  if curve_function_norm < contopts.FunTolerance
+    period = x(end-1);
+    print_diag(1,'function_norm: %.8e period: %.8e corrections: %d\n', ...
+      curve_function_norm, period, corrections);
+  end
+  
+  
   while (~ (curve_function_norm < contopts.FunTolerance)) ...
       && corrections < contopts.MaxCorrIters
     period = x(end-1);

@@ -1,4 +1,4 @@
-N               = 50;
+N               = 75;
 fprintf('N=%d\n',N);
 odefile         = str2func(sprintf('fusion_precomputed_with_sage_N_%d',N));
 syms              a b q_inf
@@ -44,22 +44,50 @@ for c_style_col_index = 0:nphases-1
   end
 end
 jc(nphases+1) = length(lines);
-  
+jc_str = '{';
+
+for i=1:length(jc)
+  jc_str = [jc_str sprintf('%d, ', jc(i)) ]; %#ok<AGROW>
+end
+jc_str(end+1) = '}';
 
 filename        = sprintf('fusion_sparse_jacobian_c_code_N_%d',N);
 fid             = fopen(filename,'w');
-fprintf(fid, 'jc = {');
-fprintf(fid, '%d, ', jc);
-fprintf(fid, '};\n\n');
+%fprintf(fid, 'jc = {');
+%fprintf(fid, '%d, ', jc);
+%fprintf(fid, '};\n\n');
 
-fprintf(fid, 'row_indices = {');
-fprintf(fid, '%d, ', cellfun(@(x) x.row_index, e));
-fprintf(fid, '};\n\n');
+%fprintf(fid, 'row_indices = {');
+%fprintf(fid, '%d, ', cellfun(@(x) x.row_index, e));
+%fprintf(fid, '};\n\n');
 
 expressions = cellfun(@(x) x.expression, e, 'UniformOutput', false);
 
-for i=0:length(lines)-1
-  fprintf(fid, 'jacobian_values[%d] = %s;\n', i, expressions{i+1});
+jacobian_values = '';
+row_indices = '{';
+
+for i=1:length(lines)
+  jacobian_values = [jacobian_values ...
+      sprintf('jacobian_values[%d] = %s;\n', i-1, e{i}.expression)]; %#ok<AGROW>
+  row_indices = [row_indices sprintf('%d, ',      e{i}.row_index )]; %#ok<AGROW>
 end
+row_indices(end+1) = '}';
+
+nzmax= length(lines);
+
+
+c_code = emat('fusion_sparse_jacobian_template.c.emat');
+
+fprintf(fid,c_code);
+
 
 fclose(fid);
+
+[status, cmd_out] = ...
+  system(sprintf('sh ./compile_mex_fusion_sparse_jac_%d.sh',N));
+
+if status ~= 0
+  disp(cmd_out)
+end
+
+test_fusion_mex_quick

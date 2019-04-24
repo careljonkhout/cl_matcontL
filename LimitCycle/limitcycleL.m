@@ -84,42 +84,19 @@ end
 % ids_testf_requested will contain only those ids of the testfunctions relevant
 % to the bifurcation that is being located.
 function [out, failed] = testfunctions(ids_testf_requested, x0, v, ~) 
-  % unused arguments are v and CISdata
-  global lds contopts
+  % unused argument is CISdata
+  
+  global lds;
   
   failed = false;
-  BPC_id = 1;
-  PD_id  = 2; % id for period doubling test function
-  LPC_id = 3; % id for limit point of cycles test function
-  NS_id  = 4; % id for Neimarck-Sacker test function
   
-  if any(ismember([BPC_id PD_id NS_id], ids_testf_requested))
+  const = Constants;
+  
+  if any(ismember([const.BPC_id const.PD_id const.NS_id], ids_testf_requested))
     update_multipliers_if_needed(x0)
   end
-  if any(ismember(BPC_id, ids_testf_requested))
-    mults = lds.multipliers;
-    distance_to_one = abs(mults - 1);
-    [~,index]       = min(distance_to_one);
-    mults(index) = 0;
-    out(BPC_id) = real(prod(mults - ones(size(mults))));
-  end
-  if ismember(PD_id, ids_testf_requested)
-    % real is needed to ensure that small complex parts induced by roundoff
-    % errors do not make the result complex.
-    % A complex valued test function would cause false positives when detecting 
-    % bifurcations.
-    out(PD_id) = real(prod(lds.multipliers + ones(size(lds.multipliers))));
-  end
-  if ismember(LPC_id, ids_testf_requested)
-    out(LPC_id) = v(end);
-  end
-  if any(ismember(NS_id, ids_testf_requested))
-    mults = lds.multipliers;
-    complex_mults = mults(abs(imag(mults)) > contopts.real_v_complex_threshold);
-    unstable_complex_mults = complex_mults(abs(complex_mults) > 1); 
-    out(NS_id) = length(unstable_complex_mults);
-  end
   
+  out = cycle_testfunctions(ids_testf_requested, lds.multipliers, v);
 end
 %-------------------------------------------------------------------------------
 % defines which changes in testfunctions correspond to which singularity type
@@ -271,26 +248,14 @@ end
 function p_out = locate(id, p1,p2)
   switch id   
     case 4
-      p_out = locateNS(p1, p2);
+      p_out = locate_NS(p1, p2, @testfunctions);
     otherwise
       error('No locator defined for singularity %d', id);
   end
 end
 %-------------------------------------------------------------------------------
 function varargout = init(x, v, varargin)
-  global cds lds
   WorkspaceInit(x, v);
-  parameters_cell = num2cell(cds.P0);
-  if isfield(cds, 'Jacobian') && ~ isempty(cds.Jacobian) && ...
-            issparse(cds.Jacobian(0, x(1:lds.nphase), parameters_cell{:}))
-    % sprintf is to correctly insert the \n
-    text = sprintf(['Sparse Jacobian matrices are not supported with ' ...
-    'orthogonal collocation. \n' ...
-    'A workaround is to convert to convert the Jacobian matrix ' ...
-    'in the odefile to a full matrix using the "full"-command']);
-    error(text); %#ok<SPERR>
-  end
-  % all done succesfully
   varargout{1} = 0;
 end
 %-------------------------------------------------------------------------------
@@ -686,85 +651,3 @@ function update_upoldp(x, v)
   end
 end
 %-------------------------------------------------------------------------------
-function p_out = locateNS(p1, p2)
-
-  tic
-  global contopts
-  
-  ns_id = 4;
-
-  p_out = [];
-  
-  MaxIters      = contopts.MaxTestIters;          
-  VarTolerance  = contopts.contL_Testf_VarTolerance;
-
-
-  [t1, failed1] = testfunctions(ns_id, p1.x, p1.v, 0);
-  t1 = t1(ns_id);
-  % todo: prevent computation of things have already been computed
-  [t2, failed2] = testfunctions(ns_id, p2.x, p2.v, 0);
-  t2 = t2(ns_id);
-  print_diag(3,'t1:%d t2:%d\n',t1,t2);
-  if ((~isempty(failed1)) || (~isempty(failed2))) && (failed1 || failed2)
-    print_diag(3, 'Evaluation of testfunctions failed in bisection');
-    return;
-  end
-
-  for i = 1:MaxIters
-    % todo: perhaps it is possible to locate using secant method, instead of
-    % simple bisection.
-    x3 = p1.x + (p2.x-p1.x)/2;
-    v3 = p1.v + (p2.v-p1.v)/2;
-    v3 = v3/norm(v3);
-    if contopts.NewtonPicard
-      p3 = NewtonPicard.do_corrections(x3,v3);
-      if isempty(p3)
-        print_diag(3, 'NewtonPicard algorithm failed during bisection')
-        return
-      end
-    else
-      p3 = newtcorrL(x3,v3,1);
-      if isempty(p3)
-        print_diag(3, 'newtcorrL algorithm failed during bisection')
-        return
-      end
-    end
-    
-    
-    [tval, failed] = testfunctions(ns_id, p3.x, p3.v, 0);
-    tval = tval(ns_id);
-    if failed
-      print_diag(3, 'Evaluation of testfunctions failed in bisection');
-      return;
-    end
-    
-    %JH: Changed to make the check for relative difference. 9/25/06
-    %dist1 = norm(x-x1);
-    %dist2 = norm(x-x2);
-    dist1 = 2 * norm(p3.x-p1.x) / (norm(p1.x)+norm(p3.x));
-    dist2 = 2 * norm(p3.x-p2.x) / (norm(p2.x)+norm(p3.x));
-    
-    
-    if min(dist1,dist2) < VarTolerance
-      failed2 = 0;
-      p_out = p3;
-      break;
-    elseif tval == t1
-      p1 = p3;
-    elseif tval == t2
-      p2 = p3;
-    else
-      print_diag(1, ...
-        ['Error in locating NS in function locateNS in ' mfilename '\n']);
-      return;
-    end
-  end
-
-  if failed2
-    print_diag(1, ['Maximum number of iterations reached ' ...
-      ' without meeting tolerance in locateNS in ' mfilename ]);
-  end
-
-  print_diag(1,'Time spent in bisection: %f\n', toc);
-
-end

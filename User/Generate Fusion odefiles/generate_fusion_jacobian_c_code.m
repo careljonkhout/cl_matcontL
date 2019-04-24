@@ -1,4 +1,4 @@
-N               = 50;
+N               = 75;
 odefile         = str2func(sprintf('fusion_precomputed_with_sage_N_%d',N));
 syms              a b q_inf
 xxxxx           = sym('xxxxx', [1 3*(N-1)]);
@@ -13,8 +13,8 @@ for i=3*(N-1):-1:1
   jacobian_c_code = strrep(jacobian_c_code, find, replace);
 end
 disp(jacobian_c_code(1:100))
-pattern     = 'jacobian\[(\d+)\]\[(\d+)\]';
-replacement = 'jacobian[$1 + $2 * 147]';
+pattern     =         'jacobian\[(\d+)\]\[(\d+)\]';
+replacement = sprintf('jacobian[$1 + $2 * %d]', 3*(N-1));
 jacobian_c_code = regexprep(jacobian_c_code, pattern, replacement);
 disp(jacobian_c_code(1:100))
 

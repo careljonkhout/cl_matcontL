@@ -157,8 +157,8 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
   /* Parameters for jacobian-call to Matlab */
   jacrhs[0] = (struct mxArray_tag*) curve_func_handle;
   
-  const mxArray* curve_jacobian_handle = prhs[curve_jacobian_idx];
-  jacrhs[1] = (struct mxArray_tag*) curve_jacobian_handle;
+  const mxArray* ode_jacobian_handle = prhs[curve_jacobian_idx];
+  jacrhs[1] = (struct mxArray_tag*) ode_jacobian_handle;
   
   jacrhs[2] = evalrhs[2];
   jacrhs[3] = (struct mxArray_tag*) prhs[params_cell_idx];
@@ -267,7 +267,7 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
       
       /* Call to Matlab for evaluation of jacobian */
       jacrhs[1] = (struct mxArray_tag*) prhs[8];
-      mexCallMATLAB(1,jaclhs,5,jacrhs,"cjac");
+      mexCallMATLAB(1,jaclhs,5,jacrhs,"cjac_densely_stored");
       frhstmp = mxGetPr(jaclhs[0]);
       
       /* Store jacobian */

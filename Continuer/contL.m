@@ -184,6 +184,7 @@ currpoint = firstpoint;
 while cds.i < MaxNumPoints && ~cds.lastpointfound
   corrections = 1;
   print_diag(1,'\n --- Step %d ---\n',cds.i);
+  step_start_time = tic;
   while true
 
     %% A. Predict
@@ -351,6 +352,8 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
     end
   end
 
+  print_diag(1,'time to compute step %.3f\n',toc(step_start_time));
+  
   if cds.lastpointfound % Carel Jonkhout
     % occurs if step size too small
     continue

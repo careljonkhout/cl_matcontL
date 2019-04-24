@@ -169,7 +169,7 @@ options.newtcorrL_use_max_norm           = false;
 options.always_save_s                    = true;
 options.every_point_in_separate_mat_file = false;
 options.MaxPicardIterations              = 15;
-options.PicardTolerance                  = 1e-10;
+options.PicardTolerance                  = 1e-8;
 % set the number of cores to be used in parallel computing to the number of
 % physical cores on the local machine. Only relevant if contL_ParallelComputing
 % is true.
@@ -183,9 +183,9 @@ options.integration_rel_tol               = 1e-9;
 options.multipliers_abs_tol               = 1e-9;
 options.multipliers_rel_tol               = 1e-9;
 
-options.basis_shrink_threshold            = 1e-4;
-options.basis_grow_threshold              = 1e-3;
 
+options.basis_grow_threshold              = 7e-1;
+options.basis_shrink_threshold            = options.basis_grow_threshold/1.4;
 options.multiplier_print_threshold = 0.8;
 options.pause                      = false;
 options.nsteps_before_pause        = 10; 

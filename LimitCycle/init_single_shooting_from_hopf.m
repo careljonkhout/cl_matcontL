@@ -9,6 +9,8 @@ function [x0, v0] = init_single_shooting_from_hopf( odefile, ...
       error(['One active parameter and the period or 2' ...
               ' active parameters are needed for limit cycle continuation']);
   end
+  
+ 
 
 
   cds.nphases = length(x) - 1;
@@ -16,6 +18,10 @@ function [x0, v0] = init_single_shooting_from_hopf( odefile, ...
   handles                = feval(odefile);
   dydt_ode               = handles{2};
   jacobian_ode           = handles{3};
+  
+  if isnumeric(ode_parameters)
+    ode_parameters = num2cell(ode_parameters);
+  end
   
   A = jacobian_ode(0, x(1:end-1), ode_parameters{:});
   

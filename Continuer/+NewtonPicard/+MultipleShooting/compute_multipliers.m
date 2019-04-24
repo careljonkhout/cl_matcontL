@@ -17,7 +17,7 @@ function multipliers = compute_multipliers(x, nMults_to_compute)
     return
   end
   
-  print_diag(2, multipliers2str(multipliers));
+  print_diag(1, multipliers2str(multipliers));
 end
 
 function Mx  = monodromy_map(phases_0, delta_t, parameters)

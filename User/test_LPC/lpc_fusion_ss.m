@@ -1,7 +1,7 @@
 % test of Neimark Sacker bifurcation detection using orhtogonal collocation
 clc
 clear global
-N = 25;                     
+N = 50;                     
 odefile = str2func(sprintf('fusion_precomputed_with_sage_N_%d', N));
 a = -1;
 b = -0.3;
@@ -11,7 +11,7 @@ ode_parameters = {a ; b; q_inf};
 
 
 
-initial_continuation_data = init_single_shooting_stable_cycle( ...
+initial_continuation_data = init_multiple_shooting_find_stable_cycle( ...
   'initial_point',             ones(3*(N-1),1), ...
   'time_to_converge_to_cycle', 150, ... 
   'odefile',                   odefile,  ...
@@ -45,7 +45,8 @@ opt = contset(opt, 'contL_SmoothingAngle',    1);
 opt = contset(opt, 'NewtonPicard',            true);
 opt = contset(opt, 'integration_rel_tol',            1e-6);
 opt = contset(opt, 'integration_abs_tol',            1e-6);
-opt = contset(opt, 'enable_bpc',              false);
+opt = contset(opt, 'enable_nf_ns',            false, ...
+                   'enable_nf_pd',            false);
  
 
 contL(@single_shooting, initial_continuation_data, [], opt);

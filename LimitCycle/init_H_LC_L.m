@@ -105,12 +105,12 @@ Q = V(:,idx1);
 d = real(Q)'*real(Q);
 s = imag(Q)'*imag(Q);
 r = real(Q)'*imag(Q);
-Q = Q*exp(i*atan2(2*r,s-d)/2);
+Q = Q*exp(1i*atan2(2*r,s-d)/2);
 Q = Q/norm(real(Q));
 
 % initial amplitude h
 % calculate initial cycle and its tangent vector
-t = kron(exp(2*pi*i*lds.finemsh),Q);
+t = kron(exp(2*pi*1i*lds.finemsh),Q);
 lds.upoldp = -imag(t);
 v0 = [real(t(:));0;0];
 if n_par==1

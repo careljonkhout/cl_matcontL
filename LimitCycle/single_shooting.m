@@ -129,14 +129,14 @@ function [y_end, monodromy] = monodromy_column_by_column(x, period, parameters)
     'Jacobian',     @(t,y) feval(cds.jacobian_ode,t,y,parameters{:}) ...
   );
   f = @(t, y) cds.dydt_ode(t, y, parameters{:});
-  cycle = cds.integrator(f, [p period], x, integration_opt);
+  cycle = cds.integrator(f, [0 period], x, integration_opt);
   y_end = deval(cycle,period);
   monodromy = eye(cds.nphases);
   integration_opt = odeset(integration_opt, 'Jacobian', ...
     @(t,y) feval(cds.jacobian_ode, t, deval(cycle,t), parameters{:}));
   f = @(t, y) cds.jacobian_ode(t, deval(cycle,t), parameters{:}) * y;
   integrator = cds.integrator;
-  parfor i=1:cds.nphases
+  for i=1:cds.nphases
     fprintf('%d ',i);
     [~, monodromy_map_trajectory] = feval(integrator, ...
       f, [0 period], monodromy(:,i),integration_opt);
@@ -231,8 +231,7 @@ end
 % to the bifurcation that is being located.
 function [out, failed] = testfunctions(ids_testf_requested, x0, v, ~) 
   % unused arguments are v and CISdata
-  global cds contopts
-  
+  global cds;
   failed = false;
   
   const = Constants;
@@ -240,31 +239,8 @@ function [out, failed] = testfunctions(ids_testf_requested, x0, v, ~)
   if any(ismember([const.BPC_id const.PD_id const.NS_id], ids_testf_requested))
     update_multipliers_if_needed(x0)
   end
-  if any(ismember(const.BPC_id, ids_testf_requested))
-    mults = cds.multipliers;
-    distance_to_one = abs(mults - 1);
-    [~,index]       = min(distance_to_one);
-    mults(index) = 0;
-    out(const.BPC_id) = real(prod(mults - ones(size(mults))));
-  end
-  if ismember(const.PD_id, ids_testf_requested)
-    % real is needed to ensure that small complex parts induced by roundoff
-    % errors do not make the result complex.
-    % A complex valued test function would cause false positives when detecting 
-    % bifurcations.
-    out(const.PD_id) = real(prod(cds.multipliers + ones(size(cds.multipliers))));
-  end
-  if ismember(const.LPC_id, ids_testf_requested)
-    out(const.LPC_id) = v(end);
-  end
-  if any(ismember(const.NS_id, ids_testf_requested))
-    mults                  = cds.multipliers;
-    threshold              = contopts.real_v_complex_threshold;
-    complex_mults          = mults(abs(imag(mults)) > threshold);
-    unstable_complex_mults = complex_mults(abs(complex_mults) > 1); 
-    out(const.NS_id)       = length(unstable_complex_mults);
-  end
   
+  out = cycle_testfunctions(ids_testf_requested, cds.multipliers, v);
 end
 %-------------------------------------------------------------------------------
 % defines which changes in testfunctions correspond to which singularity type

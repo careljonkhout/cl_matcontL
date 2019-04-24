@@ -54,15 +54,20 @@ function p_out = locate_NS(p1, p2, testfunctions)
     dist1 = 2 * norm(p3.x-p1.x) / (norm(p1.x)+norm(p3.x));
     dist2 = 2 * norm(p3.x-p2.x) / (norm(p2.x)+norm(p3.x));
     
-    
+    % 
     if min(dist1,dist2) < VarTolerance
       failed2 = 0;
       p_out = p3;
       break;
     elseif tval == t1
       p1 = p3;
-    elseif tval == t2
+      % in case of 2 NS bifurcations we locate the one that occurs first along
+      % the curve
+    elseif min(t1,t2) <= tval && tval <= max(t1,t2)
       p2 = p3;
+      if tval ~= t2
+        warning('Two NS bifurcations detected. The second NS bifurcation along the curve will be ignored')
+      end
     else
       print_diag(1, ...
         ['Error in locating NS in function locateNS in ' mfilename '\n']);

@@ -1,4 +1,4 @@
-N               = 50;
+N               = 75;
 odefile         = str2func(sprintf('fusion_precomputed_with_sage_N_%d',N));
 syms              a b q_inf
 xxxxx           = sym('xxxxx', [1 3*(N-1)]);

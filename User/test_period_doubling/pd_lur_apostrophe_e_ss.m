@@ -1,4 +1,5 @@
-% test of period doubling bifurcation detection using single_shooting
+% test of period doubling bifurcation (PD) detection using single_shooting
+% also tests the locating routines for period doubling
 clc
 clear global
 load('H_LC.mat')

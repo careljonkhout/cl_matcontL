@@ -1,34 +1,34 @@
 
 function init_single_shooting_extend_curve(varargin)
 
-  lc_input.initial_continuation_state          = [];
-  lc_input.initial_continuation_tangent_vector = [];
-  lc_input.odefile                             = [];
-  lc_input.ode_parameters                      = [];
-  lc_input.active_parameter_index              = [];
-  lc_input.time_integration_method             = @ode15s;
-  lc_input.subspace_size                       = [];
+  input.initial_continuation_state          = [];
+  input.initial_continuation_tangent_vector = [];
+  input.odefile                             = [];
+  input.ode_parameters                      = [];
+  input.active_parameter_index              = [];
+  input.time_integration_method             = @ode15s;
+  input.subspace_size                       = [];
   
   i=1;
   while i <= nargin
     if ~ ischar(varargin{i})
       error('Please specify options as name-value pairs')
     end
-    if ~ isfield(lc_input,varargin{i})
+    if ~ isfield(input,varargin{i})
       error([varargin{i} ' is not a valid option.'])
     end
-    lc_input.(varargin{i}) = varargin{i+1};
+    input.(varargin{i}) = varargin{i+1};
     i = i+2;
   end
-  fields = fieldnames(lc_input);
+  fields = fieldnames(input);
   for i=1:length(fields)
-    if isempty(lc_input.(fields{i}))
+    if isempty(input.(fields{i}))
       error(['You must specifiy ' fields{i} '.'])
     end
   end
 
   
-  do_init_single_shooting_extend_curve(lc_input);
+  do_init_single_shooting_extend_curve(input);
               
 end
 
