@@ -81,6 +81,7 @@ function [x0, v0] = init_single_shooting_from_hopf( odefile, ...
   cds.previous_dydt_0 = tangent_to_limitcycle;
   cds.dydt_ode        = dydt_ode;
   cds.jacobian_ode    = jacobian_ode;
+  cds.jacobian_p_ode  = handles{4};
   cds.integrator      = @ode15s;
   cds.preferred_basis_size  = subspace_size;
   cds.p               = subspace_size;

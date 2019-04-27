@@ -7,7 +7,8 @@
 %	  school={K.U.Leuven},
 %	  year={1997},
 % }
-%
+% note: the minus in rhs is implicit, i.e. this function solves 
+% .... = - rhs
 function [delta_q, M_delta_q] = ...
              solve_Q_system(V, rhs, period, parameters)
   global contopts;

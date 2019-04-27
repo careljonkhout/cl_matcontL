@@ -151,7 +151,7 @@ options.Workspace                 = 1;             % MP?
 options.enable_nf_lpc   =    true;    
 % Set enable_nf_lpc to false to disable computation of the normal form 
 % for limit points of cycle. Normal form computations can take a long time to
-% run.
+% run. However, nf_lpc does not take as long as nf_pd and nf_ns.
 % Note: nf_lpc is only implemented for limitcycleL.m
 options.enable_nf_pd    =    true;
 % Set enable_nf_pd to false to disable computation of the normal form 
@@ -162,7 +162,7 @@ options.enable_nf_ns    =    true;
 % Set enable_nf_ns to false to disable computation of the normal form 
 % for Neimark Sacker. Normal form computations on large systems
 % take a long time to run.
-% Note: nf_pd is only implemented for limitcycleL.m
+% Note: nf_ns is only implemented for limitcycleL.m
 options.enable_bpc                       = true;
 options.console_output_level             = 0; % set to 5 to see all debug info.
 options.newtcorrL_use_max_norm           = false;

@@ -1,19 +1,19 @@
 function [datafile, logfile] = openFiles()
 global cds contopts
 
-%% create filename
-[ST,I]   = dbstack();
-testname = ST(end).file;
+stack    = dbstack();
+testname = stack(end).file;
 testname = testname(1:end-2);
 prob     = func2str(cds.probfile);
 curve    = func2str(cds.curve);
 thetime  = clock;
-strtime  = sprintf('%d_%02d_%02d',thetime(4:end-1),round(thetime(end)));
 
-if isempty(contopts.Filename)
-    fname    = strcat(testname,'_',date(),'_',strtime);
+if isempty(contopts.Filename) 
+  %% create filename
+  strtime  = sprintf('%d_%02d_%02d', thetime(4:end-1), round(thetime(end)));
+  fname    = strcat(testname,'_',date(),'_',strtime);
 else
-    fname = contopts.Filename;
+  fname = contopts.Filename;
 end
 cds.runID = fname;
 
@@ -43,14 +43,14 @@ end
 
 %% open data file and print header
 cds.datapath = datapath;
-datafile = strcat(datapath,fname,'.dat');
+datafile = strcat(datapath, fname, '.dat');
 cds.dataFID  = fopen(datafile,'wt');
-fprintf(cds.dataFID,'MATCONTL2.0\n');
-fprintf(cds.dataFID,'%s\n',testname);
-fprintf(cds.dataFID,'%s\n',prob);
-fprintf(cds.dataFID,'%s\n',curve);
-fprintf(cds.dataFID,'%f ',thetime);
-fprintf(cds.dataFID,'\n');
+fprintf(cds.dataFID, 'CL_MATCONTL2.0\n');
+fprintf(cds.dataFID, '%s\n', testname);
+fprintf(cds.dataFID, '%s\n', prob);
+fprintf(cds.dataFID, '%s\n', curve);
+fprintf(cds.dataFID, '%f ' , thetime);
+fprintf(cds.dataFID, '\n');
 
 %% open log file and print header
 logfile = strcat(logpath,'/',fname,'.txt');

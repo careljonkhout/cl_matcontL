@@ -19,8 +19,20 @@ else
   contopts = opts;
 end
 
-if nargin == 5
-  callback = varargin{1};
+additional_arguments.callback           = [];
+additional_arguments.stopping_condition = [];
+if nargin > 4 
+  i = 1;
+  while i <= length(varargin)
+    if ~ ischar(varargin{i})
+      error('Please specify additional arguments as key-value pairs')
+    end
+    if ~ isfield(additional_arguments, varargin{i})
+      error([varargin{i} ' is not a valid option.'])
+    end
+    additional_arguments.(varargin{i}) = varargin{i+1};
+    i = i+2;
+  end
 end
 
 loadCurveFile(curvefile);
@@ -294,18 +306,17 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
         % bifurcations that can occur on the current curve. The number of types
         % of bifurations is usually less than 10 and never more than 100.
 
-        if sum(singsdetected) > 1
+        if sum(singsdetected) > 1 || more_than_one_Neimark_Sacker( ...
+                                        currpoint.tvals, trialpoint.tvals)
           print_diag(3, 'More than one singularity detected: ')
           reduce_stepsize = 1;
         elseif sum(singsdetected) == 1
           if special_step
-            print_diag (3, 'Singularity detected at special step: ')
+            print_diag(3, 'Singularity detected at special step: ')
             reduce_stepsize = 1;
           else
             si = find(singsdetected==1);  % singularity detected!
-            % Carel Jonkhout: neutral cycles are time consuming distractions,
-            % therefore I ignore them.
-            NeedToLocate = 1 && ( ~ is_neutral_saddle_cycle(si));
+            NeedToLocate = 1;
           end
         end
       end
@@ -477,13 +488,21 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
       [trialpoint.tvals,~] = EvalTestFunc(0,trialpoint);
     end
   end
-  if nargin >= 5
-    callback(currpoint, trialpoint)
+  if ~ isempty(additional_arguments.callback)
+    additional_arguments.callback(currpoint, trialpoint)
   end
   if trialpoint.v'*currpoint.v < 0,  trialpoint.v = -trialpoint.v; end
   currpoint = trialpoint;
 
   cds.i = cds.i + 1;
+  if ~ isempty(additional_arguments.stopping_condition) && ...
+               additional_arguments.stopping_condition(currpoint)
+    cds.lastpointfound = 1;
+    DefaultProcessor(currpoint);
+    print_diag(1,'Stopping condition reached\n');
+    break;
+  end
+  
   currpoint  = DefaultProcessor(currpoint);
 
   % stepsize control
@@ -500,6 +519,8 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
       DefaultProcessor(currpoint);
       break;
   end
+
+  
   if contopts.pause && mod(cds.i, contopts.nsteps_before_pause) == 0
     pause
   end

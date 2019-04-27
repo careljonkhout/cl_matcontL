@@ -191,7 +191,7 @@ function out = defaultprocessor(varargin)
     point.multipliers = cds.multipliers;
   end
   
-  if basis_size_changed
+  if contopts.Singularities && basis_size_changed
     point.tvals = testfunctions(cds.ActTest,point.x,point.v,[]);
     print_diag(1,'Test Functions: [')
     print_diag(1,' %+.5e',point.tvals)

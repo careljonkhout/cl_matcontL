@@ -14,6 +14,8 @@
 %
 % P will be the projectors onto the small subspaces
 %
+% note: the minus in rhs is implicit, i.e. this function solves 
+% .... = - rhs
 
 function [delta_q, G_delta_q] = solve_Q_system(V, rhs, delta_t, parameters)
   global cds contopts;

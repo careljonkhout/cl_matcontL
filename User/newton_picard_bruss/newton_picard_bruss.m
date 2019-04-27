@@ -3,7 +3,7 @@ format long
 run_init_if_needed
 % continuation of cycles cycles in brusselator
 odefile = @brusselator_1d; %@brusselator_N_2;
-N = 30;
+N = 20;
 L = 1.1; A = 2; B = 5.45; Dx = 0.008; Dy = 0.004;
 ode_parameters = {N; L; A; B; Dx; Dy};%parameters = {L; A; B; Dx; Dy};
 clear global cds
@@ -22,7 +22,7 @@ fprintf([title_format_string '\n'], title_format_args{:});
 initial_continuation_data = init_single_shooting_find_stable_cycle( ...
   'initial_point',             [(A+0.001)*ones(N,1); B/A*ones(N,1)], ...
   'time_to_converge_to_cycle', 200, ...
-  'subspace_size',             20, ...
+  'subspace_size',             8, ...
   'odefile',                   odefile,  ...
   'ode_parameters',            ode_parameters, ...
   'active_parameter_index',    2, ...
@@ -56,7 +56,7 @@ opt = contset(opt, 'Adapt',          1000*1000*1000);
 opt = contset(opt, 'CheckClosed',    1000);
 opt = contset(opt, 'Multipliers',    true);
 opt = contset(opt, 'Backward',       false);
-opt = contset(opt, 'Singularities',  true);
+opt = contset(opt, 'Singularities',  false);
 opt = contset(opt, 'CIS_UsingCIS',   false);
 opt = contset(opt, 'NewtonPicard',   true);
 opt = contset(opt, 'console_output_level',   4);

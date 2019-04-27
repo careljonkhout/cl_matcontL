@@ -1,6 +1,6 @@
 % Computes the Jacobian matrix with subspace reduced applied to the phase space
 % also returns additional values that were used in the computation of the
-% reduces Jacobian matrix, which are needed in do_one_correction.m and/or 
+% reduced Jacobian matrix, which are needed in do_one_correction.m and/or 
 % find_tangent_vector.m. The subspace used is the subspace associated to the
 % largest eigenvalues (in modulus) of the mondromy matrix.
 
@@ -97,7 +97,7 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, M_delta_q_r, ...
   
   % the r in q_r means residual
   [delta_q_r,     M_delta_q_r] = ...
-    NewtonPicard.SingleShooting.solve_Q_system(V, phi - phases_0, ...
+    NewtonPicard.SingleShooting.solve_Q_system(V, ( phi - phases_0), ...
     period, parameters);
 
   d_phi_d_gamma_val = NewtonPicard.compute_d_phi_d_p( ...
