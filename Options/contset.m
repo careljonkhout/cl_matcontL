@@ -9,7 +9,7 @@ i=1;
 while i < nargin
   name = varargin{i};
   if ~ischar(name)
-    error('argument %d must be a string',i);
+    error('Argument %d must be a string.',i);
   end
 
   if ~isfield(defaultOptions(), name)
@@ -19,6 +19,7 @@ while i < nargin
       error(['Unrecognized option ' name])
     end
   else
+    % todo: give error on missing value
     value = varargin{i+1};
     opt.(name) = value;
   end
@@ -163,7 +164,6 @@ options.enable_nf_ns    =    true;
 % for Neimark Sacker. Normal form computations on large systems
 % take a long time to run.
 % Note: nf_ns is only implemented for limitcycleL.m
-options.enable_bpc                       = true;
 options.console_output_level             = 0; % set to 5 to see all debug info.
 options.newtcorrL_use_max_norm           = false;
 options.always_save_s                    = true;
@@ -190,6 +190,7 @@ options.multiplier_print_threshold = 0.8;
 options.pause                      = false;
 options.nsteps_before_pause        = 10; 
 options.real_v_complex_threshold   = 1e-11;
+options.initial_point_index        = 1;
                                               
 
                             %% Determine testpath

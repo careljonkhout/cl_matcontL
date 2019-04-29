@@ -4,10 +4,10 @@
 function compute_stiched_orbit(x, abs_tol, rel_tol)
   global cds contopts;
   
-  if nargin == 3
+  if nargin == 1
     abs_tol = contopts.integration_abs_tol;
     rel_tol = contopts.integration_rel_tol;
-  elseif nargin ~= 1
+  elseif nargin ~= 3
     error( ['The number of input arguments to ' ...
       'NewtonPicard.MultipleShooting.compute_stiched_orbit is not correct.\n' ...
       'The number of input arguments should be either 1 or 3.\n' ...

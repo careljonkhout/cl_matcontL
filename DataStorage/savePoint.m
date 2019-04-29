@@ -21,7 +21,7 @@ if contopts.every_point_in_separate_mat_file
   if ~ exist(fullfile(cds.datapath, cds.runID), 'dir')
     mkdir(cds.datapath, cds.runID)
   end
-  filename = fullfile(cds.datapath, cds.runID, sprintf('point %d', cds.i));
+  filename = fullfile(cds.datapath, cds.runID, sprintf('point_%d', cds.i));
   save(filename, 'point');
 
 end
@@ -83,6 +83,7 @@ elseif nargin == 2
     print_diag(0,'%.6e  '       ,norm(point.x(1:cds.ncoo)));
     print_diag(0,'%.6e  \n'     ,point.R);
     try
+      if ~ isfield(cds, 'sout'); cds.sout = []; end
       cds.sout = [cds.sout, s];
     catch e
       disp('A minor error occurred in savePoint.m')

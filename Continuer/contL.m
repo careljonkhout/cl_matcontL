@@ -1,4 +1,4 @@
-function [sout, datafile] = contL(curvefile, x0, v0, opts, varargin)
+function [sout, datafile] = contL(curvefile, x0, v_cont, opts, varargin)
 %
 % CONTINUE(cds.curve, x0, v0, options)
 %
@@ -69,7 +69,7 @@ cds.h_min      = contopts.MinStepsize;
 cds.h_inc_fac  = contopts.h_inc_fac;  
 cds.h_dec_fac  = contopts.h_dec_fac; 
 cds.tfUpdate       = 0;
-cds.i              = 1;
+cds.i              = contopts.initial_point_index;
 cds.lastpointfound = 0;
 
 %% determine active singularities and testfunctions
@@ -95,26 +95,26 @@ end
 %% Algorithm starts here
 cds.StartTime = clock;
 
-feval(cds.curve_init, x0, v0); % DV 2018
+feval(cds.curve_init, x0, v_cont); % DV 2018
 cds.newtcorrL_needs_CISdata = 0;
 
 if isequal(curvefile, @limitcycleL) || ...
    isequal(curvefile, @limitpointcycle)
-    if isempty(v0)
-        v0 = find_initial_tangent_vector(x0, v0, 1);
+    if isempty(v_cont)
+        v_cont = find_initial_tangent_vector(x0, v_cont, 1);
         print_diag(0,'found tangent vector\n')
     end
-    firstpoint = newtcorrL(x0, v0, 1);
+    firstpoint = newtcorrL(x0, v_cont, 1);
 elseif UsingNewtonPicard
-    if isempty(v0)
-      v0 = NewtonPicard.find_tangent_vector(curvefile, x0);
+    if isempty(v_cont)
+      v_cont = NewtonPicard.find_tangent_vector(curvefile, x0);
     end
-    firstpoint = NewtonPicard.do_corrections(x0,v0);
+    firstpoint = NewtonPicard.do_corrections(x0,v_cont);
     if isempty(firstpoint)
       print_diag(0,'Correction of first point does not converge\n');
       return;
     end
-    firstpoint.v =  NewtonPicard.find_tangent_vector(curvefile, x0);
+    firstpoint.v =  NewtonPicard.find_tangent_vector(curvefile, x0, v_cont);
 else
     try 
       cds.curve_func    (x0); 
@@ -124,7 +124,7 @@ else
     end
 
     CISdata0 = [];
-    if isempty(v0)
+    if isempty(v_cont)
         if cds.newtcorrL_needs_CISdata
             CISdata0 = feval(cds.curve_CIS_first_point, x0);
             if isempty(CISdata0)
@@ -133,14 +133,14 @@ else
                 return;
             end
         end
-        v0 = find_initial_tangent_vector(x0, v0, CISdata0);
-        if isempty(v0)
+        v_cont = find_initial_tangent_vector(x0, v_cont, CISdata0);
+        if isempty(v_cont)
           print_diag(0,'contL: failed to find initial tangent vector.\n');
           sout = [];
           return;
         end
     end
-    firstpoint = newtcorrL(x0, v0, CISdata0);
+    firstpoint = newtcorrL(x0, v_cont, CISdata0);
 end
 
 if isempty(firstpoint)
@@ -162,7 +162,7 @@ end
 
 %% Direction Vector Determination
 Backward       = contopts.Backward;
-if abs(v0(end)) < 1e-6; Vdir = sign(sum(v0(1:end-1))); else; Vdir = sign(v0(end)); end
+if abs(v_cont(end)) < 1e-6; Vdir = sign(sum(v_cont(1:end-1))); else; Vdir = sign(v_cont(end)); end
 if (Backward && Vdir > 0) || (~Backward && Vdir < 0)
     firstpoint.v = -firstpoint.v;
 end
@@ -211,9 +211,7 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
     if UsingNewtonPicard
        trialpoint = NewtonPicard.do_corrections(xpre, currpoint.v);
       if ~ isempty(trialpoint)
-        trialpoint.v = trialpoint.x - currpoint.x;
         trialpoint.v = NewtonPicard.find_tangent_vector(curvefile,trialpoint.x,trialpoint.v);
-        %trialpoint.v = trialpoint.v / max(abs(trialpoint.v));
       end
     else
       trialpoint = newtcorrL(xpre, currpoint.v, currpoint.CISdata);

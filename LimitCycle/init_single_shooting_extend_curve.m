@@ -1,8 +1,6 @@
-
 function init_single_shooting_extend_curve(varargin)
 
   input.initial_continuation_state          = [];
-  input.initial_continuation_tangent_vector = [];
   input.odefile                             = [];
   input.ode_parameters                      = [];
   input.active_parameter_index              = [];

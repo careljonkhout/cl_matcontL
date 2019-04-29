@@ -25,6 +25,8 @@ function multipliers = compute_multipliers(x, nMults_to_compute)
                         contopts.multipliers_abs_tol, ...
                         contopts.multipliers_rel_tol);
   
+  nMults_to_compute = min(nMults_to_compute, length(x) - 2);
+                      
   [~, multiplier_matrix, no_convergence] = eigs(monodromy_map, cds.nphases, ...
                                                 nMults_to_compute);
   multipliers = diag(multiplier_matrix);

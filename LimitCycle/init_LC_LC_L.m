@@ -34,7 +34,7 @@ end
 if     ~isempty(odefile_handles{6}),   symordp = 2; 
 elseif ~isempty(odefile_handles{4}),   symordp = 1; 
 end
-if ~isfield(cds,'options') || ~isfield(cds,'options')
+if ~isfield(cds,'options')
     cds.options = contset();
 end
 cds.options = contset(cds.options, 'SymDerivative', symord);
