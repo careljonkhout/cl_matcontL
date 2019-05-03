@@ -1,7 +1,7 @@
 % Curve file of cycle continuation by single shooting
 function out = single_shooting
   out{1}  = @curve_function;
-  out{2}  = @defaultprocessor;
+  out{2}  = @default_processor;
   out{3}  = @options;
   out{4}  = @jacobian;
   out{5}  = [];%@hessians;
@@ -39,8 +39,7 @@ function f = curve_function(varargin)
       (phases_0 - cds.previous_phases)' * cds.previous_dydt_0  ]; 
 end
 %-------------------------------------------------------------------------------
-% Computes the jacobian of the curvefunction at evaluated at varargin{1}.
-% This function is not accesible from outside this file.
+% Computes the Jacobian matrix of the curvefunction at evaluated at varargin{1}.
 function jacobian = jacobian(varargin)
   global cds
   cont_state                   = varargin{1};
@@ -146,7 +145,7 @@ end
 %-------------------------------------------------------------------------------
 function init(~,~); end
 %-------------------------------------------------------------------------------
-function out = defaultprocessor(varargin)
+function out = default_processor(varargin)
   global cds contopts
   point = varargin{1};
   
@@ -303,7 +302,7 @@ function [failed,s] = process_singularity(id,point,s)
         smallest = val;
       end
     end
-    threshold = contopts.real_v_complex_threshold;
+    threshold = cds.deviation_of_trivial_multiplier;
     singularity_is_neutral_saddle = abs(imag(d(idx2))) < threshold;
     if singularity_is_neutral_saddle
       s.msg = 'Neutral saddle cycle';

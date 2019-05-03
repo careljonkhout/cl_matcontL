@@ -67,3 +67,12 @@ for i = 1:cds.nap
     print_diag(0,'p(%d)            ', cds.ActiveParams(i))
 end
 print_diag(0,'||u||          ||f||\n')
+
+
+% load previous bifurcations if we are extending a curve
+if exist([fullfile(cds.datapath, cds.runID), '.mat'], 'file')
+  load([fullfile(cds.datapath, cds.runID), '.mat'], 's');
+  cds.sout = s;
+else
+  cds.sout = [];
+end

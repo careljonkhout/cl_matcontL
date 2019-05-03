@@ -1,6 +1,7 @@
 function [continuation_state, continuation_tangent] = ...
                                          init_collocation_extend_curve(varargin)
-                                       
+	% todo: check if nCollocationPoints arugments are between 2 and 7 (see
+	% nc_weight.m)
   must_be_specified_by_user = [];
   input.continuation_state          = must_be_specified_by_user;
   input.continuation_tangent        = must_be_specified_by_user;
@@ -36,7 +37,7 @@ function [continuation_state, continuation_tangent] = ...
   end
   
   if input.new_nCollocationPoints == 0
-    input.new_nCollocationsPoints = input.current_nMeshIntervals;
+    input.new_nCollocationPoints = input.current_nCollocationPoints;
   end
   
   [continuation_state, continuation_tangent] = ...
@@ -48,10 +49,10 @@ function [continuation_state, continuation_tangent] = ...
 
   global lds cds
   
-  clear cds;
-  clear lds;
-
-  n_par = length(ap);
+  cds = [];
+  lds = [];
+  
+  n_par = length(in.active_parameter_index);
   if n_par ~= 1 && n_par ~= 2
     error(['One active parameter and the period or 2 active parameters ' ...
            'are needed for limt cycle continuation']);
@@ -68,9 +69,9 @@ function [continuation_state, continuation_tangent] = ...
   cds.options       = contset(cds.options, 'SymDerivativeP', max_order_params);
   cds.symjac        = 1;
   cds.symhess       = 0;
-  cds.probfile      = odefile;
+  cds.probfile      = in.odefile;
   cds.P0            = in.ode_parameters;
-  cds.ncoo          = length(in.x) - 1;
+  cds.ncoo          = length(in.continuation_state) - 1;
   cds.nap           = 1;
   cds.ActiveParams  = in.active_parameter_index;
   cds.usernorm      = odefile_handles{10};
@@ -81,24 +82,25 @@ function [continuation_state, continuation_tangent] = ...
     cds.userfunc = [];
   end
   
-  loadOdefile(lds, in.odefile);
+  initialize_lds_fields();
+  loadOdeFile_into_lds(in.odefile);
   
-  nPoint_coordinates = size(in.initial_contintuation_state, 1);
+  nPoint_coordinates = size(in.continuation_state, 1);
   nPoints_on_cycle   = ...
     in.current_nMeshIntervals * in.current_nCollocationPoints + 1;
   
-  lds.nphase = nPoint_coordinates / nPoints_on_cycle;
+  lds.nphase = round(nPoint_coordinates / nPoints_on_cycle);
   lds.ActiveParams = in.active_parameter_index; % duplicate of cds.Activeparams, todo: carefully remove
   lds.P0           = in.ode_parameters;         % duplicate of cds.Activeparams, todo: carefully remove
   set_ntst_ncol(in.current_nMeshIntervals, ...
-                in.s_current_nCollocationPoints, ...
+                in.current_nCollocationPoints, ...
                 in.time_mesh);
   lds.T = in.continuation_state(end-1); % used for fixed period limitcycles
   
   % generate a new mesh and interpolate
   [continuation_state, continuation_tangent] = new_mesh(...
                         in.continuation_state, ...
-                        in.continuation_tangent_vector, ...
+                        in.continuation_tangent, ...
                         in.new_nMeshIntervals, ...
                         in.new_nCollocationPoints);
   % note: set_ntst_ncol is called from new_mesh

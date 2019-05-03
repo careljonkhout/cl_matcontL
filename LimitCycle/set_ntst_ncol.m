@@ -1,6 +1,5 @@
 function set_ntst_ncol(ntst,ncol,newmsh)
-% todo newm
-%
+% 
 % This function sets the number of mesh and collocation points
 % as well as a new mesh distribution. All things that depend on
 % the number of mesh and/or collocation points are updated.

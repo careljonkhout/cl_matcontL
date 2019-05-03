@@ -1,7 +1,7 @@
 % Curve file of cycle continuation with multiple shooting
 function out = multiple_shooting
   out{1}  = @curve_func;
-  out{2}  = @defaultprocessor;
+  out{2}  = @default_processor;
   out{3}  = @options;
   out{4}  = @jacobian;
   out{5}  = [];%@hessians;
@@ -17,6 +17,8 @@ function out = multiple_shooting
   out{15} = @curve_CIS_step;  
 end
 %-------------------------------------------------------------------------------
+% Computes the curve function. If y_0 == 0 then y_0 corresponds to a sequence of
+% points on a limit cycle.
 function func = curve_func(varargin)
   global cds
   [y_0, period, parameters] = getComponents(varargin{1});
@@ -38,6 +40,7 @@ function func = curve_func(varargin)
           (y_0(1:cds.nphases) - cds.previous_phases)' * cds.previous_dydt_0 ]; 
 end
 %-------------------------------------------------------------------------------
+% Computes the Jacobian matrix of the curvefunction at evaluated at varargin{1}.
 function jacobian = jacobian(varargin)
   global cds
   M = cds.nMeshIntervals * cds.nphases;
@@ -84,6 +87,9 @@ function jacobian = jacobian(varargin)
   % specify d_s_d_p = jacobian(N+1,N+2) = 0;
 end
 %-------------------------------------------------------------------------------
+% computes d_phi over d_x where phi is the solution of the initial value problem
+% phi' = f(phi),   phi(0) = x
+% the result is a square Jacobian matrix of size cds.nphases
 function [y_end, monodromy] = ...
                             compute_monodromy(x, mesh_index, period, parameters)
   global cds
@@ -226,7 +232,8 @@ function [failed,s] = process_singularity(id,point,s)
         smallest_sum = val;
       end
     end
-    singularity_is_neutral_saddle = imag(d(idx2)) == 0;
+    singularity_is_neutral_saddle = ...
+           abs(imag(d(idx2))) < cds.deviation_of_trivial_multiplier;
     if singularity_is_neutral_saddle
       s.msg = 'Neutral saddle cycle';
       format_string = 'Neutral Saddle Cycle (period = %e, parameter = %e)\n';
@@ -247,10 +254,13 @@ end
 %-------------------------------------------------------------------------------
 function init(~,~); end
 %-------------------------------------------------------------------------------
-function point = defaultprocessor(varargin)
+function point = default_processor(varargin)
   global cds
   point = varargin{1};
   point.mesh = cds.mesh;
+  update_multipliers_if_needed(point.x);
+  point.multipliers    = cds.multipliers;
+  point.nMeshIntervals = cds.nMeshIntervals;
 
   [y, ~, parameters]      = getComponents(point.x);
   cds.previous_phases     = y(1:cds.nphases);
@@ -297,11 +307,11 @@ function [has_changed, x, v, CISData] = adapt(varargin)
       cds.t_cycle, cds.y_cycle,period * cds.mesh(i), 'spline');
     indices = indices + cds.nphases;
   end
+  point.R = max(abs(curve_func(x)));
   print_diag(4, 'new_time_mesh:');
   print_diag(3, ' %.4f', cds.mesh );
   print_diag(4, '\n');
-  print_diag(4, 'curve_function new time mesh: %.3e\n', ...
-    max(abs(curve_func(x))));
+  print_diag(4, 'curve_function new time mesh: %.3e\n', point.R);
   %x = NewtonPicard.MultipleShooting.corrections_without_tangent(x);
   %print_diag(3,'curve_function new time mesh: %.3e\n', ...
   %  max(abs(curve_func(x))));

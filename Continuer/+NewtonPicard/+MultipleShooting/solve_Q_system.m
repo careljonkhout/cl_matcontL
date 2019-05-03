@@ -7,15 +7,17 @@
 %	  school={K.U.Leuven},
 %	  year={1997},
 % }
+%
 % inputs:
-% - bases V for projectors
-% - right hand sides rhs
-% - routine "monodromy_map" to compute G delta_q_i
+% - V: bases for the subspace of the monodromy matrix at point x_i on the
+% cycle. That is, V(:,:,i) contains column vectors that span the subspace.
 %
-% P will be the projectors onto the small subspaces
+% - rhs: the right hand side of the Q system
+% note: the minus in rhs is implicit, i.e. this function solves .... = - rhs
 %
-% note: the minus in rhs is implicit, i.e. this function solves 
-% .... = - rhs
+% - delta_t: the lengths of the time mesh intervals. 
+%
+% - parameters: cell array of the values of the parameters of the system of ODEs
 
 function [delta_q, G_delta_q] = solve_Q_system(V, rhs, delta_t, parameters)
   global cds contopts;
@@ -26,11 +28,6 @@ function [delta_q, G_delta_q] = solve_Q_system(V, rhs, delta_t, parameters)
     rhs(:,i) = rhs(:,i) - V(:,:,ni) * V(:,:,ni)' * rhs(:,i);
   end
   
-%   if max(max(abs(rhs))) < eps
-%     delta_q   = zeros(cds.nphases,m);
-%     G_delta_q = zeros(cds.nphases,m);
-%     return
-%   end
   G_delta_q  = zeros(cds.nphases,m);
   delta_q    = zeros(cds.nphases,m);
   
@@ -41,7 +38,7 @@ function [delta_q, G_delta_q] = solve_Q_system(V, rhs, delta_t, parameters)
       delta_q(:,i) = G_delta_q(:,i-1) + rhs(:,i-1);
       delta_q(:,i) = delta_q(:,i) - V(:,:,i) * V(:,:,i)' * delta_q(:,i);
       G_delta_q(:,i) = NewtonPicard.MultipleShooting.monodromy_map(i, ...
-        delta_q(:,i), delta_t(i), parameters);
+                                      delta_q(:,i), delta_t(i), parameters);
     end
     condensed_residual = G_delta_q(:,m) + rhs(:,m);
     condensed_residual = condensed_residual ...

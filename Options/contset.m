@@ -189,8 +189,8 @@ options.basis_shrink_threshold            = options.basis_grow_threshold/1.4;
 options.multiplier_print_threshold = 0.8;
 options.pause                      = false;
 options.nsteps_before_pause        = 10; 
-options.real_v_complex_threshold   = 1e-11;
 options.initial_point_index        = 1;
+options.set_direction              = true;
                                               
 
                             %% Determine testpath

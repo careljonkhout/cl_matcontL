@@ -9,6 +9,7 @@ function initial_continuation_data = init_single_shooting_internal(in)
   dydt_ode     = handles{2};
   jacobian_ode = handles{3};
   cds.nphases  = length(in.point_on_limitcycle);
+  norm_of_gap  = Inf;
 
   tangent_to_limitcycle ...   
     = dydt_ode(0,in.point_on_limitcycle, in.ode_parameters{:});
@@ -31,6 +32,9 @@ function initial_continuation_data = init_single_shooting_internal(in)
     ylabel('deviation form initial value')
     pause
   end
+  
+  fprintf('norm of gap in cycle: %.4e\n', norm_of_gap)
+  
   
   period                    = orbit_t(end);
   initial_continuation_data = zeros(cds.nphases + 2, 1);
@@ -61,8 +65,9 @@ function initial_continuation_data = init_single_shooting_internal(in)
   function [value, isterminal, direction] = returnToPlane(t, x)
     % x and should be a column vector
     value = tangent_to_limitcycle'*(x-in.point_on_limitcycle);
-    isterminal = t > in.lower_bound_period ...
-      && max(abs(x-in.point_on_limitcycle)) < in.poincare_tolerance;
+    norm_of_gap = max(abs(x-in.point_on_limitcycle));
+    isterminal = t > in.lower_bound_period && ...
+                     norm_of_gap < in.poincare_tolerance;
     direction = 1;
   end
 end

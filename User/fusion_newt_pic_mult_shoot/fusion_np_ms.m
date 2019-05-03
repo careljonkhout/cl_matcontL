@@ -3,7 +3,7 @@
 
 run_init_if_needed
 
-N = 25;
+N = 75;
 odefile = str2func(sprintf('fusion_precomputed_with_sage_N_%d', N));
 handles = feval(odefile);
 a = -1; b = -0.3; q_inf = -0.72;
@@ -74,6 +74,23 @@ active_parameter_index  = 3;
 time_integration_method = @ode15s;
 lower_bound_period      = 1;
 upper_bound_period      = 30;
+
+
+  input.point_on_limitcycle      = [];
+  input.odefile                  = [];
+  input.ode_parameters           = [];
+  input.active_parameter_index   = [];
+  input.lower_bound_period       = [];
+  input.upper_bound_period       = [];
+  input.nMeshIntervals           = [];
+  input.subspace_size            = []; 
+  % todo: set a default for subspace size, for instance nphases / 2
+  input.integration_method  = @ode15s;
+  input.integration_options = odeset( ...
+    'AbsTol', contopts.time_integration_abs_tol, ...
+    'RelTol', contopts.time_integration_rel_tol);
+  input.poincare_tolerance       = 1e-2;
+  input.show_plot                = false;
 
 initial_continuation_data = init_multiple_shooting_from_orbit(...
     orbit, ...

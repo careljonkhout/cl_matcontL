@@ -157,7 +157,7 @@ end
 %-------------------------------------------------------------------------------
 function [failed,s] = process_singularity(id, point, s)
   x = point.x;
-  global lds contopts
+  global cds lds contopts
   switch id
   case 1
     format_string = 'Branch Point cycle(period = %e, parameter = %e)\n'; 
@@ -225,7 +225,7 @@ function [failed,s] = process_singularity(id, point, s)
         end
       end
       singularity_is_neutral_saddle = ...
-        abs(imag(d(idx2))) < contopts.real_v_complex_threshold;
+        abs(imag(d(idx2))) < cds.deviation_of_trivial_multiplier;
       if singularity_is_neutral_saddle
         s.msg = 'Neutral saddle cycle';
         format_string = 'Neutral Saddle Cycle (period = %e, parameter = %e)\n';

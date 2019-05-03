@@ -1,14 +1,12 @@
-% test of limit point bifurcation detection using orhtogonal collocation
-clc
-clear global
 N = 75;                     
 odefile = str2func(sprintf('fusion_precomputed_with_sage_N_%d', N));
-a = -1;
-b = -0.3;  
-q_inf = -0.72;
 
-ode_parameters = {a ; b; q_inf};
+subdirectory              = ['fusion_oc_N_' num2str(N)];
+dirname                   = fullfile(get_path(), 'Data', subdirectory);
+[point_file, point_index] = get_latest_point_file(dirname);
 
+
+load(point_file, 'point');
 
 initial_continuation_data = init_collocation_extend_curve( ...
   'continuation_state',           point.x, ...
@@ -17,20 +15,19 @@ initial_continuation_data = init_collocation_extend_curve( ...
   'ode_parameters',               point.parametervalues, ...
   'active_parameter_index',       3, ...
   'time_mesh',                    point.timemesh, ...
-  'current_nMeshIntervals',       40, ...
-  'current_nCollocationPoints',   4 ...
+  'current_nMeshIntervals',       point.ntst, ...
+  'current_nCollocationPoints',   point.ncol ...
 );
 
 disp(initial_continuation_data(end-1))
 opt = contset();
-opt = contset(opt, 'MaxNumPoints',            20);
+opt = contset(opt, 'MaxNumPoints',            point_index + 12);
 opt = contset(opt, 'InitStepsize',            0.25);
 opt = contset(opt, 'MinStepsize',             1e-6);
 opt = contset(opt, 'MaxStepsize',             0.25);
 opt = contset(opt, 'MaxNewtonIters',          8);
 opt = contset(opt, 'MaxCorrIters',            10);
 opt = contset(opt, 'MaxTestIters',            10);
-opt = contset(opt, 'Backward',                false);
 opt = contset(opt, 'VarTolerance',            1e-6);
 opt = contset(opt, 'FunTolerance',            1e-6);
 opt = contset(opt, 'Adapt',                   3);
@@ -41,9 +38,14 @@ opt = contset(opt, 'contL_DiagnosticsLevel',  3);
 opt = contset(opt, 'MoorePenrose',            false);
 opt = contset(opt, 'contL_SmoothingAngle',    1);
 opt = contset(opt,  ...
+                   'newtcorrL_use_max_norm',  true, ...
                    'enable_nf_pd',            false, ...
                    'enable_nf_lpc',           true, ...
-                   'enable_nf_ns',            false);
+                   'enable_nf_ns',            false, ...
+                   'initial_point_index',     point_index, ...
+                   'every_point_in_separate_mat_file', true, ...
+                   'Filename',                sprintf('fusion_oc_N_%d',N), ...
+                   'set_direction',           false);
 
  
 

@@ -74,7 +74,7 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
     V1             = compute_subspace(1, period, parameters);
     basis_size     = size(V1,2);
     cds.basis_size = basis_size;
-    V              = zeros(cds.nphases,basis_size,m);
+    V              = zeros(cds.nphases, basis_size, m);
     V(:,:,1)       = V1;
     for i=2:m % m == cds.nMeshIntervals
       for j = 1:size(V,2)

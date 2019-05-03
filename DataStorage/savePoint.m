@@ -21,9 +21,12 @@ if contopts.every_point_in_separate_mat_file
   if ~ exist(fullfile(cds.datapath, cds.runID), 'dir')
     mkdir(cds.datapath, cds.runID)
   end
-  filename = fullfile(cds.datapath, cds.runID, sprintf('point_%d', cds.i));
+  % Instead of adding the field savetime to point, we could use modified times
+  % of the files from the filesystem, but as far as I know there is no
+  % convenient way to read file modified times from matlab.
+  point.savetime = clock;
+  filename = fullfile(cds.datapath, cds.runID, sprintf('point_%08d', cds.i));
   save(filename, 'point');
-
 end
 if nargin == 1
     % 'normal' point
@@ -34,8 +37,6 @@ if nargin == 1
         s.data    = point;
         s.data.ap = cds.ActiveParams;
         s.data.P0 = cds.P0;
-        
-        cds.sout = [];
         cds.num_sings = 0;
         failed = savePoint(point, s);
         return

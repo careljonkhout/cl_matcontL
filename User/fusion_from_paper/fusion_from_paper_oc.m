@@ -1,11 +1,11 @@
 % test of limit point bifurcation detection using orhtogonal collocation
 clc
 clear global
-N = 75;                     
+N = 50;                     
 odefile = str2func(sprintf('fusion_precomputed_with_sage_N_%d', N));
 a = -1;
 b = -0.3;  
-q_inf = -0.74;
+q_inf = -0.7; 
 
 dirname = [mfilename '_N_' num2str(N)];
 
@@ -19,15 +19,16 @@ initial_continuation_data = init_collocation_find_stable_cycle( ...
   'ode_parameters',            ode_parameters, ...
   'active_parameter_index',    3, ...
   'lower_bound_period',        1, ...
-  'upper_bound_period',        20, ...
+  'upper_bound_period',        70, ...
   'nMeshIntervals',            20, ...
-  'show_plot',                 false ...
+  'show_plot',                 true, ...
+  'poincare_tolerance',        8e-4 ...
 );
 
 disp(initial_continuation_data(end-1))
 opt = contset();
 opt = contset(opt, 'MaxNumPoints',            5000);
-opt = contset(opt, 'InitStepsize',            0.25);
+opt = contset(opt, 'InitStepsize',            0.25); 
 opt = contset(opt, 'MinStepsize',             1e-6);
 opt = contset(opt, 'MaxStepsize',             0.25);
 opt = contset(opt, 'MaxNewtonIters',          8);

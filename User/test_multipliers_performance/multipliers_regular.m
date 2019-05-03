@@ -1,7 +1,7 @@
 function multipliers = multipliers_regular(J)
 
 % calculate multipliers
-global lds contopts
+global lds
 q = size(J,1)-1;
 J = J(1:q,1:q);
 p = speye(q);
@@ -30,7 +30,4 @@ multipliers = sort(multipliers,'descend', 'ComparisonMethod', 'abs');
 
 lds.monodromy = -A1\A0;
 
-  
 
-function is_a_conjugate_pair = is_a_conjugate_pair(a,b)
-  is_a_conjugate_pair = abs(conj(a)-b) < 1e-14;

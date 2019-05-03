@@ -1,19 +1,24 @@
 Orthogonal Collocation
-  - adding a field to lds is very likely to cause crashes, due to the way 
-    fields are read form the lds structure in the mex files. It would be nice to 
-    fix this.
+  - adding a field to lds is very likely crashes or unexpected behaviour, due to 
+    the way fields are read form the lds structure in the mex files. It would be 
+    nice to fix this.
 
 Newton Picard
  
- - implement starting form hopf
- - better subspace continuation/computation. Use trivial eigenvalue/eigenvector pair
- 
+ - implement starting form hopf for multiple shooting
+ - better subspace continuation/computation. 
+   Use trivial eigenvalue/eigenvector pair.
 
 All cycles:
 
 - reuse the Jacobian (in ortho col case) or subspace computation (in newt pic case)
   that is computed to compute the tangent vector to compute the multipliers
   (instead of recomputing)
+
+- check if correct curvefile is supplied to contL or start contL directly form 
+  initializer
+
+- time spent in bisection is reported incorrectly
 
 
 

@@ -27,6 +27,16 @@ function initial_continuation_data = init_multiple_shooting_internal(in)
   
   
   period                    = new_orbit.x(end);
+  
+  if in.show_plot
+    trail_solution_t = linspace(0, period, 500);
+    trail_solution_x = deval(new_orbit, trail_solution_t);
+    plot(trail_solution_t, trail_solution_x-new_orbit.y(:,1))
+    xlabel('t')
+    ylabel('deviation form initial value')
+    pause
+  end
+  
   initial_continuation_data = zeros(cds.nphases * in.nMeshIntervals + 2, 1);
   for i=0:in.nMeshIntervals-1
     indices = (1:cds.nphases) + i * cds.nphases;

@@ -19,7 +19,7 @@ function str = multipliers2str(multipliers)
   i=1;
   while i <= length(multipliers)
     m = multipliers(i);
-    if abs(imag(m)) > contopts.real_v_complex_threshold
+    if abs(imag(m)) > cds.deviation_of_trivial_multiplier
       % This text will not be so long that it will negatively impact
       % performance. Therefore, the 'array grows on every loop
       % iteration'-warning is ignored

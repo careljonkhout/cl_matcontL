@@ -15,7 +15,7 @@ function [delta_q, M_delta_q] = ...
   
   residual   = rhs - V * V' *rhs;
   if max(abs(residual)) < contopts.PicardTolerance
-    print_diag(4,'did no iterations in solve_q_system\n');
+    print_diag(4, 'did no iterations in solve_q_system\n');
     delta_q   = zeros(size(V,1),1);
     M_delta_q = zeros(size(V,1),1);
     return;

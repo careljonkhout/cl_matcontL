@@ -1,3 +1,0 @@
-add events option to contL, similar matlab ode suite events. This could enable
-User to specify when a continuation should stop based on the certain parameters
-or detection of bifurcationa.
