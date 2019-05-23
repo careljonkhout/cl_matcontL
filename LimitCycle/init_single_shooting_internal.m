@@ -33,7 +33,7 @@ function initial_continuation_data = init_single_shooting_internal(in)
     pause
   end
   
-  fprintf('norm of gap in cycle: %.4e\n', norm_of_gap)
+  fprintf('max-norm of gap in cycle: %.4e\n', norm_of_gap)
   
   
   period                    = orbit_t(end);
@@ -61,6 +61,7 @@ function initial_continuation_data = init_single_shooting_internal(in)
   cds.preferred_basis_size  = in.subspace_size;
   cds.p               = in.subspace_size;
   cds.mv_count        = 0;
+  cds.curve           = @single_shooting;
  
   function [value, isterminal, direction] = returnToPlane(t, x)
     % x and should be a column vector

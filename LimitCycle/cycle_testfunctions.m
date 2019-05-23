@@ -1,6 +1,9 @@
 function out = cycle_testfunctions(ids_testf_requested, multipliers, v)
   global cds
   const = Constants;
+  print_diag(4,'evaluating testfunctions with multipliers:\n')
+  print_diag(4,'%.6f\n', multipliers);
+  
   
   if any(ismember(const.BPC_id, ids_testf_requested))
     distance_to_one = abs(multipliers - 1);
@@ -12,8 +15,7 @@ function out = cycle_testfunctions(ids_testf_requested, multipliers, v)
     % real is needed to ensure that small complex parts induced by roundoff
     % errors do not make the result complex. A complex valued test function
     % would cause false positives when detecting bifurcations.
-    out(const.PD_id) = ...
-      real(prod(multipliers + ones(size(multipliers))));
+    out(const.PD_id) = real(prod(multipliers + ones(size(multipliers))));
   end
   if ismember(const.LPC_id, ids_testf_requested)
     out(const.LPC_id) = v(end);

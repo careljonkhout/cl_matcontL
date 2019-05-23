@@ -57,5 +57,6 @@ function do_init_single_shooting_extend_curve(in)
   cds.preferred_basis_size  = in.subspace_size;
   cds.p               = in.subspace_size;
   cds.mv_count        = 0;
+  cds.curve           = @single_shooting;
  
 end

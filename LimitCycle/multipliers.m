@@ -21,7 +21,6 @@ for i=1:ntst
   j_col_indices = j_col_indices + ncol * nphase;
 end
 
-
 p_row_indices   = (1:nphase) + (ncol-1)*nphase;
 j_col_indices_p = (1:(ncol*nphase)) + nphase;
 j_col_indices_A = (1:nphase);
@@ -50,7 +49,7 @@ catch
   print_diag(3, 'pqzschur did not converge, using matrix multiplication\n');
   
   M = eye(nphase);
-  for i=ntst:-1:1
+  for i=ntst:-1:1 % from i = ntst downto 1
     M = M  / B(:,:,i) * A(:,:,i);
   end
   multipliers = eig(M);
@@ -92,5 +91,5 @@ end
 
 multipliers = sort(multipliers, 'descend', 'ComparisonMethod', 'abs');
 
-print_diag(0,multipliers2str(multipliers));
+print_diag(1,multipliers2str(multipliers));
 

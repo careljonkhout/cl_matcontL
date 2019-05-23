@@ -266,7 +266,7 @@ function point = default_processor(varargin)
   cds.previous_phases     = y(1:cds.nphases);
   cds.previous_dydt_0     = cds.dydt_ode(0, cds.previous_phases, parameters{:});
 
-  adjust_basis_size(point);
+  point = adjust_basis_size(point);
   savePoint(point);
 end
 %-------------------------------------------------------------------------------
@@ -318,7 +318,7 @@ function [has_changed, x, v, CISData] = adapt(varargin)
   
 end
 %-------------------------------------------------------------------------------
-function adjust_basis_size(point)
+function point = adjust_basis_size(point)
   global cds contopts;
   basis_size_changed = false;
   

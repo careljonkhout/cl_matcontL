@@ -1,7 +1,7 @@
-function [x0,v0] = init_H_LC_L(odefile, x, p, ap, h, ntst, ncol)
+function [x0,v0] = init_H_LC_L(odefile, x, p, ap, h, dp, ntst, ncol)
 
 %
-% [x0,v0] = init_H_LC(odefile,x,p,ap,h,ntst,ncol)
+% [x0,v0] = init_H_LC(odefile,x,p,ap,h,dp,ntst,ncol)
 %
 % Initializes a limit cycle continuation from a Hopf point
 % 
@@ -33,7 +33,7 @@ if ~isfield(cds,'ActiveParams')   % MP
     init_EP_EP_L(odefile,x,p,ap); % MP
 
 end
-
+x = x(1:end-1);
 init_lds(odefile,x,p,ap,ntst,ncol);
 
 func_handles = feval(odefile);
@@ -58,6 +58,7 @@ lds.P0 = p;
 
 cds.oldJac = [];
 cds.oldJacX = [];
+
 xp = [x;p(ap)];
 
 % check parameters
@@ -68,15 +69,15 @@ xp = [x;p(ap)];
 %cds.ndim = length(xp);                     %MP 2018
 cds.ndim_odep = length(xp);                 %MP 2018
 
+
 p = num2cell(p);
 if ~isempty(hds)
     A = cjac(hds.func,hds.Jacobian,x,p,hds.ActiveParams);
 else
     A = cjac(cds.curve_func,cds.curve_jacobian,xp,[]);
 end
-
-% nphase = size(x);
-nphase = lds.nphase;
+cds.curve = @limitcycleL;
+nphase = size(x);
 A = full(A); % Carel Jonkhout
 A = A(1:nphase,1:nphase);
 % calculate eigenvalues and eigenvectors
@@ -93,7 +94,7 @@ for j=1:nphase-1
   end
 end
 % real part? Oh dear, a neutral saddle!
-if imag(d(idx1)) == 0 & imag(d(idx2)) == 0
+if imag(d(idx1)) == 0 && imag(d(idx2)) == 0
     x0=[];v0=[];
   debug('Neutral saddle\n');
   return;
@@ -112,7 +113,7 @@ Q = Q/norm(real(Q));
 % calculate initial cycle and its tangent vector
 t = kron(exp(2*pi*1i*lds.finemsh),Q);
 lds.upoldp = -imag(t);
-v0 = [real(t(:));0;0];
+v0 = [real(t(:));0;dp*h];
 if n_par==1
     x0 = [repmat(x,lds.tps,1);2*pi/omega;p{lds.ActiveParams}]+h*v0;
 else    
@@ -150,7 +151,8 @@ if siz > 9
         lds.user{j}= func_handles{k};
         j=j+1;
     end
-else lds.user=[];
+else
+  lds.user=[];
 end
 lds.nphase = size(x,1);
 lds.ActiveParams = ap;

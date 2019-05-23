@@ -3,12 +3,7 @@ function point = do_corrections(x0,v)
   global cds contopts
  
   curve_function_norm = max(abs(feval(cds.curve_func,x0)));
-
-  if curve_function_norm > 10
-    point = [];
-    return;
-  end
-  
+  lowest_curve_function_norm = curve_function_norm;
   x = x0;
   corrections = 0;
   done = false;
@@ -27,23 +22,24 @@ function point = do_corrections(x0,v)
       point = [];
       return
     end
-    correction_norm = max(abs(x - old_x));
+   
     if isempty(x)
       break;
     end
-
-    if period < 0
-      fprintf('period less than zero, correction aborted\n');
-      break
-    end
+    
+    correction_norm = max(abs(x - old_x));
+    
     new_curve_function_norm = max(abs(feval(cds.curve_func,x)));
-    if new_curve_function_norm > 2 * curve_function_norm
+    
+    if new_curve_function_norm > 20 * lowest_curve_function_norm
       print_diag(0,'function_norm: %.8e period: %.8e corrections: %d\n', ...
         new_curve_function_norm, period, corrections);
-      print_diag(0,['Curve function norm is strongly increasing.' ...
+      print_diag(0,['Curve function norm increased by a factor of 20.' ...
         ' Aborting Corrections.\n']);
       break;
     end
+    lowest_curve_function_norm = min(lowest_curve_function_norm, ...
+                                          new_curve_function_norm);
     curve_function_norm = new_curve_function_norm;
     
     done = curve_function_norm < contopts.FunTolerance && ...

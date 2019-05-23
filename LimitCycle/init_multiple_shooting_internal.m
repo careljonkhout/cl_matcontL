@@ -67,6 +67,7 @@ function initial_continuation_data = init_multiple_shooting_internal(in)
   cds.preferred_basis_size  = in.subspace_size;
   cds.p               = in.subspace_size;
   cds.mv_count        = 0;
+  cds.curve           = @multiple_shooting;
  
   function [value, isterminal, direction] = returnToPlane(t, x)
     % x and should be a column vector

@@ -49,7 +49,37 @@ function jacobian = jacobian(varargin)
   parameters                   = cds.P0;
   parameters(cds.ActiveParams) = active_par_val;
   parameters                   = num2cell(parameters);
-  [y_end, monodromy] = compute_monodromy(phases, period, parameters);
+  
+  
+  % 
+  
+  global contopts lds;
+  integration_opt = odeset(...
+    'AbsTol',      contopts.integration_abs_tol,    ...
+    'RelTol',      contopts.integration_rel_tol,    ...
+    'Jacobian',     @(t,y) feval(cds.jacobian_ode,t,y,parameters{:}) ...
+  );
+  f = @(t, y) cds.dydt_ode(t, y, parameters{:});
+  cycle = cds.integrator(f, [0 period], phases, integration_opt);
+  x_for_monodromy = zeros((lds.ntst*lds.ncol + 1) * lds.nphase + 2,1);
+  mesh = linspace(0,period,lds.ntst*lds.ncol + 1);
+  x_indices = 1:lds.nphase;
+  for t = mesh
+    x_for_monodromy(x_indices) = deval(cycle, t);
+    x_indices = x_indices + lds.nphase;
+  end
+  x_for_monodromy(end-1) = period;
+  x_for_monodromy(end  ) = active_par_val;
+  % an experimental way of computing the monodromy matrix:
+  monodromy = compute_monodromy_oc(x_for_monodromy);
+  y_end = deval(cycle,period);
+  
+  %[y_end, monodromy] = compute_monodromy(phases, period, parameters);
+  
+  
+  
+  
+  
   jacobian     = [monodromy-eye(cds.nphases); cds.previous_dydt_0'];
   % add d_phi__d_T and d_s__d_T
   d_phi_d_T         = cds.dydt_ode(0,y_end,parameters{:});
@@ -275,7 +305,7 @@ end
 % multiple shooting, the computation of normal form coefficients is not
 % implemented yet.
 function [failed,s] = process_singularity(id,point,s)
-  global cds contopts
+  global cds
   x = point.x;
   switch id
   case 1

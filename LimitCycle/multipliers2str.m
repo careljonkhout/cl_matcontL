@@ -3,11 +3,11 @@ function str = multipliers2str(multipliers)
   
   distance_to_one                     = abs(multipliers - 1);
   cds.deviation_of_trivial_multiplier = min(distance_to_one);
-  print_diag(0,'deviation of trivial multiplier: %.2e\n', ... 
+  print_diag(1,'deviation of trivial multiplier: %.2e\n', ... 
                           cds.deviation_of_trivial_multiplier);
   
   if contopts.NewtonPicard
-    print_diag(0, 'number of multipliers: %d\n', length(multipliers));
+    print_diag(1, 'number of multipliers: %d\n', length(multipliers));
   end
   
   % Printing every multiplier that is computed would produce too much output,

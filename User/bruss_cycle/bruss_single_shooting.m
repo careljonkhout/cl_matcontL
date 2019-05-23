@@ -5,7 +5,7 @@ format compact
 clear global
 % continuation of cycles cycles in brusselator
 odefile = @brusselator_1d;
-N=20;
+N=400;
 L = 0.5; A = 2; B = 5.45; Dx = 0.008; Dy = 0.004;
 ode_parameters = [N L A B Dx Dy];
 
@@ -51,7 +51,6 @@ opts_h_lc = contset(opts_h_lc, ...
   'enable_nf_ns',           false, ...
   'enable_nf_lpc',          false, ...
   'enable_nf_pd',           false, ...
-  'Filename',               sprintf('bruss_single_shooting_N_%d', N), ...
   'every_point_in_separate_mat_file', true);
 
 hold on
@@ -65,8 +64,7 @@ title(sprintf(title_format_string, title_format_args{:}));
 
 singularities = ...
   contL(@single_shooting, x0, v0, opts_h_lc, ...
-            'callback',           @plot_T_versus_param, ...
-            'stopping_condition', @(point) point.x(end) > 20 );
+            'callback',           @plot_T_versus_param );
 
 
 for singularity = singularities

@@ -13,6 +13,6 @@ function x_end = shoot(x, delta_t, parameters)
     integration_opt = odeset(integration_opt, ...
     'Jacobian',     @(t,y) feval(cds.jacobian_ode,t,y,parameters{:}));
   end
-  f =@(t, y) cds.dydt_ode(t, y, parameters{:});
+  f = @(t, y) cds.dydt_ode(t, y, parameters{:});
   [~, orbit] = cds.integrator(f, [0 delta_t], x, integration_opt);
   x_end = orbit(end,:)';

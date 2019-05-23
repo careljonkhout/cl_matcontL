@@ -1,5 +1,4 @@
 function v = find_tangent_vector(x)
-
    [V, reduced_jacobian, delta_q_gamma, delta_q_r, ~, ~, ~, ~, ~] = ...
           NewtonPicard.SingleShooting.compute_reduced_jacobian(x);
 

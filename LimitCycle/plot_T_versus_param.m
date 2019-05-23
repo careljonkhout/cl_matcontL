@@ -1,3 +1,5 @@
+% meant to be passed as a function handle to contL
+
 function plot_T_versus_param(currpoint, trialpoint)
   if isempty(findobj('type', 'figure'))
     figure

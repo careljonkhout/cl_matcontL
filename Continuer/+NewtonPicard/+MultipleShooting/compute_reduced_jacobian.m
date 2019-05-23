@@ -25,16 +25,24 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
   % compute length of each mesh interval:
   delta_t               = period * diff(mesh);
   
+  
+  cds.orbits(1) = feval(integrator,...
+          @(t, y) feval(dydt_ode, t, y), ...
+          [0 period], ...
+          phases_0(:,1), integration_opt);
+  phases_T_i(:,1) = deval(cds.orbits(1), delta_t(1));
+  
   parfor_failed = false;
   try 
     if contopts.contL_ParallelComputing   
       parfor i=1:m
+        print_diag(6,'orbit %d\n',i)
         % The function monodromy_map cannot be used here, since it depends on
         % the global variable cds, and global variables are not copied so the
         % the workspace of the workers that parfor uses.
         orbits(i) = feval(integrator,...
           @(t, y) feval(dydt_ode, t, y), ...
-          [0 period], ...
+          [0 delta_t(i)], ...
           phases_0(:,i), integration_opt);
         phases_T_i(:,i) = deval(orbits(i), delta_t(i));
       end
@@ -53,13 +61,14 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
   end
   
   if ~ contopts.contL_ParallelComputing || parfor_failed
-    for i=1:m
+    for i=2:m
+      print_diag(6,'orbit %d\n',i)
       % The function monodromy_map cannot be used here, since it depends on
       % the global variable cds, and global variables are not copied so the
       % the workspace of the workers that parfor uses.
       cds.orbits(i) = feval(integrator,...
         @(t, y) feval(dydt_ode,t, y), ...
-        [0, period], ...
+        [0 delta_t(i)], ...
         phases_0(:,i), integration_opt);
 
       phases_T_i(:,i) = deval(cds.orbits(i), delta_t(i));
@@ -77,6 +86,7 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
     V              = zeros(cds.nphases, basis_size, m);
     V(:,:,1)       = V1;
     for i=2:m % m == cds.nMeshIntervals
+      print_diag(6,'G %d\n',i);
       for j = 1:size(V,2)
         V(:,j,i) = NewtonPicard.MultipleShooting.monodromy_map(...
           i-1, V(:,j,i-1), delta_t(i-1), parameters);

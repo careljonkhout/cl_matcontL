@@ -2,7 +2,7 @@ function [x0, v0] = init_single_shooting_from_hopf( odefile, ...
                     x, ode_parameters, active_parameter_index, h, subspace_size)
 
 
-  global cds
+  global cds lds
   % check input
   n_par = length(active_parameter_index);
   if n_par ~= 1 && n_par ~= 2
@@ -14,6 +14,12 @@ function [x0, v0] = init_single_shooting_from_hopf( odefile, ...
 
 
   cds.nphases = length(x) - 1;
+  cds.curve = @single_shooting;
+  [max_order, ~] = find_maximum_order_of_symbolic_derivatives(odefile);
+  cds.options.SymDerivative = max_order;
+  lds.ntst = 100;
+  lds.ncol = 4;
+  lds.nphase = length(x) -1;
   
   handles                = feval(odefile);
   dydt_ode               = handles{2};

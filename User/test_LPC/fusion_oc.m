@@ -41,11 +41,11 @@ opt = contset(opt, 'console_output_level',    3);
 opt = contset(opt, 'contL_DiagnosticsLevel',  3);
 opt = contset(opt, 'MoorePenrose',            false);
 opt = contset(opt, 'contL_SmoothingAngle',    1);
-opt = contset(opt, 'enable_bpc',              false, ...
+opt = contset(opt, ...
                    'enable_nf_pd',            false, ...
                    'enable_nf_lpc',           true, ...
                    'enable_nf_ns',            false);
 
  
 
-contL(@limitcycleL, initial_continuation_data, [], opt, @plot_T_versus_param);
+contL(@limitcycleL, initial_continuation_data, [], opt, 'callback', @plot_T_versus_param);

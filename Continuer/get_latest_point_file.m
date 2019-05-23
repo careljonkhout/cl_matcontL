@@ -4,7 +4,7 @@ function [file, point_index] = get_latest_point_file(dirname)
     error('No .mat files were found in %s.', dirname)
   end
   listing_table = struct2table(listing);
-  listing_table = sortrows(listing_table, 'datenum');
+  listing_table = sortrows(listing_table, 'name');
   listing       = table2struct(listing_table);
   filename      = listing(end).name;
   point_index   = sscanf(filename, 'point_%d');

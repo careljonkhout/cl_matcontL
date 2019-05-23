@@ -7,12 +7,13 @@
 %	  year={1997},
 % }
 % most variable names are derived from variable names in \cite{lust-phd}.
-function x = do_one_correction(x0,x,v0)
+function x = do_one_correction(x0,x,v0,curve_function_norm)
   global cds;
   
   [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
           phases_0, phi, period, active_par_val] = ...
-    NewtonPicard.MultipleShooting.compute_reduced_jacobian(x);
+    NewtonPicard.MultipleShooting.compute_reduced_jacobian( ...
+                                        x,curve_function_norm);
   basis_size = size(V,2);
   m = cds.nMeshIntervals;
   

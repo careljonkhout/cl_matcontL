@@ -48,6 +48,12 @@ for i = 1:MaxCorrIters
     % repeat twice with same jacobian, calculating
     % the jacobian is usually a lot more expensive
     % than solving a system
+    if ~ MoorePenrose
+      print_diag(5,'computing LU factorization in Newton correction ')
+      if ~ isequal(cds.curve, @limitcycleL)
+        dB = decomposition(B);
+      end
+    end
     for t=1:2
         if isempty(A) || length(Q) == 1
             pout = [];
@@ -55,10 +61,11 @@ for i = 1:MaxCorrIters
         end
         
         if MoorePenrose
-            
+
             lastwarn('');
-            D = bordCIS1(B(1:cds.ndim,1:cds.ndim),[Q(1:cds.ndim) R'],1);        % dx = B\Q; dv = B\R' CIS;
-            %%D = B\[Q R'];                     % test   ????
+            D = bordCIS1(B(1:cds.ndim,1:cds.ndim),[Q(1:cds.ndim) R'],1);       
+            % dx = B\Q; dv = B\R' CIS;
+         
             if ~isempty(lastwarn)
                 x = [];
                 v = [];
@@ -70,7 +77,11 @@ for i = 1:MaxCorrIters
             
             dx = D(:,1);
         else
-            dx = B\Q;
+          if isequal(cds.curve, @limitcycleL)
+            dx = linear_solver_collocation(B,Q);
+          else
+            dx = dB \ Q;
+          end
         end
         
         %         % DSB -- line search to ensure *some* decrease (if not Armijo)
@@ -109,15 +120,18 @@ for i = 1:MaxCorrIters
         varnorm = normU(dx);
         % *** end user norm check ***
         
-        %%if varnorm < VarTolerance && funcnorm < FunTolerance;
+    
         if varnorm < VarTolerance && funcnorm < FunTolerance
             A = contjac(x, CISdata);
             if isempty(A)
                 pout = [];
                 return;
             end
-            
-            v = bordCIS1([A;v'],R',1);
+            if isequal(cds.curve,@limitcycleL)
+              v = linear_solver_collocation([A;v'],R');
+            else
+              v = bordCIS1([A;v'],R',1);
+            end
             if contopts.newtcorrL_use_max_norm
               v = v/max(abs(v));
             else

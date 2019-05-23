@@ -43,10 +43,10 @@ approximate_period = 7;
 opt.TSearchOrder = 0;
 %% Continue limit cycle from stable cycle found by time integration
 tolerance = 1e-3;
-ntst = 3;
+ntst = 20;
 ncol = 4;
 odefile = @brusselator_1d;
 ap = 4;
-[x0,v0] = initOrbLC(odefile, t2, x2, cell2mat(parameters), ap, ntst, ncol,tolerance);
+[x0,v0] = initOrbLC_L(odefile, t2, x2, cell2mat(parameters), ap, ntst, ncol,tolerance);
 [~, datafile] = contL(@limitcycleL,x0,v0,opt);
 

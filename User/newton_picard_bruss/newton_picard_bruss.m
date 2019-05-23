@@ -3,7 +3,7 @@ format long
 run_init_if_needed
 % continuation of cycles cycles in brusselator
 odefile = @brusselator_1d; %@brusselator_N_2;
-N = 20;
+N = 1000;
 L = 1.1; A = 2; B = 5.45; Dx = 0.008; Dy = 0.004;
 ode_parameters = {N; L; A; B; Dx; Dy};%parameters = {L; A; B; Dx; Dy};
 clear global cds

@@ -34,7 +34,15 @@ if nargin > 4
     i = i+2;
   end
 end
-
+if isfield(cds, 'curve') && ~ isequal(cds.curve, curvefile)
+  warning(['The field cds.curve and the specified curvefile do no match. ', ...
+         'cds.curve is %s and the specified curvefile is %s. ', ...
+         'using %s'], ...
+         func2str(cds.curve), func2str(curvefile), func2str(curvefile));
+  cds.curve = curvefile;
+  % todo expand error message
+end
+% curvefile must be loaded before opening data files
 loadCurveFile(curvefile);
 feval(cds.curve_options);
 
@@ -102,7 +110,7 @@ if isequal(curvefile, @limitcycleL) || ...
    isequal(curvefile, @limitpointcycle)
     if isempty(v_cont)
         v_cont = find_initial_tangent_vector(x0, v_cont, 1);
-        print_diag(0,'found tangent vector\n')
+        print_diag(1,'found tangent vector\n')
     end
     firstpoint = newtcorrL(x0, v_cont, 1);
 elseif UsingNewtonPicard
@@ -174,9 +182,11 @@ if contopts.set_direction
 end
 
  
-firstpoint = DefaultProcessor(firstpoint); 
+
 
 %% Test and user functions
+
+firstpoint.tvals = [];
 if Singularities
     % WM: calculate all testfunctions at once
     [firstpoint.tvals,failed] = EvalTestFunc(0, firstpoint);
@@ -186,6 +196,7 @@ if Singularities
         return
     end
 end
+firstpoint.uvals = [];
 if Userfunctions
     [firstpoint.uvals,failed]   = feval(cds.curve_userf, 0, UserInfo, x0);
     if failed
@@ -195,7 +206,8 @@ if Userfunctions
     end
 end
 
-
+firstpoint.angle = 0;
+firstpoint = DefaultProcessor(firstpoint); 
 
 %% II. Main Loop
 currpoint = firstpoint;
@@ -262,6 +274,7 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
     end
 
     %% E. Test Function Evaluation
+    trialpoint.tvals = [];
     if ~reduce_stepsize && Singularities
       cds.previous_tvals = currpoint.tvals;
       [trialpoint.tvals, failed] = EvalTestFunc(0, trialpoint);
@@ -327,6 +340,7 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
     end
 
     % User Function Evaluation
+    trialpoint.uvals = [];
     if ~reduce_stepsize && Userfunctions
       [trialpoint.uvals,failed] = feval( ...
         cds.curve_userf, 0, UserInfo, trialpoint.x);
@@ -370,7 +384,7 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
   print_diag(1,'time to compute step %.3f\n',toc(step_start_time));
   
   if cds.lastpointfound % Carel Jonkhout
-    % occurs if step size too small
+    % occurs if stepsize too small
     continue
   end
 
@@ -425,6 +439,7 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
 
       if ~ failed
         singpoint.h = norm(currpoint.x - singpoint.x);
+        singpoint.uvals = [];
         if Userfunctions
           [singpoint.uvals, ~] = cds.curve_userf(0, UserInfo, singpoint.x);
         end
@@ -533,6 +548,7 @@ end % end of main continuation loop
 
 %% III. Finalization
 sout = cds.sout;
+cds.sout = [];
 
 fclose(cds.dataFID);
 if(cds.logFID~=1)
@@ -544,6 +560,7 @@ end
 
 
 function v0 = find_initial_tangent_vector(x0, v0, CISdata0)
+global cds contopts
 if isempty(v0)
     A = contjac(x0, CISdata0);
     if isempty(A); v0 = []; return; end
@@ -552,8 +569,17 @@ if isempty(v0)
     B = [A; v'];
     C = zeros(length(x0),1);
     C(end) = -1;
-    v0 = bordCIS1(B,C,1);
-    v0 = v0/norm(v0);
+    if isequal(cds.curve, @limitcycleL)
+      v0 = linear_solver_collocation(B,C);
+    else
+      v0 = bordCIS1(B,C,1);
+    end
+    if contopts.newtcorrL_use_max_norm
+      v0 = v0 / max(abs(v0));
+    else
+      v0 = v0/norm(v0);
+    end
+    
 end
 
 %------------------------------------------

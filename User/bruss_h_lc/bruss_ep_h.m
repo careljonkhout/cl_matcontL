@@ -1,5 +1,5 @@
 % continuation of cycles in brusselator
-
+close all
 format long
 format compact
 clear global
@@ -17,7 +17,7 @@ active_parameter = 2;
 opts_ep_ep = contset();
 
 opts_ep_ep = contset(opts_ep_ep, ...
-  'MaxNumPoints', 23, ...
+  'MaxNumPoints', 4, ...
   'Singularities', true);
 
 
@@ -56,6 +56,6 @@ xlabel('L')
 ylabel('period')
 title(sprintf(title_format_string, title_format_args{:}));
 
-contL(@limitcycleL, x0, v0, opts_h_lc, @plot_T_versus_param);
+contL(@limitcycleL, x0, v0, opts_h_lc, 'callback', @plot_T_versus_param);
 
 
