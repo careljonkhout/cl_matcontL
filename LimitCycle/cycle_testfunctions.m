@@ -2,7 +2,7 @@ function out = cycle_testfunctions(ids_testf_requested, multipliers, v)
   global cds
   const = Constants;
   print_diag(4,'evaluating testfunctions with multipliers:\n')
-  print_diag(4,'%.6f\n', multipliers);
+  print_diag(4,'%s\n', multipliers2str(multipliers));
   
   
   if any(ismember(const.BPC_id, ids_testf_requested))

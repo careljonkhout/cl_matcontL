@@ -33,7 +33,19 @@ function initial_continuation_data = init_collocation_find_stable_cycle(varargin
       error(['You must specifiy ' fields{i} '.'])
     end
   end
+  
+  ncol = input.nCollocationPoints;
+  
+  if ~ isnumeric(ncol) || numel(ncol) ~= 1 || floor(ncol) ~= ncol || ...
+       ncol < 2 || ncol > 7
+    error('nCollocationPoints must be an integer between 1 and 8')
+  end
 
+  ntst = input.nMeshIntervals;
+  
+  if ~ isnumeric(ntst) || numel(ntst) ~= 1 || floor(ntst) ~= ntst || ntst < 2
+    error('nMeshIntervals must be an integer greater than 1')
+  end
   input.point_on_limitcycle = converge_to_cycle(input);
   %lc_input.point_on_limitcycle = lc_input.point_on_limitcycle';
   

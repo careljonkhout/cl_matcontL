@@ -10,12 +10,11 @@ function full_solution = linear_solver_collocation(J,b)
   J_last_rows   = zeros(2          , nphase*(ncol+1),         ntst+1);
 
   cs_size          = (ntst+1)*nphase+2;
-  nnz              = ntst * nphase^2 + 4 * ( ntst + 1 ) * nphase  - 4;
-  condensed_system = spalloc(cs_size, cs_size, nnz);
+  condensed_system = zeros(cs_size, cs_size);
   condensed_b      = zeros((ntst+1)* nphase+2, 1);
   transformed_b    = b;
   
-  J_original = J;
+  
   
   % Retrieve blocks of Jacobian first and store them as dense matrices to prevent
   % repeating expensive lookups of blocks in sparse matririces.
@@ -29,7 +28,7 @@ function full_solution = linear_solver_collocation(J,b)
     j_col_indices = j_col_indices + ncol * nphase;
   end
 
-  
+
      
   p_row_indices    = (1:nphase) + (ncol-1)*nphase;
 
@@ -42,7 +41,10 @@ function full_solution = linear_solver_collocation(J,b)
   
   testing = false || false; % added "|| false" to prevent code analyzer warnings
   
-    
+  if testing
+    J_original = J;
+  end
+  
   condensed_b(end-nphase-1:end,:)                 = b(end-nphase-1:end,:);
    
   bottom_rect = J(end-1:end, end-1:end);
@@ -52,18 +54,18 @@ function full_solution = linear_solver_collocation(J,b)
   
   for i=1:ntst
     sJ = J_blocks(:, (1:(ncol*nphase)) + nphase, i);
-    [sl,su] = lu(sJ);
-    p = inv(sl);
+    [lower,upper] = lu(sJ);
+    p = inv(lower);
     
     first_block_column = p * J_blocks(:,1:nphase,i); %#ok<MINV>
     
     % The inverse is already available, that is why the MINV warning is ignored
     % sl \  J_blocks(:,j_col_indices_A,i), may be more accurate, but it is
     % slower
-    su  = [first_block_column, su]; %#ok<AGROW> warning is a false positive
+    upper  = [first_block_column, upper]; %#ok<AGROW> warning is a false positive
     transformed_b(b_row_indices) = p * b(b_row_indices); %#ok<MINV>
     if testing
-      J(j_row_indices,j_col_indices) = su; 
+      J(j_row_indices,j_col_indices) = upper; 
       J(j_row_indices,end-1:end)   = p * J_last_cols(:,:,i); %#ok<MINV>
       
       disp(sum(J\transformed_b))
@@ -92,8 +94,8 @@ function full_solution = linear_solver_collocation(J,b)
     for j=1:nphase*ncol
       for k = 1:2
         if last_rows(k,nphase + j) ~= 0
-          scaling_factor = last_rows(k,nphase + j) / su(j,nphase + j);
-          last_rows(k,:) = last_rows(k,:) - su(j,:) * scaling_factor;
+          scaling_factor = last_rows(k,nphase + j) / upper(j,nphase + j);
+          last_rows(k,:) = last_rows(k,:) - upper(j,:) * scaling_factor;
           condensed_b(end-2+k)   = condensed_b(end-2+k)   - transformed_b(b_row_indices(1)-1+j) * scaling_factor;
           bottom_rect(k,:)     = bottom_rect(k,:)     - transformed_last_cols(j,:)      * scaling_factor;
           if testing
@@ -155,7 +157,7 @@ function full_solution = linear_solver_collocation(J,b)
   end
  
 %  spy(condensed_system)
-  cond_sol = condensed_system \ condensed_b;
+  cond_sol = sparse(condensed_system) \ condensed_b;
   
   full_solution = zeros((ntst * ncol + 1) * nphase + 2, 1);
   full_solution_indices      = (1:nphase);

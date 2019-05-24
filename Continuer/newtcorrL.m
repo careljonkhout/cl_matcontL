@@ -49,8 +49,8 @@ for i = 1:MaxCorrIters
     % the jacobian is usually a lot more expensive
     % than solving a system
     if ~ MoorePenrose
-      print_diag(5,'computing LU factorization in Newton correction ')
       if ~ isequal(cds.curve, @limitcycleL)
+        print_diag(5,'computing LU factorization in Newton correction ')
         dB = decomposition(B);
       end
     end

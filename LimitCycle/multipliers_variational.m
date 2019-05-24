@@ -1,4 +1,3 @@
-% backup method to compute multipliers if pqzschur fails
 function multipliers = multipliers_variational(x)
   global lds cds;
   print_diag(3,'computing multipliers\n');

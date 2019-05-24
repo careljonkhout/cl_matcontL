@@ -57,14 +57,13 @@ else
 end
 if isempty(ind)
     error('No cycle can be found!')
-    return; 
 end
 x=x(:,1:ind);
 t=t(1:ind)';
 tn=(t-t(1))/(t(end)-t(1));
 
 [a,x,tn] = newmeshcycle(x,tn,size(x,2)-1,1,ntst,ncol);
-x = interp(tn,1,x,a,4);
+x = interp(tn,1,x,a,ncol);
 
 %lds.ActiveParams = 1;
 lds.ntst = ntst;
