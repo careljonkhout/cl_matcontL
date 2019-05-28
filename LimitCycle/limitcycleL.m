@@ -518,13 +518,13 @@ end
 function jacx = BVP_jac(BVP_func,x,p,T,pars,nc)
   global lds
   
-  print_diag(4,'running %s\n',BVP_func);
+  print_diag(4,'running %s ... ',BVP_func);
   
   p2 = num2cell(p);
-  tic
+  tic_time = tic;
   jacx = feval(BVP_func,lds.func,x,p,T,pars,nc,lds,p2,lds.Jacobian, ...
                 lds.ActiveParams,lds.JacobianP);
-	time_elapsed = toc;
+	time_elapsed = toc(tic_time);
   print_diag(4,'time elapsed %.4f\n', time_elapsed);
 end
 %-------------------------------------------------------------------------------

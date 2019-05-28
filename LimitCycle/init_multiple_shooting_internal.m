@@ -28,12 +28,15 @@ function initial_continuation_data = init_multiple_shooting_internal(in)
   
   period                    = new_orbit.x(end);
   
-  if in.show_plot
-    trail_solution_t = linspace(0, period, 500);
+  if in.show_plots
+    trail_solution_t = linspace(0, period, 10000);
     trail_solution_x = deval(new_orbit, trail_solution_t);
     plot(trail_solution_t, trail_solution_x-new_orbit.y(:,1))
     xlabel('t')
     ylabel('deviation form initial value')
+    disp(['Now showing plot from t=time_to_converge_to_cycle to ' ...
+                                       't=time_to_converge_to_cycle + period']);
+    disp('Press a key to continue')
     pause
   end
   

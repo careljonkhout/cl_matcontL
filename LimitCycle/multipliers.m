@@ -54,7 +54,7 @@ catch
   end
   multipliers = eig(M);
   
-  if abs(multipliers(1)) > 10000
+  if abs(multipliers(1)) > 100*1000*1000
     % computing the multipliers by computing the monodromy matrix
     % straightforward matrix multication is not the most stable method. In the
     % article ``improved numerical Floquet multipliers'' by Kurt Lust, the

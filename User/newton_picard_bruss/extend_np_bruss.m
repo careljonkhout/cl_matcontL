@@ -38,7 +38,6 @@ opt = contset(opt, 'CIS_UsingCIS',   false);
 opt = contset(opt, 'NewtonPicard',   true);
 opt = contset(opt, 'console_output_level',   4);
 opt = contset(opt, 'contL_DiagnosticsLevel', 4);
-opt = contset(opt, 'every_point_in_separate_mat_file', true);
 opt = contset(opt, 'PicardTolerance', 1e-8);
 
 s = contL(@single_shooting,point.x,[],opt);

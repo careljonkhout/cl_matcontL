@@ -45,8 +45,7 @@ opt = contset(opt, 'MoorePenrose',            false);
 opt = contset(opt, 'contL_SmoothingAngle',    1);
 opt = contset(opt, 'NewtonPicard',            true);
 opt = contset(opt, 'integration_rel_tol',            1e-6);
-opt = contset(opt, 'integration_abs_tol',            1e-6, ...
-                   'every_point_in_separate_mat_file', true);
+opt = contset(opt, 'integration_abs_tol',            1e-6);
  
 
 contL(@multiple_shooting, initial_continuation_data, [], opt);

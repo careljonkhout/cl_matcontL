@@ -11,18 +11,15 @@ function [ failed ] = savePoint( varargin )
     error(fprintf(['Wrong number of arguments. Number of arguments' ...
       ' must be 1 or 2. The number of arguments is %d'], nargin));
   end
-  if contopts.every_point_in_separate_mat_file
-    % the if statement is to prevent a "Directory already exists" warning
-    if ~ exist(fullfile(cds.datapath, cds.runID), 'dir')
-      mkdir(cds.datapath, cds.runID)
-    end
-    % Instead of adding the field savetime to point, we could use modified times
-    % of the files from the filesystem, but as far as I know there is no
-    % convenient way to read file modified times from matlab.
-    point.savetime = clock;
-    filename = fullfile(cds.datapath, cds.runID, sprintf('point_%08d', cds.i));
-    save(filename, 'point');
+
+  % the if statement is to prevent a "Directory already exists" warning
+  if ~ exist(fullfile(cds.datapath, cds.runID), 'dir')
+    mkdir(cds.datapath, cds.runID)
   end
+  point.savetime = clock;
+  filename = fullfile(cds.datapath, cds.runID, sprintf('point_%08d', cds.i));
+  save(filename, 'point');
+
   if nargin == 1
       % 'normal' point
       if cds.i == 1 % first point
@@ -58,7 +55,7 @@ function [ failed ] = savePoint( varargin )
       label = '  ';
       is_special = false;
       print_point(point, label, is_special);
-      print_diag(2,'Angle Between Tangents:  %+e * pi\n',point.angle/pi());
+      print_diag(2,'Angle Between Tangents:  %+f degrees\n',point.angle/pi*180);
   elseif nargin == 2
       % 'singular' point
       s = varargin{2};

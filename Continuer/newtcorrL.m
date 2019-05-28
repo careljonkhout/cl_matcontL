@@ -32,6 +32,7 @@ Q = [feval(cds.curve_func, x, CISdata); 0];
 % end                                          % MP 2018
 
 funcnorm = normU(Q);
+smallest_funcnorm_so_far = funcnorm;
 
 for i = 1:MaxCorrIters
     print_diag(5,'newton iteration %d function norm %.5e\n', i, funcnorm)
@@ -67,8 +68,7 @@ for i = 1:MaxCorrIters
             % dx = B\Q; dv = B\R' CIS;
          
             if ~isempty(lastwarn)
-                x = [];
-                v = [];
+                pout = [];
                 return;
             end
             
@@ -165,9 +165,11 @@ for i = 1:MaxCorrIters
         end
         
         funcnorm = normU(Q);
+        smallest_funcnorm_so_far = min(funcnorm, smallest_funcnorm_so_far);
+        if funcnorm > 10 * smallest_funcnorm_so_far
+          pout = [];
+          return;
+        end
         
     end
 end
-
-% funcnorm
-% varnorm

@@ -1,5 +1,5 @@
 function fine_mesh = get_fine_mesh(coarse_mesh, ntst, ncol)
-  fine_mesh = zeros(1,ntst*ncol+1);
+  fine_mesh = zeros(1, ntst * ncol + 1);
   fine_mesh_index = 2;
 
   for i=1:ntst

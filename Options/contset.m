@@ -178,7 +178,6 @@ function options = defaultOptions()
   % Note: nf_ns is only implemented for limitcycleL.m
   options.console_output_level             = 0; % set to 5 to see all debug info.
   options.newtcorrL_use_max_norm           = false;
-  options.every_point_in_separate_mat_file = false;
   options.MaxPicardIterations              = 15;
   options.PicardTolerance                  = 1e-8;
   % set the number of cores to be used in parallel computing to the number of

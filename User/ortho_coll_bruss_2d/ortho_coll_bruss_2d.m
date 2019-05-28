@@ -99,7 +99,6 @@ opt = contset(opt, 'contL_DiagnosticsLevel', 4, ...
                    'always_save_s',          true ...
 );
 
-opt = contset(opt, 'every_point_in_separate_mat_file', false);
 
 ntst = 20; % number of mesh intervals
 ncol = 4;  % number of collocation points

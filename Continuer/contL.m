@@ -229,7 +229,8 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
     if UsingNewtonPicard
        trialpoint = NewtonPicard.do_corrections(xpre, currpoint.v);
       if ~ isempty(trialpoint)
-        trialpoint.v = NewtonPicard.find_tangent_vector(curvefile,trialpoint.x,trialpoint.v);
+        trialpoint.v = NewtonPicard.find_tangent_vector(...
+                                curvefile,trialpoint.x,trialpoint.v);
       end
     else
       trialpoint = newtcorrL(xpre, currpoint.v, currpoint.CISdata);
@@ -248,7 +249,9 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
       trialpoint.h = cds.h;
       trialpoint.angle = innerangle(currpoint.v,trialpoint.v);
       if trialpoint.angle > SmoothingAngle
-        print_diag(0, 'contL: Innerangle too large\n');
+        print_diag(0, ...
+          'contL: Innerangle too large, innerangle is %f degrees\n', ...
+          trialpoint.angle / pi * 180);
         reduce_stepsize = 1;
       end
   

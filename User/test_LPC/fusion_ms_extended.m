@@ -48,7 +48,6 @@ opt = contset(opt, 'integration_abs_tol',              1e-12);
 opt = contset(opt, 'multipliers_rel_tol',                1e-13);
 opt = contset(opt, 'multipliers_abs_tol',                1e-13);
 opt = contset(opt, 'enable_bpc',                       false);
-opt = contset(opt, 'every_point_in_separate_mat_file', true);
  
 
 contL(@single_shooting, point.x, point.v, opt);

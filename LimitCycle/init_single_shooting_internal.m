@@ -26,7 +26,7 @@ function initial_continuation_data = init_single_shooting_internal(in)
     in.point_on_limitcycle, ...
     in.time_integration_options); 
   
-  if in.show_plot
+  if in.show_plots
     plot(orbit_t, orbit_x-orbit_x(1,:))
     xlabel('t')
     ylabel('deviation form initial value')

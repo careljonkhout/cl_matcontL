@@ -16,6 +16,7 @@ addpath([cd '/DataStorage/']);
 addpath([cd '/Equilibrium/']);
 addpath([cd '/Hopf/']);
 addpath([cd '/LimitPoint/']);
+addpath([cd '/Assertions/']);
 
 addpath([cd '/LimitPointCycle/']);
 addpath([cd '/LimitCycle/']);
