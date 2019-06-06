@@ -3,11 +3,11 @@ function str = multipliers2str(multipliers)
   
   distance_to_one                     = abs(multipliers - 1);
   cds.deviation_of_trivial_multiplier = min(distance_to_one);
-  print_diag(1,'deviation of trivial multiplier: %.2e\n', ... 
+  str = sprintf('deviation of trivial multiplier: %.2e\n', ... 
                           cds.deviation_of_trivial_multiplier);
   
   if contopts.NewtonPicard
-    print_diag(1, 'number of multipliers: %d\n', length(multipliers));
+    str = [str sprintf('number of multipliers: %d\n', length(multipliers))];
   end
   
   % Printing every multiplier that is computed would produce too much output,
@@ -15,7 +15,7 @@ function str = multipliers2str(multipliers)
   % threshold that can be configured by the user.
   threshold = contopts.multiplier_print_threshold;
   multipliers = multipliers(abs(multipliers) > threshold);
-  str = sprintf('multipliers with norm larger than %.3f:\n', threshold);
+  str = [str sprintf('multipliers with norm larger than %.3f:\n', threshold)];
   i=1;
   while i <= length(multipliers)
     m = multipliers(i);

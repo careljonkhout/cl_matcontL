@@ -1,7 +1,7 @@
-function j=cjac(odefile,jacobian,x,p,ap)
+function j=cjac(dydt_ode,jacobian,x,p,ap)
 %
 % j=cjac(odefile,jacobian,x,p)
-% Calculates the jacobian of the system. 
+% Calculates the jacobian of the system of ODEs
 % p can be empty, if the active parameter is included in x (and the correct
 % Jacobian function is passed).
 % 
@@ -11,10 +11,9 @@ if nargin > 3 && ~isempty(p)
 
     fullx = [x;cell2mat(p(ap))];
     if (isfield(cds,'oldJacX')) && (length(cds.oldJacX) == length(fullx))
-%     if isfield(cds,'oldJacX') && ~isempty(cds.oldJacX)
-        % This checks if the Jacobian in this point has already been computed. If
-        % so, the old one is recovered instead of recomputed.
-        if fullx == cds.oldJacX & ~isempty(cds.oldJac)
+        % This checks if the Jacobian in this point has already been computed.
+        % If so, the old one is recovered instead of recomputed.
+        if all(fullx == cds.oldJacX) && ~isempty(cds.oldJac)
             j = cds.oldJac;
             return;
         end
@@ -25,11 +24,11 @@ if nargin > 3 && ~isempty(p)
         j = feval(jacobian, 0, x, p{:});
     else
         % If not, use finite differences
-        nphase=size(x,1);
-        for i=1: nphase
+        nphase = size(x,1);
+        for i = 1:nphase
             x1 = x; x1(i) = x1(i)-cds.options.Increment;
             x2 = x; x2(i) = x2(i)+cds.options.Increment;
-            j(:,i) = feval(odefile, 0, x2, p{:})-feval(odefile, 0, x1,  p{:});
+            j(:,i) = feval(dydt_ode, 0, x2, p{:})-feval(dydt_ode, 0, x1,  p{:});
         end
         j = j/(2*cds.options.Increment);
     end
@@ -39,10 +38,9 @@ if nargin > 3 && ~isempty(p)
 else    
     fullx = x;
     if isfield(cds,'oldJacX') && (length(cds.oldJacX) == length(fullx)) 
-%     if isfield(cds,'oldJacX') && ~isempty(cds.oldJacX)
-        % This checks if the Jacobian in this point has already been computed. If
-        % so, the old one is recovered instead of recomputed.
-        if fullx == cds.oldJacX & ~isempty(cds.oldJacFull)
+        % This checks if the Jacobian in this point has already been computed.
+        % If so, the old one is recovered instead of recomputed.
+        if all(fullx == cds.oldJacX) && ~isempty(cds.oldJacFull)
             j = cds.oldJacFull;
             return;
         end
@@ -55,9 +53,9 @@ else
         x1 = x;
         x2 = x;
         for i=1:cds.ndim
-            x1(i) = x1(i)-cds.options.Increment;
-            x2(i) = x2(i)+cds.options.Increment;
-            j(:,i) = feval(odefile, x2)-feval(odefile, x1);
+            x1(i) = x1(i) - cds.options.Increment;
+            x2(i) = x2(i) + cds.options.Increment;
+            j(:,i) = feval(dydt_ode, x2)-feval(dydt_ode, x1);
             x1(i) = x(i);
             x2(i) = x(i);
         end

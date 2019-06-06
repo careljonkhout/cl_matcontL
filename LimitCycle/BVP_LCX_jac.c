@@ -67,7 +67,7 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 	/* Retrieve parameters. */
 	x = mxGetPr(prhs[1]);
 	p = mxGetPr(prhs[2]);
-    nc = mxGetPr(prhs[5]);
+  nc = mxGetPr(prhs[5]);
     
     /* LDS FIELDS */
 	thisfield = mxGetFieldByNumber(prhs[6],0,10);
@@ -82,10 +82,10 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 	ntst = *(mxGetPr(thisfield));	/* Number of mesh intervals */
 	thisfield = mxGetFieldByNumber(prhs[6],0,14);
 	ncol = *(mxGetPr(thisfield));		/* Number of collocation points */
-    thisfield = mxGetFieldByNumber(prhs[6],0,17);
-    tps = *(mxGetPr(thisfield));      
-    thisfield = mxGetFieldByNumber(prhs[6],0,18);
-    ncoords = *(mxGetPr(thisfield));    
+  thisfield = mxGetFieldByNumber(prhs[6],0,17);
+  tps = *(mxGetPr(thisfield));      
+  thisfield = mxGetFieldByNumber(prhs[6],0,18);
+  ncoords = *(mxGetPr(thisfield));    
 	thisfield = mxGetFieldByNumber(prhs[6],0,22);
 	mesh = mxGetPr(thisfield);			/* Current mesh coordinates */
     thisfield = mxGetFieldByNumber(prhs[6],0,24);

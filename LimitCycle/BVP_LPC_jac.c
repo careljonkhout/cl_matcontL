@@ -3,7 +3,7 @@
  
     BVP_LPC_jac.c 
         MEX file corresponding to LPC_jac.m
-        Does the evaluation of the jacobian of the BVP s
+        Does the evaluation of the jacobian of the boundary value problem
         
     calling syntax:
         result = BVP_LPC_jac(lds.func,x,p,T,pars,nc,lds,gds.period,p2)

@@ -33,9 +33,8 @@ function [x0,v0] = init_LPC_LPC_L(odefile, x, s, ap, ntst, ncol,varargin)
   if     ~isempty(func_handles{6}),   symordp = 2; 
   elseif ~isempty(func_handles{4}),   symordp = 1; 
   end
-  if isempty(cds) || ~isfield(cds,'options')
-      cds.options = contset();
-  end
+
+  cds.options = contset();
   cds.options = contset(cds.options, 'SymDerivative', symord);
   cds.options = contset(cds.options, 'SymDerivativeP', symordp);
   cds.symjac = 1;

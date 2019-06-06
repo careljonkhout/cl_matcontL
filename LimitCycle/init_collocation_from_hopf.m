@@ -1,4 +1,5 @@
-function [x0,v0] = init_H_LC_L(odefile, x, p, ap, h, dp, ntst, ncol)
+function [x0,v0] = init_collocation_from_hopf( ...
+                    odefile, x, p, ap, h, ntst, ncol)
 
 %
 % [x0,v0] = init_H_LC(odefile,x,p,ap,h,dp,ntst,ncol)
@@ -9,13 +10,14 @@ function [x0,v0] = init_H_LC_L(odefile, x, p, ap, h, dp, ntst, ncol)
 global cds lds eds hds 
 % check input
 n_par = size(ap,2);
-if n_par~=1&& n_par~= 2
-    error('One active parameter and the period or 2 active parameters are needed for limit cycle continuation');
+if n_par ~= 1 && n_par ~= 2
+    error(['One active parameter and the period or 2 active ' ...
+      'parameters are needed for limit cycle continuation']);
 end
 lds = [];
 cds.options = contset();
 
-cds.curve = @equilibriumL;   % MP
+cds.curve = @equilibriumL;
 
 curvehandles = feval(cds.curve);
 cds.curve_func = curvehandles{1};
@@ -27,11 +29,9 @@ eds.func = func_handles{2};
 eds.Jacobian  = func_handles{3};
 eds.JacobianP = func_handles{4};
 
-%if ~isfield(eds,'ActiveParams')
-if ~isfield(cds,'ActiveParams')   % MP
-    %init_EP_EP(odefile,x,p,ap);
-    init_EP_EP_L(odefile,x,p,ap); % MP
 
+if ~isfield(cds,'ActiveParams')
+    init_EP_EP_L(odefile,x,p,ap); 
 end
 x = x(1:end-1);
 init_lds(odefile,x,p,ap,ntst,ncol);
@@ -77,11 +77,10 @@ else
     A = cjac(cds.curve_func,cds.curve_jacobian,xp,[]);
 end
 cds.curve = @limitcycleL;
-nphase = size(x);
-A = full(A); % Carel Jonkhout
+nphase = length(x);
 A = A(1:nphase,1:nphase);
 % calculate eigenvalues and eigenvectors
-[V,D] = eig(A);
+[V,D] = eigs(A, nphase);
 % find pair of complex eigenvalues
 d = diag(D);
 smallest_sum = Inf;
@@ -113,11 +112,11 @@ Q = Q/norm(real(Q));
 % calculate initial cycle and its tangent vector
 t = kron(exp(2*pi*1i*lds.finemsh),Q);
 lds.upoldp = -imag(t);
-v0 = [real(t(:));0;dp*h];
+v0 = [real(t(:));0;0];
 if n_par==1
-    x0 = [repmat(x,lds.tps,1);2*pi/omega;p{lds.ActiveParams}]+h*v0;
+  x0 = [repmat(x,lds.tps,1);2*pi/omega;p{lds.ActiveParams}]+h*v0;
 else    
-    x0 = [repmat(x,lds.tps,1);p{lds.ActiveParams(1)};p{lds.ActiveParams(2)}]+h*v0;
+  x0 = [repmat(x,lds.tps,1);p{lds.ActiveParams(1)};p{lds.ActiveParams(2)}]+h*v0;
 end
 lds.T = 2*pi/omega;
 v0 = v0/norm(v0);

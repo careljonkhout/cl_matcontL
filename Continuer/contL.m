@@ -66,9 +66,10 @@ end
 
 if UsingNewtonPicard && ( ~ isequal(curvefile, @single_shooting) ...
                        && ~ isequal(curvefile, @multiple_shooting) )
-  print_diag(0,['Newton-Picard is only implemented for single shooting' ...
-        ' or multiple shooting. Continuation will be aborted.\n'])
-  return
+  warning(['Newton-Picard is only implemented for single shooting' ...
+        ' or multiple shooting. Newton-Picard will not be used.'])
+  contopts.NewtonPicard = false;
+  UsingNewtonPicard = false;
 end
 
 cds.h          = contopts.InitStepsize;
@@ -295,13 +296,13 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
       % WM: the testvals arrays are not copied anymore, instead
       % WM: use sign function and compare instead of multiply (for speed).
 
-      print_diag(2,'comparing values of test functions:\n')
-      print_diag(2,'currpoint :');
-      print_diag(2,'%.4f ',currpoint.tvals);
-      print_diag(2,'\n');
-      print_diag(2,'trailpoint:');
-      print_diag(2,'%.4f ',trialpoint.tvals);
-      print_diag(2,'\n');
+      print_diag(4,'comparing values of test functions:\n')
+      print_diag(4,'currpoint :');
+      print_diag(4,'%.4f ',currpoint.tvals);
+      print_diag(4,'\n');
+      print_diag(4,'trailpoint:');
+      print_diag(4,'%.4f ',trialpoint.tvals);
+      print_diag(4,'\n');
       
       signchanges = sign(trialpoint.tvals) ~= sign(currpoint.tvals);
       changes     =      trialpoint.tvals  ~=      currpoint.tvals;

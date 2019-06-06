@@ -15,6 +15,7 @@
 %   'subspace_size',             10, ...
 %   'show_plots',                 false ...
 % );
+
 %
 %% +++++ how a cycle is detected +++++
 % The integrator first integrates for a time of time_to_converge_to_cycle to the

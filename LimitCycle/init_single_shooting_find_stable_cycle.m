@@ -170,6 +170,8 @@ function point_on_cycle = converge_to_cycle(in)
      plot(orbit_to_cycle_t, orbit_to_cycle_x-solution.y(:,1))
     xlabel('t')
     ylabel('phase variables')
+    disp('Now showing plot from t=0 to t=time_to_converge_to_cycle')
+    disp('Press a key to continue')
     pause
   end
   

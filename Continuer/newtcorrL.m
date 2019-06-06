@@ -35,7 +35,13 @@ funcnorm = normU(Q);
 smallest_funcnorm_so_far = funcnorm;
 
 for i = 1:MaxCorrIters
-    print_diag(5,'newton iteration %d function norm %.5e\n', i, funcnorm)
+    if i > 1
+      format_string = ['newton iteration %d log10 of function norm %1.3f ' ...
+                                           'log10 of varnorm %1.3f\n'];
+      print_diag(5,format_string, i, log10(funcnorm), log10(varnorm))
+    else
+      print_diag(5,'newton iteration %d function norm %.5e\n', i, funcnorm)
+    end
     if i <= MaxNewtonIters
         A = contjac(x, CISdata);
         if isempty(A)
@@ -49,12 +55,7 @@ for i = 1:MaxCorrIters
     % repeat twice with same jacobian, calculating
     % the jacobian is usually a lot more expensive
     % than solving a system
-    if ~ MoorePenrose
-      if ~ isequal(cds.curve, @limitcycleL)
-        print_diag(5,'computing LU factorization in Newton correction ')
-        dB = decomposition(B);
-      end
-    end
+
     for t=1:2
         if isempty(A) || length(Q) == 1
             pout = [];
@@ -166,7 +167,7 @@ for i = 1:MaxCorrIters
         
         funcnorm = normU(Q);
         smallest_funcnorm_so_far = min(funcnorm, smallest_funcnorm_so_far);
-        if funcnorm > 10 * smallest_funcnorm_so_far
+        if i > 2 && funcnorm > 10 * smallest_funcnorm_so_far
           pout = [];
           return;
         end

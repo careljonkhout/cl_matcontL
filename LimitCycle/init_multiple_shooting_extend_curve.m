@@ -6,6 +6,7 @@ function init_multiple_shooting_extend_curve(varargin)
   input.ode_parameters                      = [];
   input.active_parameter_index              = [];
   input.time_integration_method             = @ode15s;
+  input.time_mesh                           = [];
   input.subspace_size                       = [];
   input.nMeshIntervals                      = [];
   
@@ -40,9 +41,11 @@ function do_init_multiple_shooting_extend_curve(in)
   jacobian_ode           = handles{3};
   cds.nphases            = (length(in.initial_continuation_state) - 2) / ...
                               in.nMeshIntervals;
+                            
+  ode_parameters         = convert_to_cell_if_needed(in.ode_parameters);
   
   point_on_limitcycle    = in.initial_continuation_state(1:cds.nphases);
-  tangent_to_limitcycle  = dydt_ode(0,point_on_limitcycle,in.ode_parameters{:});
+  tangent_to_limitcycle  = dydt_ode(0, point_on_limitcycle, ode_parameters{:});
 
   cds.nMeshIntervals  = in.nMeshIntervals;
   cds.mesh            = in.time_mesh;
@@ -53,7 +56,7 @@ function do_init_multiple_shooting_extend_curve(in)
   cds.usernorm        = [];
   cds.ncoo            = length(in.initial_continuation_state) - 1;
   cds.ActiveParams    = in.active_parameter_index;
-  cds.P0              = cell2mat(in.ode_parameters);
+  cds.P0              = cell2mat(ode_parameters);
   cds.previous_phases = point_on_limitcycle;
   cds.previous_dydt_0 = tangent_to_limitcycle;
   cds.dydt_ode        = dydt_ode;
@@ -65,3 +68,4 @@ function do_init_multiple_shooting_extend_curve(in)
   cds.curve           = @multiple_shooting;
  
 end
+    

@@ -1,21 +1,6 @@
-
-minimize the use of global variables
-
 The use of the global structs cds eds, and lds in cl_matcontL, is contrary to 
 good coding practices. These structres are problematic, because their contents
 can affect any part of the program, and the purpose and intended contents of 
 the fields of these structes are poorly documented. However, removing them 
 alltogether, requires a lot of work. A good start towards improving the quality 
-of the cl_matcontL code, is to document all the fields of cds lds, and eds, and
-to write a comprehensive test suite for cl_matcontL that can verify as much of 
-the code as possible, within a very short amount of time (i.e. one minute)
- by running a single command. Once a comprehensive test suite is present, 
-rewriting cl_matcontL to remove global structs should become much safer
-, and easier.
-
-When the global structs are replaced, they should be replaced by classes. 
-By adding comments to the property declarations of the class, the fields can 
-be properly documented.
-
-Also, any effort to replace global variables with classes, should be coordinated
-with the Matcont project.
+of the cl_matcontL code, is to document all the fields of cds lds, and eds.

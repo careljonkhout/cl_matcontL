@@ -84,20 +84,18 @@ function full_solution = linear_solver_collocation(J,b)
     
     
 
-    condensed_system(cs_row_indices,cs_col_indices_A) = ...
-            p * J_blocks(:,  1:nphase               , i);
-    condensed_system(cs_row_indices,cs_col_indices_B) = ...
-            p * J_blocks(:, (1:nphase) + ncol*nphase, i);
-	  condensed_system(cs_row_indices, end-1:end) = p * J_last_cols(:,:,i);
+    condensed_system(cs_row_indices, cs_col_indices_A) = p * J_blocks(:,  1:nphase               , i);
+    condensed_system(cs_row_indices, cs_col_indices_B) = p * J_blocks(:, (1:nphase) + ncol*nphase, i);
+	  condensed_system(cs_row_indices, end-1:end)        = p * J_last_cols(:,:,i);
     condensed_b(cs_row_indices,:)               = p * b(b_row_indices,:); % todo: transformed_b can be used
     last_rows = J_last_rows(:,:,i);
     for j=1:nphase*ncol
       for k = 1:2
         if last_rows(k,nphase + j) ~= 0
-          scaling_factor = last_rows(k,nphase + j) / upper(j,nphase + j);
-          last_rows(k,:) = last_rows(k,:) - upper(j,:) * scaling_factor;
-          condensed_b(end-2+k)   = condensed_b(end-2+k)   - transformed_b(b_row_indices(1)-1+j) * scaling_factor;
-          bottom_rect(k,:)     = bottom_rect(k,:)     - transformed_last_cols(j,:)      * scaling_factor;
+          scaling_factor       = last_rows(k,nphase + j) / upper(j,nphase + j);
+          last_rows(k,:)       = last_rows(k,:)       - upper(j,:)                          * scaling_factor;
+          condensed_b(end-2+k) = condensed_b(end-2+k) - transformed_b(b_row_indices(1)-1+j) * scaling_factor;
+          bottom_rect(k,:)     = bottom_rect(k,:)     - transformed_last_cols(j,:)          * scaling_factor;
           if testing
             transformed_b(end-2+k) = transformed_b(end-2+k) - transformed_b(b_row_indices(1)-1+j) * scaling_factor;
             J(end-2+k,:) = J(end-2+k,:) - scaling_factor * J(j_row_indices(1)-1+j,:);
@@ -153,7 +151,8 @@ function full_solution = linear_solver_collocation(J,b)
 
     assert(all(abs(alternative_condensed_b - condensed_b) < 1e-14));
 
-    assert(all(all(abs(alternative_condensed_system - condensed_system) < 1e-14)));
+    assert(all(all(abs(alternative_condensed_system - condensed_system)...
+          < 1e-14)));
   end
  
 %  spy(condensed_system)

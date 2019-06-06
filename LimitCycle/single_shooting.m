@@ -8,7 +8,7 @@ function out = single_shooting
   out{6}  = @testfunctions;
   out{7}  = [];%@userf;
   out{8}  = @process_singularity;
-  out{9}  = @singularity_matrix;
+  out{9}  = @cycle_singularity_matrix;
   out{10} = @locate;
   out{11} = @init;
   out{12} = [];%@done;
@@ -222,26 +222,30 @@ function out = default_processor(varargin)
   
   if contopts.Singularities && basis_size_changed
     point.tvals = testfunctions(cds.ActTest,point.x,point.v,[]);
-    print_diag(1,'Test Functions: [')
-    print_diag(1,' %+.5e',point.tvals)
+    point.tvals = testfunctions(cds.ActTest,point.x,point.v,[]);
+    test_function_labels = {'BPC', 'PD', 'LPC', 'NS'};
+    print_diag(1,'testfunctions: [')
+    for i=1:length(point.tvals)
+      print_diag(1,' %s:',test_function_labels{i});
+      print_diag(1,'%+.5e',point.tvals(i))
+    end
     print_diag(1,']\n')
   end
   
   
   x = point.x;
   % needed for phase condition:
-  cds.previous_phases          = x(1:end-2);
   
-  active_par_val               = x(end);
-  parameters                   = cds.P0;
-  parameters(cds.ActiveParams) = active_par_val;
-  parameters                   = num2cell(parameters);
   
+  [phases, ~, parameter_values] = getComponents(x);
+  
+  cds.previous_phases           = phases;
   % needed for phase condition:
-  cds.previous_dydt_0          = cds.dydt_ode(0, ...
-                                    cds.previous_phases,parameters{:});
+  cds.previous_dydt_0           = cds.dydt_ode(0, ...
+                                    cds.previous_phases,parameter_values{:});
   
-  out                          = point;
+  out                           = point;
+  point.paramters_values        = parameter_values;
   savePoint(point, varargin{2:end});
 end
 %-------------------------------------------------------------------------------
@@ -254,7 +258,7 @@ function update_multipliers_if_needed(x)
   end
 end
 %-------------------------------------------------------------------------------
-% Test functions are used for detecting AND location singularities by bisection.
+% Test functions are used for detecting AND locating singularities by bisection.
 % When detecting ids_testf_requested will be cds.ActTest, and when locating
 % ids_testf_requested will contain only those ids of the testfunctions relevant
 % to the bifurcation that is being located.
@@ -270,33 +274,6 @@ function [out, failed] = testfunctions(ids_testf_requested, x0, v, ~)
   end
   
   out = cycle_testfunctions(ids_testf_requested, cds.multipliers, v);
-end
-%-------------------------------------------------------------------------------
-% defines which changes in testfunctions correspond to which singularity type
-% 0 == require sign-change
-% 1 == require sign-non-change
-% 2 == require change
-% anything else: no requirement
-% columns correspond to testfunctions
-% rows correspond to singularities BPC, PD, LPC, and NS respectively
-function [S,L] = singularity_matrix
-
-  
-  sign_change    = Constants.sign_change;
-  sign_constant  = Constants.sign_constant;
-  value_change   = Constants.value_change;
-  o              = Constants.ignore; 
-
-  S = [ 
-  % BPC_testfunc PD_testfunc  LPC_testfunc   NS_testfunc
-    sign_change  o            sign_constant  o            % BPC    
-    o            sign_change  o              o            % PD   
-    o            o            sign_change    o            % LPC   
-    o            o            o              value_change % NS
-  ];
-  L = [ 'BPC';'PD '; 'LPC'; 'NS ' ];
-  
-  assert(size(S,1) == length(L))
 end
 %-------------------------------------------------------------------------------
 % After a singularity is detected and located, the contL calls this function.
@@ -383,3 +360,12 @@ function p_out = locate(id, p1, p2)
   end
 end
 %-------------------------------------------------------------------------------
+function [y,period,parameters] = getComponents(x)
+  global cds
+  y                            = x(1:cds.nphases);
+  period                       = x(end-1);
+  parameter_value              = x(end);
+  parameters                   = cds.P0;
+  parameters(cds.ActiveParams) = parameter_value;
+  parameters                   = num2cell(parameters);
+end

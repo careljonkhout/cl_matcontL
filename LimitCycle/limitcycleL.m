@@ -12,7 +12,7 @@ function out = limitcycleL
   out{6}  = @testfunctions;
   out{7}  = @userf;
   out{8}  = @process_singularity;
-  out{9}  = @singularity_matrix;
+  out{9}  = @cycle_singularity_matrix;
   out{10} = @locate;
   out{11} = @init;
   out{12} = @done;
@@ -23,11 +23,21 @@ function out = limitcycleL
   return
 end
 %-------------------------------------------------------------------------------
+% Computes the curve function of the curve of limit cycles. If curve_func
+% evaluates to a zero vector, then arg corresponds exactly to a limitcycle.
+%
+% arg is the continuation state vector. The continuation state
+% vector contains a sequence of points on the limit cycle, the period and the
+% value of the active parameter. The sequence of points on the cycle contain one
+% point for every point in lds.finemsh.
 function val = curve_func(arg, ~)  % unused argument is CISdata
   [x,p,T] = rearr(arg);
   val = BVP('BVP_LC_f','BVP_LC_bc','BVP_LC_ic',x,p,T);
 end
 %-------------------------------------------------------------------------------
+% Computes the Jacobian matrix of the curve function w.r.t. all points on the
+% limit cycle the parameter and the period. This Jacobian matrix is a N by N+1
+% matrix.
 function varargout = jacobian(varargin)
   [x,p,T] = rearr(varargin{1});
   varargout{1} = BVP_jac('BVP_LC_jac',x,p,T,2,2);
@@ -79,7 +89,7 @@ function options
   contopts = contset(contopts, 'Locators', [0 0 0 1]);
 end
 %-------------------------------------------------------------------------------
-% Test functions are used for detecting AND location singularities by bisection.
+% Test functions are used for detecting AND locating singularities by bisection.
 % When detecting ids_testf_requested will be cds.ActTest, and when locating
 % ids_testf_requested will contain only those ids of the testfunctions relevant
 % to the bifurcation that is being located.
@@ -97,25 +107,6 @@ function [out, failed] = testfunctions(ids_testf_requested, x0, v, ~)
   end
   
   out = cycle_testfunctions(ids_testf_requested, lds.multipliers, v);
-end
-%-------------------------------------------------------------------------------
-% defines which changes in testfunctions correspond to which singularity type
-% 0 == require sign-change
-% 1 == require sign-non-change
-% 2 == require change
-% 3 == require non-change
-% anything else: no requirement
-% columns correspond to testfunctions
-% rows correspond to singularities BPC, PD, LPC, and NS respectively
-function [S,L] = singularity_matrix
-  
-  S = [ 0 8 1 8   % Branching point of cycles                           (BPC)
-        8 0 8 8   % Period doubling point                               (PD)
-        8 8 0 8   % Limit point of cycles                               (LPC)
-        8 8 8 2]; % Neimark Sacker bifurcation a.k.a torus bifurcation  (NS)
-
-
-  L = [ 'BPC';'PD '; 'LPC'; 'NS ' ];
 end
 %-------------------------------------------------------------------------------
 function update_multipliers_if_needed(x)

@@ -26,15 +26,13 @@ singularities = contL(@equilibriumL,x0,v0, opts_ep_ep);
 
 % we set the value of the active parameter (L) (the parameter in which we
 % continued the equlibrium) to the value of L at the first Hopf point:
-global cds
-disp(cds.sout)
 hopf  = singularities(2);
 x = hopf.data.x;
 ode_parameters(active_parameter) = hopf.data.x(end);
 
 % h will be the amplitude of the initial cycle
 h = 0.01;
-dp = 1;
+
 
 % ntst is the number of mesh intervals. That is, the cycle will be represented
 % using a piecewise polynomial function of ntst pieces.
@@ -44,10 +42,10 @@ ncol = 4;
 
 % We run the initializer for continuation of cycles by collocation from a Hopf
 % point:
-[x0, v0] = ...
-  init_H_LC_L(odefile, x, ode_parameters, active_parameter, h, dp, ntst, ncol);
+[x0, v0] = init_collocation_from_hopf(...
+            odefile, x, ode_parameters, active_parameter, h, ntst, ncol);
 
-% We specify the option for the cycle continuation.
+% We specify the options for the cycle continuation.
 opts_h_lc = contset( ...
   ...
   'MaxNumPoints',           70, ...

@@ -8,7 +8,7 @@ function out = multiple_shooting
   out{6}  = @testfunctions;
   out{7}  = [];%@userf;
   out{8}  = @process_singularity;
-  out{9}  = @singularity_matrix;
+  out{9}  = @cycle_singularity_matrix;
   out{10} = @locate;
   out{11} = @init;
   out{12} = [];%@done;
@@ -156,7 +156,7 @@ function [y_end, monodromy] = ...
   end 
 end
 %-------------------------------------------------------------------------------
-% Test functions are used for detecting AND location singularities by bisection.
+% Test functions are used for detecting AND locating singularities by bisection.
 % When detecting ids_testf_requested will be cds.ActTest, and when locating
 % ids_testf_requested will contain only those ids of the testfunctions relevant
 % to the bifurcation that is being located.
@@ -210,7 +210,6 @@ function [failed,s] = process_singularity(id,point,s)
   x = point.x;
   switch id
   case 1
-    % note: as of march 2019 detection for BPC not yet implemented 
     format_string = 'Branch Point cycle(period = %e, parameter = %e)\n'; 
     print_diag(0, format_string, x(end-1), x(end));
     s.msg  = sprintf('Branch Point cycle'); 
@@ -257,14 +256,17 @@ function init(~,~); end
 function point = default_processor(varargin)
   global cds
   point = varargin{1};
-  point.mesh = cds.mesh;
+  point.time_mesh = cds.mesh;
   update_multipliers_if_needed(point.x);
   point.multipliers    = cds.multipliers;
   point.nMeshIntervals = cds.nMeshIntervals;
+  
 
-  [y, ~, parameters]      = getComponents(point.x);
-  cds.previous_phases     = y(1:cds.nphases);
-  cds.previous_dydt_0     = cds.dydt_ode(0, cds.previous_phases, parameters{:});
+  [y, ~, parameter_values] = getComponents(point.x);
+  point.parameter_values   = cell2mat(parameter_values);
+  cds.previous_phases      = y(1:cds.nphases);
+  cds.previous_dydt_0      = cds.dydt_ode(0, cds.previous_phases, ...
+                                                           parameter_values{:});
 
   point = adjust_basis_size(point);
   savePoint(point);
@@ -363,8 +365,12 @@ function point = adjust_basis_size(point)
   
   if basis_size_changed
     point.tvals = testfunctions(cds.ActTest,point.x,point.v,[]);
+    test_function_labels = {'BPC', 'PD', 'LPC', 'NS'};
     print_diag(1,'testfunctions: [')
-    print_diag(1,' %+.5e',point.tvals)
+    for i=1:length(point.tvals)
+      print_diag(1,' %s:',test_function_labels{i});
+      print_diag(1,'%+.5e',point.tvals(i))
+    end
     print_diag(1,']\n')
   end
 end

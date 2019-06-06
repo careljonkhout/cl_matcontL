@@ -30,6 +30,9 @@ function initial_continuation_data = init_single_shooting_internal(in)
     plot(orbit_t, orbit_x-orbit_x(1,:))
     xlabel('t')
     ylabel('deviation form initial value')
+    disp(['Now showing plot from t=time_to_converge_to_cycle to ' ...
+                                       't=time_to_converge_to_cycle + period']);
+    disp('Press a key to continue')
     pause
   end
   

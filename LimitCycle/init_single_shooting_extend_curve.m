@@ -37,9 +37,10 @@ function do_init_single_shooting_extend_curve(in)
   dydt_ode               = handles{2};
   jacobian_ode           = handles{3};
   cds.nphases            = length(in.initial_continuation_state) - 2;
+  ode_parameters         = convert_to_cell_if_needed(in.ode_parameters);
   
   point_on_limitcycle    = in.initial_continuation_state(1:end-2);
-  tangent_to_limitcycle  = dydt_ode(0,point_on_limitcycle,in.ode_parameters{:});
+  tangent_to_limitcycle  = dydt_ode(0,point_on_limitcycle,ode_parameters{:});
 
   cds.probfile        = in.odefile;
   cds.options.PartitionMonodromy = cds.nphases > 20;
@@ -48,7 +49,7 @@ function do_init_single_shooting_extend_curve(in)
   cds.usernorm        = [];
   cds.ncoo            = cds.nphases + 1;
   cds.ActiveParams    = in.active_parameter_index;
-  cds.P0              = cell2mat(in.ode_parameters);
+  cds.P0              = cell2mat(ode_parameters);
   cds.previous_phases = point_on_limitcycle;
   cds.previous_dydt_0 = tangent_to_limitcycle;
   cds.dydt_ode        = dydt_ode;

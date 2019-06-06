@@ -9,8 +9,8 @@ function point = do_corrections(x0,v)
   done = false;
   while ~ done && corrections < contopts.MaxCorrIters
     period = x(end-1);
-    fprintf('function_norm: %.8e period: %.8e corrections: %d\n', ...
-                            curve_function_norm, period, corrections);
+    print_diag(1,'log_10 of function_norm: %1.2f period: %.8e corrections: %d\n', ...
+                            log10(curve_function_norm), period, corrections);
     corrections = corrections + 1;
     old_x = x;
     if     isequal(cds.curve, @single_shooting)
@@ -25,6 +25,14 @@ function point = do_corrections(x0,v)
    
     if isempty(x)
       break;
+    end
+    
+    period = x(end-1);
+    
+    if period < 0
+      print_diag(0, 'Period less than zero, abborting corrections\n')
+      point = [];
+      return;
     end
     
     correction_norm = max(abs(x - old_x));

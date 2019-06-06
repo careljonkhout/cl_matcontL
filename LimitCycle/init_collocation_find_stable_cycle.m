@@ -226,6 +226,8 @@ function point_on_cycle = converge_to_cycle(in)
     plot(orbit_t, orbit_x-solution.y(:,1))
     xlabel('t')
     ylabel('phase variables')
+    disp('Now showing plot from t=0 to t=time_to_converge_to_cycle')
+    disp('Press a key to continue')
     pause
   end
   
@@ -259,17 +261,7 @@ function [solution_t, solution_x] = compute_periodic_solution(in)
     in.point_on_limitcycle, ...
     in.time_integration_options); 
   
-  period                    = solution.x(end);
-  
-  if in.show_plots
-    trail_solution_t = linspace(0, period, 500);
-    trail_solution_x = deval(solution, trail_solution_t);
-    plot(trail_solution_t, trail_solution_x-solution.y(:,1))
-    xlabel('t')
-    ylabel('deviation form initial value')
-    pause
-  end
-  
+  period                    = solution.x(end); 
 
   solution = odextend(solution,[],1.1*period);
   
@@ -278,10 +270,13 @@ function [solution_t, solution_x] = compute_periodic_solution(in)
   solution_x = deval(solution, solution_t);
   
   
-  if in.show_plot
+  if in.show_plots
     plot(solution_t, solution_x - solution_x(:,1))
     xlabel('t')
     ylabel('deviation form initial value')
+    disp(['Now showing plot from t=time_to_converge_to_cycle to ' ...
+                                   't=time_to_converge_to_cycle + 1.1*period']);
+    disp('Press a key to continue')
     pause
   end
   

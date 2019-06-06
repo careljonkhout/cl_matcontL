@@ -138,6 +138,13 @@ function options = defaultOptions()
   options.contL_LogFile           =    1;   % Whether a logfile will be created
   options.contL_SmoothingAngle    = pi/50;  % Minimum allowed change in angle between points
   options.contL_ParallelComputing = 0;      % Whether or not to use the parallel computing toolbox
+  % note: while trying the parallel computing toolbox matlab 2019a to
+  % parellelize part of the comptutations for mutliple shooting with
+  % Newton-Picard, I (Carel Jonkhout) found that memory use increased about
+  % tenfold, and matlab workers repeatedly abborted. Hence, I do not expect the
+  % current version of the parallel computing toolbox to be of much use, unless
+  % the computations are extremely parallelizable and really simple, or if one
+  % has an enormous amount of RAM available.
 
 
                               %% Locator options
@@ -165,17 +172,20 @@ function options = defaultOptions()
   % Set enable_nf_lpc to false to disable computation of the normal form 
   % for limit points of cycle. Normal form computations can take a long time to
   % run. However, nf_lpc does not take as long as nf_pd and nf_ns.
-  % Note: nf_lpc is only implemented for limitcycleL.m
-  options.enable_nf_pd    =    true;
+  % Note: nf_lpc is only implemented for limitcycleL.m i.e. cycle continuation by
+  % collocation
+  options.enable_nf_pd    =    false;
   % Set enable_nf_pd to false to disable computation of the normal form 
   % for period doubling point of cycle. Normal form computations on large systems
   % take a long time to run.
-  % Note: nf_pd is only implemented for limitcycleL.m
-  options.enable_nf_ns    =    true;
+  % Note: nf_pd is only implemented for limitcycleL.mi.e. cycle continuation by
+  % collocation
+  options.enable_nf_ns    =    false;
   % Set enable_nf_ns to false to disable computation of the normal form 
   % for Neimark Sacker. Normal form computations on large systems
   % take a long time to run.
-  % Note: nf_ns is only implemented for limitcycleL.m
+  % Note: nf_ns is only implemented for limitcycleL.m i.e. cycle continuation by
+  % collocation
   options.console_output_level             = 0; % set to 5 to see all debug info.
   options.newtcorrL_use_max_norm           = false;
   options.MaxPicardIterations              = 15;

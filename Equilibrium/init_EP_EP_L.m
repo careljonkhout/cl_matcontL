@@ -47,3 +47,4 @@ cds.ncoo         = length(x0) - 1;
 cds.nap          = length(ap);
 cds.usernorm     = user_norm;
 cds.userf        = user_func;
+cds.curve        = @equilibriumL;

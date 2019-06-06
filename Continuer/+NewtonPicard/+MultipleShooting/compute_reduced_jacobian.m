@@ -35,8 +35,7 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
   parfor_failed = false;
   try 
     if contopts.contL_ParallelComputing   
-      parfor i=1:m
-        print_diag(6,'orbit %d\n',i)
+      parfor i=2:m
         % The function monodromy_map cannot be used here, since it depends on
         % the global variable cds, and global variables are not copied so the
         % the workspace of the workers that parfor uses.
@@ -46,13 +45,13 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
           phases_0(:,i), integration_opt);
         phases_T_i(:,i) = deval(orbits(i), delta_t(i));
       end
-      cds.orbits = orbits;
+      cds.orbits(2:m) = orbits(2:m);
     end
   catch error
     if (strcmp(error.identifier,'MATLAB:remoteparfor:AllParforWorkersAborted'))
       % Something went wrong with the parfor workers.
       % We try again with ordinary for.
-      fprintf('Parfor aborted, retrying with ordinary for.\n');
+      print_diag(0, 'Parfor aborted, retrying with ordinary for.\n');
       parfor_failed = true;
     else
       % in case of some other error, we want to know about it

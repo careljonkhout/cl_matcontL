@@ -15,7 +15,8 @@ if nargin > 4 && ~isempty(p)
         for i=1:nphase
             x1 = x; x1(i) = x1(i)-cds.options.Increment;
             x2 = x; x2(i) = x2(i)+cds.options.Increment;
-            h(:,:,i) = cjac(odefile,jacobian,x2,p,ap)-cjac(odefile,jacobian,x1,p,ap);
+            h(:,:,i) = full(cjac(odefile,jacobian,x2,p,ap) - ...
+                            cjac(odefile,jacobian,x1,p,ap));
         end
         h = h/(2*cds.options.Increment);
     end
@@ -29,7 +30,8 @@ else
         for i=1:cds.ndim
             x1 = x; x1(i) = x1(i)-cds.options.Increment;
             x2 = x; x2(i) = x2(i)+cds.options.Increment;
-            h(:,:,i) = cjac(odefile,jacobian,x2,[])-cjac(odefile,jacobian,x1,[]);
+            h(:,:,i) = full(cjac(odefile,jacobian,x2,[]) - ...
+                            cjac(odefile,jacobian,x1,[]));
         end
         h = h/(2*cds.options.Increment);
     end
