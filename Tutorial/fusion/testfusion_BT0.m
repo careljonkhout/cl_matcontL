@@ -19,7 +19,7 @@ opt = contset(opt,'contL_SmoothingAngle',  pi/10);
 opt = contset(opt,'Singularities',         1);
 opt = contset(opt,'Userfunctions',         0);
 opt = contset(opt,'MaxNumPoints',         20);
-opt = contset(opt,'contL_ParallelComputing', 1);  % using parallel computing toolbox
+opt = contset(opt,'contL_ParallelComputing', 0);  % using parallel computing toolbox
 opt = contset(opt,'CIS_SparseSolvers',     1);
 opt = contset(opt,'CIS_NStableRef',        6);
 opt = contset(opt,'CIS_Ric_Transform',   'cayley');
@@ -53,17 +53,17 @@ p = [ N, Gamma_inf, q_inf, D0, D1, D2, a, b, zeta1, mu1, epsilon, ZS, gamma1, la
 ap1 = 3;  % active parameter
 
 %% Continuation
-fullpath = mfilename('fullpath');
-path_wo_filename = fullpath(1:end-length('testfusion_BT0'));
-fusion_systems_path = fullfile(path_wo_filename, '..', '..', 'Systems', 'fusion');
-addpath(fusion_systems_path);
 
 [x0,v0]      = init_EP_EP_L(@fusion, [], p, ap1); % initialization
 contL(@equilibriumL,x0,v0,opt);                   % continuation
 
 %% Plot results
-x = loadPoint('Data\testfusion_BT0.dat');
-load('Data\testfusion_BT0')
+path_to_this_script = get_path;
+datafile         = [path_to_this_script, 'Data/testfusion_BT0.dat'];
+singularity_file = [path_to_this_script, 'Data/testfusion_BT0.mat'];
+
+x = loadPoint(datafile);
+load(singularity_file, 's');
 
 plot(x(end, :), x(3, :));
 hold on

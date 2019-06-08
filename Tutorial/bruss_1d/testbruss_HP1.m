@@ -32,28 +32,32 @@ opt = contset(opt,'TestPath',mfilename('fullpath'));
 opt = contset(opt, 'Filename', 'testbruss_HP1');
 
 %% Find start point
-ap = [4, 5];
-load('Data/testbruss_HP0')
-
+active_parameter_indices = [4, 5];
+path_to_this_script = get_path;
+HP0_file = [path_to_this_script, 'Data/testbruss_HP0.mat'];
+load(HP0_file, 's');
 ID = 2;
 if(strcmp(s(ID).label ,'H '))
-    data = s(ID).data;
-    
-    %% Continuation
-    [x0,v0]      = init_H_H_L(@brusselator_1d, [], [], ap, data);
-    contL(@hopfL,x0,v0,opt);
-    
-    %% Plot results
-    x = loadPoint('Data\testbruss_HP1.dat');
-    load('Data\testbruss_HP1.mat')
-    
-    plot(x(end-2, :), x(end-1, :));
-    hold on
-    for sii = s
-        plot(x(end-2, sii.index), x(end-1, sii.index), 'r.');
-        text(x(end-2, sii.index), x(end-1, sii.index), sii.label);
-    end
-    
-    xlabel 'b'
-    ylabel 'Dx'
+  data = s(ID).data;
+
+  %% Continuation
+  [x0,v0] = init_H_H_L(@brusselator_1d, [], [], active_parameter_indices, data);
+  contL(@hopfL,x0,v0,opt);
+
+  %% Plot results
+  datafile         = [path_to_this_script, 'Data/testbruss_HP1.dat'];
+  singularity_file = [path_to_this_script, 'Data/testbruss_HP1.mat'];
+
+  x = loadPoint(datafile);
+  load(singularity_file, 's');
+
+  plot(x(end-2, :), x(end-1, :));
+  hold on
+  for sii = s
+      plot(x(end-2, sii.index), x(end-1, sii.index), 'r.');
+      text(x(end-2, sii.index), x(end-1, sii.index), sii.label);
+  end
+
+  xlabel 'b'
+  ylabel 'Dx'
 end

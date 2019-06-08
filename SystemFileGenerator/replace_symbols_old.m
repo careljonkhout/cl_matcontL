@@ -1,12 +1,12 @@
 function out_str=replace_symbols(in_str, old_symbols, new_symbols)
-  parse_list = parse_expression(in_str, old_symbols);
+  parselist = parse_expression(in_str, old_symbols);
   out_str = '';
-  for i=1:length(parse_list)
-    if parse_list{i}.is_symbol
+  for i=1:length(parselist)
+    if parselist{i}.is_symbol
       out_str = ...
-        [out_str new_symbols{parse_list{i}.symbol_index}]; %#ok<AGROW>
+        [out_str new_symbols{parselist{i}.symbol_index}]; %#ok<AGROW>
     else
-      out_str = [out_str parse_list{i}.data]; %#ok<AGROW>
+      out_str = [out_str parselist{i}.data]; %#ok<AGROW>
     end
   end       
 end
@@ -18,17 +18,18 @@ function parse_list = parse_expression(str, symbols)
   parse_list{1}.is_symbol = false;
   parse_list{1}.data = str;
   for si = 1:length(symbols) % si means symbols_index
-    next_parse_lists = cell(length(parse_list),1);
-    for pli = 1:length(parse_list) % i.e. parse_list_index
+    pli = 1; % i.e. parse_list_index
+    while pli <= length(parse_list) 
       if parse_list{pli}.is_symbol
-        next_parse_lists(pli) = {parse_list(pli)};
+        pli = pli + 1;
       else
         parsed_sub_string = split_at_symbol( ...
             parse_list{pli}.data, symbols{si}, si);
-        next_parse_lists{pli} = parsed_sub_string;
+        parse_list = {parse_list{1:pli-1} ...
+            parsed_sub_string{1:end} parse_list{pli+1:end}};
+        pli = pli + length(parsed_sub_string);
       end
     end
-    parse_list = flatten(next_parse_lists);
   end
 end
 
@@ -53,7 +54,7 @@ function parse_list = split_at_symbol(str, symbol, symbol_index)
     return;
   % if str does not start with symbol
   % put the part of the string up to the first symbol
-  % in the first node of the parse_list
+  % in the first node of the parselist
   elseif symbol_indices(1) > 1
     parse_list{1}.is_symbol = false;
     parse_list{1}.data = str(1:symbol_indices(1)-1);
@@ -70,7 +71,7 @@ function parse_list = split_at_symbol(str, symbol, symbol_index)
           symbol_indices(i)+length(symbol):symbol_indices(i+1)-1);
     % after the last occurence of symbol is processed
     % we put the remainder of str in the last node of parse_list
-    elseif symbol_indices(i) + length(symbol) <= length(str)
+    else
       parse_list{end+1}.is_symbol = false; %#ok<AGROW>
       parse_list{end}.data = str(symbol_indices(i)+length(symbol):end);            
     end
@@ -79,7 +80,7 @@ end
 
 % for debugging
 % one might also use celldisp for prettier output
-function print_parse_list(parse_list)
+function print_parselist(parse_list)
   for e_cell=parse_list
     e = e_cell{1};
     if e.is_symbol
@@ -87,18 +88,5 @@ function print_parse_list(parse_list)
     else
       fprintf("'%s'",e.data);
     end
-  end
-end
-
-function flattened = flatten(array)
-  new_array_length = 0;
-  for i=1:length(array)
-    new_array_length = new_array_length + length(array{i});
-  end
-  flattened = cell(new_array_length,1);
-  flattened_index = 1;
-  for i=1:length(array)
-    flattened(flattened_index:flattened_index + length(array{i})-1) = array{i};
-    flattened_index = flattened_index + length(array{i});
   end
 end

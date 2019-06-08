@@ -1,4 +1,4 @@
-N = 25;
+N = 50;
 
 odefile = str2func(['fusion_precomputed_with_sage_N_' num2str(N)]);
 
@@ -13,6 +13,7 @@ syms a b q_inf
 dydt_sym = feval(handles{2}, 0, xxxxx, a, b, q_inf);
 disp('simplifying dydt_sym')
 tic
+oldVal = sympref('FloatingPointOutput',true);
 dydt_sym = simplify(dydt_sym);
 toc
 %my_jacobian    = jacobian(dydt_sym, xxxxx);
@@ -24,12 +25,13 @@ vars = char(xxxxx);
 vars = vars(10:end-3);
 
 tic
+max_ord = 1;
 
-name = 'fusion_N_25_with_2_ord_ders';
+name = sprintf('fusion_N_%d_max_ord_%d', N, max_ord);
 
 pars = 'a b q_inf';
 time = 't';
-max_ord = 2;
+
 
 rhs = cell(length(dydt_sym),1);
 
@@ -38,8 +40,7 @@ for i=1:length(dydt_sym)
 end
 
 
-
- 
 fusion_system = System_of_ODEs.new(name, vars, pars, time, max_ord, rhs);
 fusion_system.generate_file()
 toc
+sympref('FloatingPointOutput',oldVal);

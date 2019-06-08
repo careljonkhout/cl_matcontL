@@ -18,7 +18,7 @@ opt = contset(opt,'contL_SmoothingAngle', pi/10);
 opt = contset(opt,'Singularities',         1);
 opt = contset(opt,'Userfunctions',         0);
 opt = contset(opt,'MaxNumPoints',         10);
-opt = contset(opt,'contL_ParallelComputing', 1);
+opt = contset(opt,'contL_ParallelComputing', 0);
 opt = contset(opt,'CIS_SparseSolvers',     1);
 opt = contset(opt,'CIS_NStableRef',        6); 
 opt = contset(opt,'MaxTestIters',          40);  % more iterations for location
@@ -27,7 +27,9 @@ opt = contset(opt, 'Filename', 'testfusion_BT1');
 
 %% load startpoint
 
-load('Data\testfusion_BT0.mat') 
+path_to_this_script = get_path;
+BT0_file = [path_to_this_script, 'Data', 'testfusion_BT0.mat');
+load(BT0_file, 's');
 ap = [3, 8];
 data = s(3).data;
 
@@ -38,8 +40,11 @@ contL(@limitpointL,x0,v0,opt);
 
 %% Plot results
 
-x = loadPoint('Data\testfusion_BT1.dat');
-load('Data\testfusion_BT1.mat') 
+datafile         = [path_to_this_script, 'Data', 'testfusion_BT1.dat');
+singularity_file = [path_to_this_script, 'Data', 'testfusion_BT1.mat');
+
+x = loadPoint(datafile);
+load(singularity_file, 's');
 plot(x(end, :), -x(end-1, :))
 hold on
 for ii = 1:length(s)

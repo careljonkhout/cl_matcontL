@@ -61,6 +61,7 @@ cds.ncoo         = length(x0) - 2;
 cds.nap          = length(ap);
 cds.usernorm     = user_norm;
 cds.userf        = user_func;
+cds.curve        = @limitpointL;
 
 % cds.lastwh       = data.lastwh;  DV: We do not need this anymore, because
 % we can use the CIS algorithm to assure smooth borders

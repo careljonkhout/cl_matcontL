@@ -32,7 +32,10 @@ opt = contset(opt,'TestPath',mfilename('fullpath'));
 opt = contset(opt, 'Filename', 'testbruss_U1');
 
 %% Continuation
-load('Data\testbruss_U0.mat')
+path_to_this_script = get_path;
+U0_file = [path_to_this_script, 'Data/testbruss_U0.mat'];
+load(U0_file, 's');
+
 
 ID = 3;
 data = s(ID).data;
@@ -44,8 +47,12 @@ contL(@equilibriumL,x0,v0,opt);
 
 
 %% Plot results
-x = loadPoint('Data\testbruss_U1.dat');
-load('Data\testbruss_U1.mat');
+path_to_this_script = get_path;
+datafile         = [path_to_this_script, 'Data/testbruss_U1.dat'];
+singularity_file = [path_to_this_script, 'Data/testbruss_U1.mat'];
+
+x = loadPoint(datafile);
+load(singularity_file, 's');
 N = s(1).data.P0(1);
 
 hold on

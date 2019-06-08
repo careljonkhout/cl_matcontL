@@ -98,9 +98,14 @@ end
 
 % load previous bifurcations if we are extending a curve
 if exist([fullfile(cds.datapath, cds.runID), '.mat'], 'file')
-  print_diag(0, 'Loading previously saved bifurcations from file.\n');
-  load([fullfile(cds.datapath, cds.runID), '.mat'], 's');
-  cds.sout = s;
+  if contopts.is_extension
+    print_diag(0, 'Loading previously saved bifurcations from file.\n');
+    load([fullfile(cds.datapath, cds.runID), '.mat'], 's');
+    cds.sout = s;
+  else
+    print_diag(1, ['A singularities file ' fullfile(cds.datapath, cds.runID) ...
+                          '  is is already present, and will be overwritten']);
+  end
 else
   cds.sout = [];
 end

@@ -43,8 +43,13 @@ p = [N, L, A, B, Dx, Dy]; ap1 = 2;
 contL(@equilibriumL,x0,v0,opt);
 
 %% Plot results
-x = loadPoint('Data\testbruss_LP0.dat');
-load('Data\testbruss_LP0.mat')
+path_to_this_script = get_path;
+datafile         = [path_to_this_script, 'Data/testbruss_LP0.dat'];
+singularity_file = [path_to_this_script, 'Data/testbruss_LP0.mat'];
+
+x = loadPoint(datafile);
+load(singularity_file, 's');
+N = s(1).data.P0(1);
 N = s(1).data.P0(1);
 plot(x(2*N+1, :), x(1, :));
 hold on

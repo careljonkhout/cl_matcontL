@@ -211,6 +211,7 @@ function options = defaultOptions()
   options.nsteps_before_pause        = 10; 
   options.initial_point_index        = 1;
   options.set_direction              = true;
+  options.is_extension               = false;
 
 
                               %% Determine testpath

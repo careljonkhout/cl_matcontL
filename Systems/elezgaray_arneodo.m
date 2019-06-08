@@ -52,7 +52,7 @@ end
 function init(); end
 
 % --------------------------------------------------------------------------
-function dfdx = jacobian(~, y, D, eps, ~) % unused argument is alpha
+function dfdx = jacobian(~, y, D, eps, ~) % unused arguments are t and alpha
  N = length(y)/2;
  u = y(1:N)';
  

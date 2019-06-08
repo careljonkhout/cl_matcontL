@@ -6,7 +6,7 @@ N = 25;
 odefile = str2func(sprintf('fusion_precomputed_with_sage_N_%d', N));
 
 subdirectory              = 'fusion_cycles';
-dirname                   = fullfile(get_path(), 'Data', subdirectory);
+dirname                   = [get_path(), 'Data', subdirectory);
 [point_file, point_index] = get_latest_point_file(dirname);
 
 

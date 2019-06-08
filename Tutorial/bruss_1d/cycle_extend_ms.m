@@ -5,7 +5,7 @@
 % the cycle is really unstable. This file is just intended to show how to set up
 % a multiple shooting continuation.
 
-load(fullfile(get_path(), 'point_cycle_ms.mat'));
+load([(get_path(), 'point_cycle_ms.mat'));
 
 
 init_multiple_shooting_extend_curve( ...

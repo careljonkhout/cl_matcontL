@@ -31,7 +31,9 @@ opt = contset(opt,'TestPath',mfilename('fullpath'));
 opt = contset(opt, 'Filename', 'testbruss_BP1');
 
 %% Continuation
-load('Data\testbruss_BP0.mat')
+path_to_this_script = get_path;
+BP0_file = [path_to_this_script, 'Data/testbruss_BP0.mat'];
+load(BP0_file, 's');
 
 ID = 3;
 if strcmp(s(ID).label,'BP')
@@ -44,8 +46,12 @@ end
 
 %% Plot results
 
-x = loadPoint('Data\testbruss_BP1.dat');
-load('Data\testbruss_BP1.mat');
+
+datafile         = [path_to_this_script, 'Data/testbruss_BP1.dat'];
+singularity_file = [path_to_this_script, 'Data/testbruss_BP1.mat'];
+
+x = loadPoint(datafile);
+load(singularity_file, 's');
 hold on
 N = s(1).data.P0(1);
 plot(x(2*N+1, :), x(1, :));

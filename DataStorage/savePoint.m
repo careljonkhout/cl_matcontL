@@ -76,6 +76,11 @@ function [ failed ] = savePoint( varargin )
         disp(e)
         disp(e.stack)
       end
+      
+      if       isfield(cds, 'singularity_callback') ...
+          && ~ isempty(cds.singularity_callback)
+        cds.singularity_callback(s)
+      end
 
       s = cds.sout;
       save([cds.datapath, cds.runID, '.mat'], 's', 'contopts')
@@ -92,28 +97,28 @@ function [ failed ] = savePoint( varargin )
 end
 
 function [ failed ] = savePointDataFile( varargin )
-% Saves a continuer point to a data file
-%   [ failed ] = saveOutput( x,v,h,f,eigs,nsub,asub, etc.... )
-% This adds a block to the data file cds.datafile with the folowing
-% information
-% Line 1: number of arguments passed to savePoint
-% Line n: the nth argument to savePoint
-global cds
-%writes number of lines to save
-try
-    failed = 0;
-    fprintf(cds.dataFID,'%d\n',nargin); %Number data entries to read in a block.
-    for i = 1:nargin
-        sz = size(varargin{i});
-        fprintf(cds.dataFID,'%d %d\n',sz);
-        if ~isempty(varargin{i})
-          fprintf(cds.dataFID,'%+e ',varargin{i});
-          fprintf(cds.dataFID,'\n');
-       end
-    end
-catch
-    failed = 1;
-end
+  % Saves a continuer point to a data file
+  %   [ failed ] = saveOutput( x,v,h,f,eigs,nsub,asub, etc.... )
+  % This adds a block to the data file cds.datafile with the folowing
+  % information
+  % Line 1: number of arguments passed to savePoint
+  % Line n: the nth argument to savePoint
+  global cds
+  %writes number of lines to save
+  try
+      failed = 0;
+      fprintf(cds.dataFID,'%d\n',nargin); %Number data entries to read in a block.
+      for i = 1:nargin
+          sz = size(varargin{i});
+          fprintf(cds.dataFID,'%d %d\n',sz);
+          if ~isempty(varargin{i})
+            fprintf(cds.dataFID,'%+e ',varargin{i});
+            fprintf(cds.dataFID,'\n');
+         end
+      end
+  catch
+      failed = 1;
+  end
 end
 
 
