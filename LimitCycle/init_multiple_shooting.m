@@ -53,12 +53,12 @@ function initial_continuation_data = ...
   input.nMeshIntervals           = [];
   input.subspace_size            = []; 
   % todo: set a default for subspace size, for instance nphases / 2
-  input.integration_method  = @ode15s;
-  input.integration_options = odeset( ...
-    'AbsTol', contopts.time_integration_abs_tol, ...
-    'RelTol', contopts.time_integration_rel_tol);
+  input.time_integration_method  = @ode15s;
+  input.time_integration_options = odeset( ...
+    'AbsTol', contopts.integration_abs_tol, ...
+    'RelTol', contopts.integration_rel_tol);
   input.poincare_tolerance       = 1e-2;
-  input.show_plot                = false;
+  input.show_plots               = false;
   
   i=1;
   while i <= nargin

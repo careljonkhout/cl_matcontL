@@ -249,7 +249,7 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
     if ~reduce_stepsize
       trialpoint.h = cds.h;
       trialpoint.angle = innerangle(currpoint.v,trialpoint.v);
-      if trialpoint.angle > SmoothingAngle
+      if trialpoint.angle > SmoothingAngle && cds.i > 1
         print_diag(0, ...
           'contL: Innerangle too large, innerangle is %f degrees\n', ...
           trialpoint.angle / pi * 180);
@@ -704,6 +704,7 @@ singpoint.v = vs;
 singpoint.R = Rs;
 singpoint.tvals = [];
 singpoint.uvals = [];
+singpoint.angle = 0;
 
 %----------------------------
 %

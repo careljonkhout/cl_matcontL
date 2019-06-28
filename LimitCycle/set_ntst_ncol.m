@@ -37,4 +37,4 @@ lds.dt = lds.msh(lds.tsts+1)-lds.msh(lds.tsts);
 lds.upoldp = [];
 lds.multipliersX = [];
 lds.CalcMultipliers =0;
-calc_weigths;
+calc_weights;

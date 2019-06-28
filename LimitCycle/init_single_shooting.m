@@ -70,7 +70,7 @@ function initial_continuation_data = init_single_shooting(varargin)
     'RelTol', contopts.integration_rel_tol);
   ss_input.poincare_tolerance       = 1e-2;
   ss_input.subspace_size            = [];
-  ss_input.show_plot                = false;
+  ss_input.show_plots               = false;
   
   i=1;
   while i <= nargin

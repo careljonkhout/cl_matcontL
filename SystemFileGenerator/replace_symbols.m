@@ -79,7 +79,7 @@ end
 
 % for debugging
 % one might also use celldisp for prettier output
-function print_parse_list(parse_list)
+function print_parse_list(parse_list) %#ok<DEFNU>
   for e_cell=parse_list
     e = e_cell{1};
     if e.is_symbol

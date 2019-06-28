@@ -1,8 +1,12 @@
-function out = elezgaray_arneodo
+% Odefile of a spatial discretization of the system of 2 PDEs:
 %
-% Odefile of a space discretization of a 1-d nonadiabatic tubular reactor.
-% Discretized using a finite differences on a equidistant mesh.
+% u_t = u_xx + (v - (u^2+u^3)) / eps
+% v_t = v_xx + alpha - u
+%
+% The spatial domain is a one dimensional interval of length 1. The
+% discretization uses finite differences on a equidistant mesh.
 
+function out = elezgaray_arneodo
   out{1} = @init;
   out{2} = @d_y__d_t;
   out{3} = @jacobian;
@@ -59,8 +63,8 @@ function dfdx = jacobian(~, y, D, eps, ~) % unused arguments are t and alpha
  h = 1 / (N+1) ;
  c  = D/(h*h);
 
- % Sparse jacobian
- A = zeros(2*N,3);
+ % A will store all the diagonals of the jacobian that have nonzero's.
+ A = zeros(2*N,5);
  
  
  % The jacobian is can be divided in four blocks of size N by N
@@ -70,19 +74,22 @@ function dfdx = jacobian(~, y, D, eps, ~) % unused arguments are t and alpha
  % the lower right block corresponds to d(v_t) / d v
  
  % the upper left block contains terms due to the discretized diffusion term
- % u_xx, and a term to the reaction term:
+ % u_xx from the PDE, and a term to the reaction term (v - (u^2+u^3)) / eps from
+ % the PDE:
  A(1:N-1,   2) =  c;
  A(1:N,     3) = - 2 * c - (2 * u  + 3 * u .* u ) / eps;
  A(1:N,     4) =  c;
  
- % the lower right block contains terms due to the discretized diffusion term:
+ % the lower right block contains terms due to the discretized diffusion term
+ % v_xx from the PDE:
  A(N+1:2*N, 2) =  c;
  A(N+1:2*N, 3) = -2*c;
  A(N+2:2*N, 4) =  c;
  
- % the lower left block contains a diagonal due to the reaction term:
+ % the lower left block contains a diagonal due to the reaction term alpha - u:
  A(1:N,     1) = -1 * ones(N,1);
- % the upper right block contains a diagonal due to the reaction term
+ % the upper right block contains a diagonal due to the reaction term 
+ % (v - (u^2+u^3)) / eps from the PDE
  A(N+1:2*N, 5) = 1 / eps;
  % We compose the sparse matrix by passing the matrix A to the Matlab built-in
  % function spdiags. A now contains all the diagonals that have nonzero
@@ -90,27 +97,4 @@ function dfdx = jacobian(~, y, D, eps, ~) % unused arguments are t and alpha
  dfdx = spdiags(A, [-N,-1:1,N] , 2*N, 2*N);
 end
 % --------------------------------------------------------------------------
-function dfdp = jacobianp(t,x,N,L,A,B,Dx,Dy)
-% y  = x(N+1:2*N);
-% x(N+1:2*N) =[];
-% x0 = A; x1 = A;
-% y0 = B/A; y1 = B/A;
-% L2 = L^2;
-% h = 1/(N+1);
-% cx = (Dx/L2)/(h*h);
-% cy = (Dy/L2)/(h*h);
-% kx = (-2/L)*cx;
-% ky = (-2/L)*cy;
-% Sx = zeros(N,1);
-% Sy = zeros(N,1);
-% Sx(1) = kx*(x0-2*x(1)+x(2));
-% Sy(1) = ky*(y0-2*y(1)+y(2));
-% Sx(N) = kx*(x(N-1)-2*x(N)+x1);
-% Sy(N) = ky*(y(N-1)-2*y(N)+y1);
-% i=2:N-1;
-% Sx(i) = kx*(x(i-1)-2*x(i)+x(i+1));
-% Sy(i) = ky*(y(i-1)-2*y(i)+y(i+1));
-% dfdp = [ zeros(2*N,1) [Sx;Sy] ];
-end
-% -------------------------------------------------------------------------
 

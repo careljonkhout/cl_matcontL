@@ -7,8 +7,8 @@ clear global
 
 odefile = @brusselator_1d;
 % parameters for the system of ODEs:
-N = 30;
-L = 0.5; A = 2; B = 5.45; Dx = 0.008; Dy = 0.004;
+N = 20;
+L = 0.52; A = 2; B = 5.45; Dx = 0.008; Dy = 0.004;
 ode_parameters = [N L A B Dx Dy];
 
 % x0 will be the trivial equilibrium which will be continued to find Hopf points

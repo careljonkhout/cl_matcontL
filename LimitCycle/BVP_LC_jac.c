@@ -48,7 +48,7 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
   /* Declarations */
   /* ------------ */
   
-  
+
   double *x,*p, *nc;
   mxArray *thisfield;
   int ntst, ncol, nphase, *ActiveParams, ncoords, nfreep, tps;
@@ -99,27 +99,34 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
   thisfield = mxGetFieldByNumber(lds,0,17);
   tps = *(mxGetPr(thisfield));
   thisfield = mxGetFieldByNumber(lds,0,18);
+
   ncoords = *(mxGetPr(thisfield));
   thisfield = mxGetFieldByNumber(lds,0,22);
   mesh = mxGetPr(thisfield);			/* Current mesh coordinates */
   thisfield = mxGetFieldByNumber(lds,0,24);
+
   dt = mxGetPr(thisfield); /* Interval widths */
   thisfield = mxGetFieldByNumber(lds,0,25);
   upoldp = mxGetPr(thisfield);	/* Derivative of cycle at old mesh coordinates */
   thisfield = mxGetFieldByNumber(lds,0,29);
+
   wt = mxGetPr(thisfield);		/* Weights of collocation points */
-  thisfield = mxGetFieldByNumber(lds,0,31);
+  
+  thisfield = mxGetFieldByNumber(lds,0,31);        //mexPrintf("%p\n",thisfield);
+  double* Tp = mxGetPr(thisfield); //mexPrintf("%p\n",thisfield); return;
+  
   T = *(mxGetPr(thisfield));		/* Weights of collocation points */
+
   thisfield = mxGetFieldByNumber(lds,0,39);
+
   wp = mxGetPr(thisfield);	/* Derivative weights of collocation points */
   /* Kronecker product of the derivative weights and the identity matrix */
   wploc = mxCalloc(mxGetN(thisfield)*mxGetM(thisfield),sizeof(double));
   thisfield = mxGetFieldByNumber(lds,0,41);
   pwi = mxGetPr(thisfield);	/* Extension of weights */
-  
   int jacobian_height = ncoords + 1;
   int jacobian_width  = ncoords + 2;
-  
+
   // we compute an upper bound for the number of nonzero's (nnz)
   int nnz_ub;
   nnz_ub  = ncol * nphase * (ncol + 1) * nphase * ntst;  // main blocks
@@ -133,13 +140,12 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
   plhs[0] = result;
   
   
-  
   pr = mxGetPr(result); // get value array
   ir = mxGetIr(result); // get row index array
   jc = mxGetJc(result); // get jc array
   *jc = 0;
   
-  
+
   /* Parameters for rhs-evaluation-call to Matlab */
   const mxArray* curve_func_handle = prhs[0];
   evalrhs[0] = (struct mxArray_tag*) curve_func_handle;
@@ -166,8 +172,7 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
   xtmpn = mxGetPr(jacrhs[4]);
   for (i=0; i<nfreep; i++)
     *(xtmpn+i) = *(ActiveParams+i);
-  
-  
+
   filled = 0;			/* Help-variable that will be used in storage-procedure */
   elementcounter = 0;	/* Counts number of elements already stored in sparse matrix */
   if (nfreep==1)
@@ -194,7 +199,8 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
   Tcol = mxCalloc((tps-1)*nphase,sizeof(double));
   freepcols = mxCalloc((tps-1)*nfreep*nphase,sizeof(double));
   
-  
+    
+
   /* Compute third component: the integral constraint */
   
   /* Storage in sparse matrix is done later on */
@@ -236,7 +242,7 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
       for (j=0; j<nphase; j++)
         *(range3+i*nphase+j) = i*nphase+j;
   }
-  
+
   /* Actual computation of component elements */
   for (i=0; i<ntst; i++) {
     
@@ -246,11 +252,15 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     
     for (j=0; j<((ncol+1)*nphase)*(ncol*nphase); j++)
       *(wploc+j) = *(wp+j) / *(dt+i);
-    
+     //mexPrintf("line 257\n");
+     //mexPrintf("number of elements in evalrhs[2]: %d\n", mxGetNumberOfElements(evalrhs[2]));
+     //mexPrintf("ncol:%d ntst:%d nphase:%d\n",ncol,ntst,nphase);
+     
     for (j=0; j<ncol; j++) {
       /* Compute value of the polynomial in mesh point */
       for (k=0; k<nphase; k++) {
         *(xtmp+k) = 0;
+
         for (l=0; l<(ncol+1); l++)
           *(xtmp+k) = *(xtmp+k) + (*(x+(*(range1+l))*nphase+k)) * (*(wt+j*(ncol+1)+l));
       }
@@ -258,8 +268,10 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     //  mexPrintf("number of elements in evalrhs[2]: %d\n", mxGetNumberOfElements(evalrhs[2]));
       
       /* Call to Matlab for evaluation of rhs */
+
       mexCallMATLAB(1,evallhs,3+mxGetNumberOfElements(prhs[2]),evalrhs,"feval");
       frhstmp = mxGetPr(evallhs[0]);
+   
     //  mexPrintf("line 261\n");
       for (k=0; k<nphase; k++)
         *(frhs+j*nphase+k) = *(frhstmp+k);

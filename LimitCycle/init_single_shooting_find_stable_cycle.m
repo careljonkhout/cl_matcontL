@@ -167,7 +167,8 @@ function point_on_cycle = converge_to_cycle(in)
   if in.show_plots
     orbit_to_cycle_t = linspace(0, in.time_to_converge_to_cycle, 10000);
     orbit_to_cycle_x = deval(solution, orbit_to_cycle_t);
-     plot(orbit_to_cycle_t, orbit_to_cycle_x-solution.y(:,1))
+    figure
+    plot(orbit_to_cycle_t, orbit_to_cycle_x-solution.y(:,1))
     xlabel('t')
     ylabel('phase variables')
     disp('Now showing plot from t=0 to t=time_to_converge_to_cycle')

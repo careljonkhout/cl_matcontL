@@ -1,4 +1,5 @@
-% continuation of cycles in brusselator using multiple shooting
+% continuation of cycles in brusselator using multiple shooting from a stable
+% cycle using found by time integration.
 
 % note: the current cl_matcontL implementation (june 2019) of multiple shooting
 % is quite slow, and in this example it is unnecessary. It is only necessary if
@@ -8,7 +9,7 @@
 format long
 odefile = @brusselator_1d;
 N = 30;
-L = 0.5; A = 2; B = 5.45; Dx = 0.008; Dy = 0.004;
+L = 0.52; A = 2; B = 5.45; Dx = 0.008; Dy = 0.004;
 ode_parameters = {N; L; A; B; Dx; Dy};
 clear global cds
 clear global lds

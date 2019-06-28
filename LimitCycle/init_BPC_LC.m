@@ -1,4 +1,4 @@
-function [x,v] = init_BPC_LC(odefile, x, v, s, ntst, ncol, nphase, h)
+function [x,v] = init_BPC_LC(odefile, x, v, s, nphase, h)
 %
 % [x0,v0] = init_BPC_LC(odefile, x, v, s, ap, ntst, ncol, h)
 %
@@ -6,8 +6,22 @@ function [x,v] = init_BPC_LC(odefile, x, v, s, ntst, ncol, nphase, h)
 % in a previous run. (it does branch switching)
 %
 global lds cds
+load_odefile(odefile);
+
+cds.nap = 1;
 % check input
 % initialize lds
+
+lds = [];
+
+initialize_lds_fields
+
+lds.ncol = s.data.ncol; % number of collocation points
+lds.ntst = s.data.ntst; % number of mesh intervals
+lds.ncoords = (lds.ntst * lds.ncol + 1) * nphase;
+
+calc_weights
+
 func_handles = feval(odefile);
 symord = 0; 
 symordp = 0;
@@ -28,6 +42,9 @@ cds.options = contset(cds.options, 'SymDerivative', symord);
 cds.options = contset(cds.options, 'SymDerivativeP', symordp);
 cds.symjac = 1;
 cds.symhess = 0;
+cds.ncoo = lds.ncoords;
+cds.curve = @limitcycleL;
+cds.P0 = s.data.parametervalues;
 
 
 lds.odefile = odefile;
@@ -49,8 +66,10 @@ if siz > 9
 end
 
 lds.nphase = nphase;
-lds.BranchParam = lds.ActiveParams;
-lds.ActiveParams = lds.ActiveParams;
+lds.BranchParam = s.data.ap;
+lds.ActiveParams = s.data.ap;
+
+cds.ActiveParams = s.data.ap;
 lds.P0 = s.data.parametervalues;
 set_ntst_ncol(s.data.ntst,s.data.ncol,s.data.timemesh);
 % get x and v
@@ -108,7 +127,7 @@ end
 
 jac(range(end)+1,1:lds.ncoords)= ic;
 %compute borders
-[Q,R,E] = qr(full(jac));
+[~,R,E] = qr(jac);
 R(end,end) = 0;R(end,end-1) = 0;
 pp = E*[R(1:end-1,1:end-2)\-R(1:end-1,end-1:end);eye(2)];
 clear Q R E;
@@ -119,6 +138,7 @@ vnew  = alpha*x1+beta*x2;
 v0 = vnew/norm(vnew);
 [x,v] = new_mesh(x0,v0,s.data.ntst,s.data.ncol);
 x = x + h * v;
+lds.T = x(end-1);
 
 
 % ---------------------------------------------------------------

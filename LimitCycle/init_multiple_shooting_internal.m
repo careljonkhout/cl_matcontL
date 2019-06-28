@@ -31,6 +31,7 @@ function initial_continuation_data = init_multiple_shooting_internal(in)
   if in.show_plots
     trail_solution_t = linspace(0, period, 10000);
     trail_solution_x = deval(new_orbit, trail_solution_t);
+    figure
     plot(trail_solution_t, trail_solution_x-new_orbit.y(:,1))
     xlabel('t')
     ylabel('deviation form initial value')

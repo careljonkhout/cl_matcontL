@@ -61,20 +61,20 @@ function jacobian = jacobian(varargin)
   );
   f = @(t, y) cds.dydt_ode(t, y, parameters{:});
   cycle = cds.integrator(f, [0 period], phases, integration_opt);
-  x_for_monodromy = zeros((lds.ntst*lds.ncol + 1) * lds.nphase + 2,1);
-  mesh = linspace(0,period,lds.ntst*lds.ncol + 1);
-  x_indices = 1:lds.nphase;
-  for t = mesh
-    x_for_monodromy(x_indices) = deval(cycle, t);
-    x_indices = x_indices + lds.nphase;
-  end
-  x_for_monodromy(end-1) = period;
-  x_for_monodromy(end  ) = active_par_val;
+%  x_for_monodromy = zeros((lds.ntst*lds.ncol + 1) * lds.nphase + 2,1);
+%  mesh = linspace(0,period,lds.ntst*lds.ncol + 1);
+%  x_indices = 1:lds.nphase;
+%  for t = mesh
+%    x_for_monodromy(x_indices) = deval(cycle, t);
+%    x_indices = x_indices + lds.nphase;
+%  end
+%  x_for_monodromy(end-1) = period;
+%  x_for_monodromy(end  ) = active_par_val;
   % an experimental way of computing the monodromy matrix:
-  monodromy = compute_monodromy_oc(x_for_monodromy);
-  y_end = deval(cycle,period);
+ % monodromy = compute_monodromy_oc(x_for_monodromy);
+  %y_end = deval(cycle,period);
   
-  %[y_end, monodromy] = compute_monodromy(phases, period, parameters);
+  [y_end, monodromy] = compute_monodromy(phases, period, parameters);
   
   
   
@@ -327,11 +327,6 @@ function [failed,s] = process_singularity(id,point,s)
 end  
 %-------------------------------------------------------------------------------
 function options
-  global contopts
-  [sing_mat, ~]                 = singularity_matrix();
-  use_locators                  = false(size(sing_mat,1),1);
-  use_locators(Constants.NS_id) = true;
-  contopts = contset(contopts, 'Locators', use_locators);
 end
 %-------------------------------------------------------------------------------
 function CISdata = curve_CIS_first_point(~) % unused argument is x
@@ -351,10 +346,8 @@ function [has_changed,x2,v2,CISdata] = adapt(x,v,~,~)
   has_changed = false;
 end
 %-------------------------------------------------------------------------------
-function p_out = locate(id, p1, p2)
+function p_out = locate(id, p1, p2) %#ok<STOUT,INUSD>
   switch id   
-    case Constants.NS_id
-      p_out = locate_NS(p1, p2, @testfunctions);
     otherwise
       error('No locator defined for singularity %d', id);
   end

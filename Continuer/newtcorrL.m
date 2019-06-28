@@ -81,7 +81,7 @@ for i = 1:MaxCorrIters
           if isequal(cds.curve, @limitcycleL)
             dx = linear_solver_collocation(B,Q);
           else
-            dx = dB \ Q;
+            dx = B \ Q;
           end
         end
         

@@ -85,8 +85,6 @@ function point = defaultprocessor(varargin)
 end
 %-------------------------------------------------------------------------------
 function options
-  global contopts
-  contopts = contset(contopts, 'Locators', [0 0 0 1]);
 end
 %-------------------------------------------------------------------------------
 % Test functions are used for detecting AND locating singularities by bisection.
@@ -236,10 +234,8 @@ function [failed,s] = process_singularity(id, point, s)
   failed = 0;
 end
 %-------------------------------------------------------------------------------
-function p_out = locate(id, p1,p2)
+function p_out = locate(id, p1,p2) %#ok<INUSD,STOUT>
   switch id   
-    case 4
-      p_out = locate_NS(p1, p2, @testfunctions);
     otherwise
       error('No locator defined for singularity %d', id);
   end

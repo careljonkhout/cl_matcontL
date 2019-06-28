@@ -1,3 +1,17 @@
+% Linear solver that replaces the Matlab backslash operator, for matrices used
+% in the Newton corrections in continuation of cycles using orhtogonal
+% collocation. This specialized solver will, for large enough matrices, save a
+% lot of time and memory.
+
+% The solver reduces the linear problem to a smaller "condensed" version, which
+% is then solved using the Matlab backslash operator. After that, the values of
+% the variables that were eliminated, are computed.
+
+% The methods in this function are similar to the condensation of parameters
+% method used in AUTO
+
+% written by Carel Jonkhout, note: this method is NOT documented in my master
+% thesis
 function full_solution = linear_solver_collocation(J,b)
   global lds
 

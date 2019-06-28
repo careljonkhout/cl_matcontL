@@ -23,8 +23,8 @@ function out = cycle_testfunctions(ids_testf_requested, multipliers, v)
   if any(ismember(const.NS_id, ids_testf_requested))   
     threshold              = cds.deviation_of_trivial_multiplier;
     complex_mults          = multipliers(abs(imag(multipliers)) > threshold);
-    unstable_complex_mults = complex_mults(abs(complex_mults) > 1); 
-    out(const.NS_id)       = length(unstable_complex_mults);
+    moduli                 = abs(complex_mults(1:2:end));
+    out(const.NS_id)       = prod(1-moduli);
   end
 end
 

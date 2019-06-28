@@ -222,7 +222,7 @@ function point_on_cycle = converge_to_cycle(in)
   if in.show_plots
     orbit_t = linspace(0, solution.x(end), 500);
     orbit_x = deval(solution, orbit_t);
-    plot(orbit_t, orbit_x)
+    figure
     plot(orbit_t, orbit_x-solution.y(:,1))
     xlabel('t')
     ylabel('phase variables')
@@ -271,6 +271,7 @@ function [solution_t, solution_x] = compute_periodic_solution(in)
   
   
   if in.show_plots
+    figure
     plot(solution_t, solution_x - solution_x(:,1))
     xlabel('t')
     ylabel('deviation form initial value')

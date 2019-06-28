@@ -273,11 +273,6 @@ function point = default_processor(varargin)
 end
 %-------------------------------------------------------------------------------
 function options
-  global contopts
-  [sing_mat, ~]                           = singularity_matrix();
-  locators_logical_array                  = false(size(sing_mat,1),1);
-  locators_logical_array(Constants.NS_id) = true;
-  contopts = contset(contopts, 'Locators', locators_logical_array);
 end
 %-------------------------------------------------------------------------------
 function CISdata = curve_CIS_first_point(~) % unused argument is x 
@@ -420,10 +415,8 @@ function update_multipliers_if_needed(x)
   end
 end
 %-------------------------------------------------------------------------------
-function p_out = locate(id, p1,p2)
+function p_out = locate(id, p1,p2) %#ok<INUSD,STOUT>
   switch id   
-    case Constants.NS_id
-      p_out = locate_NS(p1, p2, @testfunctions);
     otherwise
       error('No locator defined for singularity %d', id);
   end

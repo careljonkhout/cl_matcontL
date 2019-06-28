@@ -42,6 +42,7 @@ cds.symhess = 0;
 cds.probfile = odefile;
 cds.nap = length(ap);
 cds.curve_CIS_step = [];
+cds.curve = @limitcycleL;
 
 x=y';
 xstart=round(size(x,2)/3);
@@ -104,7 +105,8 @@ if siz > 9
         lds.user{j}= func_handles{k};
         j=j+1;
     end
-else lds.user=[];
+else
+  lds.user=[];
 end
 lds.nphase = size(y,2);
 lds.ActiveParams = ap;
