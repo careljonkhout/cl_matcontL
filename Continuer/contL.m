@@ -172,8 +172,8 @@ end
 %% Direction Vector Determination
 if contopts.set_direction
   Backward       = contopts.Backward;
-  if abs(v_cont(end)) < 1e-6
-    Vdir = sign(sum(v_cont(1:end-1)));
+  if abs(firstpoint.v(end)) < 1e-6
+    Vdir = sign(sum(firstpoint.v(1:end-1)));
   else
     Vdir = sign(v_cont(end));
   end

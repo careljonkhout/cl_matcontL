@@ -68,7 +68,7 @@ function compile(file)
     compile_options = [compile_options ' -largeArrayDims'];
   end
   compile_eval_string = ['mex ' compile_options ' -O ' file '.c '];
-  fprintf(...
-    ['The following command is being executed:\n' compile_eval_string '\n'])
+  disp('The following command is being executed:');
+  disp(compile_eval_string);
   eval(compile_eval_string);
 end

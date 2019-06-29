@@ -104,7 +104,7 @@ if exist([fullfile(cds.datapath, cds.runID), '.mat'], 'file')
     cds.sout = s;
   else
     print_diag(1, ['A singularities file ' fullfile(cds.datapath, cds.runID) ...
-                          '  is is already present, and will be overwritten']);
+                         ' is is already present, and will be overwritten\n']);
   end
 else
   cds.sout = [];
