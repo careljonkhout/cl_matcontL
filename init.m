@@ -63,11 +63,13 @@ function compile(file)
   path = mfilename('fullpath');
   path = path(1:end-length(mfilename));
   path = fullfile(path,'LimitCycle');
-  compile_options = ['-outdir ' path];
+  % we quote the path to support spaces in the path
+  compile_options = ['-outdir ''' path ''''];
   if ~isempty(regexp(mexext,'64','match'))
     compile_options = [compile_options ' -largeArrayDims'];
   end
-  compile_eval_string = ['mex ' compile_options ' -O ' file '.c '];
+  % we quote the path to support spaces in the path
+  compile_eval_string = ['mex ' compile_options ' -O ''' file '.c'''];
   disp('The following command is being executed:');
   disp(compile_eval_string);
   eval(compile_eval_string);
