@@ -7,7 +7,7 @@ function out = single_shooting
   out{5}  = [];%@hessians;
   out{6}  = @testfunctions;
   out{7}  = [];%@userf;
-  out{8}  = @process_singularity;
+  out{8}  = @shooting_process_singularity;
   out{9}  = @cycle_singularity_matrix;
   out{10} = @locate;
   out{11} = @init;
@@ -51,16 +51,18 @@ function jacobian = jacobian(varargin)
   parameters                   = num2cell(parameters);
   
   
-  % 
-  
-  global contopts lds;
-  integration_opt = odeset(...
-    'AbsTol',      contopts.integration_abs_tol,    ...
-    'RelTol',      contopts.integration_rel_tol,    ...
-    'Jacobian',     @(t,y) feval(cds.jacobian_ode,t,y,parameters{:}) ...
-  );
-  f = @(t, y) cds.dydt_ode(t, y, parameters{:});
-  cycle = cds.integrator(f, [0 period], phases, integration_opt);
+%  the commented out code is an experimental way of computing the (full)
+%  monodromy matrix. The monodromy matrix is computed the same way the monodromy
+%  matrix is computed is orthogonal collocation
+%
+%  global contopts lds;
+%   integration_opt = odeset(...
+%     'AbsTol',      contopts.integration_abs_tol,    ...
+%     'RelTol',      contopts.integration_rel_tol,    ...
+%     'Jacobian',     @(t,y) feval(cds.jacobian_ode,t,y,parameters{:}) ...
+%   );
+%  f = @(t, y) cds.dydt_ode(t, y, parameters{:});
+%  cycle = cds.integrator(f, [0 period], phases, integration_opt);
 %  x_for_monodromy = zeros((lds.ntst*lds.ncol + 1) * lds.nphase + 2,1);
 %  mesh = linspace(0,period,lds.ntst*lds.ncol + 1);
 %  x_indices = 1:lds.nphase;
@@ -70,16 +72,11 @@ function jacobian = jacobian(varargin)
 %  end
 %  x_for_monodromy(end-1) = period;
 %  x_for_monodromy(end  ) = active_par_val;
-  % an experimental way of computing the monodromy matrix:
- % monodromy = compute_monodromy_oc(x_for_monodromy);
-  %y_end = deval(cycle,period);
+
+%  monodromy = compute_monodromy_oc(x_for_monodromy);
+%  y_end = deval(cycle,period);
   
   [y_end, monodromy] = compute_monodromy(phases, period, parameters);
-  
-  
-  
-  
-  
   jacobian     = [monodromy-eye(cds.nphases); cds.previous_dydt_0'];
   % add d_phi__d_T and d_s__d_T
   d_phi_d_T         = cds.dydt_ode(0,y_end,parameters{:});
@@ -276,58 +273,7 @@ function [out, failed] = testfunctions(ids_testf_requested, x0, v, ~)
   out = cycle_testfunctions(ids_testf_requested, cds.multipliers, v);
 end
 %-------------------------------------------------------------------------------
-% After a singularity is detected and located, the contL calls this function.
-% Usually a normal form coefficient (nfc) is computed, via a function call from
-% this function. However, for continuation of cycles by single shooting or
-% multiple shooting, the computation of normal form coefficients is not
-% implemented yet.
-function [failed,s] = process_singularity(id,point,s)
-  global cds
-  x = point.x;
-  switch id
-  case 1
-    format_string = 'Branch Point cycle(period = %e, parameter = %e)\n'; 
-    print_diag(0, format_string, x(end-1), x(end));
-    s.msg  = sprintf('Branch Point cycle'); 
-  case 2
-    format_string = 'Period Doubling (period = %e, parameter = %e)\n';
-    print_diag(0, format_string, x(end-1), x(end));
-    s.msg  = 'Period Doubling';
-  case 3
-    s.msg = 'Limit point cycle';
-    format_string = 'Limit point cycle (period = %e, parameter = %e)\n';
-    print_diag(0, format_string, x(end-1), x(end));
-  case 4
-    d = cds.multipliers;
-    smallest = Inf;
-    % we find the pair of multipliers whose product is closest to one, and check
-    % to see these the multipliers have a nonzero imaginary part.
-    for jk=1:length(d)-1
-      [val,idx] = min(abs(d(jk+1:length(d))*d(jk)-1));
-      if val < smallest
-        idx2 = jk+idx;
-        smallest = val;
-      end
-    end
-    threshold = cds.deviation_of_trivial_multiplier;
-    singularity_is_neutral_saddle = abs(imag(d(idx2))) < threshold;
-    if singularity_is_neutral_saddle
-      s.msg = 'Neutral saddle cycle';
-      format_string = 'Neutral Saddle Cycle (period = %e, parameter = %e)\n';
-      % A neutral saddle is not really a bifurcation
-      print_diag(0, format_string, x(end-1), x(end));
-    else
-      s.msg = 'Neimark Sacker';
-      format_string = 'Neimark-Sacker (period = %e, parameter = %e)\n';
-      print_diag(0, format_string, x(end-1) ,x(end));
-      %print_diag(0, 'Normal form coefficient = %d\n', s.data.nscoefficient);
-    end
-  end
-  failed = 0;
-end  
-%-------------------------------------------------------------------------------
-function options
-end
+function options; end
 %-------------------------------------------------------------------------------
 function CISdata = curve_CIS_first_point(~) % unused argument is x
   CISdata = 1;

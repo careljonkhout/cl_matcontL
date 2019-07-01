@@ -7,7 +7,7 @@ function out = multiple_shooting
   out{5}  = [];%@hessians;
   out{6}  = @testfunctions;
   out{7}  = [];%@userf;
-  out{8}  = @process_singularity;
+  out{8}  = @shooting_process_singularity;
   out{9}  = @cycle_singularity_matrix;
   out{10} = @locate;
   out{11} = @init;
@@ -174,82 +174,6 @@ function [out, failed] = testfunctions(ids_testf_requested, x0, v, ~)
   
   out = cycle_testfunctions(ids_testf_requested, cds.multipliers, v);
 end
-%-------------------------------------------------------------------------------
-% defines which changes in testfunctions correspond to which singularity type
-% 0 == require sign-change
-% 1 == require sign-non-change
-% 2 == require change
-% anything else: no requirement
-% columns correspond to testfunctions
-% rows correspond to singularities BPC, PD, LPC, and NS respectively
-function [S,L] = singularity_matrix
-
-  
-  sign_change    = Constants.sign_change;
-  sign_constant  = Constants.sign_constant;
-  value_change   = Constants.value_change;
-  o              = Constants.ignore; 
-
-  S = [ 
-  % BPC_testfunc PD_testfunc  LPC_testfunc   NS_testfunc
-    sign_change  o            sign_constant  o            % BPC    
-    o            sign_change  o              o            % PD   
-    o            o            sign_change    o            % LPC   
-    o            o            o              value_change % NS
-  ];
-  L = [ 'BPC';'PD '; 'LPC'; 'NS ' ];
-end
-%-------------------------------------------------------------------------------
-% After a singularity is detected and located, the contL calls this function.
-% Usually a normal form coefficient (nfc) is computed, via a function call from
-% this function. However, for continuation of cycles by single shooting or
-% multiple shooting, the computation of normal form coefficients is not
-% implemented yet.
-function [failed,s] = process_singularity(id,point,s)
-  global cds
-  x = point.x;
-  switch id
-  case 1
-    format_string = 'Branch Point cycle(period = %e, parameter = %e)\n'; 
-    print_diag(0, format_string, x(end-1), x(end));
-    s.msg  = sprintf('Branch Point cycle'); 
-  case 2
-    format_string = 'Period Doubling (period = %e, parameter = %e)\n';
-    print_diag(0, format_string, x(end-1), x(end));
-    s.msg  = 'Period Doubling';
-  case 3
-    s.msg = 'Limit point cycle';
-    format_string = 'Limit point cycle (period = %e, parameter = %e)\n';
-    print_diag(0, format_string, x(end-1), x(end));
-  case 4
-    d = cds.multipliers;
-    smallest_sum = Inf;
-    for jk=1:cds.nphases-1
-      [val,idx] = min(abs(d(jk+1:cds.nphases)*d(jk)-1));
-      if val < smallest_sum
-        idx2 = jk+idx;
-        smallest_sum = val;
-      end
-    end
-    singularity_is_neutral_saddle = ...
-           abs(imag(d(idx2))) < cds.deviation_of_trivial_multiplier;
-    if singularity_is_neutral_saddle
-      s.msg = 'Neutral saddle cycle';
-      format_string = 'Neutral Saddle Cycle (period = %e, parameter = %e)\n';
-      % A neutral saddle is not really a bifurcation, therefore we use priority 
-      % 1 instead of 0, so that it is only logged if 
-      % contopts.contL_DiagnosticsLevel is set higher than the default value
-      % which is zero.
-      print_diag(1, format_string, x(end-1), x(end));
-    else
-      s.msg = 'Neimark Sacker';
-      format_string = 'Neimark-Sacker (period = %e, parameter = %e)\n';
-      print_diag(0, format_string, x(end-1) ,x(end));
-      %print_diag(0, 'Normal form coefficient = %d\n', s.data.nscoefficient);
-    end
-  end
-  failed = 0;
-end  
 %-------------------------------------------------------------------------------
 function init(~,~); end
 %-------------------------------------------------------------------------------
