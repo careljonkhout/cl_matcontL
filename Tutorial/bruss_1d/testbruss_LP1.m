@@ -52,8 +52,11 @@ data = s(ID).data;
 
 x = loadPoint(datafile);
 
-plot(x(end-1, :), x(end, :))
+figure
 hold on
+title('testbruss\_LP1')
+plot(x(end-1, :), x(end, :))
+
 for i = 1:length(singularities)
   xii = singularities(i).data.x;
   plot(xii(end-1), xii(end), 'r.')

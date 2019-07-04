@@ -53,8 +53,11 @@ p = [N; L; A; B; Dx; Dy]; ap1 = 2;
 x = loadPoint(datafile);
 N = singularities(1).data.P0(1);
 
-plot(x(N, :), x(N/2, :))
+figure
 hold on
+title('testbruss\_U0')
+plot(x(N, :), x(N/2, :))
+
 for singularity = singularities
   plot(x(N, singularity.index), x(N/2, singularity.index), 'r.');
   text(x(N, singularity.index), x(N/2, singularity.index), singularity.label);

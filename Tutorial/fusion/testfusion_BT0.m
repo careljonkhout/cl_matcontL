@@ -61,8 +61,11 @@ ap1 = 3;  % active parameter
 
 x = loadPoint(datafile);
 
-plot(x(end, :), x(3, :));
+figure
 hold on
+title('testfusion\_BT0')
+plot(x(end, :), x(3, :));
+
 for singularity = singularities
   plot(x(end, singularity.index), x(3, singularity.index), 'r.');
   text(x(end, singularity.index), x(3, singularity.index), singularity.label);

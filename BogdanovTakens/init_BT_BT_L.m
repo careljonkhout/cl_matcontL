@@ -1,6 +1,6 @@
 function [x0,v0]= init_BT_BT_L(probfile, u, p, ap,data)
 %  Initializes a Bogdanov-Takens continuation from a BT point
-
+clear global
 global cds
 
 % check input

@@ -46,9 +46,13 @@ data                      = s(ID).data;
 
 %% Plot results
 x = loadPoint(datafile);
-hold on
 N = singularities(1).data.P0(1);
+
+figure
+hold on
+title('testbruss\_BP1')
 plot(x(2*N+1, :), x(1, :));
+
 for singularity = singularities
   plot(x(2*N+1, singularity.index), x(1, singularity.index), 'r.');
   text(x(2*N+1, singularity.index), x(1, singularity.index), singularity.label);

@@ -14,7 +14,7 @@ function Mx = monodromy_map(x, period, parameters, abs_tol, rel_tol)
       'AbsTol',       abs_tol, ...
       'RelTol',       rel_tol  ...
   );   
-  if false || true
+  if false || false
 
     integration_opt = odeset(integration_opt, ...
         'Jacobian',     @(t,y) feval(cds.jacobian_ode, ...
@@ -30,7 +30,7 @@ function Mx = monodromy_map(x, period, parameters, abs_tol, rel_tol)
     ); 
     % alternative method of applying the monodromy map to x:
     % by finite differences. Seems to be faster, but accuracy is limited
-    h = 1e-4;
+    h = 5e-5;
     x_cycle = deval(cds.cycle_orbit,0);
     f  = @(t, x) cds.dydt_ode(0,x,parameters{:});
     ff = @(t, x1_and_x2) [f(0, x1_and_x2(1:cds.nphases    ))

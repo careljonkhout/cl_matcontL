@@ -41,8 +41,12 @@ data = s(2).data;
 
 x = loadPoint(datafile);
 
-plot3(x(end, :), -x(end-2, :), x(end-1, :))
+figure
+plot3(x(end, :), -x(end-2, :), x(end-1, :));
 hold on
+title('testfusion\_BT2')
+
+
 for i = 1:length(singularities)
   x_sing = singularities(i).data.x;
   plot3(x_sing(end), -x_sing(end-2), x_sing(end-1), 'r.')

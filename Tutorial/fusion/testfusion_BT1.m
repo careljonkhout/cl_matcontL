@@ -41,8 +41,12 @@ data = s(3).data;
 %% Plot results
 
 x = loadPoint(datafile);
-plot(x(end, :), -x(end-1, :))
+
+figure
 hold on
+title('testfusion\_BT1')
+plot(x(end, :), -x(end-1, :))
+
 for i = 1:length(singularities)
   x_singularity = singularities(i).data.x;
   plot(x_singularity(end), -x_singularity(end-1), 'r.')

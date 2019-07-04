@@ -50,8 +50,11 @@ data = s(ID).data;
 
 x = loadPoint(datafile);
 
-plot(x(end-2, :), x(end-1, :));
+figure
 hold on
+title('testbruss\_HP1')
+plot(x(end-2, :), x(end-1, :));
+
 for sing = singularities
   plot(x(end-2, sing.index), x(end-1, sing.index), 'r.');
   text(x(end-2, sing.index), x(end-1, sing.index), sing.label);

@@ -6,7 +6,7 @@
 
 pause off
 
-if false || false
+if false || true
   try
     run_demos(dir(get_path()));
   catch exception

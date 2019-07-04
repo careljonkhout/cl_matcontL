@@ -45,7 +45,7 @@ for i = 1:MaxCorrIters
     if i <= MaxNewtonIters
         A = contjac(x, CISdata);
         if isempty(A)
-            B = [v'];
+            B = v';
         else
            % B = [A; v(1:cds.ndim)'];  MP why ??????????
             B = [A; v'];              % MP 2018

@@ -43,8 +43,12 @@ p = [N; L; A; B; Dx; Dy]; ap1 = 2;
 
 x = loadPoint(datafile);
 N = s(1).data.P0(1);
-plot(x(2*N+1, :), x(1, :));
+
+figure
 hold on
+title('testbruss\_BP0')
+plot(x(2*N+1, :), x(1, :));
+
 for sii = s
     plot(x(2*N+1, sii.index), x(1, sii.index), 'r.');
     text(x(2*N+1, sii.index), x(1, sii.index), sii.label);
