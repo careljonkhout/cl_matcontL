@@ -9,7 +9,7 @@ function [x0,v0,options]= init_BP_EP_L(probfile, x, p, ap, data)
 % data from located branching point must be available
 % If x, p or ap are empty the values from the data struct are used
 %
-
+clear global
 if isempty(data)
     error('Data structure must be given')
 end

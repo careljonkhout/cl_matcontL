@@ -28,29 +28,25 @@ opt = contset(opt, 'Filename', 'testfusion_BT1');
 %% load startpoint
 
 path_to_this_script = get_path;
-BT0_file = [path_to_this_script, 'Data', 'testfusion_BT0.mat');
+BT0_file = [path_to_this_script, '/Data/testfusion_BT0.mat'];
 load(BT0_file, 's');
 ap = [3, 8];
 data = s(3).data;
 
 %% Continuation
 
-[x0,v0]      = init_LP_LP_L(@fusion, [], [], ap, data);
-contL(@limitpointL,x0,v0,opt);
+[x0,v0]                   = init_LP_LP_L(@fusion, [], [], ap, data);
+[singularities, datafile] = contL(@limitpointL,x0,v0,opt);
 
 %% Plot results
 
-datafile         = [path_to_this_script, 'Data', 'testfusion_BT1.dat');
-singularity_file = [path_to_this_script, 'Data', 'testfusion_BT1.mat');
-
 x = loadPoint(datafile);
-load(singularity_file, 's');
 plot(x(end, :), -x(end-1, :))
 hold on
-for ii = 1:length(s)
-    xii = s(ii).data.x;
-    plot(xii(end), -xii(end-1), 'r.')
-    text(xii(end), -xii(end-1), s(ii).label)
+for i = 1:length(singularities)
+  x_singularity = singularities(i).data.x;
+  plot(x_singularity(end), -x_singularity(end-1), 'r.')
+  text(x_singularity(end), -x_singularity(end-1), singularities(i).label)
 end
 
 xlabel 'b'

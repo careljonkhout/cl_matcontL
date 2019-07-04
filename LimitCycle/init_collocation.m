@@ -1,56 +1,56 @@
 
 function initial_continuation_data = init_collocation(varargin)
 
-  lc_input.point_on_limitcycle      = [];
-  lc_input.odefile                  = [];
-  lc_input.ode_parameters           = [];
-  lc_input.active_parameter_index   = [];
-  lc_input.time_integration_method  = @ode15s;
-  lc_input.lower_bound_period       = [];
-  lc_input.upper_bound_period       = [];
-  lc_input.time_integration_options = odeset();
-  lc_input.poincare_tolerance       = 5e-2;
-  lc_input.show_plot                = false;
-  lc_input.nCollocationPoints       = 4;
-  lc_input.nMeshIntervals           = [];
-  lc_input.collocation_tolerance    = 1e-2;
+  input.point_on_limitcycle      = [];
+  input.odefile                  = [];
+  input.ode_parameters           = [];
+  input.active_parameter_index   = [];
+  input.time_integration_method  = @ode15s;
+  input.lower_bound_period       = [];
+  input.upper_bound_period       = [];
+  input.time_integration_options = odeset();
+  input.poincare_tolerance       = 5e-2;
+  input.show_plot                = false;
+  input.nCollocationPoints       = 4;
+  input.nMeshIntervals           = [];
+  input.collocation_tolerance    = 1e-2;
   
   i=1;
   while i <= nargin
     if ~ ischar(varargin{i})
       error('Please specify options as key-value pairs')
     end
-    if ~ isfield(lc_input,varargin{i})
+    if ~ isfield(input,varargin{i})
       error([varargin{i} ' is not a valid option.'])
     end
-    lc_input.(varargin{i}) = varargin{i+1};
+    input.(varargin{i}) = varargin{i+1};
     i = i+2;
   end
-  fields = fieldnames(lc_input);
+  fields = fieldnames(input);
   for i=1:length(fields)
-    if isempty(lc_input.(fields{i}))
+    if isempty(input.(fields{i}))
       error(['You must specifiy ' fields{i} '.'])
     end
   end
 
-  [lc_input.t, lc_input.y] = compute_periodic_solution(lc_input);
+  [input.t, input.y] = compute_periodic_solution(input);
 
-  lc_input.y             = lc_input.y'; % transpose y
-  lc_input.p             = cell2mat(lc_input.ode_parameters);
-  lc_input.ap            = lc_input.active_parameter_index;
-  lc_input.ntst          = lc_input.nMeshIntervals;
-  lc_input.ncol          = lc_input.nCollocationPoints;
-  lc_input.tolerance     = lc_input.collocation_tolerance;
+  input.y             = input.y'; % transpose y
+  input.p             = cell2mat(input.ode_parameters);
+  input.ap            = input.active_parameter_index;
+  input.ntst          = input.nMeshIntervals;
+  input.ncol          = input.nCollocationPoints;
+  input.tolerance     = input.collocation_tolerance;
   
   [initial_continuation_data, ~] = ...
-    initOrbLC_L(lc_input.odefile, ...
-                lc_input.t, ...
-                lc_input.y, ...
-                lc_input.p, ...      
-                lc_input.ap, ...
-                lc_input.ntst, ...
-                lc_input.ncol, ...    
-                lc_input.tolerance);
+    initOrbLC_L(input.odefile, ...
+                input.t, ...
+                input.y, ...
+                input.p, ...      
+                input.ap, ...
+                input.ntst, ...
+                input.ncol, ...    
+                input.tolerance);
               
 end
 

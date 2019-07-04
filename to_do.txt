@@ -4,3 +4,21 @@ can affect any part of the program, and the purpose and intended contents of
 the fields of these structes are poorly documented. However, removing them 
 alltogether, requires a lot of work. A good start towards improving the quality 
 of the cl_matcontL code, is to document all the fields of cds lds, and eds.
+
+- in run_all_demos, run slow demos last
+
+- set filename explicitly in scripts
+
+- store ode parameter values in each point in single_shooting
+
+- remove and print before every point data header i.e.
+             :  p(2)              period           point norm       curve func norm  step size
+ when log level is greater than 0
+
+- replace initial point for extend demo's so that they start close to the same point as the other demos
+
+- print parameters in extend demo's
+
+- adjust and deprioritize mv_count message
+
+- create list of print_diag messages and sort according to priority

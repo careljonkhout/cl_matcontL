@@ -33,23 +33,20 @@ data = s(2).data;
 
 %% continuation
 
-[x0,v0]      = init_BT_BT_L(@fusion, [], [], ap, data);
-contL(@bogdanovtakensL,x0,v0,opt);
+[x0,v0]                   = init_BT_BT_L(@fusion, [], [], ap, data);
+[singularities, datafile] = contL(@bogdanovtakensL,x0,v0,opt);
 
 %% plot
 
-datafile         = [path_to_this_script, 'Data/testfusion_BT2.dat'];
-singularity_file = [path_to_this_script, 'Data/testfusion_BT2.mat'];
 
 x = loadPoint(datafile);
-load(singularity_file, 's');
 
 plot3(x(end, :), -x(end-2, :), x(end-1, :))
 hold on
-for ii = 1:length(s)
-    xii = s(ii).data.x;
-    plot3(xii(end), -xii(end-2), xii(end-1), 'r.')
-    text( xii(end), -xii(end-2), xii(end-1), s(ii).label)
+for i = 1:length(singularities)
+  x_sing = singularities(i).data.x;
+  plot3(x_sing(end), -x_sing(end-2), x_sing(end-1), 'r.')
+  text( x_sing(end), -x_sing(end-2), x_sing(end-1), singularities(i).label)
 end
 
 xlabel 'a'

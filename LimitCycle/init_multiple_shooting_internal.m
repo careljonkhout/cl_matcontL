@@ -1,7 +1,11 @@
-% Intended to be called by other functions. Use init_multiple_shooting, or
-% init_multiple_shooting_find_stable_cycle as a convenient way to set up to
-% inputs for this function, and call it.
+% Intended to be called by other functions. To initialize a cycle continuation
+% using multiple shooting call one of these two functions:
+%
+% init_multiple_shooting_find_stable_cycle
+% init_multiple_shooting_from_hopf
+
 function initial_continuation_data = init_multiple_shooting_internal(in)
+  clear global
   global cds
   
   handles      = feval(in.odefile);
@@ -31,7 +35,7 @@ function initial_continuation_data = init_multiple_shooting_internal(in)
   if in.show_plots
     trail_solution_t = linspace(0, period, 10000);
     trail_solution_x = deval(new_orbit, trail_solution_t);
-    figure
+    my_figure = figure;
     plot(trail_solution_t, trail_solution_x-new_orbit.y(:,1))
     xlabel('t')
     ylabel('deviation form initial value')
@@ -39,6 +43,9 @@ function initial_continuation_data = init_multiple_shooting_internal(in)
                                        't=time_to_converge_to_cycle + period']);
     disp('Press a key to continue')
     pause
+    if isvalid(my_figure)
+      close(my_figure.Number)
+    end
   end
   
   initial_continuation_data = zeros(cds.nphases * in.nMeshIntervals + 2, 1);

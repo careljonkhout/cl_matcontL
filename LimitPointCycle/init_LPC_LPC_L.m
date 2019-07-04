@@ -5,6 +5,7 @@ function [x0,v0] = init_LPC_LPC_L(odefile, x, s, ap, ntst, ncol,varargin)
   % [x0,v0] = init_LPC_LPC(odefile, x, s, ap, ntst, ncol)
   %
   %
+  clear global
   global cds lds
 
   % check input

@@ -37,15 +37,11 @@ N = 500; L = 0.06; A = 2; B = 4.6; Dx = 0.0016; Dy = 0.008;
 p = [N; L; A; B; Dx; Dy]; ap1 = 2;
 
 [x0,v0]      = init_EP_EP_L(@brusselator_1d, [], p, ap1);
-contL(@equilibriumL,x0,v0,opt);
+[s, datafile] = contL(@equilibriumL,x0,v0,opt);
 
 %% Plot results
-path_to_this_script = get_path;
-datafile         = [path_to_this_script, 'Data/testbruss_BP0.dat'];
-singularity_file = [path_to_this_script, 'Data/testbruss_BP0.mat'];
 
 x = loadPoint(datafile);
-load(singularity_file, 's');
 N = s(1).data.P0(1);
 plot(x(2*N+1, :), x(1, :));
 hold on

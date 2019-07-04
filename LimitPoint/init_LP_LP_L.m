@@ -1,6 +1,7 @@
 function [x0,v0]= init_LP_LP_L(probfile, u, p, ap, data)
 %  Initializes a Limit Point / Fold continuation from a LP point
 
+clear global
 global cds
 
 % check input

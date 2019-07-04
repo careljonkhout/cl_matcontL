@@ -123,7 +123,6 @@
 function initial_continuation_data = init_collocation_find_stable_cycle(varargin)
 
   contopts = contset();
-
   % required arguments
   input.initial_point             = [];
   input.time_to_converge_to_cycle = [];
@@ -222,13 +221,16 @@ function point_on_cycle = converge_to_cycle(in)
   if in.show_plots
     orbit_t = linspace(0, solution.x(end), 500);
     orbit_x = deval(solution, orbit_t);
-    figure
+    my_figure = figure;
     plot(orbit_t, orbit_x-solution.y(:,1))
     xlabel('t')
     ylabel('phase variables')
     disp('Now showing plot from t=0 to t=time_to_converge_to_cycle')
     disp('Press a key to continue')
     pause
+    if isvalid(my_figure)
+      close(my_figure.Number)
+    end
   end
   
   point_on_cycle = deval(solution, in.time_to_converge_to_cycle);
@@ -271,7 +273,7 @@ function [solution_t, solution_x] = compute_periodic_solution(in)
   
   
   if in.show_plots
-    figure
+    my_figure = figure;
     plot(solution_t, solution_x - solution_x(:,1))
     xlabel('t')
     ylabel('deviation form initial value')
@@ -279,6 +281,9 @@ function [solution_t, solution_x] = compute_periodic_solution(in)
                                    't=time_to_converge_to_cycle + 1.1*period']);
     disp('Press a key to continue')
     pause
+    if isvalid(my_figure)
+      close(my_figure.Number)
+    end
   end
   
   function [value, isterminal, direction] = returnToPlane(t, x)

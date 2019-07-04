@@ -2,6 +2,7 @@ function [x0,v0] = init_GH_LPC(odefile, x, p, s, ap, ntst, ncol, eps, varargin)
 %
 % [x0,v0] = init_GH_LPC(odefile, x, p, s, ap, ntst, ncol, eps)
 %
+clear global
 global lds hds cds
 % check input
 if(size(ap)~= 2)

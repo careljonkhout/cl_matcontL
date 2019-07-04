@@ -59,37 +59,31 @@ opts_h_lc = contset( ...
   'enable_nf_pd',           false, ...
   'contL_DiagnosticsLevel', 0, ...
   'console_output_level',   0);
+
+% we open a plot window:
 figure
+% each line segment of the approximation of the curve is plotted separately
+% therefore, the plot has to "hold" the previously plotted line segments
 hold on
-title_format_string = ...
-  'Brusselator N:%d  A:%.0f  B:%.1f  Dx:%.3f  Dy:%.3f';
-title_format_args = {N,A,B,Dx,Dy};
+% we set the axes labels
 xlabel('L')
 ylabel('period')
-title(sprintf(title_format_string, title_format_args{:}));
+title_format_string = 'Brusselator N:%d  A:%.0f  B:%.1f  Dx:%.3f  Dy:%.3f';
+title_format_args = {N,A,B,Dx,Dy};
+% we set the title of the plot.
+% the title has two lines
+title({'Cycle from Hopf - orthogonal collocation', ...
+       sprintf(title_format_string, title_format_args{:})});
 
-% We run the cycle continuation:
+
+% we run the cycle continuation:
 singularities = contL(@limitcycleL, x0, v0, opts_h_lc, 'callback', ...
                                           @plot_T_versus_param);
-
-% We plot the singularities from the cycle continuation
-vertical_alignment = 'top';
+% we plot the singularities
 for singularity = singularities
-  plot_sing(singularity, 'VerticalAlignment', vertical_alignment)
-  % switch vertical alignment after each singularity to reduce overlap of labels
-  if strcmp(vertical_alignment, 'top')
-    vertical_alignment = 'bottom';
-  else
-    vertical_alignment = 'top';
-  end
+  plot_singularity_of_cycles(singularity)
 end
 
-function plot_sing(s, varargin)
-  L = s.data.x(end);
-  T = s.data.x(end-1);
-  plot(L,T,'r*')
-  text(L,T,s.label,varargin{:})
-end
 
 
 

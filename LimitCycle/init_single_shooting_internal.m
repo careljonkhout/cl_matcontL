@@ -1,9 +1,13 @@
-% Intended to be called by other functions. Use init_single_shooting, or
-% init_single_shooting_find_stable_cycle as a convenient way to set up to
-% inputs for this function, and call it.
+% Intended to be called by other functions. To initialize a cycle continuation
+% using single shooting call one of these two functions:
+%
+% init_single_shooting_find_stable_cycle
+% init_single_shooting_from_hopf
+
 function initial_continuation_data = init_single_shooting_internal(in)
-    
+  clear global  
   global cds
+  
   
   handles      = feval(in.odefile);
   dydt_ode     = handles{2};
@@ -27,7 +31,7 @@ function initial_continuation_data = init_single_shooting_internal(in)
     in.time_integration_options); 
   
   if in.show_plots
-    figure
+    my_figure = figure;
     plot(orbit_t, orbit_x-orbit_x(1,:))
     xlabel('t')
     ylabel('deviation form initial value')
@@ -35,6 +39,9 @@ function initial_continuation_data = init_single_shooting_internal(in)
                                        't=time_to_converge_to_cycle + period']);
     disp('Press a key to continue')
     pause
+    if isvalid(my_figure)
+      close(my_figure.Number)
+    end
   end
   
   fprintf('max-norm of gap in cycle: %.4e\n', norm_of_gap)

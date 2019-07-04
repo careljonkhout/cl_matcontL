@@ -54,22 +54,18 @@ ap1 = 3;  % active parameter
 
 %% Continuation
 
-[x0,v0]      = init_EP_EP_L(@fusion, [], p, ap1); % initialization
-contL(@equilibriumL,x0,v0,opt);                   % continuation
+[x0,v0]                   = init_EP_EP_L(@fusion, [], p, ap1); % initialization
+[singularities, datafile] = contL(@equilibriumL,x0,v0,opt);    % continuation
 
 %% Plot results
-path_to_this_script = get_path;
-datafile         = [path_to_this_script, 'Data/testfusion_BT0.dat'];
-singularity_file = [path_to_this_script, 'Data/testfusion_BT0.mat'];
 
 x = loadPoint(datafile);
-load(singularity_file, 's');
 
 plot(x(end, :), x(3, :));
 hold on
-for sii = s
-    plot(x(end, sii.index), x(3, sii.index), 'r.');
-    text(x(end, sii.index), x(3, sii.index), sii.label);
+for singularity = singularities
+  plot(x(end, singularity.index), x(3, singularity.index), 'r.');
+  text(x(end, singularity.index), x(3, singularity.index), singularity.label);
 end
 
 xlabel 'q_\infty'

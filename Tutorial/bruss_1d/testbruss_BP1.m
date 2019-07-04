@@ -36,28 +36,22 @@ BP0_file = [path_to_this_script, 'Data/testbruss_BP0.mat'];
 load(BP0_file, 's');
 
 ID = 3;
-if strcmp(s(ID).label,'BP')
-    data = s(ID).data;
-    [x0,v0]      = init_BP_EP_L(@brusselator_1d, [], [], [], data);
-    contL(@equilibriumL,x0,v0,opt);
-else
-    debug('No Branch Vector\n');
+if ~ strcmp(s(ID).label,'BP')
+  error('no branching point found');
 end
 
+data                      = s(ID).data;
+[x0,v0]                   = init_BP_EP_L(@brusselator_1d, [], [], [], data);
+[singularities, datafile] = contL(@equilibriumL,x0,v0,opt);
+
 %% Plot results
-
-
-datafile         = [path_to_this_script, 'Data/testbruss_BP1.dat'];
-singularity_file = [path_to_this_script, 'Data/testbruss_BP1.mat'];
-
 x = loadPoint(datafile);
-load(singularity_file, 's');
 hold on
-N = s(1).data.P0(1);
+N = singularities(1).data.P0(1);
 plot(x(2*N+1, :), x(1, :));
-for sii = s
-    plot(x(2*N+1, sii.index), x(1, sii.index), 'r.');
-    text(x(2*N+1, sii.index), x(1, sii.index), sii.label);
+for singularity = singularities
+  plot(x(2*N+1, singularity.index), x(1, singularity.index), 'r.');
+  text(x(2*N+1, singularity.index), x(1, singularity.index), singularity.label);
 end
 
 xlabel 'l'

@@ -38,23 +38,18 @@ for i=1:N
 end
 
 %% Continuation
-[x0,v0]      = init_EP_EP_L(@brusselator_1d, x0, p, ap1);
-contL(@equilibriumL,x0,v0,opt);
+[x0,v0]                   = init_EP_EP_L(@brusselator_1d, x0, p, ap1);
+[singularities, datafile] = contL(@equilibriumL,x0,v0,opt);
 
 %% Plot results
 
-path_to_this_script = get_path;
-datafile         = [path_to_this_script, 'Data/testbruss_HP0.dat'];
-singularity_file = [path_to_this_script, 'Data/testbruss_HP0.mat'];
-
 x = loadPoint(datafile);
-load(singularity_file, 's');
-N = s(1).data.P0(1);
+N = singularities(1).data.P0(1);
 plot(x(2*N+1, :), x(1, :));
 hold on
-for sii = s
-    plot(x(2*N+1, sii.index), x(1, sii.index), 'r.');
-    text(x(2*N+1, sii.index), x(1, sii.index), sii.label);
+for singularity = singularities
+  plot(x(2*N+1, singularity.index), x(1, singularity.index), 'r.');
+  text(x(2*N+1, singularity.index), x(1, singularity.index), singularity.label);
 end
 
 xlabel 'b'

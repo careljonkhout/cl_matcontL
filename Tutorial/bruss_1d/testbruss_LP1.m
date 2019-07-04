@@ -39,28 +39,25 @@ LP0_file = [path_to_this_script, 'Data/testbruss_LP0.mat'];
 load(LP0_file, 's');
 ap = [2, 3];
 ID = 2;
-if(strcmp(s(ID).label ,'LP'))
-  data = s(ID).data;
-  %
-  [x0,v0]      = init_LP_LP_L(@brusselator_1d, [], [], ap, data);
-  contL(@limitpointL,x0,v0,opt);
+if ~ strcmp(s(ID).label ,'LP')
+  error('No limit point found')
+end
 
-  %% Plot results
+data = s(ID).data;
+%
+[x0,v0]      = init_LP_LP_L(@brusselator_1d, [], [], ap, data);
+[singularities, datafile] = contL(@limitpointL,x0,v0,opt);
 
-  datafile         = [path_to_this_script 'Data/testbruss_LP1.dat'];
-  singularity_file = [path_to_this_script 'Data/testbruss_LP1.mat'];
+%% Plot results
 
-  x = loadPoint(datafile);
-  load(singularity_file, 's');
+x = loadPoint(datafile);
 
-    
-  plot(x(end-1, :), x(end, :))
-  hold on
-  for ii = 1:length(s)
-      xii = s(ii).data.x;
-      plot(xii(end-1), xii(end), 'r.')
-      text(xii(end-1), xii(end), s(ii).label)
-  end
-  xlabel 'l'
-  ylabel 'a'
-end    
+plot(x(end-1, :), x(end, :))
+hold on
+for i = 1:length(singularities)
+  xii = singularities(i).data.x;
+  plot(xii(end-1), xii(end), 'r.')
+  text(xii(end-1), xii(end), singularities(i).label)
+end
+xlabel 'l'
+ylabel 'a'   

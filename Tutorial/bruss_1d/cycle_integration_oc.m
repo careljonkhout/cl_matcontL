@@ -5,8 +5,6 @@ odefile = @brusselator_1d;
 N = 30;
 L = 0.52; A = 2; B = 5.45; Dx = 0.008; Dy = 0.004;
 ode_parameters = {N; L; A; B; Dx; Dy};
-clear global cds
-clear global lds
 
 format_string = 'Brusselator N:%d  L:%.2f  A:%.0f  B:%.2f  Dx:%.3f  Dy:%.3f\n';
 format_args   = {N; L; A; B; Dx; Dy;};
@@ -50,6 +48,24 @@ opt = contset( ...
     'newtcorrL_use_max_norm',       true, ...
     'PicardTolerance',              1e-8);
 
- close all
-[s, datafile] = contL(@limitcycleL, initial_continuation_data, [], opt, ...
-  'callback', @plot_T_versus_param); 
+% we open a plot window:
+figure
+% each line segment of the approximation of the curve is plotted separately
+% therefore, the plot has to "hold" the previously plotted line segments
+hold on
+% we set the axes labels
+xlabel('L')
+ylabel('period')
+title_format_string = 'Brusselator N:%d  A:%.0f  B:%.1f  Dx:%.3f  Dy:%.3f';
+title_format_args = {N,A,B,Dx,Dy};
+% we set the title of the plot.
+% the title has two lines
+title({'continuation from stable cycle - orthogonal collocation', ...
+       sprintf(title_format_string, title_format_args{:})});
+     
+[singularities, datafile] = contL(@limitcycleL, ...
+  initial_continuation_data, [], opt, 'callback', @plot_T_versus_param); 
+
+for singularity = singularities
+  plot_singularity_of_cycles(singularity)
+end

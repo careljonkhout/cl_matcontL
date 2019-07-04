@@ -6,6 +6,7 @@ function [x,v] = pdinit_cycle2(odefile, x, s, ap, ntst, ncol)
 if size(ap)~=[1 2]
     error('Two active parameters are needed for a Period Doubling bifurcation curve continuation');
 end
+clear global
 global cds lds
 
 % initialize lds

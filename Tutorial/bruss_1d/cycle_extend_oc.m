@@ -1,10 +1,6 @@
 % demonstration of how to extend a collocation continuation of a cycle.
 
-load([(get_path(), 'point_cycle_oc.mat'));
-
-
-L = 0.5; A = 2; B = 5.45; Dx = 0.008; Dy = 0.004;
-ode_parameters = {N L A B Dx Dy};
+load([get_path(), 'point_cycle_oc.mat']);
 
 
 init_collocation_extend_curve( ...

@@ -6,6 +6,7 @@ function [x0,v0] = initOrbLC_L(odefile, t, y, p, ap, ntst, ncol,tolerance)
 % (mumber of points x 1) and y (number of points x 3) 
 % 
 %
+clear global
 global cds lds 
 
 % check input
@@ -13,12 +14,13 @@ n_par = size(ap,2);
 if n_par~=1
     error('One active parameter and the period are needed for this limit cycle continuation');
 end
-lds = [];
+
 % initialize lds
+
+init_EP_EP_L(odefile,y(1,:)',p,ap); 
 if isempty(cds) || ~isfield(cds,'options')
     cds.options = contset();
 end
-init_EP_EP_L(odefile,y(1,:)',p,ap); 
 init_lds(odefile,y,p,ap,ntst,ncol);
 
 
@@ -97,6 +99,8 @@ elseif ~isempty(func_handles{7}),   symord = 3;
 elseif ~isempty(func_handles{5}),   symord = 2; 
 elseif ~isempty(func_handles{3}),   symord = 1; 
 end
+% todo: rewrite to such that we don't create a structure (cds.options) of which
+% 90% of the fields are redundant
 cds.options = contset(cds.options, 'SymDerivative', symord);
 siz = size(func_handles,2);
 if siz > 9

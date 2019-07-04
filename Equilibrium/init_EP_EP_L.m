@@ -1,10 +1,12 @@
 function [x0, v0] = init_EP_EP_L(probfile, x0, p, ap)
 %print_diag(5,'In init_EP_EP_L\n');
-
+  clear global
   global cds
   load_odefile(probfile)
 
   if isempty(x0)
+    handles = feval(probfile);
+    init_prob = handles{1}; 
     if ~isempty(init_prob)
       p2 = num2cell(p);
       x0 = feval(init_prob, p2{:});

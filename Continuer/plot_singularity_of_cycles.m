@@ -1,4 +1,4 @@
-function plot_singularity(s)
+function plot_singularity_of_cycles(s)
   persistent vertical_alignment
   if isempty(vertical_alignment)
     vertical_alignment = 'bottom';

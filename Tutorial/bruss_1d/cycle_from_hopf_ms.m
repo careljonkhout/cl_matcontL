@@ -2,8 +2,14 @@
 % using multiple shooting with Newton Picard
 
 % note: the current cl_matcontL implementation (june 2019) of multiple shooting
-% is quite slow, and in this example it is unnecessary. It is only necessary if
-% the cycle is really unstable. This file is just intended to show how to set up
+% with (or without) Newton-Picard is quite slow compared to orthogonal
+% collocation for systems of ODEs of up to 350 equations. This file is just
+% intended to show how to set up a multiple shooting continuation.
+
+% note: The cycle we will continue here is relatively stable. Therefore, we
+% could use single shooting instead of multiple shooting. Single shooting will
+% probably always be slightly faster than multiple shooting (regardless of the
+% size of the system of ODEs). This file is just intended to show how to set up
 % a multiple shooting continuation.
 
 format long
@@ -65,20 +71,26 @@ opts_h_lc = contset(opts_h_lc, ...
   'enable_nf_pd',           false, ...
   'contL_DiagnosticsLevel', 5, ...
   'console_output_level',   5, ...
-  'integration_abs_tol',    1e-8, ...
-  'integration_rel_tol',    1e-8, ...
+  'integration_abs_tol',    1e-9, ...
+  'integration_rel_tol',    1e-9, ...
   'FunTolerance',           1e-5, ...
-  'VarTolerance',           1e-5, ...
+  'VarTolerance',           1e-3, ...
   'NewtonPicard',           true);
 
 % we open a plot window:
 figure
+% each line segment of the approximation of the curve is plotted separately
+% therefore, the plot has to "hold" the previously plotted line segments
 hold on
-title_format_string = 'Brusselator N:%d  A:%.0f  B:%.1f  Dx:%.3f  Dy:%.3f';
-title_format_args = {N,A,B,Dx,Dy};
+% we set the axes labels
 xlabel('L')
 ylabel('period')
-title(sprintf(title_format_string, title_format_args{:}));
+title_format_string = 'Brusselator N:%d  A:%.0f  B:%.1f  Dx:%.3f  Dy:%.3f';
+title_format_args = {N,A,B,Dx,Dy};
+% we set the title of the plot.
+% the title has two lines
+title({'Cycle from Hopf - multiple shooting', ...
+       sprintf(title_format_string, title_format_args{:})});
 
 % we run the cycle continuation:
 singularities = contL(@multiple_shooting, x0, v0, opts_h_lc, 'callback', ...
@@ -86,15 +98,6 @@ singularities = contL(@multiple_shooting, x0, v0, opts_h_lc, 'callback', ...
                                         
 % after the continuation has finished, we plot the singularities:
 for singularity = singularities
-  plot_sing(singularity)
+  plot_singularity_of_cycles(singularity)
 end
-
-function plot_sing(s, varargin)
-  L = s.data.x(end);
-  T = s.data.x(end-1); % period of cycle
-  plot(L,T,'r*')
-  text(L,T,s.label,varargin{:})
-end
-
-
 

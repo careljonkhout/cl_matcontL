@@ -2,6 +2,7 @@ function [x0,v0]= init_H_H_L(probfile, u, p, ap, data)
 %
 % Initializes a Hopf bifurcation continuation from a Hopf point found 
 %
+clear global
 global cds
 
 % check input
