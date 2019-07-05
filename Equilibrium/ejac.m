@@ -10,7 +10,8 @@ if isfield(ejac_prev, 'point_x') && ~isempty(ejac_prev.point_x)
 end
    
 % compute jacobian
-if contopts.SymDerivative(1) && isfield(cds, 'Jacobian') && ~isempty(cds.Jacobian)
+if contopts.SymDerivative(1) && ...
+    isfield(cds, 'Jacobian') && ~isempty(cds.Jacobian)
     j = feval(cds.Jacobian, 0, x, p{:});
 else
     Incr = contopts.Increment;

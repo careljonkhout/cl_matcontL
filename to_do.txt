@@ -7,9 +7,9 @@ of the cl_matcontL code, is to document all the fields of cds lds, and eds.
 
 - in run_all_demos, run slow demos last
 
-- set filename explicitly in scripts
-
 - store ode parameter values in each point in single_shooting
+
+- store jacobian of bifurcations in mat file? especially hopf points?
 
 - remove and print before every point data header i.e.
              :  p(2)              period           point norm       curve func norm  step size
