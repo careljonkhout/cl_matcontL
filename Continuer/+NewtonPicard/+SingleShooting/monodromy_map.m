@@ -8,7 +8,7 @@ function Mx = monodromy_map(x, period, parameters, abs_tol, rel_tol)
     error( ['The number of input arguments to ' ...
       'NewtonPicard.SingleShooting.monodromy_map is not correct.\n' ...
       'The number of input arguments should be either 3 or 5.\n' ...
-      'The actual number of input arguments is %d.\n'], nargien);
+      'The actual number of input arguments is %d.\n'], nargin);
   end
   integration_opt = odeset(...
       'AbsTol',       abs_tol, ...
@@ -24,12 +24,20 @@ function Mx = monodromy_map(x, period, parameters, abs_tol, rel_tol)
     [~,orbit] = cds.integrator(dydt_mon, [0 period], x, integration_opt);
     Mx = orbit(end,:)';
   else
+    % Below an alternative method of computing the action of the monodromy
+    % matrix is implemented. Here, the action of the monodromy matrix is
+    % computed by finite differences. Seems to be faster than the method above.
+    % The error of the trivial multiplier is much larger when using finite
+    % differences.
+    %
+    % This method of computing the action of the monodromy matrix also makes
+    % continuation possible is the Jacobian of the system of ODEs is not
+    % available
+    
     integration_opt = odeset(...
       'AbsTol',       1e-13, ...
       'RelTol',       1e-13  ...
     ); 
-    % alternative method of applying the monodromy map to x:
-    % by finite differences. Seems to be faster, but accuracy is limited
     h = 5e-5;
     x_cycle = deval(cds.cycle_orbit,0);
     f  = @(t, x) cds.dydt_ode(0,x,parameters{:});

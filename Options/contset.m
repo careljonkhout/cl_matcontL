@@ -130,7 +130,7 @@ function options = defaultOptions()
   options.monodromy_by_finite_differences = false;
   % in case an analytic Jacobian of the system of ODEs is not available, a
   % continuation by single shooting with Newton-Picard can still be done by
-  % enabling, this option.
+  % enabling this option.
 
   % ActiveUParams
   % ActiveSParams

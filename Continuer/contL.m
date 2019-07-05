@@ -581,7 +581,7 @@ if isempty(v0)
     if contopts.newtcorrL_use_max_norm
       v0 = v0 / max(abs(v0));
     else
-      v0 = v0/norm(v0);
+      v0 = v0 / norm(v0);
     end
     
 end
