@@ -1,6 +1,6 @@
 function [sout, datafile] = contL(curvefile, x0, v_cont, opts, varargin)
 %
-% CONTINUE(cds.curve, x0, v0, options)
+% CONTINUE(curvefile, x0, v0, options)
 %
 % Continues the curve from x0 with optional directional vector v0
 % options is a option-vector created with CONTSET

@@ -136,7 +136,6 @@ end
 
 function [continuation_state, continuation_tangent] = ...
                                     do_init_collocation_extend_curve(in)
-
   global lds cds
   
   cds = [];

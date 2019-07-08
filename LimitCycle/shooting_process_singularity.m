@@ -37,13 +37,12 @@ function [failed,s] = shooting_process_singularity(id,point,s)
       s.msg = 'Neutral saddle cycle';
       format_string = 'Neutral Saddle Cycle (period = %e, parameter = %e)\n';
       % A neutral saddle is not really a bifurcation
-      print_diag(0, format_string, x(end-1), x(end));
+      print_diag(1, format_string, x(end-1), x(end));
     else
       s.msg = 'Neimark Sacker';
       format_string = 'Neimark-Sacker (period = %e, parameter = %e)\n';
       print_diag(0, format_string, x(end-1) ,x(end));
-      %print_diag(0, 'Normal form coefficient = %d\n', s.data.nscoefficient);
     end
   end
-  failed = 0;
+  failed = false;
 end  

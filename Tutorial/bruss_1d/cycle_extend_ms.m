@@ -40,7 +40,15 @@ opts = contset( ...
   'enable_nf_pd',           false);
 
 
-singularities = contL(@multiple_shooting, point.x, point.v, opts);
+global cds
+
+figure
+title('Extended continuation of cycles using multiple shooting')
+
+cds.singularity_callback = @plot_singularity_of_cycles;
+
+singularities = contL(@multiple_shooting, point.x, point.v, opts, ...
+                      'callback', @plot_T_versus_param);
 
 
 

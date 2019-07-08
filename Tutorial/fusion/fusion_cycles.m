@@ -46,5 +46,9 @@ options = contset( ...
 global cds
 cds.singularity_callback = @plot_singularity_of_cycles;
 
+figure
+hold on
+title('fusion - continuation of cycles from stable cycle');
+
 contL(@limitcycleL, initial_continuation_data, [], options, ...
                    'callback', @plot_T_versus_param);

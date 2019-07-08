@@ -31,7 +31,8 @@ function init_single_shooting_extend_curve(varargin)
 end
 
 function do_init_single_shooting_extend_curve(in)
-    
+  
+  clear global
   global cds  
   handles                = feval(in.odefile);
   dydt_ode               = handles{2};

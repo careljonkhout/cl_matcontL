@@ -193,7 +193,7 @@ function point = default_processor(varargin)
                                                            parameter_values{:});
 
   point = adjust_basis_size(point);
-  savePoint(point);
+  savePoint(point, varargin{2:end});
 end
 %-------------------------------------------------------------------------------
 function options

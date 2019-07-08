@@ -173,6 +173,7 @@ end
 function init(~,~); end
 %-------------------------------------------------------------------------------
 function out = default_processor(varargin)
+  % todo: try to make function arguments explicit
   global cds contopts
   point = varargin{1};
   
