@@ -30,15 +30,10 @@ N = 200; L = 12; A = 4; B = 17.1; Dx = 1; Dy = 2;
 p = [N; L; A; B; Dx; Dy];
 ap1 = 4;
 
-% construct starting point
-x0 = zeros(2*N,1);
-for i=1:N
-  x0(i)   = A; 
-  x0(N+i) = B/A;
-end
 
 %% Continuation
-[x0,v0]                   = init_EP_EP_L(@brusselator_1d, x0, p, ap1);
+problem_file              = @Brusselator_1d.homogeneous_x0;
+[x0,v0]                   = init_EP_EP_L(problem_file, [], p, ap1);
 [singularities, datafile] = contL(@equilibriumL,x0,v0,opt);
 
 %% Plot results

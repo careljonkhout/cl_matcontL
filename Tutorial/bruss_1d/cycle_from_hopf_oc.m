@@ -1,18 +1,17 @@
 % continuation of cycles in the Brusselator using orthogonal collocation
 
-odefile = @brusselator_1d;
+problem_file = @Brusselator_1d.homogeneous_x0;
 % N is the number of mesh points of the discretization of the system of PDE's
 N = 31; 
 % other parameters of the system of ODEs:
 L = 0.5; A = 2; B = 5.45; Dx = 0.008; Dy = 0.004;
 ode_parameters = [N L A B Dx Dy];
 
-% x0 will be the trivial equilibrium which will be continued to find Hopf points
-x0=[ones(N,1)*A; ones(N,1)*B/A];
+
 % the continuation will be with respect to the second parameter:
 active_parameter = 2;
 % we run the initializer for an equilibrium continuation:
-[x0,v0] = init_EP_EP_L(odefile,x0,ode_parameters,active_parameter);
+[x0,v0] = init_EP_EP_L(problem_file,[],ode_parameters,active_parameter);
 
 
 % we set the options for the equilibrium continuation:
@@ -43,7 +42,7 @@ ncol = 4;
 % We run the initializer for continuation of cycles by collocation from a Hopf
 % point:
 [x0, v0] = init_collocation_from_hopf(...
-            odefile, x, ode_parameters, active_parameter, h, ntst, ncol);
+            problem_file, x, ode_parameters, active_parameter, h, ntst, ncol);
 
 % We specify the options for the cycle continuation.
 opts_h_lc = contset( ...
@@ -58,7 +57,8 @@ opts_h_lc = contset( ...
   'enable_nf_lpc',          false, ...
   'enable_nf_pd',           false, ...
   'contL_DiagnosticsLevel', 0, ...
-  'console_output_level',   0);
+  'console_output_level',   0, ...
+  'singularity_callback',   @plot_singularity_of_cycles);
 
 % we open a plot window:
 figure
@@ -77,12 +77,8 @@ title({'Cycle from Hopf - orthogonal collocation', ...
 
 
 % we run the cycle continuation:
-singularities = contL(@limitcycleL, x0, v0, opts_h_lc, 'callback', ...
-                                          @plot_T_versus_param);
-% we plot the singularities
-for singularity = singularities
-  plot_singularity_of_cycles(singularity)
-end
+contL(@limitcycleL, x0, v0, opts_h_lc, 'callback', @plot_T_versus_param);
+
 
 
 

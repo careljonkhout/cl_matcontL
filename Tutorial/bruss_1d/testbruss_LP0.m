@@ -40,7 +40,9 @@ N = 500; L = 0.06; A = 2; B = 4.6; Dx = 0.0016; Dy = 0.008;
 p = [N, L, A, B, Dx, Dy];
 ap1 = 2;
 
-[x0,v0]                   = init_EP_EP_L(@brusselator_1d, [], p, ap1);
+problem_file = @Brusselator_1d.heterogeneous_x0;
+
+[x0,v0]                   = init_EP_EP_L(problem_file, [], p, ap1);
 [singularities, datafile] = contL(@equilibriumL,x0,v0,opt);
 
 x = loadPoint(datafile);

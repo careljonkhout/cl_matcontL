@@ -16,18 +16,17 @@ format long
 format compact
 clear global
 
-odefile = @brusselator_1d;
+problem_file = @Brusselator_1d.homogeneous_x0;
 % parameters for the system of ODEs:
 N = 15;
 L = 0.5; A = 2; B = 5.45; Dx = 0.008; Dy = 0.004;
 ode_parameters = [N L A B Dx Dy];
 
 % x0 will be the trivial equilibrium which will be continued to find Hopf points
-x0=[ones(N,1)*A; ones(N,1)*B/A];
 % the continuation will be with respect to the second parameter:
 active_parameter = 2;
 % we run the initializer for an equilibrium continuation:
-[x0,v0] = init_EP_EP_L(odefile,x0,ode_parameters,active_parameter);
+[x0,v0] = init_EP_EP_L(problem_file,[],ode_parameters,active_parameter);
 
 
 % we set the options for the equilibrium continuation:
@@ -53,7 +52,7 @@ subspace_size = floor(N/2);
 nMeshIntervals = 2;
 
 % we run the initializer for continuation of cycles using single shooting:
-[x0, v0] = init_multiple_shooting_from_hopf(odefile, x, ...
+[x0, v0] = init_multiple_shooting_from_hopf(problem_file, x, ...
             ode_parameters, active_parameter, h, nMeshIntervals, subspace_size);
 
 % we specify the options for the continuation of cycles using single shooting:
@@ -75,8 +74,8 @@ opts_h_lc = contset(opts_h_lc, ...
   'integration_rel_tol',    1e-9, ...
   'FunTolerance',           1e-5, ...
   'VarTolerance',           1e-3, ...
-  'NewtonPicard',           true);
-
+  'NewtonPicard',           true, ...
+  'singularity_callback',   @plot_singularity_of_cycles);
 % we open a plot window:
 figure
 % each line segment of the approximation of the curve is plotted separately
@@ -93,11 +92,6 @@ title({'Cycle from Hopf - multiple shooting', ...
        sprintf(title_format_string, title_format_args{:})});
 
 % we run the cycle continuation:
-singularities = contL(@multiple_shooting, x0, v0, opts_h_lc, 'callback', ...
-                                          @plot_T_versus_param);
-                                        
-% after the continuation has finished, we plot the singularities:
-for singularity = singularities
-  plot_singularity_of_cycles(singularity)
-end
+contL(@multiple_shooting, x0, v0, opts_h_lc, 'callback', @plot_T_versus_param);
+
 

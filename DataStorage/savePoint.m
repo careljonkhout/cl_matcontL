@@ -77,9 +77,8 @@ function [ failed ] = savePoint( varargin )
         disp(e.stack)
       end
       
-      if       isfield(cds, 'singularity_callback') ...
-          && ~ isempty(cds.singularity_callback)
-        cds.singularity_callback(s)
+      if ~ isempty(contopts.singularity_callback)
+        contopts.singularity_callback(s)
       end
 
       s = cds.sout;

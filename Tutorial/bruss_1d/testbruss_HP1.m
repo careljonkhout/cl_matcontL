@@ -44,7 +44,8 @@ end
 data = s(ID).data;
 
 %% Continuation
-[x0,v0] = init_H_H_L(@brusselator_1d, [], [], active_parameter_indices, data);
+problem_file = @Brusselator_1d.heterogeneous_x0;
+[x0,v0] = init_H_H_L(problem_file, [], [], active_parameter_indices, data);
 [singularities, datafile] = contL(@hopfL,x0,v0,opt);
 
 

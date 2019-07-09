@@ -1,7 +1,3 @@
-% if you get the error: Error using get_latest_point_file (line 4)
-% No .mat files were found in ... /cl_matcontL/Tutorial/fusion/Data/fusion_cycles.
-% run fusion_cycles.m first
-
 N = 25;                     
 odefile = str2func(sprintf('fusion_precomputed_with_sage_N_%d', N));
 
@@ -47,8 +43,14 @@ opt = contset(opt,  ...
                    'enable_nf_ns',            false, ...
                    'initial_point_index',     point_index, ...
                    'Filename',                subdirectory, ...
-                   'set_direction',           false);
+                   'set_direction',           false, ...
+                   'singularity_callback',    @plot_singularity_of_cycles);
 
+figure
+hold on
+title('fusion - extenstion of continuation');
+xlabel('q_{inf}')
+ylabel('period')
  
 
-contL(@limitcycleL, point.x, point.v, opt);
+contL(@limitcycleL, point.x, point.v, opt,'callback', @plot_T_versus_param);

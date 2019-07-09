@@ -10,8 +10,8 @@ function plot_T_versus_param(currpoint, trialpoint)
   curr_param  = currpoint.x(end);
   trial_param = trialpoint.x(end);
   
-%  print_diag(2,'\nplotting: [%.3e %.3e]  [%.3e %.3e] \n\n', ...
-%                [curr_param trial_param],[curr_T trial_T])
+  %print_diag(3,'\nplotting: [%.3e %.3e]  [%.3e %.3e] \n\n', ...
+  %              [curr_param trial_param],[curr_T trial_T])
   plot([curr_param trial_param],[curr_T trial_T],'b');
-  drawnow
+  drawnow limitrate
 end

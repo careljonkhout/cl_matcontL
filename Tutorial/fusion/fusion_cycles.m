@@ -1,5 +1,4 @@
 % continuation of cycles in fusion system.
-clc
 clear global
 N = 25;                     
 odefile = str2func(sprintf('fusion_precomputed_with_sage_N_%d', N));
@@ -41,7 +40,9 @@ options = contset( ...
   'contL_SmoothingAngle',    1, ...
   'enable_nf_pd',            false, ...
   'enable_nf_lpc',           true, ...
-  'enable_nf_ns',            false);
+  'enable_nf_ns',            false, ...
+  'singularity_callback',    @plot_singularity_of_cycles);
+
 
 global cds
 cds.singularity_callback = @plot_singularity_of_cycles;
@@ -49,6 +50,8 @@ cds.singularity_callback = @plot_singularity_of_cycles;
 figure
 hold on
 title('fusion - continuation of cycles from stable cycle');
+xlabel('q_{inf}')
+ylabel('period')
 
 contL(@limitcycleL, initial_continuation_data, [], options, ...
                    'callback', @plot_T_versus_param);

@@ -205,6 +205,7 @@ function options = defaultOptions()
   options.integration_rel_tol               = 1e-9;
   options.multipliers_abs_tol               = 1e-9;
   options.multipliers_rel_tol               = 1e-9;
+  options.singularity_callback              = [];
 
 
   options.basis_grow_threshold              = 7e-1;

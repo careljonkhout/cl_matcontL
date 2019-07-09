@@ -42,7 +42,8 @@ data = s(ID).data;
 ap1  = 3;
 x = data.x(1:end-1);
 
-[x0,v0]      = init_EP_EP_L(@brusselator_1d, x, data.P0, ap1);
+problem_file              = @Brusselator_1d.heterogeneous_x0;
+[x0,v0]                   = init_EP_EP_L(problem_file, x, data.P0, ap1);
 [singularities, datafile] = contL(@equilibriumL,x0,v0,opt);
 
 x = loadPoint(datafile);

@@ -10,18 +10,16 @@ format long
 format compact
 clear global
 
-odefile = @brusselator_1d;
+problem_file = @Brusselator_1d.homogeneous_x0;
 % parameters for the system of ODEs:
 N = 20;
 L = 0.5; A = 2; B = 5.45; Dx = 0.008; Dy = 0.004;
 ode_parameters = [N L A B Dx Dy];
 
-% x0 will be the trivial equilibrium which will be continued to find Hopf points
-x0=[ones(N,1)*A; ones(N,1)*B/A];
 % the continuation will be with respect to the second parameter:
 active_parameter = 2;
 % we run the initializer for an equilibrium continuation:
-[x0,v0] = init_EP_EP_L(odefile,x0,ode_parameters,active_parameter);
+[x0,v0] = init_EP_EP_L(problem_file,[],ode_parameters,active_parameter);
 
 
 % we set the options for the equilibrium continuation:
@@ -46,7 +44,7 @@ subspace_size = 7;
 
 % we run the initializer for continuation of cycles using single shooting:
 [x0, v0] = init_single_shooting_from_hopf(...
-    odefile, x, ode_parameters, active_parameter, h, subspace_size);
+    problem_file, x, ode_parameters, active_parameter, h, subspace_size);
 
 % we specify the options for the continuation of cycles using single shooting:
 opts_h_lc = contset();
@@ -67,7 +65,8 @@ opts_h_lc = contset(opts_h_lc, ...
   'integration_rel_tol',    1e-9, ...
   'FunTolerance',           1e-5, ...
   'VarTolerance',           1e-3, ...
-  'NewtonPicard',           true);
+  'NewtonPicard',           true, ...
+  'singularity_callback',   @plot_singularity_of_cycles);
 
 % we open a plot window:
 figure
@@ -86,12 +85,8 @@ title({'Cycle from Hopf - single shooting', ...
 
 
 % we run the cycle continuation:
-singularities = contL(@single_shooting, x0, v0, opts_h_lc, 'callback', ...
-                                          @plot_T_versus_param);
-                                        
-for singularity = singularities
-  plot_singularity_of_cycles(singularity)
-end
+contL(@single_shooting, x0, v0, opts_h_lc, 'callback',@plot_T_versus_param);
+
 
 
 

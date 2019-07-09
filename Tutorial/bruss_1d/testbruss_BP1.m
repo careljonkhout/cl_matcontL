@@ -41,7 +41,8 @@ if ~ strcmp(s(ID).label,'BP')
 end
 
 data                      = s(ID).data;
-[x0,v0]                   = init_BP_EP_L(@brusselator_1d, [], [], [], data);
+problem_file              = @Brusselator_1d.heterogeneous_x0;
+[x0,v0]                   = init_BP_EP_L(problem_file, [], [], [], data);
 [singularities, datafile] = contL(@equilibriumL,x0,v0,opt);
 
 %% Plot results

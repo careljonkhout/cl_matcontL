@@ -45,7 +45,9 @@ end
 
 data = s(ID).data;
 %
-[x0,v0]      = init_LP_LP_L(@brusselator_1d, [], [], ap, data);
+problem_file = @Brusselator_1d.heterogeneous_x0;
+
+[x0,v0]      = init_LP_LP_L(problem_file, [], [], ap, data);
 [singularities, datafile] = contL(@limitpointL,x0,v0,opt);
 
 %% Plot results
