@@ -243,7 +243,7 @@ function out = default_processor(varargin)
                                     cds.previous_phases,parameter_values{:});
   
   out                           = point;
-  point.paramters_values        = parameter_values;
+  point.parameter_values        = cell2mat(parameter_values);
   savePoint(point, varargin{2:end});
 end
 %-------------------------------------------------------------------------------

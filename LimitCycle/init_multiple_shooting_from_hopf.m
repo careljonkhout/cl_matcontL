@@ -25,8 +25,11 @@ function [x0, v0] = init_multiple_shooting_from_hopf( odefile, x, ...
     ode_parameters = num2cell(ode_parameters);
   end
   
-  A = jacobian_ode(0, x(1:end-1), ode_parameters{:});
-  
+  if isempty(jacobian_ode)
+    A = ejac(x(1:end-1), ode_parameters);
+  else
+    A = jacobian_ode(0, x(1:end-1), ode_parameters{:});
+  end
   
   % calculate eigenvalues and eigenvectors
   [V,D] = eigs(A, cds.nphases);

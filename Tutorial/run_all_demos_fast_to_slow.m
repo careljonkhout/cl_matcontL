@@ -60,9 +60,12 @@ try
       disp(' ')
       run([path_to_this_script directory.name '/' directory.files{i}])
       drawnow limitrate
-   %   pause on 
-   %   pause(0.3)
-   %   pause off
+      % sometimes the repeated plot commands in all the demos fail to produce
+      % output or write to the wrong plot, therefore we pause to reduce the
+      % chance of this happening.
+      pause on 
+      pause(0.3)
+      pause off
     end
   end
 catch exception

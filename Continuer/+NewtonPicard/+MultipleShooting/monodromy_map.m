@@ -21,12 +21,43 @@ function Mx  = monodromy_map(i, phases_0, time_interval, parameters, ...
     'Jacobian',     @(t,y) feval(cds.jacobian_ode, ...
                       t, deval(cds.orbits(i),t), parameters{:}) ...
   );
+  if ~ contopts.monodromy_by_finite_differences
+    dydt_mon = @(t, y) ...
+      cds.jacobian_ode(t, deval(cds.orbits(i), t), parameters{:}) * y;
 
-  dydt_mon = @(t, y) ...
-    cds.jacobian_ode(t, deval(cds.orbits(i), t), parameters{:}) * y;
-  
-  [~,orbit] = cds.integrator(...
-    dydt_mon, [0 time_interval], phases_0, int_opt);
-  
-  Mx = orbit(end,:)';
+    [~,orbit] = cds.integrator(...
+      dydt_mon, [0 time_interval], phases_0, int_opt);
+
+    Mx = orbit(end,:)';
+  else 
+    % Below an alternative method of computing the action of the monodromy
+    % matrix is implemented. Here, the action of the monodromy matrix is
+    % computed by finite differences. Seems to be faster than the method above.
+    % The error of the trivial multiplier is much larger when using finite
+    % differences.
+    %
+    % This method of computing the action of the monodromy matrix also makes
+    % continuation possible is the Jacobian of the system of ODEs is not
+    % available
+    
+    integration_opt = odeset(...
+      'AbsTol',       1e-13, ...
+      'RelTol',       1e-13  ...
+    ); 
+    h = 5e-5;
+    x_cycle = deval(cds.orbits(i),0);
+    f  = @(t, x) cds.dydt_ode(0,x,parameters{:});
+    ff = @(t, x1_and_x2) [f(0, x1_and_x2(1:cds.nphases    ))
+                          f(0, x1_and_x2(  cds.nphases+1:end))];
+    [~, orbit] = ode15s(ff, ...
+      [0 time_interval], ...
+      [x_cycle - h * phases_0; x_cycle+h * phases_0], ...
+      integration_opt);
+    
+    phi_x1__and__phi_x2 = orbit(end,:)';
+    phi_x1 = phi_x1__and__phi_x2(1:cds.nphases);
+    phi_x2 = phi_x1__and__phi_x2(cds.nphases+1:end);
+    
+    Mx = (phi_x2 - phi_x1)/h/2; 
+  end
 end

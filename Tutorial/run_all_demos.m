@@ -32,21 +32,26 @@ function run_all_demos(disable_pause_reset)
       end
 
       my_path = [directory.folder '/' directory.name];
-      files   = dir(my_path);
+      files   = flip(dir(my_path));
 
       for j = 1:length(files)
         filename = files(j).name;
         if length(filename) > 2 && strcmpi(filename(end-1:end), '.m')
           disp(' ')
-          disp(repmat('+',2,80))
+          disp(repmat('+', 2, 80))
           disp(' ')
           disp(['     Now running:         ' directory.name '/' filename])
           disp(' ')
-          disp(repmat('+',2,80))
+          disp(repmat('+', 2, 80))
           disp(' ')
           run([my_path '/' filename])
           drawnow
-
+          % sometimes the repeated plot commands in all the demos fail to
+          % produce output or write to the wrong plot, therefore we pause to
+          % reduce the chance of this happening.
+          pause on 
+          pause(0.3)
+          pause off
         end
       end
     end
