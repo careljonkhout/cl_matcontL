@@ -1,10 +1,8 @@
-N = 25;
+N = 3;
 
 handles = fusion_symbolic();
 
 dydt = handles{2};
-
-load('fusion_standard_parameters')
 
 L         = 10;
 cn        = 1.1;
@@ -32,11 +30,6 @@ tic
 oldVal = sympref('FloatingPointOutput',true);
 dydt_sym = simplify(dydt_sym);
 toc
-%my_jacobian    = jacobian(dydt_sym, xxxxx);
-%size(char(my_jacobian))
-%simplified_jac = simplify(my_jacobian, 'Seconds', 2);
-%size(char(simplified_jac))
-%my_hessian     = hessian(dydt_sym, xxxxx);
 vars = char(y);
 vars = vars(10:end-3);
 
