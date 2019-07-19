@@ -1,5 +1,5 @@
 function [x0,v0] = init_collocation_from_hopf( ...
-                    odefile, x, p, ap, h, ntst, ncol)
+                    odefile, x, parameters, active_parameter_indices, h, ntst, ncol)
 
 %
 % [x0,v0] = init_H_LC(odefile,x,p,ap,h,dp,ntst,ncol)
@@ -7,13 +7,21 @@ function [x0,v0] = init_collocation_from_hopf( ...
 % Initializes a limit cycle continuation from a Hopf point
 % 
 %
-global cds lds eds hds 
+clear global
+global cds lds eds
+
 % check input
-n_par = size(ap,2);
-if n_par ~= 1 && n_par ~= 2
+nap = size(active_parameter_indices,2);
+if nap ~= 1 && nap ~= 2
     error(['One active parameter and the period or 2 active ' ...
       'parameters are needed for limit cycle continuation']);
 end
+
+cds.P0           = parameters;
+cds.ActiveParams = active_parameter_indices;
+cds.nap          = length(active_parameter_indices);
+cds.ncoo         = length(x) - cds.nap;
+
 lds = [];
 cds.options = contset();
 
@@ -25,16 +33,13 @@ cds.curve_jacobian = curvehandles{4};
 cds.curve_hessians = curvehandles{5};
 
 func_handles = feval(odefile);
+load_odefile(odefile);
 eds.func = func_handles{2};
 eds.Jacobian  = func_handles{3};
 eds.JacobianP = func_handles{4};
 
-
-if ~isfield(cds,'ActiveParams')
-    init_EP_EP_L(odefile,x,p,ap); 
-end
 x = x(1:end-1);
-init_lds(odefile,x,p,ap,ntst,ncol);
+init_lds(odefile,x,parameters,active_parameter_indices,ntst,ncol);
 
 func_handles = feval(odefile);
 symord = 0; 
@@ -54,12 +59,12 @@ cds.options = contset(cds.options, 'SymDerivativeP', symordp);
 cds.symjac = 1;
 cds.symhess = 0;
 
-lds.P0 = p;
+lds.P0 = parameters;
 
 cds.oldJac = [];
 cds.oldJacX = [];
 
-xp = [x;p(ap)];
+xp = [x;parameters(active_parameter_indices)];
 
 % check parameters
 
@@ -70,12 +75,9 @@ xp = [x;p(ap)];
 cds.ndim_odep = length(xp);                 %MP 2018
 
 
-p = num2cell(p);
-if ~isempty(hds)
-    A = cjac(hds.func,hds.Jacobian,x,p,hds.ActiveParams);
-else
-    A = cjac(cds.curve_func,cds.curve_jacobian,xp,[]);
-end
+parameters = num2cell(parameters);
+
+A = cjac(cds.curve_func,cds.curve_jacobian,xp,[]);
 cds.curve = @limitcycleL;
 nphase = length(x);
 A = A(1:nphase,1:nphase);
@@ -113,10 +115,10 @@ Q = Q/norm(real(Q));
 t = kron(exp(2*pi*1i*lds.finemsh),Q);
 lds.upoldp = -imag(t);
 v0 = [real(t(:));0;0];
-if n_par==1
-  x0 = [repmat(x,lds.tps,1);2*pi/omega;p{lds.ActiveParams}]+h*v0;
+if nap==1
+  x0 = [repmat(x,lds.tps,1);2*pi/omega;parameters{lds.ActiveParams}]+h*v0;
 else    
-  x0 = [repmat(x,lds.tps,1);p{lds.ActiveParams(1)};p{lds.ActiveParams(2)}]+h*v0;
+  x0 = [repmat(x,lds.tps,1);parameters{lds.ActiveParams(1)};parameters{lds.ActiveParams(2)}]+h*v0;
 end
 lds.T = 2*pi/omega;
 v0 = v0/norm(v0);

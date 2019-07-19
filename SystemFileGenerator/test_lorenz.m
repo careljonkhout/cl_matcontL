@@ -2,7 +2,7 @@ name = 'lorenz';
 vars = 'x y z';
 pars = 'sigma r b';
 time = 't';
-max_ord = 0;
+max_ord = 1;
 rhs = {
   'sigma * (-x + y)'
   'r*x - y - x*z'

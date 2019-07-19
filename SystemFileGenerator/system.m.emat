@@ -23,7 +23,7 @@ out{15}= @x5;
 %#ok<*INUSL>
 
 % --------------------------------------------------------------------------
-function dydt = fun_eval(t,xxxxx, <%= s.parameter_arguments %>)
+function dydt = fun_eval(t,y, <%= s.parameter_arguments %>)
 dydt=<%= s.formatted_rhs %>;
 % --------------------------------------------------------------------------
 function options = init()
@@ -33,34 +33,34 @@ options = odeset(...
   'Hessians', handles(5), 'HessiansP', handles(6));
 
 % --------------------------------------------------------------------------
-function jac = jacobian(t, xxxxx, <%= s.parameter_arguments %>)
+function jac = jacobian(t, y, <%= s.parameter_arguments %>)
 jac = <%= s.jacobian %>;
 % --------------------------------------------------------------------------
-function jacp=jacobian_params(t, xxxxx, <%= s.parameter_arguments %>)
-jacp = <%= s.jacobian_for_parameters %>;
+function jacp=jacobian_params(t, y, <%= s.parameter_arguments %>)
+jacp = <%= s.jacobian_params %>;
 % --------------------------------------------------------------------------
-function hess = hessians(t, xxxxx, <%= s.parameter_arguments %>)
+function hess = hessians(t, y, <%= s.parameter_arguments %>)
 hess = <%= s.hessians %>;
 % --------------------------------------------------------------------------
-function hessp = hessians_params(t, xxxxx, <%= s.parameter_arguments %>)
-hessp = <%= s.hessians_for_parameters %>;
+function hessp = hessians_params(t, y, <%= s.parameter_arguments %>)
+hessp = <%= s.hessians_params %>;
 %---------------------------------------------------------------------------
-function d = third_order_derivatives(t, xxxxx, <%= s.parameter_arguments %>)
+function d = third_order_derivatives(t, y, <%= s.parameter_arguments %>)
 d = <%= s.third_order_derivatives %>;
 %---------------------------------------------------------------------------
-function d = fourth_order_derivatives(t, xxxxx, <%= s.parameter_arguments %>)
+function d = fourth_order_derivatives(t, y, <%= s.parameter_arguments %>)
 d = <%= s.fourth_order_derivatives %>;
 %---------------------------------------------------------------------------
-function d = fifth_order_derivatives(t, xxxxx, <%= s.parameter_arguments %>)
+function d = fifth_order_derivatives(t, y, <%= s.parameter_arguments %>)
 d = <%= s.fifth_order_derivatives %>;
 
-function userfun1=x1(t, xxxxx, <%= s.parameter_arguments %>)
+function userfun1=x1(t, y, <%= s.parameter_arguments %>)
 	userfun1=0;
-function userfun2=x2(t, xxxxx, <%= s.parameter_arguments %>)
+function userfun2=x2(t, y, <%= s.parameter_arguments %>)
 	userfun2=0;
-function userfun3=x3(t, xxxxx, <%= s.parameter_arguments %>)
+function userfun3=x3(t, y, <%= s.parameter_arguments %>)
 	userfun3=0;
-function userfun4=x4(t, xxxxx, <%= s.parameter_arguments %>)
+function userfun4=x4(t, y, <%= s.parameter_arguments %>)
 	userfun4=0;
-function userfun5=x5(t, xxxxx, <%= s.parameter_arguments %>)
+function userfun5=x5(t, y, <%= s.parameter_arguments %>)
 	userfun5=0;

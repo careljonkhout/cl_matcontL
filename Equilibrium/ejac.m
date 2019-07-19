@@ -10,14 +10,17 @@ if isfield(ejac_prev, 'point_x') && ~isempty(ejac_prev.point_x)
 end
    
 % compute jacobian
-if contopts.SymDerivative(1) && ...
-    isfield(cds, 'Jacobian') && ~isempty(cds.Jacobian)
+if isfield(cds, 'Jacobian') && ~isempty(cds.Jacobian)
     j = feval(cds.Jacobian, 0, x, p{:});
 else
-    Incr = contopts.Increment;
+    opts = contopts;
+    if isempty(opts)
+      opts = contset();
+    end
+    Incr = opts.Increment;
     func = cds.func;
     j = zeros(cds.ncoo);
-    if contopts.contL_ParallelComputing
+    if opts.contL_ParallelComputing
         parfor i=1:cds.ncoo
             x1 = x; x1(i) = x1(i)-Incr;
             x2 = x; x2(i) = x2(i)+Incr;

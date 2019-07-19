@@ -13,7 +13,7 @@
 % written by Carel Jonkhout, note: this method is NOT documented in my master
 % thesis
 function full_solution = linear_solver_collocation(J,b)
-  global lds
+  global lds contopts
 
   ntst   = lds.ntst;
   ncol   = lds.ncol;
@@ -170,7 +170,13 @@ function full_solution = linear_solver_collocation(J,b)
   end
  
 %  spy(condensed_system)
-  cond_sol = sparse(condensed_system) \ condensed_b;
+  if ~ isempty(contopts.lsqminnorm_threshold)
+    cond_sol = lsqminnorm(sparse(condensed_system),condensed_b, ...
+                                                 contopts.lsqminnorm_threshold);
+  else
+    cond_sol = sparse(condensed_system)\ condensed_b;
+  end
+
   
   full_solution = zeros((ntst * ncol + 1) * nphase + 2, 1);
   full_solution_indices      = (1:nphase);
@@ -222,7 +228,15 @@ function full_solution = linear_solver_collocation(J,b)
       j_col_indices_B         = j_col_indices_B   + ncol * nphase;
     end
    
-    full_solution(indices_middle) = rhs \ lhs;
+    if ~ isempty(contopts.lsqminnorm_threshold)
+      full_solution(indices_middle) = lsqminnorm(rhs, lhs, ...
+                                                 contopts.lsqminnorm_threshold);
+    else
+      full_solution(indices_middle) = rhs\lhs;
+    end
+    
+    %full_solution(indices_middle) = lsqminnorm(rhs,lhs,1e-3);
+    full_solution(indices_middle) = rhs\lhs;
       
    % assert(all(abs(full_solution(indices_middle)-alt_sol) < 1e-14));
     

@@ -94,7 +94,8 @@ x0 = Y(end, :)';
 end
 
 % --------------------------------------------------------------------------
-function [ dydt ] = nonuniformGrid(t, y , N, Gamma_inf, q_inf, D0, D1, D2, a, b, zeta, mu, epsilon, ZS, gamma, lambdan, lambdaT, cn, cT)
+function [ dydt ] = nonuniformGrid(~, y , N, Gamma_inf, q_inf, D0, D1, D2, a, b, zeta, mu, epsilon, ZS, gamma, lambdan, lambdaT, cn, cT)
+% unused parameter is t
 
 L = 10;
 h = makeGrid(N, L, 3, 1e-5);
@@ -113,9 +114,9 @@ U = y(2:3:3*M);
 T = (gamma - 1) * U ./ n;
 Z = y(3:3:3*M);
 
-dndt =  sym('dndt', [(N-1), 1]);
-dUdt =  sym('dUdt', [(N-1), 1]);
-dZdt =  sym('dZdt', [(N-1), 1]);
+dndt =  sym(zeros(N-1, 1));
+dUdt =  sym(zeros(N-1, 1));
+dZdt =  sym(zeros(N-1, 1));
 
 % boundary conditions x = 0
 h1 = h(1);

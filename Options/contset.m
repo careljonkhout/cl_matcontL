@@ -9,7 +9,7 @@ function opt = contset(varargin)
       opt = varargin{1};
       i = 2;
     else
-      error(['The function conset received an invalid options structure as' ...
+      error(['The function conset received an invalid options structure as ' ...
              'it''s first argument'])
     end
   else
@@ -99,6 +99,7 @@ function options = defaultOptions()
   options.MaxCorrIters   =  10;         % Maximum number of correction steps   DV: old name 'Cont_MaxCorrIters'
   options.MaxNewtonIters =   3;         % Maximum number of times that the jacobian is computed per continuation step DV: old name 'Cont_MaxNewtonIters'
   % MaxTestIters (SUPPORTED: see locator options below)
+  options.max_rel_funcnorm_increase = 20;    % maximum relative increase in function norm that does not lead to corrections being aborted
   options.MoorePenrose   =   1;         % Solver to be used   DV: old name 'Cont_Solver' 
   options.SymDerivative  = [1 1 1 1 1]; % ADDED Boolen Array indicating whether symbolic derivaties are used (when supplied in problem file)
   options.SymDerivativeP = [1 1];       % ADDED Boolen Array indicating whether symbolic derivaties are used (when supplied in problem file)
@@ -168,7 +169,11 @@ function options = defaultOptions()
   options.contL_Loc_VarTolerance   = 1e-4;
 
                               %% limitcycle options
-
+  options.lsqminnorm_threshold      = [];
+  % if lsqminnorm_threshold is set, the linear_solver_collocation will use
+  % lsqminnorm instead of "\" to solve linear systems, ignoring singular values
+  % less than threshold in the matrix whose inverse action is being computed.
+  % This regularizes the solution, and may cure convergence problems.
   options.Multipliers               = 0;             % MP?
   options.Workspace                 = 1;             % MP?
   options.enable_nf_lpc   =    true;    

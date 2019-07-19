@@ -1,7 +1,7 @@
-function pout = newtcorrL(x0, v0, CISdata)
-%
 % Newton corrections, internal routine
-%
+% if the Newton corrections fail to converge, an empty array will be returned
+function pout = newtcorrL(x0, v0, CISdata)
+
 global cds contopts
 
 pout = [];
@@ -17,7 +17,8 @@ v = v0;
 R = [];
 R(cds.ndim) = 1;
 
-if cds.newtcorrL_needs_CISdata % DV: if CIS data needed for evaluation, update CIS data as well
+if cds.newtcorrL_needs_CISdata
+    % if CIS data needed for evaluation, update CIS data as well
     CISdata = feval(cds.curve_CIS_step, x, CISdata);
     if isempty(CISdata)
         print_diag(3, 'newtcorrL: CIS step failed')
@@ -36,11 +37,12 @@ smallest_funcnorm_so_far = funcnorm;
 
 for i = 1:MaxCorrIters
     if i > 1
-      format_string = ['newton iteration %d log10 of function norm %1.3f ' ...
-                                           'log10 of varnorm %1.3f\n'];
+      format_string = ['newton iteration %d function norm 10^%1.2f ' ...
+                                         'correction norm 10^%1.2f\n'];
       print_diag(5,format_string, i, log10(funcnorm), log10(varnorm))
     else
-      print_diag(5,'newton iteration %d function norm %.5e\n', i, funcnorm)
+      print_diag(5,'newton iteration %d function norm 10^%1.2f\n', ...
+                                                            i, log10(funcnorm))
     end
     if i <= MaxNewtonIters
         A = contjac(x, CISdata);
@@ -79,6 +81,7 @@ for i = 1:MaxCorrIters
             dx = D(:,1);
         else
           if isequal(cds.curve, @limitcycleL)
+            % dx = lsqminnorm(B,Q);
             dx = linear_solver_collocation(B,Q);
           else
             dx = B \ Q;
@@ -167,7 +170,22 @@ for i = 1:MaxCorrIters
         
         funcnorm = normU(Q);
         smallest_funcnorm_so_far = min(funcnorm, smallest_funcnorm_so_far);
-        if i > 2 && funcnorm > 10 * smallest_funcnorm_so_far
+        if funcnorm > contopts.max_rel_funcnorm_increase ...
+                               * smallest_funcnorm_so_far
+	        print_diag(1,[ ...
+              'Current curve function norm is now %d times ' ...
+              'the lowest curve function norm that ' ...
+              'was attained in this continuation step. ' ...
+              'Aborting Corrections.\n'], contopts.max_rel_funcnorm_increase);
+          
+          format_string = 'function norm 10^%1.2f correction norm 10^%1.2f\n';
+          print_diag(1,format_string, log10(funcnorm), log10(varnorm))
+          pout = [];
+          return;
+        end
+        
+        if isnan(funcnorm)
+          print_diag(1,'function norm is NaN. Aborting corrections\n');
           pout = [];
           return;
         end

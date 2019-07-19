@@ -63,11 +63,16 @@ function [solution_t, solution_x] = compute_periodic_solution(in)
   jacobian_ode = handles{3};
   cds.nphases  = length(in.point_on_limitcycle);
 
-  tangent_to_limitcycle ...   
-    = dydt_ode(0,in.point_on_limitcycle, in.ode_parameters{:});
-  time_integration_options = odeset(in.time_integration_options, ...
-    'Events',       @returnToPlane, ...
-    'Jacobian',     @(t,y) jacobian_ode(0, y, in.ode_parameters{:}));
+  tangent_to_limitcycle = dydt_ode(...
+                             0,in.point_on_limitcycle, in.ode_parameters{:});
+                           
+  time_integration_options = odeset(...
+                         in.time_integration_options, 'Events', @returnToPlane);
+  
+  if ~ isempty(jacobian_ode)
+    time_integration_options = odeset(time_integration_options, ...
+               'Jacobian',     @(t,y) jacobian_ode(0, y, in.ode_parameters{:}));
+  end
   
   solution = feval(in.time_integration_method, ...
     @(t,y) dydt_ode(0, y, in.ode_parameters{:}), ...
@@ -95,17 +100,24 @@ function [solution_t, solution_x] = compute_periodic_solution(in)
   
   
   if in.show_plot
+    my_figure = figure;
     plot(solution_t, solution_x - solution_x(:,1))
     xlabel('t')
     ylabel('deviation form initial value')
+    disp(['Now showing plot from t=time_to_converge_to_cycle to ' ...
+                                   't=time_to_converge_to_cycle + 1.1*period']);
+    disp('Press a key to continue')
     pause
+     if isvalid(my_figure)
+      close(my_figure.Number)
+    end
   end
   
   function [value, isterminal, direction] = returnToPlane(t, x)
     % x and should be a column vector
     value = tangent_to_limitcycle'*(x-in.point_on_limitcycle);
     isterminal = t > in.lower_bound_period ...
-      && max(abs(x-in.point_on_limitcycle)) < in.poincare_tolerance;
+                  && max(abs(x-in.point_on_limitcycle)) < in.poincare_tolerance;
     direction = 1;
   end
 end

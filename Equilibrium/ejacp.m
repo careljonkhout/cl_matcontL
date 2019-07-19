@@ -1,10 +1,14 @@
 function j=ejacp(x,p)
 global cds contopts
-if contopts.SymDerivativeP(1) && isfield(cds, 'JacobianP') && ~isempty(cds.JacobianP)
+if isfield(cds, 'JacobianP') && ~isempty(cds.JacobianP)
     j = feval(cds.JacobianP, 0, x, p{:});
     j = j(:,cds.ActiveParams);
 else
-    Incr = contopts.Increment;
+    opts = contopts;
+    if isempty(opts)
+      opts = contset();
+    end
+    Incr = opts.Increment;
     j = zeros(cds.ncoo, cds.nap);
     for ii = 1:length(cds.ActiveParams)
         ind = cds.ActiveParams(ii);
