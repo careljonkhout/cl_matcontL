@@ -136,7 +136,7 @@ classdef SystemsGUI < handle
         app.progress = 0;
         app.myWaitbar = waitbar(app.progress, 'Please wait...');
         s = System_of_ODEs(name,variables,parameters,time, ...
-          maxOrder,equations,app);
+          maxOrder,equations,app,false);
         s.generate_file
         close(app.myWaitbar)
         msgbox(['System file ' char(s.name) '.m was created']);
@@ -146,6 +146,10 @@ classdef SystemsGUI < handle
           || strcmp(ex.identifier,'System_of_ODEs:UndefinedFunctionInEval')
                     errordlg(ex.message, 'MatcontL Error');
         else
+          if isvalid(app.myWaitbar)
+            close(app.myWaitbar)
+          end
+          closeApp(app,[],[]);
           ex.rethrow
         end
       end

@@ -365,8 +365,18 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
         jacobian = strjoin(jacobian_elements, '\n');
       else
         jacobian = char(matlabFunction(jacobian));
-        tokens   = regexp(jacobian, '.*(reshape.*)', 'tokens');
-        jacobian = tokens{1}{1};
+        % jacobian now is a char array with the matlab code of the Jacobian
+        % matrix. For instance if the jacobian is [p_a ; p_b], then jacobian now
+        % contains @(p_a, p_b) [p_a, p_b]. If the number of dimensions of the
+        % Jacobian is greater than 1, then the jacobian contains a reshape
+        % command.
+        if contains(jacobian, 'reshape')
+          tokens   = regexp(jacobian, '(reshape.*)', 'tokens');
+          jacobian = tokens{1}{1};
+        else
+          tokens   = regexp(jacobian, '(\[.*\])', 'tokens');
+          jacobian = tokens{1}{1};
+        end
 %        jacobian_elements = cell(numel(jacobian),1);
 %        for i = 1 : numel(jacobian)
 %          jacobian_elements{i} = char(jacobian(i));
@@ -393,18 +403,10 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
     % and a parameter a replaced with par_a
     function jacobian = compute_jacobian_for_variables(s)
       jacobian = s.compute_jacobian_safe(s.internal_vars_str);
-      if ~ s.c_output
-        jacobian = sprintf('reshape([%s],%d,%d)', jacobian, ...
-                          length(s.input_vars), length(s.input_vars));
-      end
     end
 
     function jacobian = compute_jacobian_params(s)
       jacobian = s.compute_jacobian_safe(s.internal_pars_str);
-      if ~ s.c_output
-        jacobian = sprintf('reshape([%s],%d,%d)', jacobian, ...
-                           length(s.input_vars), length(s.input_pars));
-      end
     end
 
     % returns the hessian matrices as a string of matlab code
