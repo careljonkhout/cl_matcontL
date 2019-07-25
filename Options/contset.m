@@ -215,6 +215,7 @@ function options = defaultOptions()
 
   options.basis_grow_threshold              = 7e-1;
   options.basis_shrink_threshold            = options.basis_grow_threshold/1.4;
+  options.minimum_basis_size                = 3;
   options.multiplier_print_threshold = 0.8;
   options.pause                      = false;
   options.nsteps_before_pause        = 10; 

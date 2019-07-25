@@ -195,13 +195,15 @@ function out = default_processor(varargin)
       while abs(cds.multipliers(i)) < contopts.basis_grow_threshold / 3
         i = i - 1;
       end
+      i = max(i, contopts.minimum_basis_size);
       if i < length(cds.multipliers)
         i = i + 1;
       end
       cds.preferred_basis_size = i;
       cds.p                    = i;
       cds.multipliers = cds.multipliers(1:i);
-    elseif abs(cds.multipliers(end)) < contopts.basis_shrink_threshold
+    elseif abs(cds.multipliers(end)) < contopts.basis_shrink_threshold ...
+          && length(cds.multipliers) > contopts.minimum_basis_size
       basis_size_changed = true;
       i = length(cds.multipliers);
       while abs(cds.multipliers(i)) < contopts.basis_shrink_threshold

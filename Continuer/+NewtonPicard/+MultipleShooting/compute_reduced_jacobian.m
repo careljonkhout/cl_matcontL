@@ -93,7 +93,7 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
       print_diag(6,'G %d\n',i);
       for j = 1:size(V,2)
         V(:,j,i) = NewtonPicard.MultipleShooting.monodromy_map(...
-          i-1, V(:,j,i-1), delta_t(i-1), parameters);
+                                     i-1, V(:,j,i-1), delta_t(i-1), parameters);
       end
       V(:,:,i) = orth(V(:,:,i));
     end
