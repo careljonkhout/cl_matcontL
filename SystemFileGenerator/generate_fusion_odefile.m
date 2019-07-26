@@ -1,4 +1,4 @@
-N = 3;
+N = 50;
 
 handles = fusion_symbolic();
 
@@ -9,6 +9,7 @@ cn        = 1.1;
 cT        = 0.9;
 eps       = 0.05;
 D0        = 1.9;
+D1        = -1.1;
 ZS        = 0;
 Gamma_inf = -0.8;
 lambda_n  = 1.25;
@@ -17,6 +18,7 @@ gamma     = 1.6666666667;
 mu        = 0.05;
 zeta      = 1.1;
 D2        = 0;
+epsilon   = 0.05;
 
 y = sym('y', [1 3*(N-1)]);
 syms a b q_inf
@@ -48,7 +50,7 @@ for i=1:length(dydt_sym)
   rhs{i} = char(dydt_sym(i));
 end
 
-c_code = false;
+c_code = true;
 
 fusion_system = System_of_ODEs.new(name, vars, pars, time, max_ord, rhs, c_code);
 fusion_system.generate_file()
