@@ -136,7 +136,7 @@ classdef SystemsGUI < handle
         app.progress = 0;
         app.myWaitbar = waitbar(app.progress, 'Please wait...');
         s = System_of_ODEs(name,variables,parameters,time, ...
-          maxOrder,equations,app,false);
+          maxOrder,equations,app,'odefile');
         s.generate_file
         close(app.myWaitbar)
         msgbox(['System file ' char(s.name) '.m was created']);

@@ -1,10 +1,11 @@
 tic
 
-name = 'SEI_max_ord_1';
+max_ord = 4;
+name = sprintf('SEI_max_ord_%d', max_ord);
 vars = 's e i u v';
 pars = 'alpha beta mu delta gamma';
 time = 't';
-max_ord = 4;
+
 
 rhs={
 %    'mu - mu * s - beta*(1 + delta * u) * s * i'

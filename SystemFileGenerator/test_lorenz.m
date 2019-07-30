@@ -9,5 +9,5 @@ rhs = {
   '-b*z + x*y'
 };
 
-lorenz = System_of_ODEs.new(name,vars,pars,time,max_ord,rhs);
+lorenz = System_of_ODEs.new(name,vars,pars,time,max_ord,rhs,'odemex');
 lorenz.generate_file()
