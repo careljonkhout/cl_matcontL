@@ -418,21 +418,21 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
       jacobian = replace_symbols(jacobian, s.internal_syms, s.output_syms);
     end
     
+    % The input "symbolic_mat" should be an array of symbols. "symbolic_mat" can
+    % have any dimension.
     function symbolic_mat = symbolic_mat_to_matlab_code(s, symbolic_mat)
       eval(['syms ' s.syms_arg]);
       symbolic_mat = char(matlabFunction(symbolic_mat));
-      % jacobian now is a char array with the matlab code of the Jacobian
-      % matrix. For instance if the jacobian is [p_a ; p_b], then the variable
-      % "jacobian" now contains the string "@(p_a, p_b) [p_a, p_b]". If the
-      % number of dimensions of the Jacobian is greater than 1, then the
-      % variable "jacobian" contains a substring 'reshape'.
-      if contains(symbolic_mat, 'reshape')
-        tokens   = regexp(symbolic_mat, '(reshape.*)', 'tokens');
-        symbolic_mat = tokens{1}{1};
-      else
-        tokens   = regexp(symbolic_mat, '(\[.*\])', 'tokens');
-        symbolic_mat = tokens{1}{1};
-      end
+      % The variable "symbolic_mat" now contains a char array with the matlab
+      % code that evaluates the input "symbolic_mat". For instance if the input
+      % symbolic_mat is [p_a ; p_b], then the variable "symbolic_mat" now
+      % contains the string "@(p_a, p_b) [p_a, p_b]".
+      
+      % We ignore the everything between the first pair of parentheses by
+      % @\(.*?\) and capture the rest by (.*). The question mark makes the
+      % expression .* in @\(.*?\) lazy (see mathworks documentation on regexp)
+      tokens   = regexp(symbolic_mat, '@\(.*?\)(.*)','tokens');
+      symbolic_mat = tokens{1}{1};
     end
     
     function c_code = to_c_code(s, expressions)

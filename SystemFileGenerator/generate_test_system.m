@@ -1,4 +1,4 @@
-name = 'Carel2';
+name = 'test_system';
 s = System_of_ODEs.new(name,'x y','a b c','t',5,{'sin(a*x*y)','sin(x*x*y*b)'});
 s.generate_file
 
