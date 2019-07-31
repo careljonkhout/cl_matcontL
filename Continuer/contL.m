@@ -809,11 +809,11 @@ for i = 1:MaxIters
         return;
     end
     
-    %JH: Changed to make the check for relative difference. 9/25/06
-    %dist1 = norm(x-x1);
-    %dist2 = norm(x-x2);
-    dist1 = 2*norm(p3.x-p1.x)/(norm(p1.x)+norm(p3.x));
-    dist2 = 2*norm(p3.x-p2.x)/(norm(p2.x)+norm(p3.x));
+    %MP: Changed to make the check work for very small values of x 07/2019
+    %dist1 = 2*norm(p3.x-p1.x)/(norm(p1.x)+norm(p3.x));
+    %dist2 = 2*norm(p3.x-p2.x)/(norm(p2.x)+norm(p3.x));
+    dist1 = 2*norm(p3.x-p1.x)/(norm(p1.x)+norm(p3.x) + 1);
+    dist2 = 2*norm(p3.x-p2.x)/(norm(p2.x)+norm(p3.x) + 1);
     
     if abs(tval(id)) > tmax
         print_diag(3,'Testfunction behaving badly.\n');

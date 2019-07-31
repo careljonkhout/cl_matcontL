@@ -1,5 +1,6 @@
 function j = ejac(x,p)
 global cds contopts ejac_prev
+SparseSolvers = contopts.CIS_SparseSolvers; % MP 7/2019
 
 %Prevents recalculation if last point is the same as this point
 if isfield(ejac_prev, 'point_x') && ~isempty(ejac_prev.point_x)
@@ -34,7 +35,10 @@ else
         end
     end
     j = j/(2*Incr);
-    j = sparse(j);
+    if SparseSolvers                      % MP 7/2019
+        j = sparse(j);                    % MP 7/2019
+    end                                   % MP 7/2019
+    %j = sparse(j);                       % MP 7/2019        
 end
 
 % store to prevent recalculation

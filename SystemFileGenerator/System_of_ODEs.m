@@ -35,7 +35,7 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
     input_vars % cell array of char arrays
     input_pars % cell array of char arrays
     
-    % symbols (i.e. variables and parameters) supllied by the user 
+    % symbols (i.e. variables and parameters) suplied by the user 
     % cell array of char arrays
     % the order corresponds to internal_syms and output_syms
     % i.e. input_syms{i} corresponds to internal_syms{i}
@@ -76,63 +76,40 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
     
   end
 
-  
-  methods (Access = protected)
-    % this method defines the customized output that is displayed when
-    % inspecting a System_of_ODEs on the command line or when a System_of_ODEs
-    % is printed using the disp function see:
-    % https://mathworks.com/help/matlab/ref/matlab.mixin.util.propertygroup-class.html
-    function propgrp = getPropertyGroups(s)
-      my_rhs = replace_symbols(strjoin(s.rhs, ', '), ...
-        s.internal_syms, s.input_syms);
-      props = struct( ...
-         'name',                          s.name, ...
-         'variables',                     s.input_vars_str, ...
-         'parameters',                    s.input_pars_str, ...
-         'maximum_order_of_derivatives',  num2str(s.max_ord_derivatives), ...
-         'time_variable',                 s.time, ...
-         'right_hand_side',               my_rhs ...
-         );
-      if s.max_ord_derivatives >= 1
-        props.jacobian = replace_symbols(s.jacobian, ...
-          s.output_syms, s.input_syms);
-        props.jacobian_params = ...
-          replace_symbols(s.jacobian_params, ...
-            s.output_syms, s.input_syms);
-      end
-      if s.max_ord_derivatives >= 2
-        props.hessians = replace_symbols(s.hessians, ...
-          s.output_syms, s.input_syms);
-        props.hessians_params = ...
-          replace_symbols(s.hessians_params, ...
-            s.output_syms, s.input_syms);
-      end
-      if s.max_ord_derivatives >= 3
-        props.third_order_derivatives = replace_symbols(...
-          s.third_order_derivatives, s.output_syms, s.input_syms);
-      end
-      if s.max_ord_derivatives >= 4
-        props.fourth_order_derivatives = replace_symbols(...
-          s.fourth_order_derivatives, ...
-          s.output_syms, s.input_syms);
-      end
-      if s.max_ord_derivatives >= 5
-        props.fifth_order_derivatives = replace_symbols(...
-          s.fifth_order_derivatives, ...
-          s.output_syms, s.input_syms);
-      end
-
-      propgrp = matlab.mixin.util.PropertyGroup(props);
-    end
-  end
-
   methods
     % constructor
-    % rhs may be supplied as either a n by 1 string
-    % a 1 by n string array
-    % or a n by m character array, where 
-    % n is the number of equations
-    % and m is the length of the longest equation
+    %
+    %% Inputs:
+    %
+    % rhs:   may be supplied as either:
+    %        - a n by 1 string array
+    %        - a 1 by n string array
+    %        - a 1D cell array of 1D char arrays.
+    %        - a n by m character array 
+    %        where:
+    %        - n is the number of equations
+    %        - m is the length of the longest equation
+    %
+    % variables_str: a char array or string containing the names of n
+    % state variables of the system of ODEs, separated by any number of spaces,
+    % and/or commas.
+    %   
+    % parameters_str: a char array or string containing the names of the
+    % parameters of the system of the ODEs, separated by any number of spaces
+    % and/or commas.
+    %
+    % time: a char array of string containing the name of the variable that
+    % represents time
+    %
+    % max_ord_derivatives: the maximum order of derivatives for which Matlab
+    % code is generated that evaluates the derivatives
+    %
+    % app: an object that implements the method updatStatus(status) or an empty
+    % array.
+    %
+    % output_type: must be one of 'odefile', 'C', or 'odemex'; 
+    % currently (july 31 2019) 'odemex' is still under devellopment and may be 
+    % removed
     function s = System_of_ODEs(...
         name,...
         variables_str,...
@@ -188,8 +165,8 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
       s.formatted_rhs = s.format_rhs();
       
       if (s.max_ord_derivatives >= 1)
-        s.jacobian                = s.compute_jacobian_for_variables();
-        s.jacobian_params = s.compute_jacobian_params();
+        s.jacobian        = s.compute_jacobian('vars');
+        s.jacobian_params = s.compute_jacobian('pars');
         switch s.output_type
           case 'c'
             s.jacobian_handle         = sprintf('@%s_jacobian'       , s.name);
@@ -307,6 +284,10 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
          'C-output of derivatives of order greater than 1 is not implemented.');
       elseif ~ any(strcmp({'odefile', 'C', 'odemex'},s.output_type))
         s.throwException([s.output_type ' is not a valid output type']);
+      elseif floor(s.max_ord_derivatives) ~= s.max_ord_derivatives ...
+             || s.max_ord_derivatives < 0 || s.max_ord_derivatives > 5
+        s.throwException(['max_ord_derivatives must be a integer' ...
+                                'which is at least to 0 and at most 5'])
       else
         for i=1:length(s.rhs)
           if ~ System_of_ODEs.match_parentheses(s.rhs{i})
@@ -339,10 +320,7 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
           eval(['syms ' s.syms_arg]);
           dydt_elements = cell(length(s.rhs),1);
           for i = 1 : length(s.rhs)
-            raw_odemex_code = eval(sprintf('ccode(%s)',s.rhs{i}));
-            tokens    = regexp(raw_odemex_code, '.*=(.*);', 'tokens');
-            odemex_code    = tokens{1}{1};
-            dydt_elements{i} = sprintf('dx(%d) = %s;', i, odemex_code);
+            dydt_elements{i} = sprintf('dx(%d) = %s;', i, s.rhs{i});
           end
           formatted_rhs = strjoin(dydt_elements, '\n');
         case 'odefile'
@@ -352,15 +330,14 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
                                                 s.internal_syms, s.output_syms);
     end
 
-    function [in, intermediate, out] = generate_sym_lists(s)
-      vars_len = length(s.input_vars);
-      symbols_length = vars_len + length(s.input_pars);
-      in           = cell(1, symbols_length);
-      intermediate = cell(1, symbols_length);
-      out          = cell(1, symbols_length);
+    function [in, internal, out] = generate_sym_lists(s)
+      symbols_length = length(s.input_vars) + length(s.input_pars);
+      in       = cell(1, symbols_length + 1);
+      internal = cell(1, symbols_length + 1);
+      out      = cell(1, symbols_length + 1);
       for i=1:length(s.input_vars)
         in{i}           = s.input_vars{i};
-        intermediate{i} = ['v_', s.input_vars{i}];
+        internal{i} = ['v_', s.input_vars{i}];
         switch s.output_type
           case 'C'
           out{i}          = sprintf('y[%d]', i-1);
@@ -370,9 +347,10 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
           out{i}          = sprintf('y(%d)', i  );
         end
       end
+      vars_len = length(s.input_vars);
       for i = 1:length(s.input_pars)
         in{vars_len + i}           = s.input_pars{i};
-        intermediate{vars_len + i} = ['p_', s.input_pars{i}];
+        internal{vars_len + i} = ['p_', s.input_pars{i}];
         switch s.output_type
           case 'C'
           out{vars_len + i}          = sprintf('parameters[%d]', i - 1);
@@ -382,11 +360,20 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
           out{vars_len + i}          = ['par_', s.input_pars{i}]; 
         end
       end
+      % replace 0.0 by 0 in output
+      % in      {end} = '0'; is needed for getPropertyGroup method
+      in      {end} = '0';
+      internal{end} = '0.0';
+      out     {end} = '0';
     end
 
-    function jacobian = compute_jacobian_safe(s, input_vars_str)
-      eval_str = sprintf('jacobian([%s],[%s])', ...
-          strjoin(s.rhs, ','), input_vars_str);
+    function jacobian = compute_jacobian(s, vars_or_pars)
+      switch vars_or_pars
+        case 'vars'; differentiation_vars = s.internal_vars_str;
+        case 'pars'; differentiation_vars = s.internal_pars_str;
+      end
+      eval_str = sprintf('jacobian([%s],[%s])', strjoin(s.rhs, ','), ...
+                                                          differentiation_vars);
       jacobian = s.safe_eval_w_syms(eval_str);
       switch s.output_type
         
@@ -418,6 +405,13 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
       jacobian = replace_symbols(jacobian, s.internal_syms, s.output_syms);
     end
     
+    % input type:  symbolic_mat: array of symbolic expressions of any size.
+    % output type: symbolic_mat: 1d char array.
+    %
+    % converts an array of symbolic expressions whose symbols are listed in
+    % the instance variable "syms_arg" to a char array containing
+    % the Matlab code that evaluates the array of symbolic expressions.
+    %
     % The input "symbolic_mat" should be an array of symbols. "symbolic_mat" can
     % have any dimension.
     function symbolic_mat = symbolic_mat_to_matlab_code(s, symbolic_mat)
@@ -435,6 +429,13 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
       symbolic_mat = tokens{1}{1};
     end
     
+    % input type:  expressions : array of symbolic expressions of any size.
+    % output type: symbolic_mat: 1d char array.
+    %
+    % converts an array of symbolic expressions whose symbols are listed in the
+    % instance variable "syms_arg" to a 1D cell array of char arrays containing
+    % the C code that evaluates the array of symbolic expressions. Note that the
+    % output is 1D even if the input is 2D, 3D or any higher dimension.    
     function c_code = to_c_code(s, expressions)
       eval(['syms ' s.syms_arg]);
       c_code = cell(numel(expressions),1);
@@ -446,44 +447,20 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
         end
       end
     end
-    
-    function matlab_code = to_matlab_code(s, expressions)
-      eval(['syms ' s.syms_arg]);
-      matlab_code = cell(numel(expressions),1);
-      for i = 1 : numel(expressions)
-        %if ~ strcmp(char(expressions(i)),'0')
-          my_matlab_code = char(matlabFunction(expressions(i)));
-          tokens    = regexp(my_matlab_code, '.*=(.*);', 'tokens');
-          matlab_code{i} = tokens{1}{1};
-        %end
-      end
-    end
-        
-    % returns the jacobian matrix as a string of matlab code
-    % with the i-th variable replaced with y(i)
-    % and a parameter a replaced with par_a
-    function jacobian = compute_jacobian_for_variables(s)
-      jacobian = s.compute_jacobian_safe(s.internal_vars_str);
-    end
-
-    function jacobian = compute_jacobian_params(s)
-      jacobian = s.compute_jacobian_safe(s.internal_pars_str);
-    end
 
     function d = compute_hessians(s, vars_or_pars)
       eval(['syms ' s.syms_arg]);
       switch vars_or_pars
-        case 'vars'
-        vars = s.internal_vars;
-        case 'pars'
-        vars = s.internal_pars;
+        case 'vars'; diff_vars = s.internal_vars;
+        case 'pars'; diff_vars = s.internal_pars;
       end
-      len   = length(vars);
+      len   = length(diff_vars);
       d_sym = sym(zeros(length(s.rhs),len,len));
       for i = 1:length(s.rhs)
-        for j = 1:length(vars)
+        for j = 1:length(diff_vars)
           for k = 1:j
-            evalstr = sprintf('diff(%s, %s, %s)', s.rhs{i}, vars{j}, vars{k});
+            evalstr = sprintf('diff(%s, %s, %s)', s.rhs{i}, ...
+                                                    diff_vars{j}, diff_vars{k});
             pd = eval(evalstr);
             d_sym(i,j,k) = pd;
             d_sym(i,k,j) = pd;
@@ -626,6 +603,51 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
       end
     end
      
+  end
+  
+  methods (Access = protected)
+    % this method defines the customized output that is displayed when
+    % inspecting a System_of_ODEs on the command line or when a System_of_ODEs
+    % is printed using the disp function see:
+    % https://mathworks.com/help/matlab/ref/matlab.mixin.util.propertygroup-class.html
+    function propgrp = getPropertyGroups(s)
+      my_rhs = replace_symbols(strjoin(s.rhs, ', '), ...
+        s.internal_syms, s.input_syms);
+      props = struct( ...
+         'name',                          s.name, ...
+         'variables',                     s.input_vars_str, ...
+         'parameters',                    s.input_pars_str, ...
+         'maximum_order_of_derivatives',  num2str(s.max_ord_derivatives), ...
+         'time_variable',                 s.time, ...
+         'right_hand_side',               my_rhs ...
+         );
+      if s.max_ord_derivatives >= 1
+        props.jacobian        = ...
+                replace_symbols(s.jacobian,        s.output_syms, s.input_syms);
+        props.jacobian_params = ...
+                replace_symbols(s.jacobian_params, s.output_syms, s.input_syms);
+      end
+      if s.max_ord_derivatives >= 2
+        props.hessians        = ...
+                        replace_symbols(s.hessians,s.output_syms, s.input_syms);
+        props.hessians_params = ...
+                replace_symbols(s.hessians_params, s.output_syms, s.input_syms);
+      end
+      if s.max_ord_derivatives >= 3
+        props.third_order_derivatives = replace_symbols(...
+                        s.third_order_derivatives, s.output_syms, s.input_syms);
+      end
+      if s.max_ord_derivatives >= 4
+        props.fourth_order_derivatives = replace_symbols(...
+                       s.fourth_order_derivatives, s.output_syms, s.input_syms);
+      end
+      if s.max_ord_derivatives >= 5
+        props.fifth_order_derivatives = replace_symbols(...
+                        s.fifth_order_derivatives, s.output_syms, s.input_syms);
+      end
+
+      propgrp = matlab.mixin.util.PropertyGroup(props);
+    end
   end
     
   methods(Static)
