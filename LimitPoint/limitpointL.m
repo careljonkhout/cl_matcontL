@@ -157,11 +157,11 @@ for i=id
             end
             mu_min = min(abs(bialt_eigs));
             M_u  = sum(real(bialt_eigs)>0);
-            if NSub == 1                      %MP 7/2019
-                out(2) = 2;                   %MP  7/2019
-            else    
+            if NSub == 1
+                out(2) = 2;
+            else
                 out(2) = mu_min*(-1)^M_u;     
-            end                               %MP  7/2019
+            end
         case 3 % CP
             out(3) = nf_LP_L(CISdata, x0, p, cds.borders);
         case 4 % ZH2

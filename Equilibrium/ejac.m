@@ -35,10 +35,9 @@ else
         end
     end
     j = j/(2*Incr);
-    if SparseSolvers                      % MP 7/2019
-        j = sparse(j);                    % MP 7/2019
-    end                                   % MP 7/2019
-    %j = sparse(j);                       % MP 7/2019        
+    if SparseSolvers
+        j = sparse(j);
+    end
 end
 
 % store to prevent recalculation
