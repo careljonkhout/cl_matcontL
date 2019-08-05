@@ -1,6 +1,10 @@
 function j = ejac(x,p)
 global cds contopts ejac_prev
-SparseSolvers = contopts.CIS_SparseSolvers; % MP 7/2019
+opts = contopts;
+if isempty(opts)
+  opts = contset();
+end
+SparseSolvers = opts.CIS_SparseSolvers; % MP 7/2019
 
 %Prevents recalculation if last point is the same as this point
 if isfield(ejac_prev, 'point_x') && ~isempty(ejac_prev.point_x)
@@ -14,10 +18,6 @@ end
 if isfield(cds, 'Jacobian') && ~isempty(cds.Jacobian)
     j = feval(cds.Jacobian, 0, x, p{:});
 else
-    opts = contopts;
-    if isempty(opts)
-      opts = contset();
-    end
     Incr = opts.Increment;
     func = cds.func;
     j = zeros(cds.ncoo);
