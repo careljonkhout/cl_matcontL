@@ -1,14 +1,14 @@
 function out_str=replace_symbols(in_str, old_symbols, new_symbols)
   parse_list = parse_expression(in_str, old_symbols);
-  out_str = '';
+  out_str_parts = cell(length(parse_list),1);
   for i=1:length(parse_list)
     if parse_list{i}.is_symbol
-      out_str = ...
-        [out_str new_symbols{parse_list{i}.symbol_index}]; %#ok<AGROW>
+      out_str_parts{i} = new_symbols{parse_list{i}.symbol_index};
     else
-      out_str = [out_str parse_list{i}.data]; %#ok<AGROW>
+      out_str_parts{i} = parse_list{i}.data;
     end
-  end       
+  end
+  out_str = strjoin(out_str_parts, '');
 end
 
 % str must be a char array

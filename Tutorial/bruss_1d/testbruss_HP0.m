@@ -22,6 +22,8 @@ opt = contset(opt,'CIS_MaxUnstable',        5); %new
 opt = contset(opt,'CIS_NStableRef',         6);
 opt = contset(opt,'CIS_NExtra',             6);
 opt = contset(opt,'CIS_Ric_Cayley_Shift',  10);
+opt = contset(opt,'contL_Testf_FunTolerance', 1e-10);
+opt = contset(opt,'contL_Testf_VarTolerance', 1e-11);
 opt = contset(opt,'TestPath',mfilename('fullpath'));
 opt = contset(opt, 'Filename', 'testbruss_HP0');
 

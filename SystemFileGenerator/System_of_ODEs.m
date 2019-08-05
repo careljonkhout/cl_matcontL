@@ -675,7 +675,7 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
     end
     
     function s=new(name, var_str, par_str, time, max_ord, rhs, output_type)
-       if nargin == 6
+      if nargin == 6
         output_type = 'odefile';
       end
       s = System_of_ODEs(name,var_str,par_str,time,max_ord,rhs,[],output_type);

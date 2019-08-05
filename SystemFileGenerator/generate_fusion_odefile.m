@@ -1,4 +1,4 @@
-N = 50;
+N = 10;
 
 handles = fusion_symbolic();
 
@@ -29,7 +29,8 @@ dydt_sym = feval(handles{2}, 0, y, N, ...
                
 disp('simplifying dydt_sym')
 tic
-oldVal = sympref('FloatingPointOutput',true);
+
+    
 dydt_sym = simplify(dydt_sym);
 toc
 vars = char(y);
@@ -55,4 +56,3 @@ output = 'odefile';
 fusion_system = System_of_ODEs.new(name, vars, pars, time, max_ord, rhs,output);
 fusion_system.generate_file()
 toc
-sympref('FloatingPointOutput',oldVal);

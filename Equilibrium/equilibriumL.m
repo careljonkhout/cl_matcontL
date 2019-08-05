@@ -84,11 +84,7 @@ for i = id
             end
             mu_min = min(abs(bialt));
             M_u = sum((real(bialt)>0));
-            if NSub == 1
-                out(2) = 1;
-            else    
-                out(2) = mu_min*(-1)^M_u;     
-            end   
+            out(2) = mu_min*(-1)^M_u;
         case 3 % H2
             out(3) = sum(real(evl_r >= 0));  % DV
         case 4 % LP
