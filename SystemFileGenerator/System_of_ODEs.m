@@ -20,7 +20,7 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
                       % integer
     rhs               % an n by 1 cell array of character vectors
     
-    output_type       % string. should equal odefile, C, or odemex
+    output_type       % string. should equal odefile, C, or cvode
     
     app               % optional: GUI class that calls System_of_ODEs
                       % if app is given then status notifications
@@ -63,6 +63,7 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
     jacobian_handle                   = '[]'
     jacobian_params                   = '[]'
     jacobian_params_handle            = '[]'
+    sensitivity                       = '[]'
     hessians                          = '[]'
     hessians_handle                   = '[]'
     hessians_params                   = '[]'
@@ -107,9 +108,7 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
     % app: an object that implements the method updatStatus(status) or an empty
     % array.
     %
-    % output_type: must be one of 'odefile', 'C', or 'odemex'; 
-    % currently (july 31 2019) 'odemex' is still under devellopment and may be 
-    % removed
+    % output_type: must be one of 'odefile', 'C', or 'cvode'; 
     function s = System_of_ODEs(...
         name,...
         variables_str,...
@@ -165,16 +164,15 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
       s.formatted_rhs = s.format_rhs();
       
       if (s.max_ord_derivatives >= 1)
-        s.jacobian        = s.compute_jacobian('vars');
+        [s.jacobian, s.sensitivity] = s.compute_jacobian('vars');
         s.jacobian_params = s.compute_jacobian('pars');
         switch s.output_type
-          case 'c'
-            s.jacobian_handle         = sprintf('@%s_jacobian'       , s.name);
-            s.jacobian_params_handle  = sprintf('@%s_jacobian_params', s.name);
+          case {'c', 'cvode'}
+            s.jacobian_handle       =sprintf('@%s.jacobian_mex'       , s.name);
+            s.jacobian_params_handle=sprintf('@%s.jacobian_params_mex', s.name);
           case 'odefile'
             s.jacobian_handle         = '@jacobian';
             s.jacobian_params_handle  = '@jacobian_params';
-          case 'odemex'
         end
       end
       if (s.max_ord_derivatives >= 2)
@@ -209,8 +207,9 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
       switch s.output_type
         case 'C'
           s.generate_c_files();
-        case 'odemex'
-          s.generate_odemex_files();
+        case 'cvode'
+          s.generate_c_files();
+          s.generate_cvode_files();
         case 'odefile'
           path = get_path();
 
@@ -222,48 +221,103 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
     end
     
     function generate_c_files(s)
-      path = get_path();
-      
-      filename = fullfile(path, '../Systems', [s.name '_mex.m']);
-      file_contents = emat2('system_mex.m.emat');
-      fileID = fopen(filename,'w');
-      fprintf(fileID,'%s',file_contents);
-      
-      filename = fullfile(path, '../Systems', [s.name '_dydt.c']);
-      file_contents = emat2('system_dydt.c.emat');
-      fileID = fopen(filename,'w');
-      fprintf(fileID,'%s',file_contents);
-      
-      mex_filename = fullfile(path, '../Systems', [s.name '_dydt']);
-      mex(filename,'-output', mex_filename);
-      
-      if (s.max_ord_derivatives >= 1)
-        filename = fullfile(path, '../Systems', [s.name '_jacobian.c']);
-        file_contents = emat2('system_jacobian.c.emat');
-        fileID = fopen(filename,'w');
-        fprintf(fileID,'%s',file_contents);
-        
-        mex_filename = fullfile(path, '../Systems', [s.name '_jacobian']);
-        mex(filename,'-output', mex_filename);
-        
-        filename = fullfile(path, '../Systems', [s.name '_jacobian_params.c']);
-        file_contents = emat2('system_jacobian_params.c.emat');
-        fileID = fopen(filename,'w');
-        fprintf(fileID,'%s',file_contents);
-        
-        mex_filename = fullfile(path, '../Systems',[s.name '_jacobian_params']);
-        mex(filename,'-output', mex_filename);
+      system = fullfile(get_path(), '../Systems', ['+' s.name]);
+      if ~ exist(system, 'dir')
+        mkdir(system)
       end
+      
+      filename = fullfile(system, 'odefile_mex.m');
+      contents = emat2('system_mex.m.emat');
+      fprintf(fopen(filename,'w'),'%s',contents);
+      
+      filename = fullfile(system, 'dydt_mex.c');
+      contents = emat2('system_dydt.c.emat');
+      fprintf(fopen(filename,'w'),'%s',contents);
+      
+      mex_file = fullfile(system, 'dydt_mex');
+      mex(filename,'-output', mex_file);
+      
+      if (s.max_ord_derivatives < 1)
+        return
+      end
+      
+      filename = fullfile(system, 'jacobian_mex.c');
+      contents = emat2('system_jacobian.c.emat');
+      fprintf(fopen(filename,'w'),'%s',contents);
+        
+      mex_file = fullfile(system, 'jacobian_mex');
+      mex(filename,'-output', mex_file);
+
+      filename = fullfile(system, 'jacobian_params_mex.c');
+      contents = emat2('system_jacobian_params.c.emat');
+      fprintf(fopen(filename,'w'), '%s', contents);
+
+      mex_file = fullfile(system, 'jacobian_params_mex');
+      mex(filename,'-output', mex_file);
+
     end
     
-    function generate_odemex_files(s)
-      path = get_path();
-      filename = fullfile(path, '../Systems', [s.name '_odemex_dydt.m']);
-      file_contents = emat2('odemex_dydt.m.emat');
-      fileID = fopen(filename,'w');
-      fprintf(fileID, '%s', file_contents);
-    end
+    function generate_cvode_files(s)
+      system    = fullfile(get_path(), '../Systems', ['+' s.name]);
+      templates = fullfile(get_path(), 'cvode');
+      if ~ exist(system, 'dir')
+        mkdir(system)
+      end
+      
+      filename = fullfile(system ,'dydt_cvode.c');
+      contents = emat2(fullfile(templates, 'dydt_cvode.c.emat'));
+      fprintf(fopen(filename,'w'),'%s',contents);
+      
+      filename = fullfile(system ,'jacobian_cvode.c');
+      contents = emat2(fullfile(templates, 'jacobian_cvode.c.emat'));
+      fprintf(fopen(filename,'w'),'%s',contents);
+      
+      filename = fullfile(system , 'd_sensitivity_dt.c');
+      contents = emat2(fullfile(templates, 'd_sensitivity_dt.c.emat'));
+      fprintf(fopen(filename,'w'),'%s',contents);
+      
+      filename = fullfile(system , 'user_data.h');
+      contents = emat2(fullfile(templates, 'user_data.h.emat'));
+      fprintf(fopen(filename,'w'),'%s',contents);
+      
+      base_dir = fullfile(get_path(), '..', '..', 'sundails','builddir','src');
+      include_dirs = { ...
+        fullfile(base_dir, 'cvodes'), ...
+        fullfile(base_dir, 'nvector'), ...
+        fullfile(base_dir, 'sunlinsol'), ...
+        fullfile(base_dir, 'sunnonlinsol'), ...
+        fullfile(base_dir, 'sunmatrix') ...
+      };
+      includes = {};
+      for i = 1 : length(include_dirs)
+        files = dir(fullfile(include_dirs{i},'**','*.a'));
+        files = arrayfun(@(f) fullfile(f.folder,f.name), files, ...
+                                                        'UniformOutput', false);
+                                                        
+        % [cell_array_1(:); cell_array_2(:)] concatenates cell_array_1 and
+        % cell_array_2 into a column cell vector.
+        includes = [includes(:); files(:)];
+      end
+             
+      mex_arguments = strjoin([
+        {fullfile(templates, 'cvode_mex.c')}, ...
+        {fullfile(system, 'dydt_cvode.c')}, ...
+        {fullfile(system, 'jacobian_cvode.c')}, ...
+        {fullfile(system, 'd_sensitivity_dt.c')}, ...
+        {['-I' system]}, ...
+        {'-g'}, ...  % -g enables debugging symbols
+        includes(:)', ...
+        {'-output'}, ...
+        {fullfile(system, 'cvode')}, ...
+      ], ''', ... \n  ''');
     
+      mex_build = sprintf('mex( ... \n  ''%s'' ... \n)',mex_arguments);
+      filename = fullfile(system, 'recompile_cvode_mex.m');
+      fprintf(fopen(filename,'w'),'%s', mex_build);
+      
+      eval(mex_build);
+    end
+      
     function verify_inputs(s)
       all_equations = join(s.rhs);
       if isempty(s.name)
@@ -282,7 +336,11 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
       elseif strcmp(s.output_type, 'C') && (s.max_ord_derivatives > 1)
         s.throwException( ...
          'C-output of derivatives of order greater than 1 is not implemented.');
-      elseif ~ any(strcmp({'odefile', 'C', 'odemex'},s.output_type))
+      elseif strcmp(s.output_type, 'cvode') && (s.max_ord_derivatives > 1)
+        s.throwException( ...
+         ['cvode-output of derivatives of order greater than 1 is not ' ...
+          'implemented.']);
+      elseif ~ any(strcmp({'odefile', 'C', 'cvode'},s.output_type))
         s.throwException([s.output_type ' is not a valid output type']);
       elseif floor(s.max_ord_derivatives) ~= s.max_ord_derivatives ...
              || s.max_ord_derivatives < 0 || s.max_ord_derivatives > 5
@@ -305,7 +363,7 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
 
     function formatted_rhs = format_rhs(s)
       switch s.output_type
-        case 'C'
+        case {'C', 'cvode'}
           eval(['syms ' s.syms_arg]);
           dydt_elements = cell(length(s.rhs),1);
           for i = 1 : length(s.rhs)
@@ -314,13 +372,6 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
             tokens    = regexp(raw_c_code, '.*=(.*);', 'tokens');
             c_code    = tokens{1}{1};
             dydt_elements{i} = sprintf('  dydt[%d] = %s;', i-1, c_code);
-          end
-          formatted_rhs = strjoin(dydt_elements, '\n');
-        case 'odemex'
-          eval(['syms ' s.syms_arg]);
-          dydt_elements = cell(length(s.rhs),1);
-          for i = 1 : length(s.rhs)
-            dydt_elements{i} = sprintf('dx(%d) = %s;', i, s.rhs{i});
           end
           formatted_rhs = strjoin(dydt_elements, '\n');
         case 'odefile'
@@ -339,23 +390,19 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
         in{i}           = s.input_vars{i};
         internal{i} = ['v_', s.input_vars{i}];
         switch s.output_type
-          case 'C'
+          case {'C', 'cvode'}
           out{i}          = sprintf('y[%d]', i-1);
-          case 'odemex'
-          out{i}          = sprintf('x(%d)', i  );
           case 'odefile'
           out{i}          = sprintf('y(%d)', i  );
         end
       end
       vars_len = length(s.input_vars);
       for i = 1:length(s.input_pars)
-        in{vars_len + i}           = s.input_pars{i};
+        in{vars_len + i}       = s.input_pars{i};
         internal{vars_len + i} = ['p_', s.input_pars{i}];
         switch s.output_type
-          case 'C'
+          case {'C', 'cvode'}
           out{vars_len + i}          = sprintf('parameters[%d]', i - 1);
-          case 'odemex'
-          out{vars_len + i}          = sprintf('p(%d)'         , i    );
           case 'odefile'
           out{vars_len + i}          = ['par_', s.input_pars{i}]; 
         end
@@ -367,42 +414,75 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
       out     {end} = '0';
     end
 
-    function jacobian = compute_jacobian(s, vars_or_pars)
+    function [jacobian, sensitivity] = compute_jacobian(s, vars_or_pars)
       switch vars_or_pars
         case 'vars'; differentiation_vars = s.internal_vars_str;
         case 'pars'; differentiation_vars = s.internal_pars_str;
       end
       eval_str = sprintf('jacobian([%s],[%s])', strjoin(s.rhs, ','), ...
                                                           differentiation_vars);
-      jacobian = s.safe_eval_w_syms(eval_str);
+      jacobian_sym = s.safe_eval_w_syms(eval_str);
       switch s.output_type
         
-        case 'C'
+        case {'C', 'cvode'}
           
-        c_code_of_jac_elements = s.to_c_code(jacobian);
-        jacobian_elements      = cell(numel(jacobian),1);
+        c_code_of_jac_elements = s.to_c_code(jacobian_sym);
+        jacobian_lines         = cell(numel(jacobian_sym),1);
         j = 1;
-        for i = 1 : numel(jacobian)
+        for i = 1 : numel(jacobian_sym)
           if ~ isempty(c_code_of_jac_elements{i})
-            jacobian_elements{j} = sprintf('  jac[%d] = %s;', i-1, ...
+            jacobian_lines{j} = sprintf('  jac[%d] = %s;', i-1, ...
                                                      c_code_of_jac_elements{i});
 	          j = j + 1;
           end
         end
         number_of_nonzeros = j;
-        % todo: remove empty strings
-        jacobian = strjoin(jacobian_elements{1:number_of_nonzeros}, '\n');
+        jacobian = strjoin(jacobian_lines(1:number_of_nonzeros-1), '\n');
         
-        case 'odemex'
+        
+        eval(['syms ' s.syms_arg]);
+        sens = sym('s',[length(s.input_vars),1]); 
+     
+        
+        if strcmp(vars_or_pars, 'vars')
+        
+          sensitivity = jacobian_sym * sens;
+
+          c_code_sensitivity = s.to_c_code(sensitivity);
+          sensitivity_lines = cell(numel(sensitivity),1); 
+          for i = 1 : numel(c_code_sensitivity)
+            sensitivity_lines{i} = sprintf('  ds[%d] = %s;', i-1, ...
+                                                      c_code_sensitivity{i});
+          end
+
+          sensitivity = strjoin(sensitivity_lines, '\n');
+          sens_internal = cell(1,length(s.input_vars));
+          sens_output   = cell(1,length(s.input_vars));
+          for i = 1 : length(s.input_vars)
+            sens_internal{i} = sprintf('s%d', i);
+            sens_output{i}   = sprintf('s[%d]',i-1);
+          end
           
-        jacobian = s.symbolic_mat_to_matlab_code(jacobian);
+          
+          % [cell_array_1(:); cell_array_2(:)] concatenates cell_array_1 and
+          % cell_array_2 into a column cell vector.
+          sensitivity = replace_symbols(sensitivity, ...
+                          [s.internal_syms(:); sens_internal(:)], ...
+                          [s.output_syms(:)  ; sens_output(:)  ]);
+        else
+          sensitivity = '[]';
+        end
         
         case 'odefile'
           
-        jacobian = s.symbolic_mat_to_matlab_code(jacobian);
+        jacobian = s.symbolic_mat_to_matlab_code(jacobian_sym);
+        sensitivity = '[]';
        
       end
       jacobian = replace_symbols(jacobian, s.internal_syms, s.output_syms);
+     
+      
+     
     end
     
     % input type:  symbolic_mat: array of symbolic expressions of any size.
@@ -531,7 +611,7 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
       for i = 1:length(s.rhs)
         for j = 1:length(variables)
           evalstr = sprintf('diff(%s, %s)', s.rhs{i}, variables{j});
-          % the pd1, pd2, pd3 will be used via the "eval" function
+          % pd1, pd2, pd3 will be used via the "eval" function
           pd1 = eval(evalstr); %#ok<NASGU>
           for k = 1:j
             evalstr = sprintf('diff(pd1, %s)', variables{k});

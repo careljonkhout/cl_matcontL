@@ -93,6 +93,10 @@ end
 % starting from the point x near the cycle.
 function [y_end, monodromy] = compute_monodromy(x, period, parameters)
   global cds
+  if cds.cvode
+    
+    return
+  end
   if ~ cds.options.PartitionMonodromy
     [y_end, monodromy] = monodromy_full(x, period, parameters);
   else

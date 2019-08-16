@@ -1,8 +1,8 @@
-function out = fusion_N_50_max_ord_1_mex
+function out = odefile_mex
 out{1} = @init;
-out{2} = @fusion_N_50_max_ord_1_dydt;
-out{3} = @fusion_N_50_max_ord_1_jacobian;
-out{4} = @fusion_N_50_max_ord_1_jacobian_params;
+out{2} = @brusselator_1d_N_500.dydt_mex;
+out{3} = @brusselator_1d_N_500.jacobian_mex;
+out{4} = @brusselator_1d_N_500.jacobian_params_mex;
 out{5} = [];
 out{6} = [];
 out{7} = [];
@@ -24,20 +24,20 @@ out{15}= @x5;
 
 % --------------------------------------------------------------------------
 function options = init()
-handles = feval(fusion_N_50_max_ord_1);
+handles = feval(brusselator_1d_N_500);
 options = odeset(...
   'Jacobian', handles(3), 'JacobianP', handles(4), ...
   'Hessians', handles(5), 'HessiansP', handles(6));
 
 
 
-function userfun1=x1(t, y, par_a, par_b, par_q_inf)
+function userfun1=x1(t, y, par_L, par_A, par_B, par_Dx, par_Dy)
 	userfun1=0;
-function userfun2=x2(t, y, par_a, par_b, par_q_inf)
+function userfun2=x2(t, y, par_L, par_A, par_B, par_Dx, par_Dy)
 	userfun2=0;
-function userfun3=x3(t, y, par_a, par_b, par_q_inf)
+function userfun3=x3(t, y, par_L, par_A, par_B, par_Dx, par_Dy)
 	userfun3=0;
-function userfun4=x4(t, y, par_a, par_b, par_q_inf)
+function userfun4=x4(t, y, par_L, par_A, par_B, par_Dx, par_Dy)
 	userfun4=0;
-function userfun5=x5(t, y, par_a, par_b, par_q_inf)
+function userfun5=x5(t, y, par_L, par_A, par_B, par_Dx, par_Dy)
 	userfun5=0;

@@ -14,25 +14,48 @@ function initial_continuation_data = init_single_shooting_internal(in)
   jacobian_ode = handles{3};
   cds.nphases  = length(in.point_on_limitcycle);
   norm_of_gap  = Inf;
+  
+ 
 
   tangent_to_limitcycle ...   
     = dydt_ode(0,in.point_on_limitcycle, in.ode_parameters{:});
-  in.time_integration_options = odeset(in.time_integration_options, ...
-    'Events',       @returnToPlane);
-  if ~ isempty(jacobian_ode)
+  
+  using_cvode = endsWith(func2str(in.time_integration_method), 'cvode');
+  
+  if using_cvode
+    [orbit_t,orbit_y] = feval(in.time_integration_method, ...
+      't_values',                linspace(0,in.upper_bound_period,2000), ...
+      'initial_point',           in.point_on_limitcycle, ...
+      'cycle_detection',         true, ...
+      'lower_bound_period',      in.lower_bound_period, ...
+      'point_on_limitcycle',     in.point_on_limitcycle, ...
+      'ode_parameters',          cell2mat(in.ode_parameters), ...
+      'abs_tol',                 in.time_integration_options.AbsTol, ...
+      'rel_tol',                 in.time_integration_options.RelTol);
+
+    if in.show_plots
+      my_figure = figure;
+      plot(orbit_t, orbit_y - orbit_y(1,:));
+    end
+  else
     in.time_integration_options = odeset(in.time_integration_options, ...
-      'Jacobian',     @(t,y) jacobian_ode(0, y, in.ode_parameters{:}));
+      'Events',       @returnToPlane);
+    if ~ isempty(jacobian_ode)
+      in.time_integration_options = odeset(in.time_integration_options, ...
+        'Jacobian',     @(t,y) jacobian_ode(0, y, in.ode_parameters{:}));
+    end
+
+    [orbit_t, orbit_y] = feval(in.time_integration_method, ...
+      @(t,y) dydt_ode(0, y, in.ode_parameters{:}), ...
+      [0 in.upper_bound_period], ...
+      in.point_on_limitcycle, ...
+      in.time_integration_options);
+    
+    my_figure = figure;
+    plot(orbit_t, orbit_y - orbit_y(1,:))
   end
   
-  [orbit_t, orbit_x] = feval(in.time_integration_method, ...
-    @(t,y) dydt_ode(0, y, in.ode_parameters{:}), ...
-    [0 in.upper_bound_period], ...
-    in.point_on_limitcycle, ...
-    in.time_integration_options); 
-  
   if in.show_plots
-    my_figure = figure;
-    plot(orbit_t, orbit_x-orbit_x(1,:))
     xlabel('t')
     ylabel('deviation form initial value')
     disp(['Now showing plot from t=time_to_converge_to_cycle to ' ...
@@ -44,7 +67,9 @@ function initial_continuation_data = init_single_shooting_internal(in)
     end
   end
   
-  fprintf('max-norm of gap in cycle: %.4e\n', norm_of_gap)
+  if ~ using_cvode
+    fprintf('max-norm of gap in cycle: %.4e\n', norm_of_gap)
+  end
   
   
   period                    = orbit_t(end);
@@ -63,8 +88,8 @@ function initial_continuation_data = init_single_shooting_internal(in)
   cds.ncoo            = cds.nphases + 1;
   cds.ActiveParams    = in.active_parameter_index;
   cds.P0              = cell2mat(in.ode_parameters);
-  cds.previous_phases = in.point_on_limitcycle;
-  cds.previous_dydt_0 = tangent_to_limitcycle;
+  cds.previous_phases = in.point_on_limitcycle(:);
+  cds.previous_dydt_0 = tangent_to_limitcycle(:);
   cds.dydt_ode        = dydt_ode;
   cds.jacobian_ode    = jacobian_ode;
   cds.jacobian_p_ode  = handles{4};
@@ -73,6 +98,7 @@ function initial_continuation_data = init_single_shooting_internal(in)
   cds.p               = in.subspace_size;
   cds.mv_count        = 0;
   cds.curve           = @single_shooting;
+  cds.using_cvode     = using_cvode;
  
   function [value, isterminal, direction] = returnToPlane(t, x)
     % x and should be a column vector

@@ -9,9 +9,11 @@ function V = compute_subspace(period, parameters)
    monodromy_map = @(x) NewtonPicard.SingleShooting.monodromy_map( ...
                         x, period, parameters);
   
+	nEigs = min(cds.nphases, p + cds.p_extra);
+                      
   [eigenvectors, eigenvalues, no_convergence] = eigs(monodromy_map, ...
-                                                  cds.nphases, p + cds.p_extra);
-  print_diag(0,'computing subspace mv_count: %d\n', cds.mv_count);
+                                                            cds.nphases, nEigs);
+  print_diag(2,'computing subspace mv_count: %d\n', cds.mv_count);
   if no_convergence
     V = [];
     fprintf(['Newton_Picard_Correction.m:', ...
@@ -24,7 +26,7 @@ function V = compute_subspace(period, parameters)
   cds.eigenvalues = eigenvalues;
   i = 0;
 
-  while i <= p + cds.p_extra - 1
+  while i <= p + cds.p_extra - 1 && i <= cds.nphases - 1
     i = i + 1;
     basis(:, i) = real(eigenvectors(:,i));
     if abs(imag(eigenvalues(i))) > 0

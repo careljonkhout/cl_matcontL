@@ -1,0 +1,15 @@
+#include <nvector/nvector_serial.h>
+#include <sundials/sundials_types.h>
+#include <math.h>
+#include "user_data.h"
+
+int dydt_ode(realtype t, N_Vector y_vec, N_Vector dydt_vec, void *user_data) {
+  
+  realtype* y    = N_VGetArrayPointer(y_vec);
+  realtype* dydt = N_VGetArrayPointer(dydt_vec);
+  realtype* parameters     = ((UserData) user_data)->parameters;
+
+<%= s.formatted_rhs %>
+
+  return 0;
+}

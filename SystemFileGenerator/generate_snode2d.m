@@ -12,6 +12,6 @@ rhs={
 };
 
  
-snode2d = System_of_ODEs.new(name, vars, pars, time, max_ord, rhs);
-snode2d.generate_file
+snode2d_system = System_of_ODEs.new(name, vars, pars, time, max_ord, rhs);
+snode2d_system.generate_file
 toc

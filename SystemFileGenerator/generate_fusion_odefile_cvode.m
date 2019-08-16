@@ -1,4 +1,4 @@
-N = 25;
+N = 50;
 
 handles = fusion_symbolic();
 
@@ -50,7 +50,7 @@ for i=1:length(dydt_sym)
   rhs{i} = char(dydt_sym(i));
 end
 
-output = 'odemex';
+output = 'cvode';
 
 fusion_system = System_of_ODEs.new(name, vars, pars, time, max_ord, rhs,output);
 fusion_system.generate_file()

@@ -606,9 +606,15 @@ else
     [out,failed] = feval(cds.curve_testf, id, point.x, point.v, point.CISdata);
 end
 print_diag(5,'tf eval at period: %.16f param: %.16f\n', ...
-  point.x(end-1),  point.x(end))
-print_diag(1,'Test Functions: [')
-print_diag(1,' %+.5e',out)
+                                           point.x(end-1),  point.x(end))
+print_diag(1,'Test Functions: [ ')
+if length(out) == size(cds.SingLables, 1)
+  for i = 1:length(out)
+    print_diag(1,'%s:%+.5e ',cds.SingLables(i,:),out(i))
+  end
+else
+  print_diag(1,'%+.5e ',out)
+end
 print_diag(1,']\n')
 
 %--< END OF TESTF EVAL >--

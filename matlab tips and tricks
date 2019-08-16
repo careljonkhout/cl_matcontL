@@ -11,3 +11,13 @@ You can open files from the command window with the edit command, for instance
 "edit contL" will open contL.m
 
 add current folder and all subfolders to path: addpath(genpath(pwd))
+
+to debug mex files in linux start matlab with:
+
+matlab -Dgdb -nojvm -nodisplay -nosplash
+
+[cell_array_1(:); cell_array_2(:)] concatenates cell_array_1 and cell_array_2 
+into a column cell vector.
+
+[cell_array_1(:)', cell_array_2(:)'] concatenates cell_array_1 and cell_array_2 
+into a row cell vector.

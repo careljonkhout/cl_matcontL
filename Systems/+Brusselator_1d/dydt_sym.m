@@ -14,4 +14,4 @@ function dydt = dydt(~,x_and_y,N,L,A,B,Dx,Dy) % unused input is t
   i=2:N-1;
   dxdt(i) = (x(i-1)-2*x(i)+x(i+1))*cx + A - (B+1)*x(i) + x(i).*x(i).*y(i);
   dydt(i) = (y(i-1)-2*y(i)+y(i+1))*cy + B*x(i) - x(i).*x(i).*y(i);
-  dydt = [dxdt(:); dydt(:)];
+  dydt = [dxdt; dydt];
