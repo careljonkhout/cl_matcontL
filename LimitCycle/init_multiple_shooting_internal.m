@@ -59,7 +59,7 @@ function initial_continuation_data = init_multiple_shooting_internal(in)
   initial_continuation_data(end  ) = ...
     in.ode_parameters{in.active_parameter_index};
   
-
+  cds.using_cvode     = false; % todo: add cvode support
   cds.nMeshIntervals  = in.nMeshIntervals;
   cds.mesh            = linspace(0, 1, in.nMeshIntervals + 1);
   cds.probfile        = in.odefile;

@@ -1,5 +1,6 @@
 #define n_parameters <%= length(s.input_pars) %>
 #define NEQ          <%= length(s.input_vars) %>
+#define ANALYTIC_JACOBIAN false
 
 typedef struct {
   double* parameters;

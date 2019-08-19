@@ -80,7 +80,8 @@ function [x0, v0] = init_multiple_shooting_from_hopf( odefile, x, ...
 
   point_on_limitcycle    = x0(1:cds.nphases);
   tangent_to_limitcycle  = dydt_ode(0, point_on_limitcycle, ode_parameters{:});
-
+  
+  cds.using_cvode     = false; % todo: add cvode support
   cds.nMeshIntervals  = nMeshIntervals;
   cds.probfile        = odefile;
   cds.options.PartitionMonodromy = cds.nphases > 20;

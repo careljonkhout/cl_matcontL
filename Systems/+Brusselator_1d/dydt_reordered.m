@@ -1,6 +1,6 @@
-function dydt = dydt(~,x_and_y,N,L,A,B,Dx,Dy) % unused input is t
-  x  = x_and_y(1:N);    % 
-  y  = x_and_y(N+1:end);
+function dydt = dydt_reordered(~,x_and_y,N,L,A,B,Dx,Dy) % unused input is t
+  x  = x_and_y(1:2:end);    % 
+  y  = x_and_y(2:2:end);
   x0 = A; x1 = A;
   y0 = B/A; y1 = B/A;
   L2 = L^2;
@@ -14,4 +14,5 @@ function dydt = dydt(~,x_and_y,N,L,A,B,Dx,Dy) % unused input is t
   i=2:N-1;
   dxdt(i) = (x(i-1)-2*x(i)+x(i+1))*cx + A - (B+1)*x(i) + x(i).*x(i).*y(i);
   dydt(i) = (y(i-1)-2*y(i)+y(i+1))*cy + B*x(i) - x(i).*x(i).*y(i);
-  dydt = [dxdt; dydt];
+  dydt = [transpose(dxdt(:)); transpose(dydt(:))];
+  dydt = dydt(:);

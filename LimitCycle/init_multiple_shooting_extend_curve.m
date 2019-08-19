@@ -49,6 +49,7 @@ function do_init_multiple_shooting_extend_curve(in)
   point_on_limitcycle    = in.initial_continuation_state(1:cds.nphases);
   tangent_to_limitcycle  = dydt_ode(0, point_on_limitcycle, ode_parameters{:});
 
+  cds.using_cvode     = false; % todo: add cvode support
   cds.nMeshIntervals  = in.nMeshIntervals;
   cds.mesh            = in.time_mesh;
   cds.probfile        = in.odefile;

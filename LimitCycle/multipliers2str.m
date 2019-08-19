@@ -3,8 +3,9 @@ function str = multipliers2str(multipliers)
   
   distance_to_one                     = abs(multipliers - 1);
   cds.deviation_of_trivial_multiplier = min(distance_to_one);
-  str = sprintf('deviation of trivial multiplier: %.2e\n', ... 
-                          cds.deviation_of_trivial_multiplier);
+  log_10_of_deviation                 = log10(min(distance_to_one));
+  str = sprintf('deviation of trivial multiplier: 10^%.2f\n', ... 
+                                                           log_10_of_deviation);
   
   if contopts.NewtonPicard
     str = [str sprintf('number of multipliers: %d\n', length(multipliers))];
@@ -23,11 +24,11 @@ function str = multipliers2str(multipliers)
       % This text will not be so long that it will negatively impact
       % performance. Therefore, the 'array grows on every loop
       % iteration'-warning is ignored
-      str  = [ str sprintf('%.3f +/- %.3fi norm: %.3f\n', ...
+      str  = [ str sprintf('%.6f +/- %.6fi norm: %.6f\n', ...
                 real(m), abs(imag(m)), abs(m))]; %#ok<AGROW>
 	    i = i + 2;
     else
-      str  = [ str sprintf('%.3f\n', real(m)) ]; %#ok<AGROW>
+      str  = [ str sprintf('%.6f\n', real(m)) ]; %#ok<AGROW>
       i = i + 1;
     end
   end

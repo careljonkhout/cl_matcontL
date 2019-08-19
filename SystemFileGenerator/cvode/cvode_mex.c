@@ -30,7 +30,7 @@
 #define ABS_TOL RCONST(1.e-6) /* default scalar absolute tolerance */
 #define REL_TOL RCONST(1.e-6) /* default relative tolerance */
 
-#define ANALYTIC_JACOBIAN false
+
 
 #define NS    1
 
@@ -80,10 +80,8 @@ static void check_double(const mxArray* array,               char* arrayname);
 static void check_bool  (const mxArray* array,               char* arrayname);
 static void check_size  (const mxArray* array, int expected, char* arrayname);
 static N_Vector get_N_Vector(const mxArray* array, char* input_name, int size);
-// static void append_to_array(mxArray* array, int from_index,
-//                               double* data, int data_length);
-// static void grow_mxArray(mxArray* array);
-
+static void PrintFinalStats(void *cvode_mem, booleantype sensi,
+                            booleantype err_con, int sensi_meth);
 
 static int         nPoints;
 static realtype*   t_values;
@@ -419,14 +417,15 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   } else {
     if (debug) mexPrintf("Sensitivity: NO \n");
   }
-  mex_output[output_t] = mxCreateDoubleMatrix(1  , nPoints, mxREAL);
-  mex_output[output_y] = mxCreateDoubleMatrix(NEQ, nPoints, mxREAL);
+  
+  mex_output[output_t]     = mxCreateDoubleMatrix(1  , nPoints, mxREAL);
+  mxArray* y_output_buffer = mxCreateDoubleMatrix(NEQ, nPoints, mxREAL);
   if (sensitivity) {
     mex_output[output_sensitivity] = mxCreateDoubleMatrix(NEQ, 1, mxREAL);
   }
   
   mxDouble* t_out = my_mex_get_doubles(mex_output[output_t]);
-  mxDouble* y_out = my_mex_get_doubles(mex_output[output_y]);
+  mxDouble* y_out = my_mex_get_doubles(y_output_buffer);
   mxDouble* s_out;
   if (sensitivity) {
     s_out = my_mex_get_doubles(mex_output[output_sensitivity]);
@@ -468,15 +467,18 @@ void mexFunction(int n_output,       mxArray *mex_output[],
     }
   }
   if (i+1 < nPoints) {
-    mxSetN(mex_output[0], i+1);
-    mxSetN(mex_output[1], i+1);
+    mxSetN(mex_output[output_t], i+1);
+    mxSetN(y_output_buffer, i+1);
   }
   mxArray* transposed = mxCreateDoubleMatrix(i+1, NEQ, mxREAL);
-  mexCallMATLAB(1, &transposed, 1, &mex_output[output_y], "transpose");
+  mexCallMATLAB(1, &transposed, 1, &y_output_buffer, "transpose");
   mex_output[output_y] = transposed;
    
+   PrintFinalStats(cvode_mem, sensitivity, err_con, sensi_meth);
   
   /* Free memory */
+  
+  mxDestroyArray(y_output_buffer);
 
   N_VDestroy(y);
   N_VDestroy(s);
@@ -554,4 +556,69 @@ static N_Vector get_N_Vector(const mxArray* array, char* input_name, int size) {
   check_size  (array, size, input_name);
   realtype* data = my_mex_get_doubles(array);
   return N_VMake_Serial(size, data);
+}
+
+
+/*
+ * Print some final statistics located in the CVODES memory
+ */
+
+static void PrintFinalStats(void *cvode_mem, booleantype sensi,
+                            booleantype err_con, int sensi_meth)
+{
+  long int nst;
+  long int nfe, nsetups, nni, ncfn, netf;
+  long int nfSe, nfeS, nsetupsS, nniS, ncfnS, netfS;
+  int retval;
+
+  retval = CVodeGetNumSteps(cvode_mem, &nst);
+  //check_retval(&retval, "CVodeGetNumSteps", 1);
+  retval = CVodeGetNumRhsEvals(cvode_mem, &nfe);
+  //check_retval(&retval, "CVodeGetNumRhsEvals", 1);
+  retval = CVodeGetNumLinSolvSetups(cvode_mem, &nsetups);
+  //check_retval(&retval, "CVodeGetNumLinSolvSetups", 1);
+  retval = CVodeGetNumErrTestFails(cvode_mem, &netf);
+  //check_retval(&retval, "CVodeGetNumErrTestFails", 1);
+  retval = CVodeGetNumNonlinSolvIters(cvode_mem, &nni);
+  //check_retval(&retval, "CVodeGetNumNonlinSolvIters", 1);
+  retval = CVodeGetNumNonlinSolvConvFails(cvode_mem, &ncfn);
+  //check_retval(&retval, "CVodeGetNumNonlinSolvConvFails", 1);
+
+  if (sensi) {
+    retval = CVodeGetSensNumRhsEvals(cvode_mem, &nfSe);
+    //check_retval(&retval, "CVodeGetSensNumRhsEvals", 1);
+    retval = CVodeGetNumRhsEvalsSens(cvode_mem, &nfeS);
+    //check_retval(&retval, "CVodeGetNumRhsEvalsSens", 1);
+    retval = CVodeGetSensNumLinSolvSetups(cvode_mem, &nsetupsS);
+    //check_retval(&retval, "CVodeGetSensNumLinSolvSetups", 1);
+    if (err_con) {
+      retval = CVodeGetSensNumErrTestFails(cvode_mem, &netfS);
+      //check_retval(&retval, "CVodeGetSensNumErrTestFails", 1);
+    } else {
+      netfS = 0;
+    }
+    if ((sensi_meth == CV_STAGGERED) || (sensi_meth == CV_STAGGERED1)) {
+      retval = CVodeGetSensNumNonlinSolvIters(cvode_mem, &nniS);
+      //check_retval(&retval, "CVodeGetSensNumNonlinSolvIters", 1);
+      retval = CVodeGetSensNumNonlinSolvConvFails(cvode_mem, &ncfnS);
+      //check_retval(&retval, "CVodeGetSensNumNonlinSolvConvFails", 1);
+    } else {
+      nniS = 0;
+      ncfnS = 0;
+    }
+  }
+
+  mexPrintf("\nFinal Statistics\n\n");
+  mexPrintf("number of steps     = %5ld\n\n", nst);
+  mexPrintf("number of rhs evals     = %5ld\n",   nfe);
+  mexPrintf("netf    = %5ld    nsetups  = %5ld\n", netf, nsetups);
+  mexPrintf("nni     = %5ld    ncfn     = %5ld\n", nni, ncfn);
+
+  if(sensi) {
+    mexPrintf("\n");
+    mexPrintf("nfSe    = %5ld    nfeS     = %5ld\n", nfSe, nfeS);
+    mexPrintf("netfs   = %5ld    nsetupsS = %5ld\n", netfS, nsetupsS);
+    mexPrintf("nniS    = %5ld    ncfnS    = %5ld\n", nniS, ncfnS);
+  }
+
 }

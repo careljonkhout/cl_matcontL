@@ -73,6 +73,7 @@ function [x0, v0] = init_single_shooting_from_hopf( odefile, ...
   point_on_limitcycle    = x0(1:cds.nphases);
   tangent_to_limitcycle  = dydt_ode(0, point_on_limitcycle, ode_parameters{:});
 
+  cds.using_cvode     = false;
   cds.probfile        = odefile;
   cds.options.PartitionMonodromy = cds.nphases > 20;
   cds.nap             = 1;

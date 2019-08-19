@@ -21,7 +21,6 @@ function str = to_string(obj)
     str = obj;
   elseif isnumeric(obj) && floor(obj) == obj
     str = num2str(obj);
-  else
     error('block in template returned unexpected result');
   end
 end
