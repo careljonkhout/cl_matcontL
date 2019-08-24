@@ -15,8 +15,6 @@ function initial_continuation_data = init_single_shooting_internal(in)
   cds.nphases  = length(in.point_on_limitcycle);
   norm_of_gap  = Inf;
   
- 
-
   tangent_to_limitcycle ...   
     = dydt_ode(0,in.point_on_limitcycle, in.ode_parameters{:});
   

@@ -119,6 +119,7 @@ function initial_continuation_data = ...
     'RelTol', contopts.integration_rel_tol);
   input.poincare_tolerance        = 5e-2;
   input.show_plots                = false;
+  input.cvode_verbose             = false;
 
   
   i=1;
@@ -146,7 +147,7 @@ end
 
 function point_on_cycle = converge_to_cycle(in)
     
-  global cds contopts;
+  global cds;
   
   handles      = feval(in.odefile);
   dydt_ode     = handles{2};
@@ -167,7 +168,8 @@ function point_on_cycle = converge_to_cycle(in)
       'initial_point',           in.initial_point, ...
       'ode_parameters',          cell2mat(in.ode_parameters), ...
       'abs_tol',                 in.time_integration_options.AbsTol, ...
-      'rel_tol',                 in.time_integration_options.RelTol);
+      'rel_tol',                 in.time_integration_options.RelTol, ...
+      'verbose',                 in.cvode_verbose);
 
     if in.show_plots
       my_figure = figure;

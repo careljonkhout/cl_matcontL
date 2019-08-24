@@ -1,6 +1,13 @@
 % meant to be passed as a function handle to contL
 
 function plot_T_versus_param(currpoint, trialpoint)
+  if ~ usejava('jvm')
+    % When debugging mex files with gdb (GNU debugger) on linux, we ussually
+    % start matlab without jvm (java virtual machine). This clause prevents a
+    % continuation from raising an error in this method, when running without a
+    % jvm (i.e. when debugging mex files with gdb on linux)
+    return
+  end
   if isempty(findobj('type', 'figure'))
     figure
   end

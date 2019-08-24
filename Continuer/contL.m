@@ -104,7 +104,7 @@ end
 %% Algorithm starts here
 cds.StartTime = clock;
 
-feval(cds.curve_init, x0, v_cont); % DV 2018
+feval(cds.curve_init, x0, v_cont);
 cds.newtcorrL_needs_CISdata = 0;
 
 if isequal(curvefile, @limitcycleL) || ...

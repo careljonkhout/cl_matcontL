@@ -14,6 +14,7 @@ add current folder and all subfolders to path: addpath(genpath(pwd))
 
 to debug mex files in linux start matlab with:
 
+export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libexpat.so 
 matlab -Dgdb -nojvm -nodisplay -nosplash
 
 [cell_array_1(:); cell_array_2(:)] concatenates cell_array_1 and cell_array_2 

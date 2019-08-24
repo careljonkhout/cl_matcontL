@@ -16,3 +16,7 @@ function dfdx = jacobian(~,x,N,L,~,B,Dx,Dy) % unused inputs are t and A
   A(1:N,1) = B - 2*x(:).*y(:);
   A(N+1:2*N,5) = x(:).*x(:);
   dfdx = spdiags(A, [-N,-1:1,N] , 2*N, 2*N);
+  
+  
+  % ........... cx
+  %               cx                  

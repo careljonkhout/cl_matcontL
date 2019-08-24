@@ -25,7 +25,7 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, M_delta_q_r, ...
       'abs_tol',                 contopts.integration_abs_tol, ...
       'rel_tol',                 contopts.integration_rel_tol);
     phi = y(end,:)';
-    cds.phases_0 = phi;
+    cds.phases_0 = phases_0;
   else
     % Since the result of the next time-integration will be reused many times,
     % we set the tolerances a bit tighter than the rest.

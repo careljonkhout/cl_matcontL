@@ -1,6 +1,7 @@
 function Mx = monodromy_map(x, period, parameters, abs_tol, rel_tol)
   global cds contopts
   cds.mv_count = cds.mv_count + 1;
+
   if cds.using_cvode
     [~,~,Mx] = feval(cds.integrator, ...
       't_values',                [0 period], ...
@@ -30,7 +31,7 @@ function Mx = monodromy_map(x, period, parameters, abs_tol, rel_tol)
                                 t, deval(cds.cycle_orbit,t), parameters{:}));
     dydt_mon = @(t, y) ...
       cds.jacobian_ode(t, deval(cds.cycle_orbit,t), parameters{:}) * y;
-    [~,orbit] = cds.integrator(dydt_mon, [0 period], x, integration_opt);
+    [~,orbit] = ode15s(dydt_mon, [0 period], x, integration_opt);
     Mx = orbit(end,:)';
   else
     % Below an alternative method of computing the action of the monodromy
