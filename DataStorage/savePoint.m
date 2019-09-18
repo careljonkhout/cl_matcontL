@@ -123,6 +123,9 @@ end
 
 function print_point(point, label, is_special)
   global cds
+  if mod(cds.i, 20) == 0
+    PrintOutputCaption
+  end
 % example of output produced by this function:
 %  S  ID   PT:     p(2)          norm of point   curve function norm 	 step size 
 %  1	 1   00:  +5.000000e-01    6.760362e+01    0.000000e+00          1.000000e-02    
@@ -138,7 +141,15 @@ function print_point(point, label, is_special)
   end
   print_diag(0,'%.6e     '       , norm(point.x(1:cds.ncoo)));
   print_diag(0,'%.6e     '       , point.R);
-  print_diag(0,'%.6e\n'     , point.h);
+  print_diag(0,'%.6e'     , point.h);
+  
+  if has_period(cds.curve)
+    distance_to_one                 = abs(point.multipliers - 1);
+    log_10_of_deviation             = log10(min(distance_to_one));
+    print_diag(0, '    %.3f', -log_10_of_deviation);
+    print_diag(0, '          %.3f', abs(max(point.multipliers)));
+  end
 
+  print_diag(0, '\n');
 
 end

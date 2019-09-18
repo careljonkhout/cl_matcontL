@@ -19,9 +19,10 @@ int d_sensitivity_dt(int Ns, realtype t,
   double* ds = N_VGetArrayPointer(ds_vector);
   double* parameters = ((UserData) user_data)->parameters;
  
-  ds[0] =  -parameters[0]*s[0]+parameters[0]*s[1];
-  ds[1] =  -s[1]-s[2]*y[0]+s[0]*(parameters[1]-y[2]);
-  ds[2] =  -parameters[2]*s[2]+s[1]*y[0]+s[0]*y[1];
+  ds[0] =  parameters[0]*s[0]-parameters[0]*s[1];
+  ds[1] =  -parameters[1]*s[0];
+  ds[2] =  s[1]+s[2]*y[0]+s[0]*y[2];
+  ds[3] =  parameters[2]*s[2]-s[1]*y[0]-s[0]*y[1];
 
   return 0;
 }

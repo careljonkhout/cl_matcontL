@@ -97,6 +97,9 @@ function initial_continuation_data = init_single_shooting_internal(in)
   cds.mv_count        = 0;
   cds.curve           = @single_shooting;
   cds.using_cvode     = using_cvode;
+  if cds.using_cvode
+    cds.n_points_stored = 1000;
+  end
  
   function [value, isterminal, direction] = returnToPlane(t, x)
     % x and should be a column vector

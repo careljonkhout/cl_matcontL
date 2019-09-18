@@ -30,16 +30,16 @@
 #define MAX_NUM_STEPS      10*1000*1000
 
 // implemented in dydt_cvode.c
-int dydt_cvode(realtype t, N_Vector u, N_Vector udot, void *);
+int dydt_cvode(double t, N_Vector u, N_Vector udot, void *);
 
 #if ANALYTIC_JACOBIAN
 // implemented in jacobian_cvode.c
 int jacobian_dydt(
-               realtype t, N_Vector y_vec, N_Vector fy, SUNMatrix jac_structure,
+               double t, N_Vector y_vec, N_Vector fy, SUNMatrix jac_structure,
               void* user_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
 #endif
 // implemented in d_sensitivity_dt.c
-int d_sensitivity_dt(int Ns, realtype t,
+int d_sensitivity_dt(int Ns, double t,
                 N_Vector y_vector, 
                 N_Vector ydot,
                 int iS,
@@ -49,18 +49,28 @@ int d_sensitivity_dt(int Ns, realtype t,
                 N_Vector tmp1, N_Vector tmp2);
 
 static int dydt_simultaneous(
-        realtype t, N_Vector u_and_s, N_Vector dydt_vec, void *user_data);
+        double t, N_Vector u_and_s, N_Vector dydt_vec, void *user_data);
 
-static int jacobian_simultaneous(realtype t, N_Vector u_and_s, N_Vector fy,
+static int jacobian_simultaneous(double t, N_Vector u_and_s, N_Vector fy,
               SUNMatrix jacobian, void* user_data,
               N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
 
-static int return_to_plane(realtype t, N_Vector u, realtype* g  , void *);
+
+static int dsdt_staggered(
+            double t, N_Vector s_vector, N_Vector dsdt_vector, void *user_data);
+
+static int jacobian_staggered(double t, N_Vector u_and_s, N_Vector fy,
+              SUNMatrix jacobian, void* user_data,
+              N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
+
+static int return_to_plane(double t, N_Vector u, double* g  , void *);
+
+static void interpolate_solution(double t, double* result);
 
 static void error_handler(int error_code, const char *module,
                           const char *function, char *msg, void *eh_data);
 
-static realtype* my_mex_get_doubles(const mxArray* array);
+static double* my_mex_get_doubles(const mxArray* array);
 static void check_double(const mxArray* array,               char* arrayname);
 static void check_bool  (const mxArray* array,               char* arrayname);
 static void check_size  (const mxArray* array, int expected, char* arrayname);
@@ -71,34 +81,40 @@ static N_Vector get_N_Vector(const mxArray* array, char* input_name, int size);
 static void PrintFinalStats(void *cvode, booleantype sensi,
                             booleantype err_con, int sensi_meth);
 
-static int         nPoints;
-static realtype*   t_values;
-static N_Vector    initial_point;
-static realtype*   parameters;
-static int         max_num_points;
-static booleantype max_num_points_given;
+static int          n_points;
+static double*      t_values;
+static N_Vector     initial_point;
+static double*      parameters;
+static int          max_num_points;
+static booleantype  max_num_points_given;
 
-static booleantype sensitivity;
-static N_Vector    sensitivity_vector;
+static booleantype  sensitivity;
+static N_Vector     sensitivity_vector;
 
-static booleantype cycle_detection;
-static realtype    lower_bound_period;
-static booleantype lower_bound_period_given;
-static N_Vector    point_on_limitcycle;
-static N_Vector    tangent_to_limitcycle;
+static booleantype  cycle_detection;
+static double       lower_bound_period;
+static booleantype  lower_bound_period_given;
+static N_Vector     point_on_limitcycle;
+static N_Vector     tangent_to_limitcycle;
 
-static realtype    abs_tol;
-static booleantype abs_tol_given;
+static double       abs_tol;
+static booleantype  abs_tol_given;
 
-static realtype    rel_tol;
-static booleantype rel_tol_given;
+static double       rel_tol;
+static booleantype  rel_tol_given;
 
-static booleantype verbose;
+static booleantype  staggered;
+static double*      cycle_orbit;
+static double       stored_stepsize;
+
+static booleantype  verbose;
+
+
 
 void mexFunction(int n_output,       mxArray *mex_output[], 
                  int n_input,  const mxArray *mex_input []  ) {
   
-  nPoints                  = 0;
+  n_points                 = 0;
   t_values                 = NULL;
   initial_point            = NULL;
   parameters               = NULL;
@@ -121,6 +137,12 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   rel_tol_given            = false;
   
   verbose                  = false;
+  
+  staggered                = false;
+  stored_stepsize          = 0;
+  cycle_orbit              = NULL;
+  
+  
   
   UserData user_data = malloc(sizeof(UserData));
   check_null(user_data, "malloc user_data");
@@ -154,10 +176,10 @@ void mexFunction(int n_output,       mxArray *mex_output[],
     if        ( ! strcmp(arg_name, "t_values"            ) ) {
       
       check_double(mex_input[i + 1], "t_values");
-      t_values = (realtype*) my_mex_get_doubles(mex_input[i + 1]);
+      t_values = (double*) my_mex_get_doubles(mex_input[i + 1]);
       
-      nPoints      = mxGetNumberOfElements(mex_input[i + 1]);
-      if (nPoints < 2) {
+      n_points      = mxGetNumberOfElements(mex_input[i + 1]);
+      if (n_points < 2) {
         mexErrMsgIdAndTxt("cvode:wrong_size",
                         "Input vector t_values must have at least 2 elements.");
       }
@@ -207,7 +229,7 @@ void mexFunction(int n_output,       mxArray *mex_output[],
       abs_tol = mxGetScalar(mex_input[i + 1]);
       if (abs_tol <= 0) {
         mexErrMsgIdAndTxt("cvode:abs_tol_not_positive", 
-                                         "Error: abs_tol is not positive");   
+                                              "Error: abs_tol is not positive");   
       }
       abs_tol_given = true;
       
@@ -218,7 +240,7 @@ void mexFunction(int n_output,       mxArray *mex_output[],
       abs_tol = mxGetScalar(mex_input[i + 1]);
       if (abs_tol <= 0) {
         mexErrMsgIdAndTxt("cvode:abs_tol_not_positive", 
-                                         "Error: rel_tol is not positive");
+                                              "Error: rel_tol is not positive");
       }
       rel_tol_given = true;
       
@@ -227,6 +249,17 @@ void mexFunction(int n_output,       mxArray *mex_output[],
       check_bool(mex_input[i + 1], "verbose");
       
       verbose = mxIsLogicalScalarTrue(mex_input[i + 1]);
+      
+    } else if ( ! strcmp(arg_name, "staggered"    ) ) {
+      
+      check_bool(mex_input[i + 1], "staggered");
+      
+      staggered = mxIsLogicalScalarTrue(mex_input[i + 1]);
+    
+    } else if( ! strcmp(arg_name, "cycle_orbit"            ) ) {
+      
+      check_double(mex_input[i + 1], "cycle_orbit");
+      cycle_orbit = (double*) my_mex_get_doubles(mex_input[i + 1]);
       
     } else {
   
@@ -241,13 +274,6 @@ void mexFunction(int n_output,       mxArray *mex_output[],
                      "(or 3 outputs for sensitivity analysis)");
   }
   
-  if(sensitivity && n_output < 3) {
-    mexErrMsgIdAndTxt("cvode:n_output",
-                      "Error: You enabled sensitivity analysis, " 
-                      "but you only specified less than three outputs. "
-                      "Three outputs are needed for sensitivity analysis: "
-                      "t, y, and s");
-  }
 
   if (t_values == NULL) {
     mexErrMsgIdAndTxt("cvode:no_t_values", 
@@ -291,26 +317,33 @@ void mexFunction(int n_output,       mxArray *mex_output[],
     }
   }
   
-  if (sensitivity) {
-    if (n_output != 3) {
-      mexErrMsgIdAndTxt("cvode:n_output",
-                             "Error: you enabled sensitivity analysis "
-                             "but you did not specify three outputs");   
+  if(sensitivity && n_output != 3) {
+    mexErrMsgIdAndTxt("cvode:n_output",
+                      "Error: You enabled sensitivity analysis, " 
+                      "but you only specified less than three outputs. "
+                      "Three outputs are needed for sensitivity analysis: "
+                      "t (time), y (state variables), and s (sensitivity");
+    
+    if (staggered) {
+      double period = t_values[n_points - 1] - t_values[0];
+      stored_stepsize = period / (n_points - 1);
     }
+    
   }
 
-  void*             cvode   = NULL;
+  void*             cvode       = NULL;
   SUNMatrix         A           = NULL;
   SUNLinearSolver   LS          = NULL;
   int               sensi_meth  = CV_SIMULTANEOUS;
   booleantype       err_con     = true;
-
-  int size = (MANUAL_SENSITIVITY && sensitivity) ? 2 * NEQ : NEQ;
+  
+  
+  int size = (SENSITIVITY == MANUAL && sensitivity) ? 2 * NEQ : NEQ;
   
   N_Vector y = N_VNew_Serial(size); 
   
   N_Vector s;
-  if (sensitivity && !MANUAL_SENSITIVITY) {
+  if (sensitivity && SENSITIVITY == CVODES) {
     s = N_VNew_Serial(NEQ);
   }
   
@@ -322,18 +355,27 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   double* s_data;
   if (sensitivity) {
     double* sens_vector_data = N_VGetArrayPointer(sensitivity_vector);
-    if (MANUAL_SENSITIVITY) {
-      memcpy(y_data + NEQ, sens_vector_data, NEQ * sizeof(double));
-    } else {
+    switch (SENSITIVITY) {
+      case CVODES:
       s_data                   = N_VGetArrayPointer(s); 
       memcpy(s_data      , sens_vector_data, NEQ * sizeof(double));
+      break;
+      case MANUAL:
+      memcpy(y_data + NEQ, sens_vector_data, NEQ * sizeof(double));
+      break;
     }
   }
   
   cvode = CVodeCreate_nullchecked(CV_BDF);
 
-  if (sensitivity && MANUAL_SENSITIVITY) {
-    CVodeInit_checked(cvode, dydt_simultaneous, t_values[0], y);  
+  if (sensitivity) {
+    switch (SENSITIVITY) {
+    case CVODES:    CVodeInit_checked(cvode, dydt_cvode       , t_values[0], y);
+    break;
+    case MANUAL:    CVodeInit_checked(cvode, dydt_simultaneous, t_values[0], y);  
+    break;
+    case STAGGERED: CVodeInit_checked(cvode, dsdt_staggered   , t_values[0], y);  
+    }
   } else {
     CVodeInit_checked(cvode, dydt_cvode       , t_values[0], y);
   }
@@ -356,8 +398,12 @@ void mexFunction(int n_output,       mxArray *mex_output[],
  
   /* Set the user-supplied Jacobian routine Jac */
   #if ANALYTIC_JACOBIAN
-  if (sensitivity && MANUAL_SENSITIVITY) {
-    CVodeSetJacFn(cvode, jacobian_simultaneous);
+  if (sensitivity) {
+    switch (SENSITIVITY) {
+    case CVODES:    CVodeSetJacFn(cvode, jacobian_dydt);          break;
+    case MANUAL:    CVodeSetJacFn(cvode, jacobian_simultaneous);  break;
+    case STAGGERED: CVodeSetJacFn(cvode, jacobian_staggered);     break;
+    }
   } else {
     CVodeSetJacFn(cvode, jacobian_dydt);
   }
@@ -377,12 +423,12 @@ void mexFunction(int n_output,       mxArray *mex_output[],
  
 
   
-  if(sensitivity && ! MANUAL_SENSITIVITY) {
+  if (sensitivity && SENSITIVITY == CVODES) {
     CVodeSensInit1       (cvode, NS, sensi_meth, d_sensitivity_dt, &s);
     CVodeSensEEtolerances(cvode);
     //CVodeSensSStolerances(cvode, rel_tol, &abs_tol);
     CVodeSetSensErrCon   (cvode, err_con);    
-    realtype dummy_value = 0;
+    double dummy_value = 0;
     CVodeSetSensParams(cvode, &dummy_value, NULL, NULL);
     if (verbose) {
       mexPrintf("Sensitivity: YES ");
@@ -400,9 +446,9 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   
   
   
-  mex_output[output_t]     = mxCreateDoubleMatrix(1  , nPoints, mxREAL);
+  mex_output[output_t]     = mxCreateDoubleMatrix(1   , n_points, mxREAL);
   
-  mxArray* y_output_buffer = mxCreateDoubleMatrix(size, nPoints, mxREAL);
+  mxArray* y_output_buffer = mxCreateDoubleMatrix(size, n_points, mxREAL);
   if (sensitivity) {
     mex_output[output_sensitivity] = mxCreateDoubleMatrix(NEQ, 1, mxREAL);
   }
@@ -414,22 +460,24 @@ void mexFunction(int n_output,       mxArray *mex_output[],
     s_out = my_mex_get_doubles(mex_output[output_sensitivity]);
   }
   
-  memcpy(t_out, t_values, nPoints * sizeof(double));
-  memcpy(y_out, y_data,   NEQ     * sizeof(double));
+  memcpy(t_out, t_values, n_points * sizeof(double));
+  memcpy(y_out, y_data,   NEQ      * sizeof(double));
 
-  realtype* y_out_ptr = y_out + NEQ;
+  double* y_out_ptr = y_out + NEQ;
 
 
 
-  realtype t=0;
+  double t=0;
   int rootsfound = false;
  
   int i;
   
-  for(i = 1; i < nPoints; i++) {  
+  int n_points_to_compute = sensitivity ? 2 : n_points;
+  
+  for(i = 1; i < n_points; i++) {  
     int flag = CVode(cvode, t_values[i], y, &t, CV_NORMAL);
     check(flag, "CVode");
-    if (sensitivity && ! MANUAL_SENSITIVITY) {
+    if (sensitivity && SENSITIVITY == CVODES) {
       flag = CVodeGetSens(cvode, &t, &s);
       check(flag, "CVodeGetSens");
       
@@ -450,11 +498,11 @@ void mexFunction(int n_output,       mxArray *mex_output[],
     }
   }
   
-  if (sensitivity && MANUAL_SENSITIVITY) {
+  if (sensitivity && SENSITIVITY == CVODES) {
     memcpy(s_out, y_data + NEQ, NEQ * sizeof(double));  
   }
   
-  if (i+1 < nPoints) {
+  if (i+1 < n_points) {
     mxSetN(mex_output[output_t], i+1);
     mxSetN(y_output_buffer     , i+1);
   }
@@ -471,7 +519,7 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   mxDestroyArray(y_output_buffer);
 
   N_VDestroy(y);
-  if (sensitivity && !MANUAL_SENSITIVITY) {
+  if (sensitivity && SENSITIVITY == CVODES) {
     N_VDestroy(s);
   }
 
@@ -480,21 +528,21 @@ void mexFunction(int n_output,       mxArray *mex_output[],
 
 
 
-realtype* my_mex_get_doubles(const mxArray* array) {
+double* my_mex_get_doubles(const mxArray* array) {
   #if MX_HAS_INTERLEAVED_COMPLEX
-  return (realtype*) mxGetDoubles(array);
+  return (double*) mxGetDoubles(array);
   #else
-  return (realtype*) mxGetPr(     array);
+  return (double*) mxGetPr(     array);
   #endif 
 }
 
-static int return_to_plane(realtype t, N_Vector y, realtype *gout, 
+static int return_to_plane(double t, N_Vector y, double *gout, 
                                                               void *user_data) {
   if (t > lower_bound_period) {
     *gout = 0;
-    realtype* y_data   = NV_DATA_S(y);
-    realtype* pol_data = NV_DATA_S(point_on_limitcycle);
-    realtype* ttl_data = NV_DATA_S(tangent_to_limitcycle);
+    double* y_data   = NV_DATA_S(y);
+    double* pol_data = NV_DATA_S(point_on_limitcycle);
+    double* ttl_data = NV_DATA_S(tangent_to_limitcycle);
     for (int i = 0; i < NV_LENGTH_S(y); i++) {
       *gout += (y_data[i] - pol_data[i]) * ttl_data[i];
     }
@@ -503,6 +551,8 @@ static int return_to_plane(realtype t, N_Vector y, realtype *gout,
   }
   return 0;
 }
+
+void dydt_ode(double* u, double* dudt, double* parameters);
 
 #define X(i) u[2*(i)]
 #define Y(i) u[2*(i)+1]
@@ -519,16 +569,14 @@ static int return_to_plane(realtype t, N_Vector y, realtype *gout,
 #define DX parameters[3]
 #define DY parameters[4]
 
-void dydt_ode(double* y, double* dydt, double* parameters);
-
 static int dydt_simultaneous(
-        realtype t, N_Vector u_and_s, N_Vector dydt_vec, void *user_data) {
+        double t, N_Vector u_and_s, N_Vector dydt_vec, void *user_data) {
   
-  realtype* u              = N_VGetArrayPointer(u_and_s);
-  realtype* s              = u + NEQ;
-  realtype* dydt           = N_VGetArrayPointer(dydt_vec);
-  realtype* dsdt           = dydt + NEQ;
-  realtype* parameters     = ((UserData) user_data)->parameters;
+  double* u              = N_VGetArrayPointer(u_and_s);
+  double* s              = u + NEQ;
+  double* dydt           = N_VGetArrayPointer(dydt_vec);
+  double* dsdt           = dydt + NEQ;
+  double* parameters     = ((UserData) user_data)->parameters;
   
   dydt_ode(u,dydt,parameters);
   
@@ -585,12 +633,12 @@ static int dydt_simultaneous(
 
 #define NMP N_MESH_POINTS
 
-static int jacobian_simultaneous(realtype t, N_Vector u_and_s, N_Vector fy,
+static int jacobian_simultaneous(double t, N_Vector u_and_s, N_Vector fy,
               SUNMatrix jacobian, void* user_data,
               N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
   
-  realtype* u   = N_VGetArrayPointer(u_and_s);
-  realtype* parameters = ((UserData) user_data)->parameters;
+  double* u   = N_VGetArrayPointer(u_and_s);
+  double* parameters = ((UserData) user_data)->parameters;
   
   double cx = DX * (N_MESH_POINTS + 1) * (N_MESH_POINTS+1) / (L*L);
   double cy = DY * (N_MESH_POINTS + 1) * (N_MESH_POINTS+1) / (L*L);
@@ -640,6 +688,135 @@ static int jacobian_simultaneous(realtype t, N_Vector u_and_s, N_Vector fy,
   
   return 0;
 }
+
+static int dsdt_staggered(double t,
+        N_Vector s_vector, N_Vector dsdt_vector, void *user_data) {
+  
+  double* u = ((UserData) user_data)->temp;
+  interpolate_solution(t, u);   
+  
+  
+  double* s          = N_VGetArrayPointer(s_vector);
+  double* dsdt       = N_VGetArrayPointer(dsdt_vector);
+  double* parameters = ((UserData) user_data)->parameters;
+    
+  double cx = DX * (N_MESH_POINTS + 1) * (N_MESH_POINTS+1) / (L*L);
+  double cy = DY * (N_MESH_POINTS + 1) * (N_MESH_POINTS+1) / (L*L);
+  
+  double jac_xx = - 2 * cx - (B+1) + 2 * X(0) * Y(0);
+  double jac_xy = X(0) * X(0);
+  DSX_DT(0)     = jac_xx * SX(0) + cx * SX(1) + jac_xy * SY(0);
+  
+	double jac_yy = -2 * cy - X(0) * X(0);
+  double jac_yx = B - 2 * X(0) * Y(0);
+	DSY_DT(0)     = jac_yy * SY(0) + cy * SY(1) + jac_yx * SX(0);
+  
+  for (int i = 1; i < N_MESH_POINTS - 1; i++) {
+    jac_xx    = - 2 * cx     - (B+1) + 2 * X(i) * Y(i);
+    jac_xy    = X(i) * X(i);
+    DSX_DT(i) = cx * SX(i-1) + jac_xx * SX(i) + cx * SX(i+1) + jac_xy * SY(i);
+    
+    jac_yy    = - 2 * cy         - X(i) * X(i);
+    jac_yx    = B - 2 * X(i) * Y(i);
+    DSY_DT(i) = cy * SY(i-1) + jac_yy * SY(i) + cy * SY(i+1) + jac_yx * SX(i);
+  }
+  
+  int i = N_MESH_POINTS - 1;
+  
+  jac_xx    = - 2 * cx     - (B+1) + 2 * X(i) * Y(i);
+  jac_xy    = X(i) * X(i);
+  DSX_DT(i) = cx * SX(i-1) + jac_xx * SX(i) + jac_xy * SY(i);
+  
+  jac_yy    = - 2 * cy         - X(i) * X(i);
+  jac_yx    = B - 2 * X(i) * Y(i);
+  DSY_DT(i) = cy * SY(i-1) + jac_yy * SY(i) + jac_yx * SX(i); 
+}
+
+static int jacobian_staggered(double t, N_Vector s, N_Vector dsdt,
+              SUNMatrix jacobian, void* user_data,
+              N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
+  
+  double* u = ((UserData) user_data)->temp;
+  interpolate_solution(t, u);   
+  double* parameters = ((UserData) user_data)->parameters;
+  
+  double cx = DX * (N_MESH_POINTS + 1) * (N_MESH_POINTS+1) / (L*L);
+  double cy = DY * (N_MESH_POINTS + 1) * (N_MESH_POINTS+1) / (L*L);
+   #if DENSE_JACOBIAN
+  if (SUNMatGetID(jacobian) != SUNMATRIX_DENSE) {
+    mexErrMsgIdAndTxt("cvode:wrong_matrix_type",
+            "expected type %d = SUNMATRIX_DENSE, got type %d",
+            SUNMATRIX_DENSE, SUNMatGetID(jacobian));
+  }
+  #endif
+  
+  #if BANDED_JACOBIAN
+  if (SUNMatGetID(jacobian) != SUNMATRIX_BAND) {
+    mexErrMsgIdAndTxt("cvode:wrong_matrix_type",
+            "expected type %d = SUNMATRIX_BAND, got type %d",
+            SUNMATRIX_DENSE, SUNMatGetID(jacobian));
+  }
+  #endif
+  
+  for ( int i = 0; i < N_MESH_POINTS; i++ ) {
+    JAC_XX(i,i) = - 2 * cx - (B+1) + 2 * X(i) * Y(i);
+    JAC_XY(i,i) =   X(i) * X(i);
+    JAC_YX(i,i) =   B - 2 * X(i) * Y(i);
+    JAC_YY(i,i) = - 2 * cy - X(i) * X(i);
+  }
+  
+  for ( int i = 0; i < N_MESH_POINTS - 1; i++ ) {
+    JAC_XX(i    , i + 1) = cx;
+    JAC_XX(i + 1, i    ) = cx;
+    JAC_YY(i    , i + 1) = cy;
+    JAC_YY(i + 1, i    ) = cy;
+  }
+   
+  for ( int i = 0; i < N_MESH_POINTS; i++ ) {
+    JAC_XX(NMP + i, NMP + i) = - 2 * cx - (B+1) + 2 * X(i) * Y(i);
+    JAC_XY(NMP + i, NMP + i) =   X(i) * X(i);
+    JAC_YX(NMP + i, NMP + i) =    B - 2 * X(i) * Y(i);
+    JAC_YY(NMP + i, NMP + i) = - 2 * cy - X(i) * X(i);
+  }
+  
+  for ( int i = 0; i < N_MESH_POINTS - 1; i++ ) {
+    JAC_XX(NMP + i    , NMP + i + 1) = cx;
+    JAC_XX(NMP + i + 1, NMP + i    ) = cx;
+    JAC_YY(NMP + i    , NMP + i + 1) = cy;
+    JAC_YY(NMP + i + 1, NMP + i    ) = cy;
+  }
+  
+  return 0;
+}
+
+static void interpolate_solution(double t, double* result) {
+  int i1 = ((int) floor(t/stored_stepsize)) - 10;
+  if ( i1 < 0 ) {
+    i1 = 0;
+  }
+  
+  while (i1+1 < n_points - 1 && t_values[i1+1] < t) {
+    i1++;
+  }
+  
+  int i2 = i1 + 1;
+  if ( i2 >= n_points ) {
+    i2     = n_points - 1;
+  }
+  
+  double* y1 = cycle_orbit + NEQ * i1;
+  double* y2 = cycle_orbit + NEQ * i2;
+  
+  double t1 = t_values[i1];
+  double t2 = t_values[i2];
+  
+  double t_scaled = (t  - t1) / (t2 - t2);
+  
+  for ( int i = 0; i < NEQ; i++ ) {
+    result[i] = (1 - t_scaled) * y1[i] + t_scaled * y2[i];
+  }
+}
+
 static void error_handler(int error_code, const char* module,
          const char* function, char* message, void *eh_data) {
  mexPrintf("Error in %s() in sundails module %s. error code: %d: %s.\n  %s\n",
@@ -674,7 +851,7 @@ static void check_size(const mxArray* array, int size, char* arrayname) {
 static N_Vector get_N_Vector(const mxArray* array, char* input_name, int size) {
   check_double(array,       input_name);
   check_size  (array, size, input_name);
-  realtype* data = my_mex_get_doubles(array);
+  double* data = my_mex_get_doubles(array);
   return N_VMake_Serial(size, data);
 }
 
@@ -683,44 +860,43 @@ static N_Vector get_N_Vector(const mxArray* array, char* input_name, int size) {
  */
 
 static void PrintFinalStats(void *cvode, booleantype sensi,
-                            booleantype err_con, int sensi_meth)
-{
+                            booleantype err_con, int sensi_meth) {
   long int nst;
   long int nfe, nsetups, nni, ncfn, netf;
   long int nfSe, nfeS, nsetupsS, nniS, ncfnS, netfS;
   int flag;
 
   flag = CVodeGetNumSteps(cvode, &nst);
-  //check_flag(&flag, "CVodeGetNumSteps", 1);
+  check(flag, "CVodeGetNumSteps");
   flag = CVodeGetNumRhsEvals(cvode, &nfe);
-  //check_flag(&flag, "CVodeGetNumRhsEvals", 1);
+  check(flag, "CVodeGetNumRhsEvals");
   flag = CVodeGetNumLinSolvSetups(cvode, &nsetups);
-  //check_flag(&flag, "CVodeGetNumLinSolvSetups", 1);
+  check(flag, "CVodeGetNumLinSolvSetups");
   flag = CVodeGetNumErrTestFails(cvode, &netf);
-  //check_flag(&flag, "CVodeGetNumErrTestFails", 1);
+  check(flag, "CVodeGetNumErrTestFails");
   flag = CVodeGetNumNonlinSolvIters(cvode, &nni);
-  //check_flag(&flag, "CVodeGetNumNonlinSolvIters", 1);
+  check(flag, "CVodeGetNumNonlinSolvIters");
   flag = CVodeGetNumNonlinSolvConvFails(cvode, &ncfn);
-  //check_flag(&flag, "CVodeGetNumNonlinSolvConvFails", 1);
+  check(flag, "CVodeGetNumNonlinSolvConvFails");
 
   if (sensi) {
     flag = CVodeGetSensNumRhsEvals(cvode, &nfSe);
-    //check_flag(&flag, "CVodeGetSensNumRhsEvals", 1);
+    check(flag, "CVodeGetSensNumRhsEvals");
     flag = CVodeGetNumRhsEvalsSens(cvode, &nfeS);
-    //check_flag(&flag, "CVodeGetNumRhsEvalsSens", 1);
+    check(flag, "CVodeGetNumRhsEvalsSens");
     flag = CVodeGetSensNumLinSolvSetups(cvode, &nsetupsS);
-    //check_flag(&flag, "CVodeGetSensNumLinSolvSetups", 1);
+    check(flag, "CVodeGetSensNumLinSolvSetups");
     if (err_con) {
       flag = CVodeGetSensNumErrTestFails(cvode, &netfS);
-      //check_flag(&flag, "CVodeGetSensNumErrTestFails", 1);
+      check(flag, "CVodeGetSensNumErrTestFails");
     } else {
       netfS = 0;
     }
     if ((sensi_meth == CV_STAGGERED) || (sensi_meth == CV_STAGGERED1)) {
       flag = CVodeGetSensNumNonlinSolvIters(cvode, &nniS);
-      //check_flag(&flag, "CVodeGetSensNumNonlinSolvIters", 1);
+      check(flag, "CVodeGetSensNumNonlinSolvIters");
       flag = CVodeGetSensNumNonlinSolvConvFails(cvode, &ncfnS);
-      //check_flag(&flag, "CVodeGetSensNumNonlinSolvConvFails", 1);
+      check(flag, "CVodeGetSensNumNonlinSolvConvFails");
     } else {
       nniS = 0;
       ncfnS = 0;

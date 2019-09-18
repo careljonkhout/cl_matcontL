@@ -84,7 +84,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 }
 
 void lorenz_dydt(double* y, double* parameters, double* dydt) {
-  dydt[0] =  -parameters[0]*(y[0]-y[1]);
-  dydt[1] =  -y[1]+parameters[1]*y[0]-y[0]*y[2];
-  dydt[2] =  -parameters[2]*y[2]+y[0]*y[1];
+  dydt[0] =  parameters[0]*(y[0]-y[1]);
+  dydt[1] =  y[1]-parameters[1]*y[0]+y[0]*y[2];
+  dydt[2] =  parameters[2]*y[2]-y[0]*y[1];
 }

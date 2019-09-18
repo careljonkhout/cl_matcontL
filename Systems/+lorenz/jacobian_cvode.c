@@ -12,14 +12,15 @@ int jacobian_dydt(
   realtype* jac = SM_DATA_D(jac_structure); // get the pointer to the jac data
   realtype* parameters = ((UserData) user_data)->parameters;
 
-  jac[0] =  -parameters[0];
-  jac[1] =  parameters[1]-y[2];
-  jac[2] =  y[1];
-  jac[3] =  parameters[0];
-  jac[4] =  -1.0;
-  jac[5] =  y[0];
+  jac[0] =  parameters[0];
+  jac[1] =  -parameters[1];
+  jac[2] =  y[2];
+  jac[3] =  -y[1];
+  jac[4] =  -parameters[0];
+  jac[6] =  1.0;
   jac[7] =  -y[0];
-  jac[8] =  -parameters[2];
+  jac[10] =  y[0];
+  jac[11] =  parameters[2];
   
   return 0;
 }

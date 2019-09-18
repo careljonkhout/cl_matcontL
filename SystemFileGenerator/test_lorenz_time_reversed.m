@@ -1,4 +1,4 @@
-function test_lorenz
+function test_lorenz_time_reversed
 
   % generates the odefile of the Lorenz system
   % see https://en.wikipedia.org/wiki/Lorenz_system
@@ -11,16 +11,16 @@ function test_lorenz
   time = 't';
   max_ord = 1;
   rhs = {
-  'sigma * (-x + y)'
-  'r*x - y - x*z'
-  '-b*z + x*y'
+  '-sigma * (-x + y)'
+  '-r*x +y + x*z'
+  '+b*z - x*y'
   };
 
   lorenz_system = System_of_ODEs.new(name,vars,pars,time,max_ord,rhs,'cvode');
   lorenz_system.generate_file()
 
   sigma = 10;
-  r=80;
+  r=8;
   b = 8/3;
 
   tol = 1e-10;

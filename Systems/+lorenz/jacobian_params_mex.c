@@ -84,7 +84,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 }
 
 void lorenz_jacobian_params(double* y, double* parameters, double* jac) {
-  jac[0] =  -y[0]+y[1];
-  jac[4] =  y[0];
-  jac[8] =  -y[2];
+  jac[0] =  y[0]-y[1];
+  jac[5] =  -y[0];
+  jac[11] =  y[2];
 }
