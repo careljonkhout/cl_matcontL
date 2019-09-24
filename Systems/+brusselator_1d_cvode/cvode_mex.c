@@ -17,16 +17,13 @@
 #include "user_data.h"
 #include "cvode_with_checks.c"
 
-
-
-#define output_t           0
-#define output_y           1
-#define output_sensitivity 2
-#define ABS_TOL            RCONST(1.e-6) /* default scalar absolute tolerance */
-#define REL_TOL            RCONST(1.e-6) /* default relative tolerance */
+#define OUTPUT_T           0
+#define OUTPUT_Y           1
+#define OUTPUT_SENSITIVITY 2
+#define DEFAULT_ABS_TOL    RCONST(1.e-6) /* default scalar absolute tolerance */
+#define DEFAULT_REL_TOL    RCONST(1.e-6) /* default relative tolerance */
 #define NS                 1
 #define INCREASING         1
-#define ZERO               RCONST(0.0)
 #define MAX_NUM_STEPS      10*1000*1000
 
 // implemented in dydt_cvode.c
@@ -65,15 +62,17 @@ static int jacobian_staggered(double t, N_Vector u_and_s, N_Vector fy,
 
 static int return_to_plane(double t, N_Vector u, double* g  , void *);
 
-static void interpolate_solution(double t, double* result);
+void interpolate_solution(double t, double* result);
+void interpolate_solution3(double t, double* result);
 
 static void error_handler(int error_code, const char *module,
                           const char *function, char *msg, void *eh_data);
 
 static double* my_mex_get_doubles(const mxArray* array);
-static void check_double(const mxArray* array,               char* arrayname);
-static void check_bool  (const mxArray* array,               char* arrayname);
-static void check_size  (const mxArray* array, int expected, char* arrayname);
+static void check_double  (const mxArray* array,               char* arrayname);
+static void check_bool    (const mxArray* array,               char* arrayname);
+static void check_size    (const mxArray* array, int expected, char* arrayname);
+static void check_positive(const mxArray* array,               char* arrayname);
 static N_Vector get_N_Vector(const mxArray* array, char* input_name, int size);
 // static void append_to_array(mxArray* array, int from_index,
 //                               double* data, int data_length);
@@ -84,11 +83,8 @@ static void PrintFinalStats(void *cvode, booleantype sensi,
 static int          n_points;
 static double*      t_values;
 static N_Vector     initial_point;
-static double*      parameters;
-static int          max_num_points;
-static booleantype  max_num_points_given;
 
-static booleantype  sensitivity;
+static int          sensitivity;
 static N_Vector     sensitivity_vector;
 
 static booleantype  cycle_detection;
@@ -97,17 +93,11 @@ static booleantype  lower_bound_period_given;
 static N_Vector     point_on_limitcycle;
 static N_Vector     tangent_to_limitcycle;
 
-static double       abs_tol;
-static booleantype  abs_tol_given;
-
-static double       rel_tol;
-static booleantype  rel_tol_given;
-
-static booleantype  staggered;
 static double*      cycle_orbit;
-static double       stored_stepsize;
 
 static booleantype  verbose;
+
+static N_Vector     interpolated_value;
 
 
 
@@ -117,9 +107,6 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   n_points                 = 0;
   t_values                 = NULL;
   initial_point            = NULL;
-  parameters               = NULL;
-  max_num_points           = 0;
-  max_num_points_given     = false;
 
   sensitivity              = false;
   sensitivity_vector       = NULL;
@@ -129,38 +116,25 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   lower_bound_period_given = false;
   point_on_limitcycle      = NULL;
   tangent_to_limitcycle    = NULL;
-  
-  abs_tol                  = ABS_TOL;
-  abs_tol_given            = false;
-  
-  rel_tol                  = REL_TOL;
-  rel_tol_given            = false;
-  
+
   verbose                  = false;
   
-  staggered                = false;
-  stored_stepsize          = 0;
   cycle_orbit              = NULL;
   
+  double abs_tol           = DEFAULT_ABS_TOL;
+  double rel_tol           = DEFAULT_REL_TOL;
   
   
-  UserData user_data = malloc(sizeof(UserData));
+  UserData user_data  = malloc(sizeof(UserData));
   check_null(user_data, "malloc user_data");
-
+  user_data->parameters = NULL;
   
-
-  
-  /* check for proper number of inputs */
-  if(n_input < 6) {
-    mexErrMsgIdAndTxt("cvode:n_input", 
-                         "at least 4 name - value pairs are required as input");
-  }
   
   if (n_input % 2 != 0) {
     mexErrMsgIdAndTxt("cvode:nrhs_uneven",
-            "Error: the number of arguments is uneven. "
-            "The number for arguments is %d. "
-            "Arguments must be supplied as name-value pairs", n_input);
+                     "Error: the number of arguments is uneven. "
+                     "The number for arguments is %d. "
+                     "Arguments must be supplied as name-value pairs", n_input);
   }
     
   
@@ -173,7 +147,7 @@ void mexFunction(int n_output,       mxArray *mex_output[],
     }
     char* arg_name = (char*) mxArrayToString(mex_input[i]);
 
-    if        ( ! strcmp(arg_name, "t_values"            ) ) {
+    if        ( ! strcmp(arg_name, "t_values"             ) ) {
       
       check_double(mex_input[i + 1], "t_values");
       t_values = (double*) my_mex_get_doubles(mex_input[i + 1]);
@@ -184,7 +158,7 @@ void mexFunction(int n_output,       mxArray *mex_output[],
                         "Input vector t_values must have at least 2 elements.");
       }
       
-    } else if ( ! strcmp(arg_name, "initial_point"       ) ) {
+    } else if ( ! strcmp(arg_name, "initial_point"        ) ) {
       
       initial_point = get_N_Vector(mex_input[i + 1], "initial_point", NEQ);
       
@@ -193,14 +167,16 @@ void mexFunction(int n_output,       mxArray *mex_output[],
       check_double(mex_input[i + 1],               "ode_parameters");
       check_size  (mex_input[i + 1], N_PARAMETERS, "ode_parameters");
       
-      parameters = my_mex_get_doubles(mex_input[i + 1]);
       user_data->parameters = my_mex_get_doubles(mex_input[i + 1]);
       
     } else if ( ! strcmp(arg_name, "sensitivity_vector"   ) ) {
       
       sensitivity_vector
                     = get_N_Vector(mex_input[i + 1], "sensitivity_vector", NEQ);
-      sensitivity = true;
+      
+      if (!sensitivity) {
+        sensitivity = DEFAULT_SENSITIVITY;
+      }
       
     } else if ( ! strcmp(arg_name, "cycle_detection"      ) ) {
       
@@ -210,8 +186,9 @@ void mexFunction(int n_output,       mxArray *mex_output[],
       
     } else if ( ! strcmp(arg_name, "lower_bound_period"  ) ) {
       
-      check_double(mex_input[i + 1],    "lower_bound_period");
-      check_size  (mex_input[i + 1], 1, "lower_bound_period");
+      check_double  (mex_input[i + 1],    "lower_bound_period");
+      check_size    (mex_input[i + 1], 1, "lower_bound_period");
+      check_positive(mex_input[i + 1],    "lower_bound_period");
       
       lower_bound_period = mxGetScalar(mex_input[i + 1]);
       lower_bound_period_given = true;
@@ -224,25 +201,17 @@ void mexFunction(int n_output,       mxArray *mex_output[],
       
     } else if ( ! strcmp(arg_name, "abs_tol"  ) ) {
       
-      check_double(mex_input[i + 1],    "abs_tol");
-      check_size  (mex_input[i + 1], 1, "abs_tol");
+      check_double  (mex_input[i + 1],    "abs_tol");
+      check_size    (mex_input[i + 1], 1, "abs_tol");
+      check_positive(mex_input[i + 1],    "abs_tol");
       abs_tol = mxGetScalar(mex_input[i + 1]);
-      if (abs_tol <= 0) {
-        mexErrMsgIdAndTxt("cvode:abs_tol_not_positive", 
-                                              "Error: abs_tol is not positive");   
-      }
-      abs_tol_given = true;
       
     } else if ( ! strcmp(arg_name, "rel_tol"  ) ) {
       
-      check_double(mex_input[i + 1],    "rel_tol");
-      check_size  (mex_input[i + 1], 1, "rel_tol");
-      abs_tol = mxGetScalar(mex_input[i + 1]);
-      if (abs_tol <= 0) {
-        mexErrMsgIdAndTxt("cvode:abs_tol_not_positive", 
-                                              "Error: rel_tol is not positive");
-      }
-      rel_tol_given = true;
+      check_double  (mex_input[i + 1],    "rel_tol");
+      check_size    (mex_input[i + 1], 1, "rel_tol");
+      check_positive(mex_input[i + 1],    "rel_tol");
+      rel_tol = mxGetScalar(mex_input[i + 1]);
       
     } else if ( ! strcmp(arg_name, "verbose"      ) ) {
       
@@ -254,7 +223,9 @@ void mexFunction(int n_output,       mxArray *mex_output[],
       
       check_bool(mex_input[i + 1], "staggered");
       
-      staggered = mxIsLogicalScalarTrue(mex_input[i + 1]);
+      if (mxIsLogicalScalarTrue(mex_input[i + 1])) {
+        sensitivity = STAGGERED;
+      }
     
     } else if( ! strcmp(arg_name, "cycle_orbit"            ) ) {
       
@@ -285,7 +256,7 @@ void mexFunction(int n_output,       mxArray *mex_output[],
                                     "Error: you did not specify initial_point");
   }
   
-  if (parameters == NULL) {
+  if (user_data->parameters == NULL) {
     mexErrMsgIdAndTxt("cvode:no_params",
                                    "Error: you did not specify ode_parameters");
   }
@@ -297,38 +268,40 @@ void mexFunction(int n_output,       mxArray *mex_output[],
     
     if (sensitivity) {
        mexErrMsgIdAndTxt("cvode:sens_and_cd",
-                             "Error: simultaneous cycle detection and "
-                             "sensitivity analysis is not supported");   
+                         "Error: simultaneous cycle detection and "
+                         "sensitivity analysis is not supported");   
     }
     if (! lower_bound_period_given) {
       mexErrMsgIdAndTxt("cvode:no_lower_bound_period",
-                             "Error: You enabled cycle detection, "
-                             "but you did not specify lower_bound_period");
+                        "Error: You enabled cycle detection, "
+                        "but you did not specify lower_bound_period");
     }
     if ( lower_bound_period <= 0 ) {
       mexErrMsgIdAndTxt("cvode:gap_tolerance_not_positive",
-                             "Error: You enabled cycle detection, "
-                             "but lower_bound_period is not positive");
+                        "Error: You enabled cycle detection, "
+                        "but lower_bound_period is not positive");
     }
     if (point_on_limitcycle == NULL) {
       mexErrMsgIdAndTxt("cvode:no_point_on_limitcycle",
-                             "Error: You enabled cycle detection, "
-                             "but you did not specify point_on_limit_cycle");    
+                        "Error: You enabled cycle detection, "
+                        "but you did not specify point_on_limit_cycle");    
     }
   }
   
   if(sensitivity && n_output != 3) {
     mexErrMsgIdAndTxt("cvode:n_output",
                       "Error: You enabled sensitivity analysis, " 
-                      "but you only specified less than three outputs. "
+                      "but you specified less than three outputs. "
                       "Three outputs are needed for sensitivity analysis: "
                       "t (time), y (state variables), and s (sensitivity");
+   
     
-    if (staggered) {
-      double period = t_values[n_points - 1] - t_values[0];
-      stored_stepsize = period / (n_points - 1);
-    }
-    
+  }
+  
+   
+  if (sensitivity == STAGGERED) {
+    double period = t_values[n_points - 1] - t_values[0];
+    interpolated_value = N_VNew_Serial(NEQ);
   }
 
   void*             cvode       = NULL;
@@ -336,61 +309,60 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   SUNLinearSolver   LS          = NULL;
   int               sensi_meth  = CV_SIMULTANEOUS;
   booleantype       err_con     = true;
-  
-  
-  int size = (SENSITIVITY == MANUAL && sensitivity) ? 2 * NEQ : NEQ;
-  
-  N_Vector y = N_VNew_Serial(size); 
+    
+  N_Vector y = N_VNew_Serial(NEQ); 
   
   N_Vector s;
-  if (sensitivity && SENSITIVITY == CVODES) {
+  if (sensitivity == CVODES) {
     s = N_VNew_Serial(NEQ);
   }
+
   
-  double* initial_point_data = N_VGetArrayPointer(initial_point);
   double* y_data             = N_VGetArrayPointer(y);
-  memcpy(y_data, initial_point_data, NEQ * sizeof(double));
+  
+  if ( sensitivity == STAGGERED ) {
+    double* sens_vector_data = N_VGetArrayPointer(sensitivity_vector);
+    memcpy(y_data, sens_vector_data, NEQ * sizeof(double));
+  } else {
+    double* initial_point_data = N_VGetArrayPointer(initial_point);
+    memcpy(y_data, initial_point_data, NEQ * sizeof(double));
+  }
   
   
   double* s_data;
-  if (sensitivity) {
+  if ( sensitivity ) {
     double* sens_vector_data = N_VGetArrayPointer(sensitivity_vector);
-    switch (SENSITIVITY) {
+    switch (sensitivity) {
       case CVODES:
-      s_data                   = N_VGetArrayPointer(s); 
+      s_data = N_VGetArrayPointer(s); 
       memcpy(s_data      , sens_vector_data, NEQ * sizeof(double));
-      break;
-      case MANUAL:
-      memcpy(y_data + NEQ, sens_vector_data, NEQ * sizeof(double));
       break;
     }
   }
   
   cvode = CVodeCreate_nullchecked(CV_BDF);
 
-  if (sensitivity) {
-    switch (SENSITIVITY) {
-    case CVODES:    CVodeInit_checked(cvode, dydt_cvode       , t_values[0], y);
+  switch (sensitivity) {
+    case false:     CVodeInit_checked(cvode, dydt_cvode    , t_values[0], y);
     break;
-    case MANUAL:    CVodeInit_checked(cvode, dydt_simultaneous, t_values[0], y);  
+    case CVODES:    CVodeInit_checked(cvode, dydt_cvode    , t_values[0], y);
     break;
-    case STAGGERED: CVodeInit_checked(cvode, dsdt_staggered   , t_values[0], y);  
-    }
-  } else {
-    CVodeInit_checked(cvode, dydt_cvode       , t_values[0], y);
+    case STAGGERED: CVodeInit_checked(cvode, dsdt_staggered, t_values[0], y);
+    break;
   }
+  
   CVodeSetErrHandlerFn_checked(cvode, error_handler , NULL          );
   CVodeSetUserData_checked    (cvode, user_data                     );
   CVodeSStolerances_checked   (cvode, rel_tol       , abs_tol       );
   CVodeSetMaxNumSteps_checked (cvode, MAX_NUM_STEPS                 );
      
   #if DENSE_JACOBIAN
-  A  = SUNDenseMatrix_nullchecked(size, size);
+  A  = SUNDenseMatrix_nullchecked(NEQ, NEQ);
   LS = SUNLinSol_Dense_nullchecked(y, A);
   #endif
   
   #if BANDED_JACOBIAN
-  A  = SUNBandMatrix_nullchecked(size, 2, 2);
+  A  = SUNBandMatrix_nullchecked(NEQ, 2, 2);
   LS = SUNLinSol_Band_nullchecked(y, A);
   #endif
    
@@ -398,22 +370,12 @@ void mexFunction(int n_output,       mxArray *mex_output[],
  
   /* Set the user-supplied Jacobian routine Jac */
   #if ANALYTIC_JACOBIAN
-  if (sensitivity) {
-    switch (SENSITIVITY) {
+  switch (sensitivity) {
+    case false:     CVodeSetJacFn(cvode, jacobian_dydt);          break;
     case CVODES:    CVodeSetJacFn(cvode, jacobian_dydt);          break;
-    case MANUAL:    CVodeSetJacFn(cvode, jacobian_simultaneous);  break;
     case STAGGERED: CVodeSetJacFn(cvode, jacobian_staggered);     break;
-    }
-  } else {
-    CVodeSetJacFn(cvode, jacobian_dydt);
   }
   #endif
-  
-  if (sensitivity) {
-    //CVodeSetMaxStep(cvode, 0.0005);
-  }
-  
-  
   
   int rootfinding_direction = INCREASING;
   if (cycle_detection) {
@@ -423,11 +385,11 @@ void mexFunction(int n_output,       mxArray *mex_output[],
  
 
   
-  if (sensitivity && SENSITIVITY == CVODES) {
+  if (sensitivity == CVODES) {
     CVodeSensInit1       (cvode, NS, sensi_meth, d_sensitivity_dt, &s);
     CVodeSensEEtolerances(cvode);
     //CVodeSensSStolerances(cvode, rel_tol, &abs_tol);
-    CVodeSetSensErrCon   (cvode, err_con);    
+    CVodeSetSensErrCon   (cvode, true);    
     double dummy_value = 0;
     CVodeSetSensParams(cvode, &dummy_value, NULL, NULL);
     if (verbose) {
@@ -446,18 +408,18 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   
   
   
-  mex_output[output_t]     = mxCreateDoubleMatrix(1   , n_points, mxREAL);
+  mex_output[OUTPUT_T]     = mxCreateDoubleMatrix(1   , n_points, mxREAL);
   
-  mxArray* y_output_buffer = mxCreateDoubleMatrix(size, n_points, mxREAL);
+  mxArray* y_output_buffer = mxCreateDoubleMatrix(NEQ, n_points, mxREAL);
   if (sensitivity) {
-    mex_output[output_sensitivity] = mxCreateDoubleMatrix(NEQ, 1, mxREAL);
+    mex_output[OUTPUT_SENSITIVITY] = mxCreateDoubleMatrix(NEQ, 1, mxREAL);
   }
   
-  mxDouble* t_out = my_mex_get_doubles(mex_output[output_t]);
+  mxDouble* t_out = my_mex_get_doubles(mex_output[OUTPUT_T]);
   mxDouble* y_out = my_mex_get_doubles(y_output_buffer);
   mxDouble* s_out;
   if (sensitivity) {
-    s_out = my_mex_get_doubles(mex_output[output_sensitivity]);
+    s_out = my_mex_get_doubles(mex_output[OUTPUT_SENSITIVITY]);
   }
   
   memcpy(t_out, t_values, n_points * sizeof(double));
@@ -477,7 +439,7 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   for(i = 1; i < n_points; i++) {  
     int flag = CVode(cvode, t_values[i], y, &t, CV_NORMAL);
     check(flag, "CVode");
-    if (sensitivity && SENSITIVITY == CVODES) {
+    if (sensitivity == CVODES) {
       flag = CVodeGetSens(cvode, &t, &s);
       check(flag, "CVodeGetSens");
       
@@ -497,18 +459,19 @@ void mexFunction(int n_output,       mxArray *mex_output[],
       break;
     }
   }
-  
-  if (sensitivity && SENSITIVITY == CVODES) {
-    memcpy(s_out, y_data + NEQ, NEQ * sizeof(double));  
+ 
+  if (sensitivity == STAGGERED) {
+    memcpy(s_out, y_data, NEQ * sizeof(double));  
+    N_VDestroy(interpolated_value);
   }
   
   if (i+1 < n_points) {
-    mxSetN(mex_output[output_t], i+1);
+    mxSetN(mex_output[OUTPUT_T], i+1);
     mxSetN(y_output_buffer     , i+1);
   }
   mxArray* transposed = mxCreateDoubleMatrix(i+1, NEQ, mxREAL);
   mexCallMATLAB(1, &transposed, 1, &y_output_buffer, "transpose");
-  mex_output[output_y] = transposed;
+  mex_output[OUTPUT_Y] = transposed;
    
   if (verbose) {
     PrintFinalStats(cvode, sensitivity, err_con, sensi_meth);
@@ -519,7 +482,7 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   mxDestroyArray(y_output_buffer);
 
   N_VDestroy(y);
-  if (sensitivity && SENSITIVITY == CVODES) {
+  if (sensitivity == CVODES) {
     N_VDestroy(s);
   }
 
@@ -552,268 +515,168 @@ static int return_to_plane(double t, N_Vector y, double *gout,
   return 0;
 }
 
-void dydt_ode(double* u, double* dudt, double* parameters);
+int d_sensitivity_dt(int Ns, realtype t,
+                N_Vector y, 
+                N_Vector ydot,
+                int iS,
+                N_Vector s, 
+                N_Vector dsdt,
+                void *user_data,
+                N_Vector tmp1, N_Vector tmp2);
 
-#define X(i) u[2*(i)]
-#define Y(i) u[2*(i)+1]
-
-#define SX(i) s[2*(i)]
-#define SY(i) s[2*(i)+1]
-
-#define DSX_DT(i) dsdt[2*(i)]
-#define DSY_DT(i) dsdt[2*(i)+1]
-
-#define L  parameters[0]
-#define A  parameters[1]
-#define B  parameters[2]
-#define DX parameters[3]
-#define DY parameters[4]
-
-static int dydt_simultaneous(
-        double t, N_Vector u_and_s, N_Vector dydt_vec, void *user_data) {
+static int dsdt_staggered(double t, N_Vector s, N_Vector dsdt, void *user_data){
   
-  double* u              = N_VGetArrayPointer(u_and_s);
-  double* s              = u + NEQ;
-  double* dydt           = N_VGetArrayPointer(dydt_vec);
-  double* dsdt           = dydt + NEQ;
-  double* parameters     = ((UserData) user_data)->parameters;
-  
-  dydt_ode(u,dydt,parameters);
-  
-  double cx = DX * (N_MESH_POINTS + 1) * (N_MESH_POINTS+1) / (L*L);
-  double cy = DY * (N_MESH_POINTS + 1) * (N_MESH_POINTS+1) / (L*L);
-  
-  double jac_xx = - 2 * cx - (B+1) + 2 * X(0) * Y(0);
-  double jac_xy = X(0) * X(0);
-  DSX_DT(0)     = jac_xx * SX(0) + cx * SX(1) + jac_xy * SY(0);
-  
-	double jac_yy = -2 * cy - X(0) * X(0);
-  double jac_yx = B - 2 * X(0) * Y(0);
-	DSY_DT(0)     = jac_yy * SY(0) + cy * SY(1) + jac_yx * SX(0);
-  
-  for (int i = 1; i < N_MESH_POINTS - 1; i++) {
-    jac_xx    = - 2 * cx     - (B+1) + 2 * X(i) * Y(i);
-    jac_xy    = X(i) * X(i);
-    DSX_DT(i) = cx * SX(i-1) + jac_xx * SX(i) + cx * SX(i+1) + jac_xy * SY(i);
-    
-    jac_yy    = - 2 * cy         - X(i) * X(i);
-    jac_yx    = B - 2 * X(i) * Y(i);
-    DSY_DT(i) = cy * SY(i-1) + jac_yy * SY(i) + cy * SY(i+1) + jac_yx * SX(i);
-  }
-  
-  int i = N_MESH_POINTS - 1;
-  
-  jac_xx    = - 2 * cx     - (B+1) + 2 * X(i) * Y(i);
-  jac_xy    = X(i) * X(i);
-  DSX_DT(i) = cx * SX(i-1) + jac_xx * SX(i) + jac_xy * SY(i);
-  
-  jac_yy    = - 2 * cy         - X(i) * X(i);
-  jac_yx    = B - 2 * X(i) * Y(i);
-  DSY_DT(i) = cy * SY(i-1) + jac_yy * SY(i) + jac_yx * SX(i);
-  
-  return 0;
+  interpolate_solution(t, N_VGetArrayPointer(interpolated_value));
+  return d_sensitivity_dt(1, t, interpolated_value,
+                                       NULL, 0, s, dsdt, user_data, NULL, NULL);
 }
 
-#define X_INDEX(i) (2*(i))
-#define Y_INDEX(i) (2*(i)+1)
-
-#if DENSE_JACOBIAN
-#define JAC_XX(i,j) SM_ELEMENT_D(jacobian, X_INDEX(i), X_INDEX(j))
-#define JAC_XY(i,j) SM_ELEMENT_D(jacobian, X_INDEX(i), Y_INDEX(j))
-#define JAC_YX(i,j) SM_ELEMENT_D(jacobian, Y_INDEX(i), X_INDEX(j))
-#define JAC_YY(i,j) SM_ELEMENT_D(jacobian, Y_INDEX(i), Y_INDEX(j))
-#endif
-
-#if BANDED_JACOBIAN
-#define JAC_XX(i,j) SM_ELEMENT_B(jacobian, X_INDEX(i), X_INDEX(j))
-#define JAC_XY(i,j) SM_ELEMENT_B(jacobian, X_INDEX(i), Y_INDEX(j))
-#define JAC_YX(i,j) SM_ELEMENT_B(jacobian, Y_INDEX(i), X_INDEX(j))
-#define JAC_YY(i,j) SM_ELEMENT_B(jacobian, Y_INDEX(i), Y_INDEX(j))
-#endif
-
-#define NMP N_MESH_POINTS
-
-static int jacobian_simultaneous(double t, N_Vector u_and_s, N_Vector fy,
-              SUNMatrix jacobian, void* user_data,
-              N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
-  
-  double* u   = N_VGetArrayPointer(u_and_s);
-  double* parameters = ((UserData) user_data)->parameters;
-  
-  double cx = DX * (N_MESH_POINTS + 1) * (N_MESH_POINTS+1) / (L*L);
-  double cy = DY * (N_MESH_POINTS + 1) * (N_MESH_POINTS+1) / (L*L);
-   #if DENSE_JACOBIAN
-  if (SUNMatGetID(jacobian) != SUNMATRIX_DENSE) {
-    mexErrMsgIdAndTxt("cvode:wrong_matrix_type",
-            "expected type %d = SUNMATRIX_DENSE, got type %d",
-            SUNMATRIX_DENSE, SUNMatGetID(jacobian));
-  }
-  #endif
-  
-  #if BANDED_JACOBIAN
-  if (SUNMatGetID(jacobian) != SUNMATRIX_BAND) {
-    mexErrMsgIdAndTxt("cvode:wrong_matrix_type",
-            "expected type %d = SUNMATRIX_BAND, got type %d",
-            SUNMATRIX_DENSE, SUNMatGetID(jacobian));
-  }
-  #endif
-  
-  for ( int i = 0; i < N_MESH_POINTS; i++ ) {
-    JAC_XX(i,i) = - 2 * cx - (B+1) + 2 * X(i) * Y(i);
-    JAC_XY(i,i) =   X(i) * X(i);
-    JAC_YX(i,i) =   B - 2 * X(i) * Y(i);
-    JAC_YY(i,i) = - 2 * cy - X(i) * X(i);
-  }
-  
-  for ( int i = 0; i < N_MESH_POINTS - 1; i++ ) {
-    JAC_XX(i    , i + 1) = cx;
-    JAC_XX(i + 1, i    ) = cx;
-    JAC_YY(i    , i + 1) = cy;
-    JAC_YY(i + 1, i    ) = cy;
-  }
-   
-  for ( int i = 0; i < N_MESH_POINTS; i++ ) {
-    JAC_XX(NMP + i, NMP + i) = - 2 * cx - (B+1) + 2 * X(i) * Y(i);
-    JAC_XY(NMP + i, NMP + i) =   X(i) * X(i);
-    JAC_YX(NMP + i, NMP + i) =    B - 2 * X(i) * Y(i);
-    JAC_YY(NMP + i, NMP + i) = - 2 * cy - X(i) * X(i);
-  }
-  
-  for ( int i = 0; i < N_MESH_POINTS - 1; i++ ) {
-    JAC_XX(NMP + i    , NMP + i + 1) = cx;
-    JAC_XX(NMP + i + 1, NMP + i    ) = cx;
-    JAC_YY(NMP + i    , NMP + i + 1) = cy;
-    JAC_YY(NMP + i + 1, NMP + i    ) = cy;
-  }
-  
-  return 0;
-}
-
-static int dsdt_staggered(double t,
-        N_Vector s_vector, N_Vector dsdt_vector, void *user_data) {
-  
-  double* u = ((UserData) user_data)->temp;
-  interpolate_solution(t, u);   
-  
-  
-  double* s          = N_VGetArrayPointer(s_vector);
-  double* dsdt       = N_VGetArrayPointer(dsdt_vector);
-  double* parameters = ((UserData) user_data)->parameters;
-    
-  double cx = DX * (N_MESH_POINTS + 1) * (N_MESH_POINTS+1) / (L*L);
-  double cy = DY * (N_MESH_POINTS + 1) * (N_MESH_POINTS+1) / (L*L);
-  
-  double jac_xx = - 2 * cx - (B+1) + 2 * X(0) * Y(0);
-  double jac_xy = X(0) * X(0);
-  DSX_DT(0)     = jac_xx * SX(0) + cx * SX(1) + jac_xy * SY(0);
-  
-	double jac_yy = -2 * cy - X(0) * X(0);
-  double jac_yx = B - 2 * X(0) * Y(0);
-	DSY_DT(0)     = jac_yy * SY(0) + cy * SY(1) + jac_yx * SX(0);
-  
-  for (int i = 1; i < N_MESH_POINTS - 1; i++) {
-    jac_xx    = - 2 * cx     - (B+1) + 2 * X(i) * Y(i);
-    jac_xy    = X(i) * X(i);
-    DSX_DT(i) = cx * SX(i-1) + jac_xx * SX(i) + cx * SX(i+1) + jac_xy * SY(i);
-    
-    jac_yy    = - 2 * cy         - X(i) * X(i);
-    jac_yx    = B - 2 * X(i) * Y(i);
-    DSY_DT(i) = cy * SY(i-1) + jac_yy * SY(i) + cy * SY(i+1) + jac_yx * SX(i);
-  }
-  
-  int i = N_MESH_POINTS - 1;
-  
-  jac_xx    = - 2 * cx     - (B+1) + 2 * X(i) * Y(i);
-  jac_xy    = X(i) * X(i);
-  DSX_DT(i) = cx * SX(i-1) + jac_xx * SX(i) + jac_xy * SY(i);
-  
-  jac_yy    = - 2 * cy         - X(i) * X(i);
-  jac_yx    = B - 2 * X(i) * Y(i);
-  DSY_DT(i) = cy * SY(i-1) + jac_yy * SY(i) + jac_yx * SX(i); 
-}
+int jacobian_dydt(realtype t, N_Vector u_vec, N_Vector fy, SUNMatrix jacobian,
+                 void* user_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
 
 static int jacobian_staggered(double t, N_Vector s, N_Vector dsdt,
               SUNMatrix jacobian, void* user_data,
               N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
   
-  double* u = ((UserData) user_data)->temp;
-  interpolate_solution(t, u);   
-  double* parameters = ((UserData) user_data)->parameters;
-  
-  double cx = DX * (N_MESH_POINTS + 1) * (N_MESH_POINTS+1) / (L*L);
-  double cy = DY * (N_MESH_POINTS + 1) * (N_MESH_POINTS+1) / (L*L);
-   #if DENSE_JACOBIAN
-  if (SUNMatGetID(jacobian) != SUNMATRIX_DENSE) {
-    mexErrMsgIdAndTxt("cvode:wrong_matrix_type",
-            "expected type %d = SUNMATRIX_DENSE, got type %d",
-            SUNMATRIX_DENSE, SUNMatGetID(jacobian));
-  }
-  #endif
-  
-  #if BANDED_JACOBIAN
-  if (SUNMatGetID(jacobian) != SUNMATRIX_BAND) {
-    mexErrMsgIdAndTxt("cvode:wrong_matrix_type",
-            "expected type %d = SUNMATRIX_BAND, got type %d",
-            SUNMATRIX_DENSE, SUNMatGetID(jacobian));
-  }
-  #endif
-  
-  for ( int i = 0; i < N_MESH_POINTS; i++ ) {
-    JAC_XX(i,i) = - 2 * cx - (B+1) + 2 * X(i) * Y(i);
-    JAC_XY(i,i) =   X(i) * X(i);
-    JAC_YX(i,i) =   B - 2 * X(i) * Y(i);
-    JAC_YY(i,i) = - 2 * cy - X(i) * X(i);
-  }
-  
-  for ( int i = 0; i < N_MESH_POINTS - 1; i++ ) {
-    JAC_XX(i    , i + 1) = cx;
-    JAC_XX(i + 1, i    ) = cx;
-    JAC_YY(i    , i + 1) = cy;
-    JAC_YY(i + 1, i    ) = cy;
-  }
-   
-  for ( int i = 0; i < N_MESH_POINTS; i++ ) {
-    JAC_XX(NMP + i, NMP + i) = - 2 * cx - (B+1) + 2 * X(i) * Y(i);
-    JAC_XY(NMP + i, NMP + i) =   X(i) * X(i);
-    JAC_YX(NMP + i, NMP + i) =    B - 2 * X(i) * Y(i);
-    JAC_YY(NMP + i, NMP + i) = - 2 * cy - X(i) * X(i);
-  }
-  
-  for ( int i = 0; i < N_MESH_POINTS - 1; i++ ) {
-    JAC_XX(NMP + i    , NMP + i + 1) = cx;
-    JAC_XX(NMP + i + 1, NMP + i    ) = cx;
-    JAC_YY(NMP + i    , NMP + i + 1) = cy;
-    JAC_YY(NMP + i + 1, NMP + i    ) = cy;
-  }
-  
-  return 0;
+  interpolate_solution3(t, N_VGetArrayPointer(interpolated_value));
+  N_Vector u = interpolated_value;
+  return jacobian_dydt(t, u, NULL, jacobian, user_data, NULL, NULL, NULL);
 }
 
-static void interpolate_solution(double t, double* result) {
-  int i1 = ((int) floor(t/stored_stepsize)) - 10;
-  if ( i1 < 0 ) {
-    i1 = 0;
-  }
+static void binary_search(double, int*, int*);
+
+void interpolate_solution(double t, double* result) {
+  int i1,i2;
+  binary_search(t,&i1,&i2);
   
-  while (i1+1 < n_points - 1 && t_values[i1+1] < t) {
-    i1++;
+  if (i1 == i2) {
+    memcpy(result, cycle_orbit + NEQ * i1, NEQ * sizeof(double));  
+    return;
   }
-  
-  int i2 = i1 + 1;
-  if ( i2 >= n_points ) {
-    i2     = n_points - 1;
-  }
-  
   double* y1 = cycle_orbit + NEQ * i1;
   double* y2 = cycle_orbit + NEQ * i2;
   
   double t1 = t_values[i1];
   double t2 = t_values[i2];
   
-  double t_scaled = (t  - t1) / (t2 - t2);
+  double t_scaled = (t  - t1) / (t2 - t1);
   
   for ( int i = 0; i < NEQ; i++ ) {
     result[i] = (1 - t_scaled) * y1[i] + t_scaled * y2[i];
+  }
+}
+
+#define LAGRANGE_ORDER 4
+
+void compute_lagrange_coefficients(double*, int, double*);
+
+void interpolate_solution3(double t, double* result) {
+  int i1, i2;
+  binary_search(t,&i1,&i2);
+  
+  if (i1 == i2) {
+    memcpy(result, cycle_orbit + NEQ * i1, NEQ * sizeof(double));  
+    return;
+  }
+  
+  int q_low  = LAGRANGE_ORDER / 2;
+  int q_high = LAGRANGE_ORDER - q_low; // this ensures that the interpolation 
+  // will work for unenven LAGRANGE_ORDER
+  
+  if (i1 < q_low) {
+    i1 = 0;
+  } else if (i1 > n_points - q_high - 1) {
+    i1 = n_points - LAGRANGE_ORDER - 1;
+  } else {
+    i1 -= q_low;
+  }
+  
+  double* y = cycle_orbit + NEQ * i1;
+  double coeffs[LAGRANGE_ORDER + 1];
+  double* t_pointer = t_values + i1;
+  compute_lagrange_coefficients(t_pointer, LAGRANGE_ORDER + 1, coeffs);
+  
+  for ( int i = 0; i < NEQ; i++ ) {
+    result[i] = 0;
+  }
+  
+  for ( int i = 0; i < LAGRANGE_ORDER + 1; i++ ) {
+    double s = 1;
+    for ( int j = 0; j < LAGRANGE_ORDER + 1; j++ ) {
+      if (j != i) {
+        s *= (t - t_pointer[j]);
+      }
+    }
+    for ( int j = 0; j < NEQ; j++ ) {
+      double* yi = y + i * NEQ;
+      result[j] += (s / coeffs[i]) * yi[j];
+    }
+  }
+}
+
+void compute_lagrange_coefficients(double* t, int n, double* coeffs) {
+  for ( int i = 0; i < n; i++ ) {
+    coeffs[i] = 1;
+    for ( int j = 0; j < n; j++ ) {
+      if (j != i) {
+        coeffs[i] *= (t[i] - t[j]);
+      }
+    }
+  }
+}
+
+
+
+
+static void binary_search(double t, int* i1, int* i2) {
+  if (t == t_values[n_points -1]) {
+    *i1 = n_points - 1;
+    *i2 = n_points - 1;
+    return;
+  }
+  
+  if (t > t_values[n_points - 2]) {
+    *i1 = n_points - 2;
+    *i2 = n_points - 1;
+  }
+  
+  
+  *i1 = 0;
+  *i2 = n_points - 2;
+  int middle = (*i1 + *i2) / 2;
+  int counter = 0;
+  while (*i1 < *i2) {
+    if (++counter == 1000) {
+       mexErrMsgIdAndTxt("cvode:bseach_failed", "binary_search failed");
+    }
+    if (t_values[middle] < t) {
+      if (t < t_values[middle + 1]) {
+        *i1 = middle;
+        *i2 = middle + 1;
+        return;
+      } else if (t_values[middle] == t) {    
+        *i1 = middle;
+        *i2 = middle;
+        return;
+      }
+      *i1 = middle + 1;      
+    } else if (t_values[middle] == t) {
+      *i1 = middle;
+      *i2 = middle;
+      break;
+    } else { // t < t_values(middle)
+      if (t_values[middle-1] < t) {
+        *i1 = middle - 1;
+        *i2 = middle;
+        break;
+      } else if (t == t_values[middle-1]) {
+        *i1 = middle - 1;
+        *i2 = middle - 1;
+        break;
+      }
+      *i2 = middle - 1;
+    }
+    middle = (*i1 + *i2) / 2;
   }
 }
 
@@ -834,7 +697,7 @@ static void check_double(const mxArray* array, char* arrayname) {
 static void check_bool(const mxArray* array, char* arrayname) {
   if ( !mxIsLogicalScalar(array) ) {
     mexErrMsgIdAndTxt("cvode:not_bool", 
-                                       "Input %s is not a boolean.", arrayname);
+            "Input %s is not a boolean.", arrayname);
   }
 }
 
@@ -845,6 +708,13 @@ static void check_size(const mxArray* array, int size, char* arrayname) {
             "Error: Input vector %s does not have the correct size. "
             "The correct size is %d. The actual size is %d.",
             arrayname, size, (int)mxGetNumberOfElements(array));
+  }
+}
+
+static void check_positive(const mxArray* scalar, char* scalarname) {
+  if (mxGetScalar(scalar) <= 0) {
+    mexErrMsgIdAndTxt("cvode:not_positive",  
+            "Error: Input %s is not positive.", scalarname);
   }
 }
 
@@ -917,6 +787,3 @@ static void PrintFinalStats(void *cvode, booleantype sensi,
   }
 
 }
-
-
-

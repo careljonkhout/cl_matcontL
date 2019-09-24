@@ -476,7 +476,7 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
 
         if Singularities
           userpoint.CISdata = feval(...
-            cds.curve_CIS_step, userpoint.x, currpoint.CISdata);
+                            cds.curve_CIS_step, userpoint.x, currpoint.CISdata);
            [userpoint.tvals, ~] = EvalTestFunc(0, userpoint);
            s.data.testfunctions = userpoint.tvals;
         end

@@ -28,7 +28,7 @@ function [delta_q, M_delta_q] = ...
     delta_q = M_delta_q + rhs;
     delta_q = delta_q - V*V'*delta_q;
     M_delta_q = NewtonPicard.SingleShooting.monodromy_map( ...
-        delta_q, period, parameters);
+        delta_q, period, parameters, false);
     residual = rhs + M_delta_q - delta_q;
     residual = residual - V*V'*residual;
     residual_norm = max(abs(residual));
