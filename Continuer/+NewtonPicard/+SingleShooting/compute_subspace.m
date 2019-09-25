@@ -7,7 +7,7 @@ function V = compute_subspace(period, parameters)
   cds.mv_count = 0;
   
   monodromy_map = @(x) NewtonPicard.SingleShooting.monodromy_map( ...
-                        x, period, parameters, false);
+                        x, period, parameters);
   
 	nEigs = min(cds.nphases, p + cds.p_extra);
                       

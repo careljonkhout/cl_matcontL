@@ -4,10 +4,6 @@
 #define ANALYTIC_JACOBIAN     true
 #define BANDED_JACOBIAN       true
 #define DENSE_JACOBIAN        !BANDED_JACOBIAN
-#define CVODES                1
-#define MANUAL                2
-#define STAGGERED             3
-#define DEFAULT_SENSITIVITY   CVODES
 
 typedef struct {
   double* parameters;

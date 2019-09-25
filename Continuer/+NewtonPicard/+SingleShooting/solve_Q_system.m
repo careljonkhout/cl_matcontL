@@ -21,14 +21,13 @@ function [delta_q, M_delta_q] = ...
     return;
   end
   
-  
   M_delta_q  = zeros(size(V,1),1);
   minimal_residual = Inf;
   for iteration_number = 1:contopts.MaxPicardIterations
     delta_q = M_delta_q + rhs;
     delta_q = delta_q - V*V'*delta_q;
     M_delta_q = NewtonPicard.SingleShooting.monodromy_map( ...
-        delta_q, period, parameters, false);
+        delta_q, period, parameters);
     residual = rhs + M_delta_q - delta_q;
     residual = residual - V*V'*residual;
     residual_norm = max(abs(residual));

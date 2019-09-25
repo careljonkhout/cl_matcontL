@@ -1,10 +1,10 @@
-function Mx = monodromy_map(x, period, parameters, staggered, abs_tol, rel_tol)
+function Mx = monodromy_map(x, period, parameters, abs_tol, rel_tol)
   global cds contopts
   cds.mv_count = cds.mv_count + 1;
-  if nargin == 4
+  if nargin == 3
     abs_tol = contopts.integration_abs_tol;
     rel_tol = contopts.integration_rel_tol;
-  elseif nargin ~= 6
+  elseif nargin ~= 5
     error( ['The number of input arguments to ' ...
       'NewtonPicard.SingleShooting.monodromy_map is not correct.\n' ...
       'The number of input arguments should be either 3 or 5.\n' ...
@@ -12,17 +12,14 @@ function Mx = monodromy_map(x, period, parameters, staggered, abs_tol, rel_tol)
   end
   if cds.using_cvode
     [~,~,Mx] = feval(cds.integrator, ...
-      't_values',                cds.t_values, ...
-      'staggered',               false, ...
-      'cycle_orbit',             cds.cycle_orbit, ...
-      'initial_point',           cds.phases_0, ... % fixme: in case of STAGGERED sensitivity this is irrelevant, but it is still required.
+      't_values',                [0 period], ...
+      'initial_point',           cds.phases_0, ...
       'sensitivity_vector',      x, ...
       'ode_parameters',          cell2mat(parameters), ...
       'abs_tol',                 abs_tol, ...
       'rel_tol',                 rel_tol);
     return
   end
-
 
   if ~ contopts.monodromy_by_finite_differences
     integration_opt = odeset( ...
@@ -35,15 +32,11 @@ function Mx = monodromy_map(x, period, parameters, staggered, abs_tol, rel_tol)
     [~,orbit] = ode15s(dydt_mon, [0 period], x, integration_opt);
     Mx = orbit(end,:)';
   else
+    % By finite differences: very inaccurate, not reccomended.
+    %
     % Below an alternative method of computing the action of the monodromy
     % matrix is implemented. Here, the action of the monodromy matrix is
-    % computed by finite differences. Seems to be faster than the method above.
-    % The error of the trivial multiplier is much larger when using finite
-    % differences.
-    %
-    % This method of computing the action of the monodromy matrix also makes
-    % continuation possible is the Jacobian of the system of ODEs is not
-    % available
+    % computed by finite differences. 
     
     integration_opt = odeset(...
       'AbsTol',       1e-13, ...

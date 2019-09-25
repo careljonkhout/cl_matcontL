@@ -93,8 +93,6 @@ static booleantype  lower_bound_period_given;
 static N_Vector     point_on_limitcycle;
 static N_Vector     tangent_to_limitcycle;
 
-static double*      cycle_orbit;
-
 static booleantype  verbose;
 
 static N_Vector     interpolated_value;
@@ -119,10 +117,9 @@ void mexFunction(int n_output,       mxArray *mex_output[],
 
   verbose                  = false;
   
-  cycle_orbit              = NULL;
-  
   double abs_tol           = DEFAULT_ABS_TOL;
   double rel_tol           = DEFAULT_REL_TOL;
+  /* abs_tol and rel_tol will be overwritten if the caller specifies them */
   
   
   UserData user_data  = malloc(sizeof(UserData));
@@ -139,7 +136,6 @@ void mexFunction(int n_output,       mxArray *mex_output[],
     
   
   for ( int i = 0; i < n_input; i += 2 ) {
-    
     
     if ( !mxIsChar(mex_input[i]) ) {
       mexErrMsgIdAndTxt("cvode:not_name_value", 
@@ -174,9 +170,7 @@ void mexFunction(int n_output,       mxArray *mex_output[],
       sensitivity_vector
                     = get_N_Vector(mex_input[i + 1], "sensitivity_vector", NEQ);
       
-      if (!sensitivity) {
-        sensitivity = DEFAULT_SENSITIVITY;
-      }
+      sensitivity = true;
       
     } else if ( ! strcmp(arg_name, "cycle_detection"      ) ) {
       
@@ -219,23 +213,10 @@ void mexFunction(int n_output,       mxArray *mex_output[],
       
       verbose = mxIsLogicalScalarTrue(mex_input[i + 1]);
       
-    } else if ( ! strcmp(arg_name, "staggered"    ) ) {
-      
-      check_bool(mex_input[i + 1], "staggered");
-      
-      if (mxIsLogicalScalarTrue(mex_input[i + 1])) {
-        sensitivity = STAGGERED;
-      }
-    
-    } else if( ! strcmp(arg_name, "cycle_orbit"            ) ) {
-      
-      check_double(mex_input[i + 1], "cycle_orbit");
-      cycle_orbit = (double*) my_mex_get_doubles(mex_input[i + 1]);
-      
     } else {
   
       mexErrMsgIdAndTxt("cvode:invalid_argument_name", 
-                        "Error: Invalid argument name: %s.", arg_name);
+                       "Error: Invalid argument name for cvode: %s.", arg_name);
     }
   }
   
@@ -276,11 +257,6 @@ void mexFunction(int n_output,       mxArray *mex_output[],
                         "Error: You enabled cycle detection, "
                         "but you did not specify lower_bound_period");
     }
-    if ( lower_bound_period <= 0 ) {
-      mexErrMsgIdAndTxt("cvode:gap_tolerance_not_positive",
-                        "Error: You enabled cycle detection, "
-                        "but lower_bound_period is not positive");
-    }
     if (point_on_limitcycle == NULL) {
       mexErrMsgIdAndTxt("cvode:no_point_on_limitcycle",
                         "Error: You enabled cycle detection, "
@@ -294,15 +270,8 @@ void mexFunction(int n_output,       mxArray *mex_output[],
                       "but you specified less than three outputs. "
                       "Three outputs are needed for sensitivity analysis: "
                       "t (time), y (state variables), and s (sensitivity");
-   
-    
   }
   
-   
-  if (sensitivity == STAGGERED) {
-    double period = t_values[n_points - 1] - t_values[0];
-    interpolated_value = N_VNew_Serial(NEQ);
-  }
 
   void*             cvode       = NULL;
   SUNMatrix         A           = NULL;
@@ -313,44 +282,26 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   N_Vector y = N_VNew_Serial(NEQ); 
   
   N_Vector s;
-  if (sensitivity == CVODES) {
+  if (sensitivity) {
     s = N_VNew_Serial(NEQ);
   }
 
   
   double* y_data             = N_VGetArrayPointer(y);
   
-  if ( sensitivity == STAGGERED ) {
-    double* sens_vector_data = N_VGetArrayPointer(sensitivity_vector);
-    memcpy(y_data, sens_vector_data, NEQ * sizeof(double));
-  } else {
-    double* initial_point_data = N_VGetArrayPointer(initial_point);
-    memcpy(y_data, initial_point_data, NEQ * sizeof(double));
-  }
-  
+  double* initial_point_data = N_VGetArrayPointer(initial_point);
+  memcpy(y_data, initial_point_data, NEQ * sizeof(double));
   
   double* s_data;
   if ( sensitivity ) {
     double* sens_vector_data = N_VGetArrayPointer(sensitivity_vector);
-    switch (sensitivity) {
-      case CVODES:
-      s_data = N_VGetArrayPointer(s); 
-      memcpy(s_data      , sens_vector_data, NEQ * sizeof(double));
-      break;
-    }
+    s_data = N_VGetArrayPointer(s); 
+    memcpy(s_data, sens_vector_data, NEQ * sizeof(double));
   }
   
   cvode = CVodeCreate_nullchecked(CV_BDF);
 
-  switch (sensitivity) {
-    case false:     CVodeInit_checked(cvode, dydt_cvode    , t_values[0], y);
-    break;
-    case CVODES:    CVodeInit_checked(cvode, dydt_cvode    , t_values[0], y);
-    break;
-    case STAGGERED: CVodeInit_checked(cvode, dsdt_staggered, t_values[0], y);
-    break;
-  }
-  
+  CVodeInit_checked           (cvode, dydt_cvode    , t_values[0], y);  
   CVodeSetErrHandlerFn_checked(cvode, error_handler , NULL          );
   CVodeSetUserData_checked    (cvode, user_data                     );
   CVodeSStolerances_checked   (cvode, rel_tol       , abs_tol       );
@@ -370,11 +321,7 @@ void mexFunction(int n_output,       mxArray *mex_output[],
  
   /* Set the user-supplied Jacobian routine Jac */
   #if ANALYTIC_JACOBIAN
-  switch (sensitivity) {
-    case false:     CVodeSetJacFn(cvode, jacobian_dydt);          break;
-    case CVODES:    CVodeSetJacFn(cvode, jacobian_dydt);          break;
-    case STAGGERED: CVodeSetJacFn(cvode, jacobian_staggered);     break;
-  }
+  CVodeSetJacFn(cvode, jacobian_dydt);
   #endif
   
   int rootfinding_direction = INCREASING;
@@ -382,10 +329,8 @@ void mexFunction(int n_output,       mxArray *mex_output[],
     CVodeRootInit        (cvode, 1,                     return_to_plane);
     CVodeSetRootDirection(cvode, &rootfinding_direction                );
   }
- 
-
   
-  if (sensitivity == CVODES) {
+  if (sensitivity) {
     CVodeSensInit1       (cvode, NS, sensi_meth, d_sensitivity_dt, &s);
     CVodeSensEEtolerances(cvode);
     //CVodeSensSStolerances(cvode, rel_tol, &abs_tol);
@@ -439,7 +384,7 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   for(i = 1; i < n_points; i++) {  
     int flag = CVode(cvode, t_values[i], y, &t, CV_NORMAL);
     check(flag, "CVode");
-    if (sensitivity == CVODES) {
+    if (sensitivity) {
       flag = CVodeGetSens(cvode, &t, &s);
       check(flag, "CVodeGetSens");
       
@@ -459,13 +404,9 @@ void mexFunction(int n_output,       mxArray *mex_output[],
       break;
     }
   }
- 
-  if (sensitivity == STAGGERED) {
-    memcpy(s_out, y_data, NEQ * sizeof(double));  
-    N_VDestroy(interpolated_value);
-  }
   
   if (i+1 < n_points) {
+    // this happens when a cycle has been detected
     mxSetN(mex_output[OUTPUT_T], i+1);
     mxSetN(y_output_buffer     , i+1);
   }
@@ -477,18 +418,18 @@ void mexFunction(int n_output,       mxArray *mex_output[],
     PrintFinalStats(cvode, sensitivity, err_con, sensi_meth);
   }
   
-  /* Free memory */
+  /* Free working memory. Note that matlab would take care of it automatically 
+   * if we do not do it here, but freeing memory as soon as we can is better. */
   
   mxDestroyArray(y_output_buffer);
 
   N_VDestroy(y);
-  if (sensitivity == CVODES) {
+  if (sensitivity) {
     N_VDestroy(s);
   }
 
   CVodeFree(&cvode);
 }
-
 
 
 double* my_mex_get_doubles(const mxArray* array) {
@@ -513,171 +454,6 @@ static int return_to_plane(double t, N_Vector y, double *gout,
     *gout = 1;
   }
   return 0;
-}
-
-int d_sensitivity_dt(int Ns, realtype t,
-                N_Vector y, 
-                N_Vector ydot,
-                int iS,
-                N_Vector s, 
-                N_Vector dsdt,
-                void *user_data,
-                N_Vector tmp1, N_Vector tmp2);
-
-static int dsdt_staggered(double t, N_Vector s, N_Vector dsdt, void *user_data){
-  
-  interpolate_solution(t, N_VGetArrayPointer(interpolated_value));
-  return d_sensitivity_dt(1, t, interpolated_value,
-                                       NULL, 0, s, dsdt, user_data, NULL, NULL);
-}
-
-int jacobian_dydt(realtype t, N_Vector u_vec, N_Vector fy, SUNMatrix jacobian,
-                 void* user_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
-
-static int jacobian_staggered(double t, N_Vector s, N_Vector dsdt,
-              SUNMatrix jacobian, void* user_data,
-              N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
-  
-  interpolate_solution3(t, N_VGetArrayPointer(interpolated_value));
-  N_Vector u = interpolated_value;
-  return jacobian_dydt(t, u, NULL, jacobian, user_data, NULL, NULL, NULL);
-}
-
-static void binary_search(double, int*, int*);
-
-void interpolate_solution(double t, double* result) {
-  int i1,i2;
-  binary_search(t,&i1,&i2);
-  
-  if (i1 == i2) {
-    memcpy(result, cycle_orbit + NEQ * i1, NEQ * sizeof(double));  
-    return;
-  }
-  double* y1 = cycle_orbit + NEQ * i1;
-  double* y2 = cycle_orbit + NEQ * i2;
-  
-  double t1 = t_values[i1];
-  double t2 = t_values[i2];
-  
-  double t_scaled = (t  - t1) / (t2 - t1);
-  
-  for ( int i = 0; i < NEQ; i++ ) {
-    result[i] = (1 - t_scaled) * y1[i] + t_scaled * y2[i];
-  }
-}
-
-#define LAGRANGE_ORDER 4
-
-void compute_lagrange_coefficients(double*, int, double*);
-
-void interpolate_solution3(double t, double* result) {
-  int i1, i2;
-  binary_search(t,&i1,&i2);
-  
-  if (i1 == i2) {
-    memcpy(result, cycle_orbit + NEQ * i1, NEQ * sizeof(double));  
-    return;
-  }
-  
-  int q_low  = LAGRANGE_ORDER / 2;
-  int q_high = LAGRANGE_ORDER - q_low; // this ensures that the interpolation 
-  // will work for unenven LAGRANGE_ORDER
-  
-  if (i1 < q_low) {
-    i1 = 0;
-  } else if (i1 > n_points - q_high - 1) {
-    i1 = n_points - LAGRANGE_ORDER - 1;
-  } else {
-    i1 -= q_low;
-  }
-  
-  double* y = cycle_orbit + NEQ * i1;
-  double coeffs[LAGRANGE_ORDER + 1];
-  double* t_pointer = t_values + i1;
-  compute_lagrange_coefficients(t_pointer, LAGRANGE_ORDER + 1, coeffs);
-  
-  for ( int i = 0; i < NEQ; i++ ) {
-    result[i] = 0;
-  }
-  
-  for ( int i = 0; i < LAGRANGE_ORDER + 1; i++ ) {
-    double s = 1;
-    for ( int j = 0; j < LAGRANGE_ORDER + 1; j++ ) {
-      if (j != i) {
-        s *= (t - t_pointer[j]);
-      }
-    }
-    for ( int j = 0; j < NEQ; j++ ) {
-      double* yi = y + i * NEQ;
-      result[j] += (s / coeffs[i]) * yi[j];
-    }
-  }
-}
-
-void compute_lagrange_coefficients(double* t, int n, double* coeffs) {
-  for ( int i = 0; i < n; i++ ) {
-    coeffs[i] = 1;
-    for ( int j = 0; j < n; j++ ) {
-      if (j != i) {
-        coeffs[i] *= (t[i] - t[j]);
-      }
-    }
-  }
-}
-
-
-
-
-static void binary_search(double t, int* i1, int* i2) {
-  if (t == t_values[n_points -1]) {
-    *i1 = n_points - 1;
-    *i2 = n_points - 1;
-    return;
-  }
-  
-  if (t > t_values[n_points - 2]) {
-    *i1 = n_points - 2;
-    *i2 = n_points - 1;
-  }
-  
-  
-  *i1 = 0;
-  *i2 = n_points - 2;
-  int middle = (*i1 + *i2) / 2;
-  int counter = 0;
-  while (*i1 < *i2) {
-    if (++counter == 1000) {
-       mexErrMsgIdAndTxt("cvode:bseach_failed", "binary_search failed");
-    }
-    if (t_values[middle] < t) {
-      if (t < t_values[middle + 1]) {
-        *i1 = middle;
-        *i2 = middle + 1;
-        return;
-      } else if (t_values[middle] == t) {    
-        *i1 = middle;
-        *i2 = middle;
-        return;
-      }
-      *i1 = middle + 1;      
-    } else if (t_values[middle] == t) {
-      *i1 = middle;
-      *i2 = middle;
-      break;
-    } else { // t < t_values(middle)
-      if (t_values[middle-1] < t) {
-        *i1 = middle - 1;
-        *i2 = middle;
-        break;
-      } else if (t == t_values[middle-1]) {
-        *i1 = middle - 1;
-        *i2 = middle - 1;
-        break;
-      }
-      *i2 = middle - 1;
-    }
-    middle = (*i1 + *i2) / 2;
-  }
 }
 
 static void error_handler(int error_code, const char* module,
