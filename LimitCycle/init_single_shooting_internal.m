@@ -30,11 +30,6 @@ function initial_continuation_data = init_single_shooting_internal(in)
       'ode_parameters',          cell2mat(in.ode_parameters), ...
       'abs_tol',                 in.time_integration_options.AbsTol, ...
       'rel_tol',                 in.time_integration_options.RelTol);
-
-    if in.show_plots
-      my_figure = figure;
-      plot(orbit_t, orbit_y - orbit_y(1,:));
-    end
   else
     in.time_integration_options = odeset(in.time_integration_options, ...
       'Events',       @returnToPlane);
@@ -48,12 +43,11 @@ function initial_continuation_data = init_single_shooting_internal(in)
       [0 in.upper_bound_period], ...
       in.point_on_limitcycle, ...
       in.time_integration_options);
-    
-    my_figure = figure;
-    plot(orbit_t, orbit_y - orbit_y(1,:))
   end
   
   if in.show_plots
+    my_figure = figure;
+    plot(orbit_t, orbit_y - orbit_y(1,:));
     xlabel('t')
     ylabel('deviation form initial value')
     disp(['Now showing plot from t=time_to_converge_to_cycle to ' ...
@@ -97,9 +91,6 @@ function initial_continuation_data = init_single_shooting_internal(in)
   cds.mv_count        = 0;
   cds.curve           = @single_shooting;
   cds.using_cvode     = using_cvode;
-  if cds.using_cvode
-    cds.n_points_stored = 1000;
-  end
  
   function [value, isterminal, direction] = returnToPlane(t, x)
     % x and should be a column vector

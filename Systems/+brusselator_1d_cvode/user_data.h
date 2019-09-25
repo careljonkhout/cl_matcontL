@@ -7,5 +7,4 @@
 
 typedef struct {
   double* parameters;
-  double temp[NEQ];
 } *UserData;

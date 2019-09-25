@@ -125,6 +125,7 @@ function initial_continuation_data = ...
     'RelTol', contopts.integration_rel_tol);
   input.poincare_tolerance        = 1e-2;
   input.show_plots                = false;
+  input.cvode_verbose             = false;
   
   i=1;
   while i <= nargin
@@ -155,42 +156,3 @@ function initial_continuation_data = ...
  
   initial_continuation_data = init_multiple_shooting_internal(input);             
 end
-
-function point_on_cycle = converge_to_cycle(in)
-    
-  global cds
-  
-  handles      = feval(in.odefile);
-  dydt_ode     = handles{2};
-  jacobian_ode = handles{3};
-  cds.nphases  = length(in.initial_point);
-
-  if ~ isempty(jacobian_ode)
-    in.time_integration_options = odeset(in.time_integration_options, ...
-    'Jacobian',     @(t,y) jacobian_ode(0, y, in.ode_parameters{:}));
-  end
-  
-  solution = feval(in.time_integration_method, ...
-      @(t,y) dydt_ode(0, y, in.ode_parameters{:}), ...
-      [0, in.time_to_converge_to_cycle], ...
-      in.initial_point, ...
-      in.time_integration_options); 
-  
-  if in.show_plots
-    orbit_to_cycle_t = linspace(0, in.time_to_converge_to_cycle, 500);
-    orbit_to_cycle_x = deval(solution, orbit_to_cycle_t);
-    my_figure = figure;
-    plot(orbit_to_cycle_t, orbit_to_cycle_x-solution.y(:,1))
-    xlabel('t')
-    ylabel('phase variables')
-    disp('Now showing plot from t=0 to t=time_to_converge_to_cycle')
-    disp('Press a key to continue')
-    pause
-    if isvalid(my_figure)
-      close(my_figure.Number)
-    end
-  end
-  
-  point_on_cycle = deval(solution, in.time_to_converge_to_cycle);
-end
-

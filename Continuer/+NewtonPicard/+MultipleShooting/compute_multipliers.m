@@ -4,14 +4,23 @@ function multipliers = compute_multipliers(x, nMults_to_compute)
   [~, period, parameters] = ...
         NewtonPicard.MultipleShooting.extract_phases_period_and_parameters(x);
   
-  if ~ contopts.monodromy_by_finite_differences
+  if ( ~ contopts.monodromy_by_finite_differences) && ( ~ cds.using_cvode )
     NewtonPicard.MultipleShooting.compute_stiched_orbit(x, ...
                                              contopts.multipliers_rel_tol, ...
                                              contopts.multipliers_abs_tol);
   end
   
-  [~, multiplier_matrix, no_convergence] = eigs( ...
-     @(x) monodromy_map(x, period, parameters), cds.nphases, nMults_to_compute);
+  if cds.using_cvode
+    M = @(x) ...
+          NewtonPicard.MultipleShooting.monodromy_map(1, x, period, parameters);
+  else
+    M = @(x) monodromy_map(x, period, parameters);
+  end
+  
+  nMults_to_compute = min(nMults_to_compute, cds.nphases);
+  
+  [~, multiplier_matrix, no_convergence] = eigs(...
+                                             M, cds.nphases, nMults_to_compute);
   multipliers = diag(multiplier_matrix);
   
   if no_convergence
@@ -46,10 +55,7 @@ function Mx  = monodromy_map(phases_0, delta_t, parameters)
     % computed by finite differences. Seems to be faster than the method above.
     % The error of the trivial multiplier is much larger when using finite
     % differences.
-    %
-    % This method of computing the action of the monodromy matrix also makes
-    % continuation possible is the Jacobian of the system of ODEs is not
-    % available
+ 
     
     integration_opt = odeset(...
       'AbsTol',       1e-13, ...

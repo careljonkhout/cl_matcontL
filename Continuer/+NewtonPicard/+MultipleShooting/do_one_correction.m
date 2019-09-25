@@ -13,6 +13,7 @@ function x = do_one_correction(x0,x,v0)
   [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
           phases_0, phi, period, active_par_val] = ...
     NewtonPicard.MultipleShooting.compute_reduced_jacobian(x);
+  
   basis_size = size(V,2);
   m = cds.nMeshIntervals;
   
@@ -67,6 +68,7 @@ function x = do_one_correction(x0,x,v0)
   phases_0 = reshape(phases_0,numel(phases_0),1);
   delta_q         = delta_q_r + delta_gamma * delta_q_gamma;
   phases_0        = phases_0 + V_delta_p + reshape(delta_q,numel(delta_q),1);
+  cds.phases_0    = phases_0;
   period          = period + delta_T;
   active_par_val  = active_par_val + delta_gamma;
   x = [phases_0; period; active_par_val];
