@@ -83,6 +83,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     
 }
 
+#define JAC(i,j) jac[(i) + (j) * system_size]
+
 void <%= s.name %>_jacobian(double* y, double* parameters, double* jac) {
 <%= s.jacobian %>
 }

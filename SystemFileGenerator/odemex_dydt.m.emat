@@ -1,5 +1,0 @@
-function dx = <%= s.name %>_odemex_dydt(t, x, p, u, myStruct)
-
-<%= s.formatted_rhs %>
-
-dx = dx(:);

@@ -1,8 +1,15 @@
-#define N_PARAMETERS <%= length(s.input_pars) %>
-#define NEQ          <%= length(s.input_vars) %>
-#define ANALYTIC_JACOBIAN false
-#define BANDED_JACOBIAN       true
-#define DENSE_JACOBIAN        !BANDED_JACOBIAN
+#define N_PARAMETERS          <%= length(s.input_pars) %>
+#define NEQ                   <%= length(s.input_vars) %>
+#define ANALYTIC_JACOBIAN     <%= s.analytic_jacobian %>
+
+#define DENSE   0
+#define BANDED  1
+#define SPARSE  2
+
+#define JACOBIAN_STORAGE      <%= s.jacobian_storage %>
+
+#define UPPER_BANDWIDTH       <%= s.jacobian_upper_bandwidth %>
+#define LOWER_BANDWIDTH       <%= s.jacobian_lower_bandwidth %>
 
 typedef struct {
   double* parameters;

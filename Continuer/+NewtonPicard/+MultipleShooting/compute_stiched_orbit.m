@@ -1,8 +1,12 @@
 % computes the orbit of the cycle by "stiching together" all the partial orbits
-% started from all the mesh-points.
+% started from all the mesh-points
 
 function compute_stiched_orbit(x, abs_tol, rel_tol)
   global cds contopts;
+  
+  if cds.using_cvode
+    
+  end
   
   if nargin == 1
     abs_tol = contopts.integration_abs_tol;
@@ -26,8 +30,17 @@ function compute_stiched_orbit(x, abs_tol, rel_tol)
   indices = 1:cds.nphases;
   for i=1:cds.nMeshIntervals
     time_interval = period * [cds.mesh(i) cds.mesh(i+1)];
-    [t_mesh_interval, y_mesh_interval] = ...
-      cds.integrator(dydt, time_interval, phases_0(indices), int_opt);
+    if cds.using_cvode
+      [t_mesh_interval, y_mesh_interval] = cds.integrator( ...
+        't_values',       linspace(time_interval(1), time_interval(2), 100), ...
+        'initial_point',  phases_0(indices), ...
+        'ode_parameters', cell2mat(parameters), ...
+        'abs_tol',        abs_tol, ...
+        'rel_tol',        rel_tol);
+    else
+      [t_mesh_interval, y_mesh_interval] = ...
+        cds.integrator(dydt, time_interval, phases_0(indices), int_opt);
+    end
     if i < cds.nMeshIntervals
       t_cycle = [t_cycle; t_mesh_interval(1:end-1,:)]; %#ok<AGROW>
       y_cycle = [y_cycle; y_mesh_interval(1:end-1,:)]; %#ok<AGROW>

@@ -326,12 +326,17 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   
   int rootfinding_direction = INCREASING;
   if (cycle_detection) {
-    CVodeRootInit        (cvode, 1,                     return_to_plane);
-    CVodeSetRootDirection(cvode, &rootfinding_direction                );
+    CVodeRootInit        (cvode, 1, return_to_plane);
+    CVodeSetRootDirection(cvode, &rootfinding_direction);
   }
   
   if (sensitivity) {
-    CVodeSensInit1       (cvode, NS, sensi_meth, d_sensitivity_dt, &s);
+    #if ANALYTIC_JACOBIAN
+      CVodeSensInit1       (cvode, NS, sensi_meth, d_sensitivity_dt, &s);
+    #else
+      CVodeSensInit1       (cvode, NS, sensi_meth, NULL, &s);
+    #endif
+      
     CVodeSensEEtolerances(cvode);
     //CVodeSensSStolerances(cvode, rel_tol, &abs_tol);
     CVodeSetSensErrCon   (cvode, true);    

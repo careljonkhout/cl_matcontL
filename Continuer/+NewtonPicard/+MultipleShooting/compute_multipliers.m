@@ -1,13 +1,15 @@
 function multipliers = compute_multipliers(x, nMults_to_compute)
   global cds contopts;
   print_diag(3,'computing multipliers\n');
-  [~, period, parameters] = ...
+  [cds.phases_0, period, parameters] = ...
         NewtonPicard.MultipleShooting.extract_phases_period_and_parameters(x);
   
   if ( ~ contopts.monodromy_by_finite_differences) && ( ~ cds.using_cvode )
     NewtonPicard.MultipleShooting.compute_stiched_orbit(x, ...
                                              contopts.multipliers_rel_tol, ...
                                              contopts.multipliers_abs_tol);
+                                           
+  
   end
   
   if cds.using_cvode

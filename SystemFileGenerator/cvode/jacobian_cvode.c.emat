@@ -1,16 +1,41 @@
 #include <nvector/nvector_serial.h>
 #include <sundials/sundials_types.h>
 #include <sunmatrix/sunmatrix_dense.h>
+#include <sunmatrix/sunmatrix_band.h>
 #include <math.h>
+#include <mex.h>
 #include "user_data.h"
 
+#if JACOBIAN_STORAGE == DENSE
+#define JAC(i,j) (SM_ELEMENT_D(jacobian, (i), (j)))
+#endif
+
+#if JACOBIAN_STORAGE == BANDED
+#define JAC(i,j) (SM_ELEMENT_B(jacobian, (i), (j)))
+#endif
+
 int jacobian_dydt(
-               realtype t, N_Vector y_vec, N_Vector fy, SUNMatrix jac_structure,
+               realtype t, N_Vector y_vec, N_Vector fy, SUNMatrix jacobian,
               void* user_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
   
-  realtype* y   = N_VGetArrayPointer(y_vec);
-  realtype* jac = SM_DATA_D(jac_structure); // get the pointer to the jac data
-  realtype* parameters = ((UserData) user_data)->parameters;
+  double* y          = N_VGetArrayPointer(y_vec);
+  double* parameters = ((UserData) user_data)->parameters;
+
+  #if JACOBIAN_STORAGE == DENSE
+  if (SUNMatGetID(jacobian) != SUNMATRIX_DENSE) {
+    mexErrMsgIdAndTxt("cvode:wrong_matrix_type",
+            "expected type %d = SUNMATRIX_DENSE, got type %d",
+            SUNMATRIX_DENSE, SUNMatGetID(jacobian));
+  }
+  #endif
+  
+  #if JACOBIAN_STORAGE == BANDED
+  if (SUNMatGetID(jacobian) != SUNMATRIX_BAND) {
+    mexErrMsgIdAndTxt("cvode:wrong_matrix_type",
+            "expected type %d = SUNMATRIX_BAND, got type %d",
+            SUNMATRIX_DENSE, SUNMatGetID(jacobian));
+  }
+  #endif
 
 <%= s.jacobian %>
   

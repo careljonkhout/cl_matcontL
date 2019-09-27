@@ -56,6 +56,7 @@ static void check_double  (const mxArray* array,               char* arrayname);
 static void check_bool    (const mxArray* array,               char* arrayname);
 static void check_size    (const mxArray* array, int expected, char* arrayname);
 static void check_positive(const mxArray* array,               char* arrayname);
+static void check_argument_given(void* pointer,                char* arrayname);
 static N_Vector get_N_Vector(const mxArray* array, char* input_name, int size);
 
 static void PrintFinalStats(void *cvode, booleantype sensi,
@@ -110,7 +111,7 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   
   if (n_input % 2 != 0) {
     mexErrMsgIdAndTxt("cvode:nrhs_uneven",
-                     "Error: the number of arguments is uneven. "
+                     "The number of arguments is uneven. "
                      "The number for arguments is %d. "
                      "Arguments must be supplied as name-value pairs", n_input);
   }
@@ -196,7 +197,7 @@ void mexFunction(int n_output,       mxArray *mex_output[],
     } else {
   
       mexErrMsgIdAndTxt("cvode:invalid_argument_name", 
-                       "Error: Invalid argument name for cvode: %s.", arg_name);
+                        "Invalid argument name for cvode: %s.", arg_name);
     }
   }
   
@@ -206,21 +207,10 @@ void mexFunction(int n_output,       mxArray *mex_output[],
                      "(or 3 outputs for sensitivity analysis)");
   }
   
-
-  if (t_values == NULL) {
-    mexErrMsgIdAndTxt("cvode:no_t_values", 
-                                         "Error: you did not specify t_values");
-  }
+  check_argument_given((void *) t_values               , "t_values"     );
+  check_argument_given((void *) initial_point          , "initial_point");
+  check_argument_given((void *) (user_data->parameters), "parameters"   );
   
-  if (initial_point == NULL) {
-    mexErrMsgIdAndTxt("cvode:no_y_values",
-                                    "Error: you did not specify initial_point");
-  }
-  
-  if (user_data->parameters == NULL) {
-    mexErrMsgIdAndTxt("cvode:no_params",
-                                   "Error: you did not specify ode_parameters");
-  }
 
   if (cycle_detection) {
     // we wait to compute tangent_to_limitcycle, since we need parameters to 
@@ -287,13 +277,13 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   CVodeSStolerances_checked   (cvode, rel_tol       , abs_tol       );
   CVodeSetMaxNumSteps_checked (cvode, MAX_NUM_STEPS                 );
      
-  #if DENSE_JACOBIAN
+  #if JACOBIAN_STORAGE == DENSE
   A  = SUNDenseMatrix_nullchecked(NEQ, NEQ);
   LS = SUNLinSol_Dense_nullchecked(y, A);
   #endif
   
-  #if BANDED_JACOBIAN
-  A  = SUNBandMatrix_nullchecked(NEQ, 2, 2);
+  #if JACOBIAN_STORAGE == BANDED
+  A  = SUNBandMatrix_nullchecked(NEQ, UPPER_BANDWIDTH, LOWER_BANDWIDTH);
   LS = SUNLinSol_Band_nullchecked(y, A);
   #endif
    
@@ -311,7 +301,11 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   }
   
   if (sensitivity) {
+    #if ANALYTIC_JACOBIAN
     CVodeSensInit1       (cvode, NS, sensi_meth, d_sensitivity_dt, &s);
+    #else
+    CVodeSensInit1       (cvode, NS, sensi_meth, NULL            , &s);
+    #endif
     CVodeSensEEtolerances(cvode);
     //CVodeSensSStolerances(cvode, rel_tol, &abs_tol);
     CVodeSetSensErrCon   (cvode, true);    
@@ -333,15 +327,14 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   
   
   
-  mex_output[OUTPUT_T]     = mxCreateDoubleMatrix(1   , n_points, mxREAL);
-  
-  mxArray* y_output_buffer = mxCreateDoubleMatrix(NEQ, n_points, mxREAL);
+  mxArray* t_output_array = mxCreateDoubleMatrix(1,   n_points, mxREAL);
+  mxArray* y_output_array = mxCreateDoubleMatrix(NEQ, n_points, mxREAL);
   if (sensitivity) {
     mex_output[OUTPUT_SENSITIVITY] = mxCreateDoubleMatrix(NEQ, 1, mxREAL);
   }
   
-  mxDouble* t_out = my_mex_get_doubles(mex_output[OUTPUT_T]);
-  mxDouble* y_out = my_mex_get_doubles(y_output_buffer);
+  mxDouble* t_out = my_mex_get_doubles(t_output_array);
+  mxDouble* y_out = my_mex_get_doubles(y_output_array);
   mxDouble* s_out;
   if (sensitivity) {
     s_out = my_mex_get_doubles(mex_output[OUTPUT_SENSITIVITY]);
@@ -387,12 +380,17 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   
   if (i+1 < n_points) {
     // this happens when a cycle has been detected
-    mxSetN(mex_output[OUTPUT_T], i+1);
-    mxSetN(y_output_buffer     , i+1);
+    mxSetN(t_output_array, i+1);
+    mxSetN(y_output_array, i+1);
   }
-  mxArray* transposed = mxCreateDoubleMatrix(i+1, NEQ, mxREAL);
-  mexCallMATLAB(1, &transposed, 1, &y_output_buffer, "transpose");
-  mex_output[OUTPUT_Y] = transposed;
+  mxArray* y_transposed = mxCreateDoubleMatrix(i+1, NEQ, mxREAL);
+  mexCallMATLAB(1, &y_transposed, 1, &y_output_array, "transpose");
+  mex_output[OUTPUT_Y] = y_transposed;
+  
+  mxArray* t_transposed = mxCreateDoubleMatrix(i+1, 1, mxREAL);
+  mexCallMATLAB(1, &t_transposed, 1, &t_output_array, "transpose");
+  mex_output[OUTPUT_T] = t_transposed;
+  
    
   if (verbose) {
     PrintFinalStats(cvode, sensitivity, err_con, sensi_meth);
@@ -401,7 +399,7 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   /* Free working memory. Note that matlab would take care of it automatically 
    * if we do not do it here, but freeing memory as soon as we can is better. */
   
-  mxDestroyArray(y_output_buffer);
+  mxDestroyArray(y_output_array);
 
   N_VDestroy(y);
   if (sensitivity) {
@@ -473,12 +471,21 @@ static void check_positive(const mxArray* scalar, char* scalarname) {
   }
 }
 
+void check_argument_given(void * pointer, char* argument_name) {
+  if (argument_name == NULL) {
+    mexErrMsgIdAndTxt("cvode:missing_argument",  
+                      "Argument '%s' was not passed to cvode.", argument_name);  
+  }
+}
+
 static N_Vector get_N_Vector(const mxArray* array, char* input_name, int size) {
   check_double(array,       input_name);
   check_size  (array, size, input_name);
   double* data = my_mex_get_doubles(array);
   return N_VMake_Serial(size, data);
 }
+
+
 
 /*
  * Print some final statistics located in the CVODES memory
