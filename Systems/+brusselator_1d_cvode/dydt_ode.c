@@ -32,6 +32,7 @@ void dydt_ode(double* u, double* dudt, double* parameters) {
   dxdt(0) = ( x0 - 2 * x(0) + x(1) ) * cx + reaction_x(0);
   dydt(0) = ( y0 - 2 * y(0) + y(1) ) * cy + reaction_y(0);
   
+  #pragma omp parallel for
   for (int i = 1; i < N_MESH_POINTS - 1; i++) {
     dxdt(i) = ( x(i-1) - 2 * x(i) + x(i+1) ) * cx + reaction_x(i);
     dydt(i) = ( y(i-1) - 2 * y(i) + y(i+1) ) * cy + reaction_y(i);

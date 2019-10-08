@@ -6,6 +6,7 @@
 
 #include <cvodes/cvodes.h>
 #include <nvector/nvector_serial.h>
+//#include <nvector/nvector_openmp.h>
 #include <sunmatrix/sunmatrix_band.h>   /* access to band SUNMatrix       */
 #include <sunlinsol/sunlinsol_band.h>   /* access to band SUNLinearSolver */
 #include <sunmatrix/sunmatrix_dense.h>  /* access to dense SUNMatrix       */
@@ -46,61 +47,51 @@ int d_sensitivity_dt(int Ns, double t,
                 N_Vector tmp1, N_Vector tmp2);
 
 
-static int return_to_plane(double t, N_Vector u, double* g  , void *);
+int return_to_plane(double t, N_Vector u, double* g  , void *);
 
-static void error_handler(int error_code, const char *module,
+void error_handler(int error_code, const char *module,
                           const char *function, char *msg, void *eh_data);
 
-static double* my_mex_get_doubles(const mxArray* array);
-static void check_double  (const mxArray* array,               char* arrayname);
-static void check_bool    (const mxArray* array,               char* arrayname);
-static void check_size    (const mxArray* array, int expected, char* arrayname);
-static void check_positive(const mxArray* array,               char* arrayname);
-static void check_argument_given(void* pointer,                char* arrayname);
-static N_Vector get_N_Vector(const mxArray* array, char* input_name, int size);
 
-static void PrintFinalStats(void *cvode, booleantype sensi,
+double* my_mex_get_doubles(const mxArray* array);
+void check_double    (const mxArray* array,               char* arrayname);
+void check_bool      (const mxArray* array,               char* arrayname);
+void check_size      (const mxArray* array, int expected, char* arrayname);
+void check_positive  (const mxArray* array,               char* arrayname);
+N_Vector get_N_Vector(const mxArray* array, char* input_name, int size);
+double*  get_doubles (const mxArray* array, char* input_name, int size);
+N_Vector new_N_Vector(int length);
+
+void check_argument_given(void* pointer,                char* arrayname);
+
+void PrintFinalStats(void *cvode, booleantype sensi,
                             booleantype err_con, int sensi_meth);
 
-static int          n_points;
-static double*      t_values;
-static N_Vector     initial_point;
 
-static int          sensitivity;
-static N_Vector     sensitivity_vector;
-
-static booleantype  cycle_detection;
-static double       lower_bound_period;
-static booleantype  lower_bound_period_given;
-static N_Vector     point_on_limitcycle;
-static N_Vector     tangent_to_limitcycle;
-
-static booleantype  verbose;
-
-static N_Vector     interpolated_value;
-
-
+double       lower_bound_period;
+N_Vector     point_on_limitcycle;
+N_Vector     tangent_to_limitcycle;
 
 void mexFunction(int n_output,       mxArray *mex_output[], 
                  int n_input,  const mxArray *mex_input []  ) {
   
-  n_points                 = 0;
-  t_values                 = NULL;
-  initial_point            = NULL;
+  int          n_points                 = 0;
+  double*      t_values                 = NULL;
+  double*      initial_point            = NULL;
 
-  sensitivity              = false;
-  sensitivity_vector       = NULL;
+  int          sensitivity              = false;
+  double*      sensitivity_vector       = NULL;
 
-  cycle_detection          = false;
-  lower_bound_period       = 0;
-  lower_bound_period_given = false;
-  point_on_limitcycle      = NULL;
-  tangent_to_limitcycle    = NULL;
+  booleantype  cycle_detection          = false;
+               lower_bound_period       = 0;
+  booleantype  lower_bound_period_given = false;
+               point_on_limitcycle      = NULL;
+               tangent_to_limitcycle    = NULL; 
 
-  verbose                  = false;
+  booleantype  verbose                  = false;
   
-  double abs_tol           = DEFAULT_ABS_TOL;
-  double rel_tol           = DEFAULT_REL_TOL;
+  double       abs_tol                  = DEFAULT_ABS_TOL;
+  double       rel_tol                  = DEFAULT_REL_TOL;
   /* abs_tol and rel_tol will be overwritten if the caller specifies them */
   
   
@@ -138,7 +129,7 @@ void mexFunction(int n_output,       mxArray *mex_output[],
       
     } else if ( ! strcmp(arg_name, "initial_point"        ) ) {
       
-      initial_point = get_N_Vector(mex_input[i + 1], "initial_point", NEQ);
+      initial_point = get_doubles(mex_input[i + 1], "initial_point", NEQ);
       
     } else if ( ! strcmp(arg_name, "ode_parameters"       ) ) {
       
@@ -150,7 +141,7 @@ void mexFunction(int n_output,       mxArray *mex_output[],
     } else if ( ! strcmp(arg_name, "sensitivity_vector"   ) ) {
       
       sensitivity_vector
-                    = get_N_Vector(mex_input[i + 1], "sensitivity_vector", NEQ);
+                     = get_doubles(mex_input[i + 1], "sensitivity_vector", NEQ);
       
       sensitivity = true;
       
@@ -173,7 +164,7 @@ void mexFunction(int n_output,       mxArray *mex_output[],
       
       point_on_limitcycle = 
                      get_N_Vector(mex_input[i + 1], "point_on_limitcycle", NEQ);
-      tangent_to_limitcycle = N_VNew_Serial(NEQ);
+      tangent_to_limitcycle = new_N_Vector(NEQ);
       
     } else if ( ! strcmp(arg_name, "abs_tol"  ) ) {
       
@@ -219,24 +210,24 @@ void mexFunction(int n_output,       mxArray *mex_output[],
     
     if (sensitivity) {
        mexErrMsgIdAndTxt("cvode:sens_and_cd",
-                         "Error: simultaneous cycle detection and "
+                         "simultaneous cycle detection and "
                          "sensitivity analysis is not supported");   
     }
     if (! lower_bound_period_given) {
       mexErrMsgIdAndTxt("cvode:no_lower_bound_period",
-                        "Error: You enabled cycle detection, "
+                        "You enabled cycle detection, "
                         "but you did not specify lower_bound_period");
     }
     if (point_on_limitcycle == NULL) {
       mexErrMsgIdAndTxt("cvode:no_point_on_limitcycle",
-                        "Error: You enabled cycle detection, "
+                        "You enabled cycle detection, "
                         "but you did not specify point_on_limit_cycle");    
     }
   }
   
   if(sensitivity && n_output != 3) {
     mexErrMsgIdAndTxt("cvode:n_output",
-                      "Error: You enabled sensitivity analysis, " 
+                      "You enabled sensitivity analysis, " 
                       "but you specified less than three outputs. "
                       "Three outputs are needed for sensitivity analysis: "
                       "t (time), y (state variables), and s (sensitivity");
@@ -249,42 +240,39 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   int               sensi_meth  = CV_SIMULTANEOUS;
   booleantype       err_con     = true;
     
-  N_Vector y = N_VNew_Serial(NEQ); 
-  
-  N_Vector s;
+  N_Vector solver_y = new_N_Vector(NEQ);
+  N_Vector solver_s;
   if (sensitivity) {
-    s = N_VNew_Serial(NEQ);
+    solver_s = new_N_Vector(NEQ);
   }
 
   
-  double* y_data             = N_VGetArrayPointer(y);
+  double* y_data             = N_VGetArrayPointer(solver_y);
   
-  double* initial_point_data = N_VGetArrayPointer(initial_point);
-  memcpy(y_data, initial_point_data, NEQ * sizeof(double));
+  memcpy(y_data, initial_point, NEQ * sizeof(double));
   
   double* s_data;
   if ( sensitivity ) {
-    double* sens_vector_data = N_VGetArrayPointer(sensitivity_vector);
-    s_data = N_VGetArrayPointer(s); 
-    memcpy(s_data, sens_vector_data, NEQ * sizeof(double));
+    s_data = N_VGetArrayPointer(solver_s); 
+    memcpy(s_data, sensitivity_vector, NEQ * sizeof(double));
   }
   
   cvode = CVodeCreate_nullchecked(CV_BDF);
 
-  CVodeInit_checked           (cvode, dydt_cvode    , t_values[0], y);  
-  CVodeSetErrHandlerFn_checked(cvode, error_handler , NULL          );
-  CVodeSetUserData_checked    (cvode, user_data                     );
-  CVodeSStolerances_checked   (cvode, rel_tol       , abs_tol       );
-  CVodeSetMaxNumSteps_checked (cvode, MAX_NUM_STEPS                 );
+  CVodeInit_checked           (cvode, dydt_cvode    , t_values[0], solver_y);  
+  CVodeSetErrHandlerFn_checked(cvode, error_handler , NULL                 );
+  CVodeSetUserData_checked    (cvode, user_data                            );
+  CVodeSStolerances_checked   (cvode, rel_tol       , abs_tol              );
+  CVodeSetMaxNumSteps_checked (cvode, MAX_NUM_STEPS                        );
      
   #if JACOBIAN_STORAGE == DENSE
   A  = SUNDenseMatrix_nullchecked(NEQ, NEQ);
-  LS = SUNLinSol_Dense_nullchecked(y, A);
+  LS = SUNLinSol_Dense_nullchecked(solver_y, A);
   #endif
   
   #if JACOBIAN_STORAGE == BANDED
   A  = SUNBandMatrix_nullchecked(NEQ, UPPER_BANDWIDTH, LOWER_BANDWIDTH);
-  LS = SUNLinSol_Band_nullchecked(y, A);
+  LS = SUNLinSol_Band_nullchecked(solver_y, A);
   #endif
    
   CVodeSetLinearSolver_checked(cvode, LS, A);
@@ -302,9 +290,9 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   
   if (sensitivity) {
     #if ANALYTIC_JACOBIAN
-    CVodeSensInit1       (cvode, NS, sensi_meth, d_sensitivity_dt, &s);
+    CVodeSensInit1       (cvode, NS, sensi_meth, d_sensitivity_dt, &solver_s);
     #else
-    CVodeSensInit1       (cvode, NS, sensi_meth, NULL            , &s);
+    CVodeSensInit1       (cvode, NS, sensi_meth, NULL            , &solver_s);
     #endif
     CVodeSensEEtolerances(cvode);
     //CVodeSensSStolerances(cvode, rel_tol, &abs_tol);
@@ -355,13 +343,11 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   int n_points_to_compute = sensitivity ? 2 : n_points;
   
   for(i = 1; i < n_points; i++) {  
-    int flag = CVode(cvode, t_values[i], y, &t, CV_NORMAL);
+    int flag = CVode(cvode, t_values[i], solver_y, &t, CV_NORMAL);
     check(flag, "CVode");
     if (sensitivity) {
-      flag = CVodeGetSens(cvode, &t, &s);
+      flag = CVodeGetSens(cvode, &t, &solver_s);
       check(flag, "CVodeGetSens");
-      
-      s_data = N_VGetArrayPointer(s);
       memcpy(s_out, s_data, NEQ * sizeof(double));  
     }
     if (cycle_detection) {
@@ -400,11 +386,20 @@ void mexFunction(int n_output,       mxArray *mex_output[],
    * if we do not do it here, but freeing memory as soon as we can is better. */
   
   mxDestroyArray(y_output_array);
+  mxDestroyArray(t_output_array);
 
-  N_VDestroy(y);
+  N_VDestroy(solver_y);
   if (sensitivity) {
-    N_VDestroy(s);
+    N_VDestroy(solver_s);
   }
+  if (cycle_detection) {
+    N_VDestroy(point_on_limitcycle);
+    N_VDestroy(tangent_to_limitcycle);
+  }
+  
+  SUNLinSolFree(LS); /* Free the linear solver memory */
+  SUNMatDestroy(A);  /* Free the matrix memory */
+  free(user_data);   /* Free the user data */
 
   CVodeFree(&cvode);
 }
@@ -418,7 +413,7 @@ double* my_mex_get_doubles(const mxArray* array) {
   #endif 
 }
 
-static int return_to_plane(double t, N_Vector y, double *gout, 
+int return_to_plane(double t, N_Vector y, double *gout, 
                                                               void *user_data) {
   if (t > lower_bound_period) {
     *gout = 0;
@@ -434,28 +429,28 @@ static int return_to_plane(double t, N_Vector y, double *gout,
   return 0;
 }
 
-static void error_handler(int error_code, const char* module,
+void error_handler(int error_code, const char* module,
          const char* function, char* message, void *eh_data) {
  mexPrintf("Error in %s() in sundails module %s. error code: %d: %s.\n  %s\n",
            function, module,
            error_code, CVodeGetReturnFlagName(error_code), message);
 }
 
-static void check_double(const mxArray* array, char* arrayname) {
+void check_double(const mxArray* array, char* arrayname) {
   if ( !mxIsDouble(array) ) {
     mexErrMsgIdAndTxt("cvode:not_double", 
              "Input vector %s is not a vector of doubles.", arrayname);
   }
 }
 
-static void check_bool(const mxArray* array, char* arrayname) {
+void check_bool(const mxArray* array, char* arrayname) {
   if ( !mxIsLogicalScalar(array) ) {
     mexErrMsgIdAndTxt("cvode:not_bool", 
             "Input %s is not a boolean.", arrayname);
   }
 }
 
-static void check_size(const mxArray* array, int size, char* arrayname) {
+void check_size(const mxArray* array, int size, char* arrayname) {
   if ( mxGetNumberOfElements(array) != size ) {
     mexErrMsgIdAndTxt("cvode:incorrect_size",  
             "Error: Input vector %s does not have the correct size. "
@@ -464,7 +459,7 @@ static void check_size(const mxArray* array, int size, char* arrayname) {
   }
 }
 
-static void check_positive(const mxArray* scalar, char* scalarname) {
+void check_positive(const mxArray* scalar, char* scalarname) {
   if (mxGetScalar(scalar) <= 0) {
     mexErrMsgIdAndTxt("cvode:not_positive",  
             "Error: Input %s is not positive.", scalarname);
@@ -478,11 +473,27 @@ void check_argument_given(void * pointer, char* argument_name) {
   }
 }
 
-static N_Vector get_N_Vector(const mxArray* array, char* input_name, int size) {
+double* get_doubles(const mxArray* array, char* input_name, int size) {
+  check_double(array,       input_name);
+  check_size  (array, size, input_name);
+  return my_mex_get_doubles(array);
+}
+
+N_Vector get_N_Vector(const mxArray* array, char* input_name, int size) {
   check_double(array,       input_name);
   check_size  (array, size, input_name);
   double* data = my_mex_get_doubles(array);
   return N_VMake_Serial(size, data);
+}
+
+N_Vector new_N_Vector(int length) {
+  N_Vector v;
+  #if OPEN_MP
+  v = N_VNew_OpenMP(NEQ, N_THREADS); 
+  #else
+  v = N_VNew_Serial(NEQ); 
+  #endif
+  return v;
 }
 
 
@@ -491,7 +502,7 @@ static N_Vector get_N_Vector(const mxArray* array, char* input_name, int size) {
  * Print some final statistics located in the CVODES memory
  */
 
-static void PrintFinalStats(void *cvode, booleantype sensi,
+void PrintFinalStats(void *cvode, booleantype sensi,
                             booleantype err_con, int sensi_meth) {
   long int nst;
   long int nfe, nsetups, nni, ncfn, netf;

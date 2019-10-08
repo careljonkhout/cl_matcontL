@@ -8,16 +8,18 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
   cds.phases_0 = phases_0;
   active_par_val = parameters{cds.ActiveParams};
   
-  % Since the result of the next time-integration will be reused many times,
-  % we set the tolerances a bit tighter than the rest.
-  integration_opt = odeset(...
-    'AbsTol',      contopts.integration_abs_tol / 10,    ...
-    'RelTol',      contopts.integration_rel_tol / 10    ...
-  );
-  
-  if ~ isempty(cds.jacobian_ode)
-    integration_opt = odeset(integration_opt, ...
-    'Jacobian',     @(t,y) feval(cds.jacobian_ode,t,y,parameters{:}));
+  if ~ cds.using_cvode
+    % Since the result of the next time-integration will be reused many times,
+    % we set the tolerances a bit tighter than the rest.
+    integration_opt = odeset(...
+      'AbsTol',      contopts.integration_abs_tol / 10,    ...
+      'RelTol',      contopts.integration_rel_tol / 10    ...
+    );
+
+    if ~ isempty(cds.jacobian_ode)
+      integration_opt = odeset(integration_opt, ...
+      'Jacobian',     @(t,y) feval(cds.jacobian_ode,t,y,parameters{:}));
+    end
   end
 
 
@@ -65,15 +67,17 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
       end
       cds.orbits(2:m) = orbits(2:m);
     end
-  catch error
-    if (strcmp(error.identifier,'MATLAB:remoteparfor:AllParforWorkersAborted'))
+    catch my_error
+    if (strcmp(my_error.identifier, ...
+                                'MATLAB:remoteparfor:AllParforWorkersAborted'))
       % Something went wrong with the parfor workers.
       % We try again with ordinary for.
       print_diag(0, 'Parfor aborted, retrying with ordinary for.\n');
       parfor_failed = true;
     else
-      % in case of some other error, we want to know about it
-      rethrow(error)
+      % in case of some other error, we want to know about it, so we rethrow the
+      % error
+      rethrow(my_error)
     end
   end
   
@@ -104,23 +108,26 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
   
   cds.p = cds.preferred_basis_size;
 
-  if ~ isfield(cds, 'V') || true
-    V1             = compute_subspace(1, period, parameters);
-    basis_size     = size(V1,2);
-    cds.basis_size = basis_size;
-    V              = zeros(cds.nphases, basis_size, m);
-    V(:,:,1)       = V1;
-    for i=2:m % m == cds.nMeshIntervals
-      print_diag(6,'G %d\n',i);
-      for j = 1:size(V,2)
-        V(:,j,i) = NewtonPicard.MultipleShooting.monodromy_map(...
-                                     i-1, V(:,j,i-1), delta_t(i-1), parameters);
-      end
-      V(:,:,i) = orth(V(:,:,i));
+  
+  V1             = compute_subspace(1, period, parameters);
+  basis_size     = size(V1,2);
+  cds.basis_size = basis_size;
+  V              = zeros(cds.nphases, basis_size, m);
+  V(:,:,1)       = V1;
+  for i=2:m % m == cds.nMeshIntervals
+    print_diag(6,'G %d\n',i);
+    for j = 1:size(V,2)
+      V(:,j,i) = NewtonPicard.MultipleShooting.monodromy_map(...
+                                   i-1, V(:,j,i-1), delta_t(i-1), parameters);
     end
-  else
-    V = NewtonPicard.MultipleShooting.continue_subspaces(delta_t, parameters);
+    orth_V_i = orth(V(:,:,i));
+    if size(orth_V_i,2) == size(V(:,:,i),2)
+      V(:,:,i) = orth_V_i;
+    else
+      V(:,:,i) = compute_subspace(i, period, parameters);
+    end
   end
+
   cds.V = V;
   basis_size     = size(V,2);
   cds.basis_size = basis_size;

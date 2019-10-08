@@ -11,6 +11,9 @@
 #define UPPER_BANDWIDTH       <%= s.jacobian_upper_bandwidth %>
 #define LOWER_BANDWIDTH       <%= s.jacobian_lower_bandwidth %>
 
+#define OPEN_MP               false
+#define N_THREADS             2
+
 typedef struct {
   double* parameters;
 } *UserData;

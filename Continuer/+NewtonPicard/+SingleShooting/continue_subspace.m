@@ -7,6 +7,8 @@
 %	year={2000},
 %	publisher={Springer}
 % }
+% this function is currently not used (october 2019), since recomputing the
+% subspaces at each point seems to be faster.
 function V = continue_subspace(period, parameters)
   global cds contopts
   mv_count = 0;

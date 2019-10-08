@@ -83,7 +83,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     
 }
 
+#define JAC(i,j) jac[(i) + (j) * system_size]
+
 void bypass273_cvode_jacobian_params(double* y, double* parameters, double* jac) {
-  jac[268] =  y[269]*(3.9E+1/2.0E+2)+7.15709E-1;
-  jac[269] =  y[269]*(-3.9E+1/2.0E+2);
+  JAC(268,0) =  y[269]*(3.9E+1/2.0E+2)+7.15709E-1;
+  JAC(269,0) =  y[269]*(-3.9E+1/2.0E+2);
 }

@@ -13,14 +13,14 @@
 #define X(i) u[X_INDEX(i)]
 #define Y(i) u[Y_INDEX(i)]
 
-#if DENSE_JACOBIAN
+#if JACOBIAN_STORAGE == DENSE
 #define JAC_XX(i,j) SM_ELEMENT_D(jacobian, X_INDEX(i), X_INDEX(j))
 #define JAC_XY(i,j) SM_ELEMENT_D(jacobian, X_INDEX(i), Y_INDEX(j))
 #define JAC_YX(i,j) SM_ELEMENT_D(jacobian, Y_INDEX(i), X_INDEX(j))
 #define JAC_YY(i,j) SM_ELEMENT_D(jacobian, Y_INDEX(i), Y_INDEX(j))
 #endif
 
-#if BANDED_JACOBIAN
+#if JACOBIAN_STORAGE == BANDED
 #define JAC_XX(i,j) SM_ELEMENT_B(jacobian, X_INDEX(i), X_INDEX(j))
 #define JAC_XY(i,j) SM_ELEMENT_B(jacobian, X_INDEX(i), Y_INDEX(j))
 #define JAC_YX(i,j) SM_ELEMENT_B(jacobian, Y_INDEX(i), X_INDEX(j))
@@ -43,7 +43,7 @@ int jacobian_dydt(
   double cx = DX * (N_MESH_POINTS + 1) * (N_MESH_POINTS+1) / (L*L);
   double cy = DY * (N_MESH_POINTS + 1) * (N_MESH_POINTS+1) / (L*L);
   
-  #if DENSE_JACOBIAN
+  #if JACOBIAN_STORAGE == DENSE
   if (SUNMatGetID(jacobian) != SUNMATRIX_DENSE) {
     mexErrMsgIdAndTxt("cvode:wrong_matrix_type",
             "expected type %d = SUNMATRIX_DENSE, got type %d",
@@ -51,14 +51,13 @@ int jacobian_dydt(
   }
   #endif
   
-  #if BANDED_JACOBIAN
+  #if JACOBIAN_STORAGE == BANDED
   if (SUNMatGetID(jacobian) != SUNMATRIX_BAND) {
     mexErrMsgIdAndTxt("cvode:wrong_matrix_type",
             "expected type %d = SUNMATRIX_BAND, got type %d",
             SUNMATRIX_DENSE, SUNMatGetID(jacobian));
   }
   #endif
-  
   for ( int i = 0; i < N_MESH_POINTS; i++ ) {
     JAC_XX(i,i) = - 2 * cx - (B+1) + 2 * X(i) * Y(i);
     JAC_XY(i,i) =   X(i) * X(i);

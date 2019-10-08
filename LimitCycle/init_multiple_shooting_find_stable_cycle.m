@@ -145,12 +145,36 @@ function initial_continuation_data = ...
     end
   end
   
-  assert_scalar(         'time_to_converge_to_cycle', ...
-                                  input.time_to_converge_to_cycle)
-  assert_greater_than(0, 'time_to_converge_to_cycle', ...
-                                  input.time_to_converge_to_cycle)
-  assert_scalar(         'active_parameter_index', input.active_parameter_index)
-  assert_greater_than(0, 'active_parameter_index', input.active_parameter_index)
+  try
+  Assert.scalar  ('time_to_converge_to_cycle', input.time_to_converge_to_cycle);
+  Assert.positive('time_to_converge_to_cycle', input.time_to_converge_to_cycle);
+  
+  Assert.function_handle('odefile', input.odefile);
+  
+  Assert.scalar  ('active_parameter_index', input.active_parameter_index);
+  Assert.positive('active_parameter_index', input.active_parameter_index);
+  Assert.integer ('active_parameter_index', input.active_parameter_index);
+  
+  Assert.scalar  ('lower_bound_period', input.time_to_converge_to_cycle);
+  Assert.positive('lower_bound_period', input.time_to_converge_to_cycle);
+  
+  Assert.scalar  ('upper_bound_period', input.time_to_converge_to_cycle);
+  Assert.positive('upper_bound_period', input.time_to_converge_to_cycle);
+  
+  Assert.scalar      (   'nMeshIntervals', input.nMeshIntervals); 
+  Assert.integer     (   'nMeshIntervals', input.nMeshIntervals);
+  Assert.greater_than(1, 'nMeshIntervals', input.nMeshIntervals);
+
+  Assert.scalar   ('subspace_size', input.subspace_size); 
+  Assert.integer  ('subspace_size', input.subspace_size);
+  Assert.positive ('subspace_size', input.subspace_size);
+  assert(input.subspace_size < length(input.initial_point), ...
+      'the subspace size must be less than the dimension of the initial point');
+  catch failed_assertion
+    error(failed_assertion.message);
+  end
+    
+  
 
   input.point_on_limitcycle = converge_to_cycle(input);
  

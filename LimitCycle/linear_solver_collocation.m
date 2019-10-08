@@ -63,7 +63,7 @@ function full_solution = linear_solver_collocation(J,b)
    
   bottom_rect = J(end-1:end, end-1:end);
   
-   j_row_indices = 1 :  ncol    * nphase;
+  j_row_indices = 1 :  ncol    * nphase;
   j_col_indices = 1 : (ncol+1) * nphase;
   
   for i=1:ntst
@@ -199,11 +199,13 @@ function full_solution = linear_solver_collocation(J,b)
     j_col_indices_B      =                ncol*nphase + 1 : (ncol+1)*nphase;
   end
   
+  
+  % compute the solutions of the variables that were eliminated:
   for i = 1:ntst
-    full_solution(full_solution_indices) = ...
-      cond_sol(cs_indices_A);
+    full_solution(full_solution_indices) = cond_sol(cs_indices_A);
     
-   
+    % for each block, create a rhs and a lhs of a linear system. 
+    
     rhs = J_blocks(J_block_row_indices, J_block_col_indices_mid, i);
     lhs = b(indices_b) - ...
       J_blocks(J_block_row_indices, J_block_col_indices_A, i) * ...
@@ -228,28 +230,30 @@ function full_solution = linear_solver_collocation(J,b)
       j_col_indices_B         = j_col_indices_B   + ncol * nphase;
     end
    
+    
+    % solve the linear system to find the solutions of the variables that were
+    % previously eliminated
     if ~ isempty(contopts.lsqminnorm_threshold)
+      % In case the system is ill-conditioned, try lsqminnorm to find a
+      % regularized solution.
       full_solution(indices_middle) = lsqminnorm(rhs, lhs, ...
                                                  contopts.lsqminnorm_threshold);
     else
       full_solution(indices_middle) = rhs\lhs;
     end
     
-    %full_solution(indices_middle) = lsqminnorm(rhs,lhs,1e-3);
-    full_solution(indices_middle) = rhs\lhs;
-      
-   % assert(all(abs(full_solution(indices_middle)-alt_sol) < 1e-14));
+    if testing
+      assert(all(abs(full_solution(indices_middle)-alt_sol) < 1e-14));
+    end
     
+    % update indices to point to the next block
     full_solution_indices = full_solution_indices + ncol * nphase;
     indices_middle        = indices_middle        + ncol * nphase;
     indices_b             = indices_b             + ncol * nphase;
   
+    % cs means condensed solution
     cs_indices_A     = cs_indices_A      + nphase;
     cs_indices_B     = cs_indices_B      + nphase;
-    
-   
-
-
   end
   
   full_solution(end-nphase-1:end) = cond_sol(end-nphase-1:end);

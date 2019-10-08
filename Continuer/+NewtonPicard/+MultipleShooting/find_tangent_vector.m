@@ -1,12 +1,3 @@
-% based on algorithm outlined in paragraph 6.2 of (bibtex citation follows)
-% @phdthesis{lust-phd,
-%	  author={Lust, Kurt},
-%	  title={Numerical bifurcation analysis 
-%        of periodic solutions of partial differential equations},
-%	  school={K.U.Leuven},
-%	  year={1997},
-% }
-% most variable names are derived from variable names in \cite{lust-phd}.
 function v = find_tangent_vector(x)
   global cds
   m = cds.nMeshIntervals;

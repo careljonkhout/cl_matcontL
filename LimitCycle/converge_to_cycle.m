@@ -6,13 +6,12 @@ function point_on_cycle = converge_to_cycle(in)
   dydt_ode     = handles{2};
   jacobian_ode = handles{3};
   cds.nphases  = length(in.initial_point);
-
-  if ~ isempty(jacobian_ode)
-    in.time_integration_options = odeset(in.time_integration_options, ...
-    'Jacobian',     @(t,y) jacobian_ode(0, y, in.ode_parameters{:}));
-  end
+  using_cvode  = endsWith(func2str(in.time_integration_method), 'cvode');
   
-  using_cvode = endsWith(func2str(in.time_integration_method), 'cvode');
+  if ~ isempty(jacobian_ode) && ~ using_cvode
+    in.time_integration_options = odeset(in.time_integration_options, ...
+                   'Jacobian', @(t,y) jacobian_ode(0, y, in.ode_parameters{:}));
+  end
   
   if using_cvode
     t_values = linspace(0, in.time_to_converge_to_cycle, 5000);
@@ -23,11 +22,6 @@ function point_on_cycle = converge_to_cycle(in)
       'abs_tol',                 in.time_integration_options.AbsTol, ...
       'rel_tol',                 in.time_integration_options.RelTol, ...
       'verbose',                 in.cvode_verbose);
-
-    if in.show_plots
-      my_figure = figure;
-      plot(orbit_to_cycle_t, orbit_to_cycle_y);
-    end
     point_on_cycle = orbit_to_cycle_y(end,:);
   else
     solution = feval(in.time_integration_method, ...
@@ -40,17 +34,16 @@ function point_on_cycle = converge_to_cycle(in)
       % in.time_integration_method
       orbit_to_cycle_t = linspace(0, in.time_to_converge_to_cycle, 5000);
       orbit_to_cycle_y = deval(solution, orbit_to_cycle_t);
-
-      my_figure = figure;
-      plot(orbit_to_cycle_t, orbit_to_cycle_y)
     end
     point_on_cycle = deval(solution, in.time_to_converge_to_cycle);
   end
   
   if in.show_plots
+    my_figure = figure;
+    plot(orbit_to_cycle_t, orbit_to_cycle_y);
     xlabel('t')
     ylabel('phase variables')
-    disp('Now showing plot from t=0 to t=time_to_converge_to_cycle')
+    disp('Now showing plot from t = 0 to t = time_to_converge_to_cycle')
     disp('Press a key to continue')
     pause
     if isvalid(my_figure)

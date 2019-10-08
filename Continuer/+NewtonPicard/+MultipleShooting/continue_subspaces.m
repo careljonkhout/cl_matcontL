@@ -1,5 +1,6 @@
 % based on page 208 of Kurt Lust PhD thesis
-
+% this function is currently not used (october 2019), since recomputing the
+% subspaces at each point seems to be faster.
 function V = continue_subspaces(delta_t, parameters)
   global cds contopts
   m = cds.nMeshIntervals;         

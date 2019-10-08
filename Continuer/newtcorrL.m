@@ -81,7 +81,6 @@ for i = 1:MaxCorrIters
             dx = D(:,1);
         else
           if isequal(cds.curve, @limitcycleL)
-            % dx = lsqminnorm(B,Q);
             dx = linear_solver_collocation(B,Q);
           else
             dx = B \ Q;

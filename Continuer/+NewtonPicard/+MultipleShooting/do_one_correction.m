@@ -9,7 +9,7 @@
 % most variable names are derived from variable names in \cite{lust-phd}.
 function x = do_one_correction(x0,x,v0)
   global cds;
-  
+
   [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
           phases_0, phi, period, active_par_val] = ...
     NewtonPicard.MultipleShooting.compute_reduced_jacobian(x);

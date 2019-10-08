@@ -197,47 +197,6 @@ function initial_continuation_data = init_collocation_find_stable_cycle(varargin
               
 end
 
-function point_on_cycle = converge_to_cycle(in)
-    
-  global cds
-  
-  handles      = feval(in.odefile);
-  dydt_ode     = handles{2};
-  jacobian_ode = handles{3};
-  cds.nphases  = length(in.initial_point);
-
- 
-  if ~ isempty(jacobian_ode)
-    in.time_integration_options = odeset(in.time_integration_options, ...
-      'Jacobian',     @(t,y) jacobian_ode(0, y, in.ode_parameters{:}));
-  end
-  
-  solution = feval(in.time_integration_method, ...
-      @(t,y) dydt_ode(0, y, in.ode_parameters{:}), ...
-      [0, in.time_to_converge_to_cycle], ...
-      in.initial_point, ...
-      in.time_integration_options); 
-  
-  if in.show_plots
-    orbit_t = linspace(0, solution.x(end), 500);
-    orbit_x = deval(solution, orbit_t);
-    my_figure = figure;
-    plot(orbit_t, orbit_x-solution.y(:,1))
-    xlabel('t')
-    ylabel('phase variables')
-    disp('Now showing plot from t=0 to t=time_to_converge_to_cycle')
-    disp('Press a key to continue')
-    pause
-    if isvalid(my_figure)
-      close(my_figure.Number)
-    end
-  end
-  
-  point_on_cycle = deval(solution, in.time_to_converge_to_cycle);
-
-end
-
-
 function [solution_t, solution_x] = compute_periodic_solution(in)
     
   global cds
@@ -277,8 +236,8 @@ function [solution_t, solution_x] = compute_periodic_solution(in)
     plot(solution_t, solution_x - solution_x(:,1))
     xlabel('t')
     ylabel('deviation form initial value')
-    disp(['Now showing plot from t=time_to_converge_to_cycle to ' ...
-                                   't=time_to_converge_to_cycle + 1.1*period']);
+    disp(['Now showing plot from t = time_to_converge_to_cycle to ' ...
+                               't = time_to_converge_to_cycle + 1.1 * period']);
     disp('Press a key to continue')
     pause
     if isvalid(my_figure)

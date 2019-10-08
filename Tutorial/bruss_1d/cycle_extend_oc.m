@@ -3,7 +3,7 @@
 % We extend the continuation by loading a .mat file with data from a
 % continuation point that was saved during a previous contuation of cycles using
 % orthogonal collocation. Try running cycle_integration_oc or
-% cycle_from_hopf_oc, and loading one .mat files that one of these scripts saves
+% cycle_from_hopf_oc, and loading one .mat files that one of these scripts saved
 % in the "Data" subdirectory instead of loading point_cycle_oc.mat.
 
 % Note that we define the demo as a function to facilitate testing of the demo

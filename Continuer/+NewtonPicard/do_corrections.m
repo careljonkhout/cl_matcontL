@@ -9,20 +9,19 @@ function point = do_corrections(x0,v)
   corrections                = 0;
   done                       = false;
   while ~ done && corrections < contopts.MaxCorrIters
-    print_stats(curve_function_norm, correction_norm, corrections);
-
+    print_stats(curve_function_norm, correction_norm, corrections)
     corrections = corrections + 1;
     old_x = x;
-    if     isequal(cds.curve, @single_shooting)
-      x = NewtonPicard.SingleShooting.do_one_correction(x0,x,v);
-    elseif isequal(cds.curve, @multiple_shooting)
-      x = NewtonPicard.MultipleShooting.do_one_correction(x0,x,v);
-    else
-      print_diag(0,'Newton_Picard_Corrections: wrong curvefile.\n');
-      point = [];
-      return
+    switch char(cds.curve)
+      case 'single_shooting'
+        x = NewtonPicard.SingleShooting.do_one_correction(x0,x,v);
+      case 'multiple_shooting'
+        x = NewtonPicard.MultipleShooting.do_one_correction(x0,x,v);
+      otherwise
+        print_diag(0,'Newton_Picard_Corrections: wrong curvefile.\n');
+        point = [];
+        return
     end
-   
     if isempty(x)
       break;
     end
