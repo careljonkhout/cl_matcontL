@@ -13,16 +13,17 @@ function multipliers = compute_multipliers(x, nMults_to_compute)
   end
   
   if cds.using_cvode
-    M = @(x) ...
-          NewtonPicard.MultipleShooting.monodromy_map(1, x, period, parameters);
+
+    M = @(x) monodromy_map_cvode(x, period, parameters);
   else
     M = @(x) monodromy_map(x, period, parameters);
   end
   
   nMults_to_compute = min(nMults_to_compute, cds.nphases);
   
-  [~, multiplier_matrix, no_convergence] = eigs(...
-                                             M, cds.nphases, nMults_to_compute);
+  [~, multiplier_matrix, no_convergence] = ...
+                                        eigs(M, cds.nphases, nMults_to_compute);
+                                      
   multipliers = diag(multiplier_matrix);
   
   if no_convergence
@@ -33,7 +34,7 @@ function multipliers = compute_multipliers(x, nMults_to_compute)
   print_diag(1, multipliers2str(multipliers));
 end
 
-function Mx  = monodromy_map(phases_0, delta_t, parameters)
+function Mx  = monodromy_map(x, period, parameters)
   global cds contopts
   if ~ contopts.monodromy_by_finite_differences
     int_opt = odeset(...
@@ -48,7 +49,7 @@ function Mx  = monodromy_map(phases_0, delta_t, parameters)
       cds.jacobian_ode(t,interp1(cds.t_cycle,cds.y_cycle,t,'spline'), ...
         parameters{:}) * y;
 
-    [~,orbit] = cds.integrator(dydt_mon, [0 delta_t], phases_0, int_opt);
+    [~,orbit] = cds.integrator(dydt_mon, [0 period], x, int_opt);
 
     Mx = orbit(end,:)';
   else
@@ -69,8 +70,8 @@ function Mx  = monodromy_map(phases_0, delta_t, parameters)
     ff = @(t, x1_and_x2) [f(0, x1_and_x2(1:cds.nphases    ))
                           f(0, x1_and_x2(  cds.nphases+1:end))];
     [~, orbit] = ode15s(ff, ...
-      [0 delta_t], ...
-      [x_cycle - h * phases_0; x_cycle+h * phases_0], ...
+      [0 period], ...
+      [x_cycle - h * x; x_cycle+h * x], ...
       integration_opt);
     
     phi_x1__and__phi_x2 = orbit(end,:)';
@@ -78,5 +79,15 @@ function Mx  = monodromy_map(phases_0, delta_t, parameters)
     phi_x2 = phi_x1__and__phi_x2(cds.nphases+1:end);
     
     Mx = (phi_x2 - phi_x1)/h/2; 
+  end
+end
+
+function Mx = monodromy_map_cvode(x, period, parameters)
+  global cds
+  Mx = x;
+  delta_t = diff(cds.mesh) * period;
+  for i = 1 : cds.nMeshIntervals
+    Mx = NewtonPicard.MultipleShooting.monodromy_map(i, Mx, delta_t(i), ...
+                                                                    parameters);
   end
 end

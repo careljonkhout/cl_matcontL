@@ -124,6 +124,8 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
     if size(orth_V_i,2) == size(V(:,:,i),2)
       V(:,:,i) = orth_V_i;
     else
+      print_diag(1, ...
+                 'subspace is rank deficient. computing subspace using eigs\n')
       V(:,:,i) = compute_subspace(i, period, parameters);
     end
   end

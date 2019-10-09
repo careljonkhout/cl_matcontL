@@ -25,7 +25,6 @@
 
 #include<math.h>
 #include<mex.h>
-#include<matrix.h>
 #include<stdio.h>
 
 void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {

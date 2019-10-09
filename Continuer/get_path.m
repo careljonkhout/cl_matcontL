@@ -1,11 +1,5 @@
 function path = get_path
-  stack = dbstack('-completenames');
-  caller = stack(2);
-  fullpath = caller.file;
-  
-  stack = dbstack();
-  caller = stack(2);
-  filename = caller.file;
-  % remove filename and .m
-  path = fullpath(1:end-length(filename));
+  stack         = dbstack('-completenames');
+  path_elements = strsplit(stack(2).file, filesep);
+  path          = strjoin(path_elements(1:end-1), filesep);
 end

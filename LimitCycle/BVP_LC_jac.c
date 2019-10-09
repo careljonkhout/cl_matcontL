@@ -25,8 +25,6 @@
 
 #include<math.h>
 #include<mex.h>
-#include<matrix.h>
-// ,lds.func,x,p,T,pars,nc,lds,p2,lds.Jacobian,lds.ActiveParams,lds.JacobianP);
 
 #define curve_func_idx     0
 #define x_idx              1
