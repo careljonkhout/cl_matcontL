@@ -24,7 +24,7 @@
 % without defining functions.
 function cycle_extend_ms
 
-  load([get_path(), 'point_cycle_ms.mat'], 'point');
+  load(fullfile(get_path(), 'point_cycle_ms.mat'), 'point');
 
 
   init_multiple_shooting_extend_curve( ...

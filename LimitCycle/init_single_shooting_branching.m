@@ -12,6 +12,7 @@ function x = init_single_shooting_branching(odefile, bpc, h, ...
   basis_size            = max(nphases, min(40, nphases/2));
   
   global cds;
+  
   cds = [];
   cds.nphases                    = length(bpc.x) - 2;
   cds.probfile                   = odefile;

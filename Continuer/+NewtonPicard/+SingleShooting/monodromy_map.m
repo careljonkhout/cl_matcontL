@@ -1,6 +1,10 @@
 function Mx = monodromy_map(x, period, parameters, abs_tol, rel_tol)
   global cds contopts
-  cds.mv_count = cds.mv_count + 1;
+  if isfield(cds, 'mv_count')
+    cds.mv_count = cds.mv_count + 1;
+  else
+    cds.mv_count = 1;
+  end
   if nargin == 3
     abs_tol = contopts.integration_abs_tol;
     rel_tol = contopts.integration_rel_tol;

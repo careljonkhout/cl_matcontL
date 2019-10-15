@@ -147,7 +147,7 @@ function print_point(point, label, is_special)
     distance_to_one                 = abs(point.multipliers - 1);
     log_10_of_deviation             = log10(min(distance_to_one));
     print_diag(0, '    %.3f', -log_10_of_deviation);
-    print_diag(0, '          %.3f', abs(max(point.multipliers)));
+    print_diag(0, '          %.3f', point.multipliers(1));
   end
 
   print_diag(0, '\n');

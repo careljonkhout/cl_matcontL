@@ -13,7 +13,7 @@
 % without defining functions.
 function cycle_extend_oc
 
-  load([get_path(), 'point_cycle_oc.mat'], 'point');
+  load(fullfile(get_path(), 'point_cycle_oc.mat'), 'point');
 
 
   init_collocation_extend_curve( ...

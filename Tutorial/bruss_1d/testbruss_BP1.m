@@ -32,7 +32,7 @@ opt = contset(opt, 'Filename', 'testbruss_BP1');
 
 %% Continuation
 path_to_this_script = get_path;
-BP0_file = [path_to_this_script, 'Data/testbruss_BP0.mat'];
+BP0_file = fullfile(path_to_this_script, 'Data', 'testbruss_BP0.mat');
 load(BP0_file, 's');
 
 ID = 3;

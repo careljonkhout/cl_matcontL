@@ -168,14 +168,16 @@ function initial_continuation_data = ...
   Assert.scalar   ('subspace_size', input.subspace_size); 
   Assert.integer  ('subspace_size', input.subspace_size);
   Assert.positive ('subspace_size', input.subspace_size);
-  assert(input.subspace_size < length(input.initial_point), ...
-      'the subspace size must be less than the dimension of the initial point');
+  assert(input.subspace_size <= length(input.initial_point), ...
+      'the subspace size must be less than or equal to the dimension of the initial point');
   catch failed_assertion
     error(failed_assertion.message);
   end
-    
   
-
+  if ~ iscell(input.ode_parameters)
+    input.ode_parameters = num2cell(input.ode_parameters);
+  end
+    
   input.point_on_limitcycle = converge_to_cycle(input);
  
   initial_continuation_data = init_multiple_shooting_internal(input);             

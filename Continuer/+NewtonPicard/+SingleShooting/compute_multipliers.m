@@ -21,6 +21,7 @@ function multipliers = compute_multipliers(x, nMults_to_compute)
          integration_opt);
   end
  
+  cds.phases_0 = x(1:end-2);
   
   monodromy_map = @(x) NewtonPicard.SingleShooting.monodromy_map( ...
                         x, period, parameters, ...

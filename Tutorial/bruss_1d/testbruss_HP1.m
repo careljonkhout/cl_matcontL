@@ -34,7 +34,7 @@ opt = contset(opt, 'Filename', 'testbruss_HP1');
 %% Find start point
 active_parameter_indices = [4, 5];
 path_to_this_script = get_path;
-HP0_file = [path_to_this_script, 'Data/testbruss_HP0.mat'];
+HP0_file = fullfile(path_to_this_script, 'Data', 'testbruss_HP0.mat');
 load(HP0_file, 's');
 ID = 2;
 if ~ strcmp(s(ID).label ,'H ')

@@ -93,11 +93,9 @@ end
 % starting from the point x near the cycle.
 function [y_end, monodromy] = compute_monodromy(x, period, parameters)
   global cds
-  if cds.cvode
-    
-    return
-  end
-  if ~ cds.options.PartitionMonodromy
+  if cds.using_cvode
+    [y_end, monodromy] = monodromy_cvode(x,period, parameters);
+  elseif ~ cds.options.PartitionMonodromy
     [y_end, monodromy] = monodromy_full(x, period, parameters);
   else
     [y_end, monodromy] = monodromy_column_by_column(x, period, parameters);
@@ -172,6 +170,22 @@ function [y_end, monodromy] = monodromy_column_by_column(x, period, parameters)
       f, [0 period], monodromy(:,i),integration_opt);
     monodromy(:,i) = monodromy_map_trajectory(end,:);
   end 
+end
+function [y_end, M] = monodromy_cvode(x, period, parameters)
+  global cds contopts
+  M = zeros(cds.nphases);
+  for i=1:cds.nphases
+    e_i = zeros(cds.nphases,1);
+    e_i(i) = 1;
+    [~,y,M(:,i)] = feval(cds.integrator, ...
+      't_values',                [0 period], ...
+      'initial_point',           x, ...
+      'sensitivity_vector',      e_i, ...
+      'ode_parameters',          cell2mat(parameters), ...
+      'abs_tol',                 contopts.integration_abs_tol, ...
+      'rel_tol',                 contopts.integration_rel_tol);
+  end
+  y_end = y(end,:)';
 end
 %-------------------------------------------------------------------------------
 function init(~,~); end

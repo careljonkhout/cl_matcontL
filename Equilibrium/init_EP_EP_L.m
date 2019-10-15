@@ -13,6 +13,11 @@ function [x0, v0] = init_EP_EP_L(probfile, x0, p, ap)
       error('No initial point found');
     end
   end
+  
+  if iscell(p)
+    p = cell2mat(p);
+  end
+  
   x0 = [x0; p(ap)];
   v0 = [];
 

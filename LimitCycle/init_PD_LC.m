@@ -1,4 +1,4 @@
-function [x,v] = init_PD_LC(odefile, x, s, ntst, ncol, h)
+function [x,v] = init_PD_LC(odefile, s, h)
 %
 % [x0,v0] = init_PD_LC(odefile, x, s, ntst, ncol)
 %
@@ -52,32 +52,34 @@ else
 end
 
 
-lds.nphase = floor((size(x,1)-2)/(s.data.ntst*s.data.ncol+1));
-lds.P0 = s.data.parametervalues;
-lds.T = 2*s.data.T;
-set_ntst_ncol(s.data.ntst,s.data.ncol,s.data.timemesh);
-
 % get x
-x = x(:,s.index);
+x = s.x;
+
+lds.nphase       = floor((size(x,1)-2)/(s.ntst * s.ncol+1));
+lds.P0           = s.parametervalues;
+lds.ActiveParams = s.ap;
+lds.T            = 2 * s.T;
+set_ntst_ncol(s.ntst, s.ncol, s.timemesh);
+
 
 % generate double period solution
-w = s.data.phi/norm(s.data.phi);
+w = s.phi/norm(s.phi);
 
-n_par = size(lds.ActiveParams,2);
-if n_par==2
-    x(end-n_par+1:end)=lds.P0(lds.ActiveParams);
+n_par = length(s.ap);
+if n_par == 2
+  x(end-n_par+1:end) = lds.P0(lds.ActiveParams);
 else
-    x(end-n_par+1) = lds.T;
-    x(end) = lds.P0(lds.ActiveParams);
+  x(end-n_par+1) = lds.T;
+  x(end)         = lds.P0(lds.ActiveParams);
 end
 
- if n_par==1
-    x = [x(1:(lds.ncoords-lds.nphase))+h*w(1:(lds.ncoords-lds.nphase))';x(lds.coords)-h*w';lds.T;x(end)];
- else
-     x = [x(1:(lds.ncoords-lds.nphase))+h*w(1:(lds.ncoords-lds.nphase))';x(lds.coords)-h*w';lds.P0(lds.ActiveParams)];     
- end
+if n_par==1
+  x = [x(1:(lds.ncoords-lds.nphase))+h*w(1:(lds.ncoords-lds.nphase))';x(lds.coords)-h*w';lds.T;x(end)];
+else
+  x = [x(1:(lds.ncoords-lds.nphase))+h*w(1:(lds.ncoords-lds.nphase))';x(lds.coords)-h*w';lds.P0(lds.ActiveParams)];     
+end
 v = [w(1:(lds.ncoords-lds.nphase))';-w';0;0];
-set_ntst_ncol(2*s.data.ntst,s.data.ncol,[lds.msh./2 (lds.msh(2:end)+1)./2])
+set_ntst_ncol(2*s.ntst,s.ncol,[lds.msh./2 (lds.msh(2:end)+1)./2])
 
 % generate a new mesh and interpolate
-[x,v]=new_mesh(x,v,ntst,ncol);
+[x,v]=new_mesh(x,v,s.ntst,s.ncol);

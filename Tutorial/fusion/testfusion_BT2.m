@@ -26,7 +26,7 @@ opt = contset(opt, 'Filename', 'testfusion_BT2');
 
 %% load startpoint
 path_to_this_script = get_path;
-BT1_file = [path_to_this_script, 'Data/testfusion_BT1.mat'];
+BT1_file = fullfile(path_to_this_script, 'Data', 'testfusion_BT1.mat');
 load(BT1_file, 's');
 ap = [3, 7, 8];
 data = s(2).data;

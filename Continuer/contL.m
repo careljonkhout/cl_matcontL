@@ -40,7 +40,7 @@ if isfield(cds, 'curve') && ~ isequal(cds.curve, curvefile)
          'using %s'], ...
          func2str(cds.curve), func2str(curvefile), func2str(curvefile));
   cds.curve = curvefile;
-  % todo expand error message
+  
 end
 % curvefile must be loaded before opening data files
 loadCurveFile(curvefile);
@@ -50,7 +50,6 @@ feval(cds.curve_options);
 
 AdaptSteps         = contopts.Adapt;
 CheckClosed        = contopts.CheckClosed;
-%Eigenvalues       = contopts.Cont_Eigenvalues;
 MaxNumPoints       = contopts.MaxNumPoints;
 Singularities      = contopts.Singularities;
 SmoothingAngle     = contopts.contL_SmoothingAngle;
@@ -268,7 +267,6 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
 
     %% D. CIS Processing
     if ~reduce_stepsize
-      special_step = 0;
       trialpoint.CISdata = feval(...
         cds.curve_CIS_step, trialpoint.x, currpoint.CISdata);
       if isempty(trialpoint.CISdata)
@@ -289,10 +287,10 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
       end
     end
 
-    % Detect singularities
+    %% F. Detect singularities
     NeedToLocate = 0;
     if ~reduce_stepsize && Singularities
-      singsdetected = [];
+     
       % WM: the testvals arrays are not copied anymore, instead
       % WM: use sign function and compare instead of multiply (for speed).
 
@@ -319,56 +317,38 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
             (  signchanges * S_true       == sum(S_true)       ) & ...
             ( ~signchanges * S_false      == sum(S_false)      ) & ...
             (  changes     * S_change     == sum(S_change)     );
+        singsdetected = [];
         singsdetected(cds.ActSing) = ...
           all_sings_detected(cds.ActSing); %#ok<AGROW>
-        % The length of the array singsdetected is not very long. Therefore we
-        % ignore the 'array length will grow on each iteration'-warning. The
-        % length of the the array singsdetected is equal to the number types of
-        % bifurcations that can occur on the current curve. The number of types
-        % of bifurations is usually less than 10 and never more than 100.
+        % The AGROW warning is a false positive, hence it is ignored with
+        % %#ok<AGROW>. The array singsdetected does not grow.
 
         if sum(singsdetected) > 1 || more_than_one_Neimark_Sacker( ...
                                         currpoint.tvals, trialpoint.tvals)
           print_diag(3, 'More than one singularity detected: ')
           reduce_stepsize = 1;
-        elseif sum(singsdetected) == 1
-          if special_step
-            print_diag(3, 'Singularity detected at special step: ')
-            reduce_stepsize = 1;
-          else
-            si = find(singsdetected==1);  % singularity detected!
-            NeedToLocate = 1;
-          end
+        elseif sum(singsdetected) == 1 % exactly one singularity was detected
+          si = find(singsdetected==1);  
+          NeedToLocate = 1;
         end
       end
     end
 
-    % User Function Evaluation
+    %% G. User Function Evaluation
     trialpoint.uvals = [];
     if ~reduce_stepsize && Userfunctions
-      [trialpoint.uvals,failed] = feval( ...
-        cds.curve_userf, 0, UserInfo, trialpoint.x);
+      [trialpoint.uvals, failed] = feval( ...
+                                    cds.curve_userf, 0, UserInfo, trialpoint.x);
       failed = failed || isempty(trialpoint.uvals);
       if failed
         print_diag(1, ...
-          'contL: Unable to evaluate Test Functions at Point %d: ',cds.i)
+                'contL: Unable to evaluate User Functions at Point %d: ',cds.i);
         reduce_stepsize = 1;
       end
     end
 
-    % Detect userfunctions
-    if ~reduce_stepsize && Userfunctions
-      % WM: use sign function and compare instead of multiply (for speed).
-      userchanges = sign(trialpoint.uvals) ~= sign(currpoint.uvals);
-      if special_step && any(userchanges)
-        print_diag(3, 'Userfunction occurs in Special Step: \n');
-        reduce_stepsize = 1;
-      end
-    end
-
-    % Reduce stepsize
+    %% I. Reduce stepsize if needed
     if reduce_stepsize
-      % reduce stepsize
       print_diag(3, 'Reducing Stepsize\n')
       if cds.h > cds.h_min
         cds.h = max(cds.h_min, cds.h*cds.h_dec_fac);
@@ -383,9 +363,12 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
       % accept step
       break;
     end
-  end
+        
+  end % end of while true, this loop runs until a continuation step is 
+      % accepted or the continuation stops because the stepsize cannot be
+      % reduced anymore (because the minimum stepsize has been reached).
 
-  print_diag(1,'time to compute step %.3f\n',toc(step_start_time));
+  
   
   if cds.lastpointfound % Carel Jonkhout
     % occurs if stepsize too small
@@ -455,6 +438,7 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
   end
 
   %% D. User Functions
+  userchanges = sign(trialpoint.uvals) ~= sign(currpoint.uvals);
   if Userfunctions && any(userchanges)
     useridx = find(userchanges);
     for ti=1:size(useridx,2)
@@ -530,7 +514,7 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
 
   % stepsize control
   if cds.h < cds.h_max && corrections==1
-      cds.h = min(cds.h*cds.h_inc_fac, cds.h_max);
+    cds.h = min(cds.h*cds.h_inc_fac, cds.h_max);
   end
 
   % closed curve check
@@ -547,6 +531,8 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
   if contopts.pause && mod(cds.i, contopts.nsteps_before_pause) == 0
     pause
   end
+  
+  print_diag(1,'time to compute step %.3f\n',toc(step_start_time));
  
 end % end of main continuation loop
 

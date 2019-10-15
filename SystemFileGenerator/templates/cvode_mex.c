@@ -429,11 +429,27 @@ int return_to_plane(double t, N_Vector y, double *gout,
   return 0;
 }
 
+#define BUFFER_LENGTH 1000
+
 void error_handler(int error_code, const char* module,
          const char* function, char* message, void *eh_data) {
- mexPrintf("Error in %s() in sundails module %s. error code: %d: %s.\n  %s\n",
-           function, module,
-           error_code, CVodeGetReturnFlagName(error_code), message);
+  if (error_code < 0) {
+    mexErrMsgIdAndTxt("cvode:integrator_error",
+            "Error in %s() in sundails module %s. "
+            "error code: %d: %s.\n  %s\n",
+            function, module,
+            error_code, CVodeGetReturnFlagName(error_code), message);
+  } else {
+//     char* buffer = mxMalloc(BUFFER_LENGTH * sizeof(char));
+//     snprintf(buffer, BUFFER_LENGTH, 
+//             "print_diag(0,'Error in %s() in sundails module %s. "
+//             "error code: %d: %s.\n  %s')",
+//             function, module,
+//             error_code, CVodeGetReturnFlagName(error_code), message);
+//     mexPrintf(buffer);
+//     mexPrintf("\n");
+//     mexEvalString(buffer);
+  }
 }
 
 void check_double(const mxArray* array, char* arrayname) {
@@ -495,8 +511,6 @@ N_Vector new_N_Vector(int length) {
   #endif
   return v;
 }
-
-
 
 /*
  * Print some final statistics located in the CVODES memory

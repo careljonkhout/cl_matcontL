@@ -32,14 +32,22 @@ opt = contset(opt,'Locators',            [1 1 1]);
 opt = contset(opt,'TestPath',mfilename('fullpath'));
 opt = contset(opt, 'Filename',     'testbruss_BP0');
 
-%% Continuation
 N = 500; L = 0.06; A = 2; B = 4.6; Dx = 0.0016; Dy = 0.008;
 p = [N; L; A; B; Dx; Dy]; ap1 = 2;
 
-problem_file = @Brusselator_1d.heterogeneous_x0;
+%% we compute an approximation of an equilibrium x0
+x0 = zeros(2*N,1);
+i=1:N;
+x0(i)   = A + 2*sin(pi*i/(N+1));
+x0(N+i) = B/A - 0.5*sin(pi*i/(N+1));
 
-[x0,v0]      = init_EP_EP_L(problem_file, [], p, ap1);
-[s, datafile] = contL(@equilibriumL,x0,v0,opt);
+odefile = @brusselator_1d;
+
+%% we initialize the continuation
+% init methods initialize the global variable cds, which is a struct contains
+% information the continuer needs. 
+[x0,v0]       = init_EP_EP_L(odefile, x0, p, ap1);
+[s, datafile] = contL(@equilibriumL, x0, v0, opt);
 
 %% Plot results
 

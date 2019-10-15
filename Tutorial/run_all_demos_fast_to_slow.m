@@ -18,6 +18,7 @@ directories(2).files = { ...
   'testfusion_BT0', ...
   'testfusion_BT1', ...
   'testfusion_BT2', ...
+  'fusion_equilibrium_integration', ...
 };
 
 directories(3).name = 'bruss_1d';
@@ -29,7 +30,7 @@ directories(3).files = { ...
 
 directories(4).name = 'fusion';
 directories(4).files = { ...
-  'fusion_cycles', ...
+  ...'fusion_cycles', ...
   'extend_fusion_cycles'
 };
 
@@ -41,7 +42,6 @@ directories(5).files = { ...
   'cycle_extend_ms', ...
   'cycle_from_hopf_ms', ...
   'cycle_integration_ms', ...
-
 };
 
 path_to_this_script = get_path();
@@ -54,17 +54,17 @@ try
       disp(' ')
       disp(repmat('+',2,80))
       disp(' ')
-      disp(['     Now running:         ' directory.name '/' directory.files{i}])
+      file_path = fullfile(directory.name, directory.files{i});
+      disp(['     Now running:         ' file_path])
       disp(' ')
       disp(repmat('+',2,80))
       disp(' ')
-      run([path_to_this_script directory.name '/' directory.files{i}])
+      run(fullfile(path_to_this_script,directory.name, directory.files{i}))
       drawnow limitrate
-      % sometimes the repeated plot commands in all the demos fail to produce
-      % output or write to the wrong plot, therefore we pause to reduce the
-      % chance of this happening.
+      % to make sure all the parts of a plot of a demo end up in the right plot,
+      % we use drawnow
       pause on 
-      pause(0.3)
+      drawnow
       pause off
     end
   end

@@ -173,8 +173,15 @@ function initial_continuation_data = init_collocation_find_stable_cycle(varargin
   if ~ isnumeric(ntst) || numel(ntst) ~= 1 || floor(ntst) ~= ntst || ntst < 2
     error('nMeshIntervals must be an integer greater than 1')
   end
+  
+  if ~ iscell(input.ode_parameters)
+    input.ode_parameters = num2cell(input.ode_parameters);
+  end
+  
+  
   input.point_on_limitcycle = converge_to_cycle(input);
-  %lc_input.point_on_limitcycle = lc_input.point_on_limitcycle';
+ 
+ 
   
   [input.t, input.y] = compute_periodic_solution(input);
 

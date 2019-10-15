@@ -1,5 +1,5 @@
 function testfusion_BT0()
-% Test script for the fusion model (original MATCONT data)
+% Test script for the fusion model
 
 % This example performs continuation of equilibrium curve and locates a
 % limit point.
@@ -19,7 +19,6 @@ opt = contset(opt,'contL_SmoothingAngle',  pi/10);
 opt = contset(opt,'Singularities',         1);
 opt = contset(opt,'Userfunctions',         0);
 opt = contset(opt,'MaxNumPoints',         20);
-opt = contset(opt,'contL_ParallelComputing', 0);  % using parallel computing toolbox
 opt = contset(opt,'CIS_SparseSolvers',     1);
 opt = contset(opt,'CIS_NStableRef',        6);
 opt = contset(opt,'CIS_Ric_Transform',   'cayley');
@@ -31,31 +30,35 @@ opt = contset(opt, 'Filename', 'testfusion_BT0');
 
 %% Parameters
 
-N         = 30;
+N         =  30;
 Gamma_inf = -0.8;
 q_inf     = -0.008;
-D0        = 1.9;
+D0        =  1.9;
 D1        = -1.1;
-D2        = 0;
+D2        =  0;
 a         = -0.01;
 b         = -0.01; 
-zeta1     = 1.1;
-mu1       = 0.05;
-epsilon   = 0.05; 
-ZS        = 0;
-gamma1    = 5/3;
-lambdan   = 1.25;
-lambdaT   = 1.5;
-cn        = 1.1;
-cT        = 0.9;
+zeta1     =  1.1;
+mu1       =  0.05;
+epsilon   =  0.05; 
+ZS        =  0;
+gamma1    =  5/3;
+lambdan   =  1.25;
+lambdaT   =  1.5;
+cn        =  1.1;
+cT        =  0.9;
 
-p = [ N, Gamma_inf, q_inf, D0, D1, D2, a, b, zeta1, mu1, epsilon, ZS, gamma1, lambdan, lambdaT, cn, cT];
-ap1 = 3;  % active parameter
+ode_parameters = [ N, Gamma_inf, q_inf, D0, D1, D2, a, b, zeta1, mu1, ...
+                   epsilon, ZS, gamma1, lambdan, lambdaT, cn, cT];
+                 
+active_parameter_index = 3;
 
-%% Continuation
 
-[x0,v0]                   = init_EP_EP_L(@fusion, [], p, ap1); % initialization
-[singularities, datafile] = contL(@equilibriumL,x0,v0,opt);    % continuation
+% initialization
+[x0,v0]                   = init_EP_EP_L(@fusion, [], ode_parameters, ...
+                                         active_parameter_index); 
+% continuation
+[singularities, datafile] = contL(@equilibriumL,x0,v0,opt);    
 
 %% Plot results
 

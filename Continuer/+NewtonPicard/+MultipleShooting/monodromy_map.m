@@ -1,10 +1,26 @@
 %
-% i:                index of shooting-point from where to start
-% phases_0:         vector to which the monodromy map is applied
+% i:                1-based index of the mesh point from where to start
+%
+% x:                vector to which the monodromy map is applied
+%
 % time_interval:    length of the time interval for time integration
-% parameters:       cell array of parameters for the jacobian of the ode
-function Mx  = monodromy_map(i, x, time_interval, parameters, ...
-                                              abs_tol, rel_tol)
+%                   (time_interval should be equal to the period of the cycle
+%                   if the full monodromy map is to be evaluated. In multiple
+%                   shooting partial monodromy, the value of time_interval
+%                   passed to this method can be less than the period of the
+%                   cycle, since "partial" monodromy maps must also be
+%                   evaluated during a multiple shooting continuation.)
+%
+% parameters:       cell array of parameters for the system of ODEs
+%
+% abs_tol:          absolute tolerance for the time integration. This argument
+%                   is optional. However, either both abs_tol and rel_tol must
+%                   be specified, or neither.
+%
+% rel_tol:          absolute tolerance for the time integration. This argument
+%                   is optional. However, either both abs_tol and rel_tol must
+%                   be specified, or neither.
+function Mx  = monodromy_map(i, x, time_interval, parameters, abs_tol, rel_tol)
   global cds contopts
   if nargin == 4
     abs_tol = contopts.integration_abs_tol;

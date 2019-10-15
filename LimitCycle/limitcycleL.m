@@ -596,7 +596,7 @@ function WorkspaceInit(x,v)
   lds.NS2_switch = 0;
 
 
-  lds.CalcMultipliers = contopts.Multipliers;
+  lds.CalcMultipliers = contopts.Multipliers || contopts.Singularities;
   lds.CalcPRC = contopts.PRC;
   lds.CalcdPRC = contopts.dPRC;
   lds.PRCInput = contopts.Input;

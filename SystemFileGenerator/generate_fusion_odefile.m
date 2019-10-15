@@ -1,4 +1,4 @@
-N = 10;
+N = 50;
 
 handles = fusion_symbolic();
 

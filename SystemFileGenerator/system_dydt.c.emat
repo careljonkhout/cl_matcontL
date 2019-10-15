@@ -8,7 +8,6 @@
 
 #define n_parameters <%= length(s.input_pars) %>
 #define n_inputs     <%= length(s.input_pars) + 2 %>
-#define n_outputs    1
 #define system_size  <%= length(s.rhs) %>
 
 #define input_t 0
@@ -26,12 +25,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
   /* check for proper number of arguments */
   if(nrhs != n_inputs) {
-    mexErrMsgIdAndTxt("<%= s.name %>_dydt:nrhs","Five inputs required.");
+    mexErrMsgIdAndTxt("<%= s.name %>_dydt:nrhs","%d inputs required.", n_inputs);
   }
-  if(nlhs != n_outputs) {
-    mexErrMsgIdAndTxt("<%=s.name %>_dydt:nlhs","One output required.");
-  }
-
 
   if ( !mxIsDouble(prhs[input_y]) ) {
     mexErrMsgIdAndTxt("system_<%= s.name %>:not_double",

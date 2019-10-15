@@ -17,7 +17,7 @@ function v = find_branching_vector(x, v_orig)
           'a branching point of cycles, since the second smallest singular ' ...
           'value of the Jacobian is %.2f. At a branching point of cycles, ' ...
           'the Jacobian has two singular values equal to zero.'], max(diag(s)));
-    fprintf('\nPress a key to continue');
+    fprintf('\nPress a key to continue or ctrl-c to abort\n');
     pause
   end
     

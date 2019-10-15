@@ -17,8 +17,10 @@ function out = multiple_shooting
   out{15} = @curve_CIS_step;  
 end
 %-------------------------------------------------------------------------------
-% Computes the curve function. If y_0 == 0 then y_0 corresponds to a sequence of
-% points on a limit cycle.
+% Computes the curve function. If every component of func is zero,  then y_0
+% corresponds to a sequence of points on a limit cycle, the "period" is its
+% period, and "parameters" are the parameter values of the parameters of the
+% system of ODEs for which the cycle exists.
 function func = curve_func(varargin)
   global cds
   [y_0, period, parameters] = getComponents(varargin{1});
@@ -161,7 +163,6 @@ end
 % ids_testf_requested will contain only those ids of the testfunctions relevant
 % to the bifurcation that is being located.
 function [out, failed] = testfunctions(ids_testf_requested, x0, v, ~) 
-  % unused arguments are v and CISdata
   global cds
   
   failed = false;
@@ -233,10 +234,6 @@ function [has_changed, x, v, CISData] = adapt(varargin)
   print_diag(3, ' %.4f', cds.mesh );
   print_diag(4, '\n');
   print_diag(4, 'curve_function new time mesh: %.3e\n', point.R);
-  %x = NewtonPicard.MultipleShooting.corrections_without_tangent(x);
-  %print_diag(3,'curve_function new time mesh: %.3e\n', ...
-  %  max(abs(curve_func(x))));
-  
 end
 %-------------------------------------------------------------------------------
 function point = adjust_basis_size(point)

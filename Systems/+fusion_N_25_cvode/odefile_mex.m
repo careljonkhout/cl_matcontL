@@ -1,8 +1,8 @@
 function out = odefile_mex
 out{1} = @init;
-out{2} = @fusion_N_50_cvode_max_ord_1.dydt_mex;
-out{3} = @fusion_N_50_cvode_max_ord_1.jacobian_mex;
-out{4} = @fusion_N_50_cvode_max_ord_1.jacobian_params_mex;
+out{2} = @fusion_N_25_cvode_max_ord_1.dydt_mex;
+out{3} = @fusion_N_25_cvode_max_ord_1.jacobian_mex;
+out{4} = @fusion_N_25_cvode_max_ord_1.jacobian_params_mex;
 out{5} = [];
 out{6} = [];
 out{7} = [];
@@ -24,7 +24,7 @@ out{15}= @x5;
 
 % --------------------------------------------------------------------------
 function options = init()
-handles = feval(fusion_N_50_cvode_max_ord_1);
+handles = feval(fusion_N_25_cvode_max_ord_1);
 options = odeset(...
   'Jacobian', handles(3), 'JacobianP', handles(4), ...
   'Hessians', handles(5), 'HessiansP', handles(6));

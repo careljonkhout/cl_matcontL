@@ -1,7 +1,7 @@
 tic
 
-max_ord = 4;
-name = sprintf('SEI_max_ord_%d', max_ord);
+max_ord = 1;
+name = 'sei';
 vars = 's e i u v';
 pars = 'alpha beta mu delta gamma';
 time = 't';
@@ -19,7 +19,7 @@ rhs={
 };
 
  
-sei_system = System_of_ODEs.new(name, vars, pars, time, max_ord, rhs);
+sei_system = System_of_ODEs.new(name, vars, pars, time, max_ord, rhs, 'cvode');
 sei_system.generate_file
 toc
 

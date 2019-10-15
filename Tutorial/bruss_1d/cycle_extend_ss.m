@@ -17,7 +17,7 @@
 % It is perfectly fine to run continuations in cl_matcontL using Matlab scripts
 % without defining functions.
 function cycle_extend_ss
-  load([get_path(), 'point_cycle_ss.mat'], 'point');
+  load(fullfile(get_path(), 'point_cycle_ss.mat'), 'point');
 
 
   init_single_shooting_extend_curve( ...

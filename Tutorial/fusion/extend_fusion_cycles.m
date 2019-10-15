@@ -1,9 +1,9 @@
 function extend_fusion_cycles
   N = 25;                     
-  odefile = str2func(sprintf('fusion_N_%d_max_ord_1', N));
+  odefile = str2func(sprintf('fusion_N_%d', N));
 
   subdirectory              = 'fusion_cycles';
-  dirname                   = [get_path(), 'Data/', subdirectory];
+  dirname                   = fullfile(get_path(), 'Data', subdirectory);
   [point_file, point_index] = get_latest_point_file(dirname);
 
 

@@ -9,6 +9,11 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, M_delta_q_r, ...
 
   global cds contopts
   
+  % if no options have been set yet, use default options
+  if isempty(contopts)
+    contopts = contset;
+  end
+  
   [phases_0,period,parameters] = ...
     NewtonPicard.SingleShooting.extract_phases_period_and_parameters(x);
   active_par_val = parameters{cds.ActiveParams};

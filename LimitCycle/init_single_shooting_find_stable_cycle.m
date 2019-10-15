@@ -139,6 +139,35 @@ function initial_continuation_data = ...
       error(['You must specifiy ' fields{i} '.'])
     end
   end
+  
+  try
+  Assert.scalar  ('time_to_converge_to_cycle', input.time_to_converge_to_cycle);
+  Assert.positive('time_to_converge_to_cycle', input.time_to_converge_to_cycle);
+  
+  Assert.function_handle('odefile', input.odefile);
+  
+  Assert.scalar  ('active_parameter_index', input.active_parameter_index);
+  Assert.positive('active_parameter_index', input.active_parameter_index);
+  Assert.integer ('active_parameter_index', input.active_parameter_index);
+  
+  Assert.scalar  ('lower_bound_period', input.time_to_converge_to_cycle);
+  Assert.positive('lower_bound_period', input.time_to_converge_to_cycle);
+  
+  Assert.scalar  ('upper_bound_period', input.time_to_converge_to_cycle);
+  Assert.positive('upper_bound_period', input.time_to_converge_to_cycle);
+
+  Assert.scalar   ('subspace_size', input.subspace_size); 
+  Assert.integer  ('subspace_size', input.subspace_size);
+  Assert.positive ('subspace_size', input.subspace_size);
+  assert(input.subspace_size <= length(input.initial_point), ...
+      'the subspace size must be less than or equal to the dimension of the initial point');
+  catch failed_assertion
+    error(failed_assertion.message);
+  end
+  
+  if ~ iscell(input.ode_parameters)
+    input.ode_parameters = num2cell(input.ode_parameters);
+  end
  
   input.point_on_limitcycle = converge_to_cycle(input);
   

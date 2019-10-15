@@ -35,7 +35,7 @@ opt = contset(opt, 'Filename',     'testbruss_LP1');
 
 %% Continuation
 path_to_this_script = get_path;
-LP0_file = [path_to_this_script, 'Data/testbruss_LP0.mat'];
+LP0_file = fullfile(path_to_this_script, 'Data', 'testbruss_LP0.mat');
 load(LP0_file, 's');
 ap = [2, 3];
 ID = 2;
