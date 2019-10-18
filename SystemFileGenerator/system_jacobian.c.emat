@@ -26,10 +26,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
   /* check for proper number of arguments */
   if(nrhs != n_inputs) {
-    mexErrMsgIdAndTxt("<%= s.name %>_dydt:nrhs","Five inputs required.");
-  }
-  if(nlhs != n_outputs) {
-    mexErrMsgIdAndTxt("<%=s.name %>_dydt:nlhs","One output required.");
+    mexErrMsgIdAndTxt("<%= s.name %>_dydt:nrhs","%d inputs required.",
+                                                                      n_inputs);
   }
 
 

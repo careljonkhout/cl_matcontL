@@ -118,7 +118,7 @@ void mexFunction(int n_output,       mxArray *mex_output[],
 
     if        ( ! strcmp(arg_name, "t_values"             ) ) {
       
-      check_double(mex_input[i + 1], "t_values");
+      check_double(mex_input[i + 1], (char*) "t_values");
       t_values = (double*) my_mex_get_doubles(mex_input[i + 1]);
       
       n_points      = mxGetNumberOfElements(mex_input[i + 1]);
@@ -440,15 +440,14 @@ void error_handler(int error_code, const char* module,
             function, module,
             error_code, CVodeGetReturnFlagName(error_code), message);
   } else {
-//     char* buffer = mxMalloc(BUFFER_LENGTH * sizeof(char));
-//     snprintf(buffer, BUFFER_LENGTH, 
-//             "print_diag(0,'Error in %s() in sundails module %s. "
-//             "error code: %d: %s.\n  %s')",
-//             function, module,
-//             error_code, CVodeGetReturnFlagName(error_code), message);
-//     mexPrintf(buffer);
-//     mexPrintf("\n");
-//     mexEvalString(buffer);
+    char* message_buffer = mxMalloc(BUFFER_LENGTH * sizeof(char));
+    char* buffer = mxMalloc((BUFFER_LENGTH - 100) * sizeof(char));
+    snprintf(message_buffer, BUFFER_LENGTH - 100, 
+            "Error in %s() in sundails module %s. error code: %d: %s. %s", 
+            function, module, error_code, 
+            CVodeGetReturnFlagName(error_code), message);       
+    snprintf(buffer, BUFFER_LENGTH, "print_diag(0,'%s\\\n')", message_buffer);
+    mexEvalString(buffer);
   }
 }
 

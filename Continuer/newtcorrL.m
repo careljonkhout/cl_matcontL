@@ -134,6 +134,10 @@ for i = 1:MaxCorrIters
               v = linear_solver_collocation([A;v'],R');
             else
               v = bordCIS1([A;v'],R',1);
+              if any(isnan(v))
+                pout = [];
+                return
+              end
             end
             if contopts.newtcorrL_use_max_norm
               v = v/max(abs(v));

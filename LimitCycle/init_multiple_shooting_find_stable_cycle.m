@@ -169,7 +169,8 @@ function initial_continuation_data = ...
   Assert.integer  ('subspace_size', input.subspace_size);
   Assert.positive ('subspace_size', input.subspace_size);
   assert(input.subspace_size <= length(input.initial_point), ...
-      'the subspace size must be less than or equal to the dimension of the initial point');
+      ['the subspace size must be less than or equal to ' ...
+       'the dimension of the initial point']);
   catch failed_assertion
     error(failed_assertion.message);
   end

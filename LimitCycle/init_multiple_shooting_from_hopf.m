@@ -21,6 +21,9 @@ function [x0, v0] = init_multiple_shooting_from_hopf( odefile, x, ...
   dydt_ode               = handles{2};
   jacobian_ode           = handles{3};
   
+  cds.func = dydt_ode;
+  cds.ncoo = cds.nphases;
+  
   if isnumeric(ode_parameters)
     ode_parameters = num2cell(ode_parameters);
   end

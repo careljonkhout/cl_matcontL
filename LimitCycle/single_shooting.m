@@ -25,7 +25,7 @@ end
 % condition is necessary to uniquely define the next point, and is used to limit
 % the phase shift from one step to the next.
 function f = curve_function(varargin)
-  global cds
+global cds
   x = varargin{1};
   active_par_val               = x(end);
   period                       = x(end-1);

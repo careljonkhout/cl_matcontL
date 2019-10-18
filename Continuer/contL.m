@@ -233,7 +233,17 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
                                 curvefile,trialpoint.x,trialpoint.v);
       end
     else
-      trialpoint = newtcorrL(xpre, currpoint.v, currpoint.CISdata);
+      try
+        trialpoint = newtcorrL(xpre, currpoint.v, currpoint.CISdata);
+      catch my_error
+        switch my_error.identifier
+          case 'cvode:integrator_error'
+            print_diag(0, my_error.message);
+            trialpoint = [];
+          otherwise
+            rethrow(my_error)
+        end
+      end
     end
     if isempty(trialpoint)
       if UsingNewtonPicard 

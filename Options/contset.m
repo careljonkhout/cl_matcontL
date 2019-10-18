@@ -16,7 +16,7 @@ function opt = contset(varargin)
     opt = defaultOptions();
     i = 1;
   end
-  % todo check if fields are the same
+
   while i < nargin
     name = varargin{i};
     if ~ischar(name)
@@ -124,7 +124,7 @@ function options = defaultOptions()
   options.Eigenvalues     =    0;       % Whether or not to calculate and save eigenvalues     DV: old name 'Cont_Eigenvalues'
   options.Userfunctions   =    0;       % Whether or not to detect userfunctions      DV: old name 'Cont_Userfunctions'
   options.UserFuncInfo    =    [];      % Struct:                                        DV: old name 'Cont_UserfuncInfo'
-  options.PRC             =    0;       % DV 2018
+  options.PRC             =    0;       % PRC means phase response curve. is related to limitcycleL
   options.dPRC            =    0;       % DV 2018
   options.Input           =    0;       % DV 2018
   options.NewtonPicard    =    false;
@@ -174,7 +174,7 @@ function options = defaultOptions()
   % lsqminnorm instead of "\" to solve linear systems, ignoring singular values
   % less than threshold in the matrix whose inverse action is being computed.
   % This regularizes the solution, and may cure convergence problems.
-  options.Multipliers               = 0;             % MP?
+  options.Multipliers               = false; % enables the computation of multipliers of a cycle
   options.Workspace                 = 1;             % MP?
   options.enable_nf_lpc   =    true;    
   % Set enable_nf_lpc to false to disable computation of the normal form 
@@ -194,35 +194,99 @@ function options = defaultOptions()
   % take a long time to run.
   % Note: nf_ns is only implemented for limitcycleL.m i.e. cycle continuation by
   % collocation
-  options.console_output_level             = 0; % set to 5 to see all debug info.
-  options.newtcorrL_use_max_norm           = false;
+  options.console_output_level             = 0; % set to 6 to see all debug info.
+  
+  options.newtcorrL_use_max_norm           = false; 
+  % for limitcycleL, this switches the norm used to normalize the tangent vector
+  % for the Euclidian norm to the max-norm (a.k.a. infinity norm)
+  
   options.MaxPicardIterations              = 15;
+  % For Newton-Picard methods. The maximum number of iterations in the Q-system
+  % solver, before the solver aborts.
+  
   options.PicardTolerance                  = 1e-8;
-  % set the number of cores to be used in parallel computing to the number of
-  % physical cores on the local machine. Only relevant if contL_ParallelComputing
-  % is true.
-  options.num_cores                        = feature('numcores');
   % Tolerances for time integration in single shooting, multiple shooting and
   % continuation of single shooting and multiple shooting with Newton Picard
   % Integration tolerances smaller than 1e-13 may give 'unable to meet tolerances'
   % warnings.
+  
+  options.num_cores                        = feature('numcores');
+  % set the number of cores to be used in parallel computing to the number of
+  % physical cores on the local machine. Only relevant if
+  % contL_ParallelComputing is true.
+  
+  
   options.integration_abs_tol               = 1e-9;
   options.integration_rel_tol               = 1e-9;
+  % the absolute and relative tolerance used in time-integration in the
+  % Newton-Picard methods (and some initializers).
+  % note that 
+  
   options.multipliers_abs_tol               = 1e-9;
   options.multipliers_rel_tol               = 1e-9;
+  % the absolute and relative tolerance used in time-integration in the
+  % Newton-Picard methods when computing multipliers.
+  
+  
   options.singularity_callback              = [];
+  % One can specify a function that is to by called when a singularity is saved.
+  % for instance to plot a singularity right after is it located. For examples
+  % see plot_singularity of cycles.
 
 
+  %% Newton-Picard options
+  
   options.basis_grow_threshold              = 7e-1;
+  
+  % If the monodromy matrix has an eigenvector (that is not already in the
+  % basis) with eigenvalue with absolute value larger than basis_grow_threhold,
+  % the basis will be expanded. basis_grow_thresold must be stricly less than
+  % one.
+  
   options.basis_shrink_threshold            = options.basis_grow_threshold/1.4;
+  % If there is a eigenvector in the basis with norm less than
+  % basis_shrink threshold, the basis will be shrunk. basis_shrink_thresold must
+  % be strictly less than basis_grow_threshold.
+  
   options.minimum_basis_size                = 3;
+  % the minimum_basis_size. Currently only affects single shooting
+  
   options.multiplier_print_threshold = 0.8;
+  % if a multiplier is larger than multiplier_print_threshold, it is printed, if
+  % console_output_level is set high enough, and logged, if
+  % contL_DiagnosticsLevel is set high enough
+  
+  
+  %% Continuer options
+  
   options.pause                      = false;
-  options.nsteps_before_pause        = 10; 
+  % enable pausing during continuations. Useful for debugging fast running
+  % continuations.
+  
+  options.nsteps_before_pause        = 10;
+  % number of continuation steps before a pause, if pausing is enables, see
+  % options.pause.
+  
+  %% Continuer options useful for extending continuations
+  
   options.initial_point_index        = 1;
+  % the initial value of cds.i. This allows an extended continuation to produce
+  % point files that extend the sequence of point files.
+  
   options.set_direction              = true;
+  % the direction of the continuation is set in contL.m to make the continuation
+  % go in the direction corresponding to an increase in the active parameters
+  % (if Backward is false) or decrease (if Backward is true) ( if the change in
+  % the active parameter is above a small threshold). Setting set_direction to
+  % false will disable this "setting of the direction", and go in the direction
+  % of the tangent vector that was passed to contL. When extending
+  % continuations, this is needed, since otherwise the extended continuation
+  % might reverse direction ( for instance, if the first part of the
+  % continuation has an uneven number of limit points)
+  
   options.is_extension               = false;
-
+  % causes previously saved singularities to by loaded, if the options.Filename
+  % is set to the Filename of a previously saved continuation.
 
                               %% Determine testpath
   options.Filename = [];           
@@ -270,6 +334,3 @@ function is_opt_strct = is_options_struct(s)
     is_opt_strct = is_opt_strct && isequal(names{i}, default_names{i});
   end
 end
-
-% strcmp(name, 'Multipliers') || ...
-% strcmp(name, 'Workspace') || ...

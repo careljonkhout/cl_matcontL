@@ -62,9 +62,9 @@ function x = init_single_shooting_from_pd(varargin)
   cds.mv_count                   = 0;
   cds.curve                      = @single_shooting;
   cds.using_cvode                = using_cvode;
-  cds.nMeshIntervals             = pd.nMeshIntervals;
-  cds.mesh                       = pd.mesh;
   
-  x = NewtonPicard.MultipleShooting.find_doubled_cycle(pd.x, h);
+  pd_vector = NewtonPicard.SingleShooting.find_pd_vector(pd.x);
+  period    = pd.x(end-1);
+  x         = [pd.x(1:end-2) + h * pd_vector; 2 * period; pd.x(end)];
   
 end
