@@ -1,13 +1,11 @@
-function testbruss_BP1()
-% Test script for 1d brusselator (original MATCONT data)
-
+%% Continuation starting form a branching point of equilibria
 % This example performs continuation of equilibrium curve starting from a
 % branch point and continuing along the second branch.
 
-%% Options
+function testbruss_BP1()
 
-opt = contset(); %Clear previous options
-opt = contset(opt,'contL_LogFile',          1);
+%% Set Options
+opt = contset(    'contL_LogFile',          1);
 opt = contset(opt,'contL_DiagnosticsLevel', 5);
 opt = contset(opt,'Backward',               1);
 opt = contset(opt,'InitStepsize',        2e-1);
@@ -30,19 +28,23 @@ opt = contset(opt,'Locators',        [1 1 1]);
 opt = contset(opt,'TestPath',mfilename('fullpath'));
 opt = contset(opt, 'Filename', 'testbruss_BP1');
 
-%% Continuation
+%% Load the struct s from the file Data/testbruss_BP0.mat
+% s contains data about singularities and the first and last points of a
+% previous continuation run
 path_to_this_script = get_path;
 BP0_file = fullfile(path_to_this_script, 'Data', 'testbruss_BP0.mat');
 load(BP0_file, 's');
 
+%% Select the third singularity from the data loaded from testbruss_U0.mat
 ID = 3;
-if ~ strcmp(s(ID).label,'BP')
-  error('no branching point found');
-end
+data = s(ID).data;
 
-data                      = s(ID).data;
-problem_file              = @Brusselator_1d.heterogeneous_x0;
-[x0,v0]                   = init_BP_EP_L(problem_file, [], [], [], data);
+%% Initialize the continuation
+% the init functions in cl_matcontL initialize the global variable cds, which is
+% a struct contains information the continuer needs.
+[x0,v0]                   = init_BP_EP_L(@brusselator_1d, [], [], [], data);
+
+%% Continuation
 [singularities, datafile] = contL(@equilibriumL,x0,v0,opt);
 
 %% Plot results

@@ -1,12 +1,12 @@
-function testbruss_LP1()
-% Test script for 1d brusselator (original MATCONT data)
+%% Continuation of a limit point
+% This example performs a continuation of a limit point starting from a point
+% located in testbruss_LP0
 
-% This example performs a continuation of limit points starting from a
-% point located in testbruss_LP0
+function testbruss_LP1()
+
 
 %% Options
-opt = contset(); %Clear previous options
-opt = contset(opt,'contL_LogFile',               1);
+opt = contset(    'contL_LogFile',               1);
 %opt = contset(opt,'contL_DiagnosticsLevel',     3);
 opt = contset(opt,'contL_DiagnosticsLevel',      5);
 opt = contset(opt,'Backward',                    0);
@@ -33,21 +33,32 @@ opt = contset(opt,'CIS_Ric_Cayley_Shift',       10);
 opt = contset(opt,'TestPath',mfilename('fullpath'));
 opt = contset(opt, 'Filename',     'testbruss_LP1');
 
-%% Continuation
+%% Load the struct s from the file Data/testbruss_LP0.mat
+% s contains data about singularities and the first and last points of a
+% previous continuation run
 path_to_this_script = get_path;
 LP0_file = fullfile(path_to_this_script, 'Data', 'testbruss_LP0.mat');
 load(LP0_file, 's');
-ap = [2, 3];
+
+%% Select the second singularity from the data loaded from testbruss_U0.mat
+% this singularity is a limit point
 ID = 2;
-if ~ strcmp(s(ID).label ,'LP')
-  error('No limit point found')
-end
-
 data = s(ID).data;
-%
-problem_file = @Brusselator_1d.heterogeneous_x0;
 
-[x0,v0]      = init_LP_LP_L(problem_file, [], [], ap, data);
+
+%% Use L and A as the active parameters.
+% The indices of L and A in the parameter array ( [N; L; A; B; Dx; Dy] ) are 2
+% and 3. Hence the active parameter indices must be set to 2 and 3 to select L
+% and A the active parameters.
+active_parameter_indices = [2 3];
+
+
+%% Initialize the continuation
+% the init functions in cl_matcontL initialize the global variable cds, which is
+% a struct contains information the continuer needs.
+[x0,v0] = init_LP_LP_L(@brusselator_1d, [], [], active_parameter_indices, data);
+
+%% Continuation
 [singularities, datafile] = contL(@limitpointL,x0,v0,opt);
 
 %% Plot results

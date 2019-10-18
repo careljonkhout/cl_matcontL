@@ -27,8 +27,15 @@ function cycle_from_hopf_ms
   % the continuation will be with respect to the second parameter:
   active_parameter = 2;
   % we run the initializer for an equilibrium continuation:
-  problem_file = @Brusselator_1d.homogeneous_x0;
-  [x0,v0]      = init_EP_EP_L(problem_file,[],ode_parameters,active_parameter);
+  
+  % Compute the initial point "equilibrium".
+  % This equilibrium represents a spatially homogeneous equilibrium of the PDE:
+  equilibrium          = zeros(2*N,1);
+  equilibrium(1:N)     = A;
+  equilibrium(N+1:2*N) = B/A;
+  
+  [x0,v0] = init_EP_EP_L(@brusselator_1d, equilibrium, ...
+                         ode_parameters, active_parameter);
 
 
   % we set the options for the equilibrium continuation:
@@ -54,7 +61,7 @@ function cycle_from_hopf_ms
   nMeshIntervals = 2;
 
   % we run the initializer for continuation of cycles using single shooting:
-  [x0, v0] = init_multiple_shooting_from_hopf(problem_file, x, ...
+  [x0, v0] = init_multiple_shooting_from_hopf(@brusselator_1d, x, ...
               ode_parameters, active_parameter, h, nMeshIntervals, subspace_size);
 
   % we specify the options for the continuation of cycles using single shooting:

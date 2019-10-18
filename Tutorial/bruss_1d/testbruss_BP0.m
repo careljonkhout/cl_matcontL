@@ -1,12 +1,11 @@
-function testbruss_BP0()
-% Test script for 1d brusselator (original MATCONT data)
-
+%% Continuation of an equilibrium.
 % This example performs continuation of equilibrium curve and locates
 % limit points and branch points.
 
+function testbruss_BP0()
+
 %% Options
-opt = contset(); %Clear previous options
-opt = contset(opt,'contL_LogFile',             1); 
+opt = contset(    'contL_LogFile',             1); 
 opt = contset(opt,'contL_DiagnosticsLevel',    3);  
 opt = contset(opt,'Backward',                  0);
 opt = contset(opt,'InitStepsize',              3);
@@ -32,34 +31,39 @@ opt = contset(opt,'Locators',            [1 1 1]);
 opt = contset(opt,'TestPath',mfilename('fullpath'));
 opt = contset(opt, 'Filename',     'testbruss_BP0');
 
+%% Values of the parameters of the system of ODEs:
 N = 500; L = 0.06; A = 2; B = 4.6; Dx = 0.0016; Dy = 0.008;
-p = [N; L; A; B; Dx; Dy]; ap1 = 2;
+p = [N; L; A; B; Dx; Dy];
 
-%% we compute an approximation of an equilibrium x0
-x0 = zeros(2*N,1);
-i=1:N;
-x0(i)   = A + 2*sin(pi*i/(N+1));
-x0(N+i) = B/A - 0.5*sin(pi*i/(N+1));
+%% Use the L as the active parameter.
+% The index of L in the parameter array is 2. Hence the active parameter index
+% must be set to 2 to select L as the active parameter.
+active_par_idx = 2;
 
-odefile = @brusselator_1d;
+%% Compute an approximation of an equilibrium
+% "equilibrium" represents a spatially heterogenous equilibrium of the PDE
+equilibrium      = zeros(2*N,1);
+i                = 1:N;
+equilibrium(  i) = A   + 2   * sin( pi * i / (N+1) );
+equilibrium(N+i) = B/A - 0.5 * sin( pi * i / (N+1) );
 
-%% we initialize the continuation
+%% Initialize the continuation
 % init methods initialize the global variable cds, which is a struct contains
 % information the continuer needs. 
-[x0,v0]       = init_EP_EP_L(odefile, x0, p, ap1);
-[s, datafile] = contL(@equilibriumL, x0, v0, opt);
+[x0,v0]       = init_EP_EP_L(@brusselator_1d, equilibrium, p, active_par_idx);
+%% Continuation
+[singularities, datafile] = contL(@equilibriumL, x0, v0, opt);
 
 %% Plot results
 
 x = loadPoint(datafile);
-N = s(1).data.P0(1);
 
 figure
 hold on
 title('testbruss\_BP0')
 plot(x(2*N+1, :), x(1, :));
 
-for sii = s
+for sii = singularities
     plot(x(2*N+1, sii.index), x(1, sii.index), 'r.');
     text(x(2*N+1, sii.index), x(1, sii.index), sii.label);
 end

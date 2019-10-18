@@ -1,8 +1,9 @@
-function testbruss_LP0()
-% Test script for 1d brusselator (original MATCONT data)
-
+%% Continuation of equilibrium, with detection of a limit point
 % This example performs continuation of equilibrium curve and locates 
-% a limit point.
+% a limit point in the 1d brusselator (Chien 97 data)
+
+function testbruss_LP0()
+
 
 %% Options
 opt = contset(); %Clear previous options
@@ -35,15 +36,30 @@ opt = contset(opt,'contL_EQ_BranchingMethod',    2);
 opt = contset(opt,'TestPath',mfilename('fullpath'));
 opt = contset(opt, 'Filename',     'testbruss_LP0');
 
-%% Continuation 
+%% Values of the parameters of the system of ODEs:
 N = 500; L = 0.06; A = 2; B = 4.6; Dx = 0.0016; Dy = 0.008;
 p = [N, L, A, B, Dx, Dy];
-ap1 = 2;
 
-problem_file = @Brusselator_1d.heterogeneous_x0;
+%% Use L as the active parameter.
+% The index of L in the parameter array is 2. Hence the active parameter index
+% must be set to 2 to select L as the active parameter.
+active_par_idx = 2;
 
-[x0,v0]                   = init_EP_EP_L(problem_file, [], p, ap1);
-[singularities, datafile] = contL(@equilibriumL,x0,v0,opt);
+
+%% Compute an approximation of an equilibrium x0
+% x0 represents a spatially heterogenous equilibrium of the PDE
+equilibrium      = zeros(2*N,1);
+i                = 1:N;
+equilibrium(  i) = A   + 2   * sin( pi * i / (N+1) );
+equilibrium(N+i) = B/A - 0.5 * sin( pi * i / (N+1) );
+
+%% Initialize the continuation
+% the init functions in cl_matcontL initialize the global variable cds, which is
+% a struct contains information the continuer needs.
+[x0, v0] = init_EP_EP_L(@brusselator_1d, equilibrium, p, active_par_idx);
+
+%% Continuation 
+[singularities, datafile] = contL(@equilibriumL, x0, v0, opt);
 
 x = loadPoint(datafile);
 N = singularities(1).data.P0(1);

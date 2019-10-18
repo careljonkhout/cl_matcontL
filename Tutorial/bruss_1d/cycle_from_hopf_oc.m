@@ -16,9 +16,16 @@ function cycle_from_hopf_oc
   % the continuation will be with respect to the second parameter:
   active_parameter = 2;
 
-  problem_file = @Brusselator_1d.homogeneous_x0;
-  % we run the initializer for an equilibrium continuation:
-  [x0,v0] = init_EP_EP_L(problem_file,[],ode_parameters,active_parameter);
+  % Compute the initial point "equilibrium".
+  % This equilibrium represents a spatially homogeneous equilibrium of the PDE:
+  equilibrium          = zeros(2*N,1);
+  equilibrium(1:N)     = A;
+  equilibrium(N+1:2*N) = B/A;
+  
+  odefile = @brusselator_1d;
+  
+  [x0,v0] = init_EP_EP_L(odefile, equilibrium, ...
+                         ode_parameters, active_parameter);
 
 
   % we set the options for the equilibrium continuation:
@@ -49,7 +56,7 @@ function cycle_from_hopf_oc
   % We run the initializer for continuation of cycles by collocation from a Hopf
   % point:
   [x0, v0] = init_collocation_from_hopf(...
-              problem_file, x, ode_parameters, active_parameter, h, ntst, ncol);
+           @brusselator_1d, x, ode_parameters, active_parameter, h, ntst, ncol);
 
   % We specify the options for the cycle continuation.
   opts_h_lc = contset( ...

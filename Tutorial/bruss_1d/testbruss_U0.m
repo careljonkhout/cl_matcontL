@@ -1,12 +1,13 @@
-function testbruss_U0()
-% Test script for 1d brusselator (original MATCONT data)
+%% Continuation of an equilibrium, with detection of a zero of a "user function"
+% The user function is a function supplied by the user in the file
+% @brusselator_1d. This example locates the point in the continuation where the
+% user function vanishes and saves data for continuation in testbruss_U1 with a
+% new parameter.
 
-% This example locates a user point and saves data for continuation 
-% in testbrussL1_U1 with a new parameter
+function testbruss_U0()
 
 %% Options
-opt = contset;
-opt = contset(opt,'contL_LogFile',               1);
+opt = contset(    'contL_LogFile',               1);
 opt = contset(opt,'contL_DiagnosticsLevel',      3);
 opt = contset(opt,'Backward',                    1);
 opt = contset(opt,'InitStepsize',             1e-0);
@@ -40,13 +41,29 @@ UserInfo{1}.state  = 1;
 UserInfo{1}.label  = 'u1';
 opt = contset(opt,'UserFuncInfo',    UserInfo);
 
-%% Continuation
+
+%% Values of the parameters of the system of ODEs:
 N = 128; L = 0.06; A = 2; B = 4.6; Dx = 0.0016; Dy = 0.008;
-p = [N; L; A; B; Dx; Dy]; ap1 = 2;
+p = [N; L; A; B; Dx; Dy];
 
-problem_file = @Brusselator_1d.heterogeneous_x0;
+%% Use the L as the active parameter.
+% The index of L in the parameter array is 2. Hence the active parameter index
+% must be set to 2 to select L as the active parameter.
+active_par_idx = 2;
 
-[x0,v0]                   = init_EP_EP_L(problem_file, [], p, ap1);
+%% Compute an approximation of an equilibrium
+% "equilibrium" represents a spatially heterogenous equilibrium of the PDE
+equilibrium      = zeros(2*N,1);
+i                = 1:N;
+equilibrium(  i) = A   + 2   * sin( pi * i / (N+1) );
+equilibrium(N+i) = B/A - 0.5 * sin( pi * i / (N+1) );
+
+%% Initialize the continuation
+% the init functions in cl_matcontL initialize the global variable cds, which is
+% a struct contains information the continuer needs.
+[x0,v0] = init_EP_EP_L(@brusselator_1d, equilibrium, p, active_par_idx);
+
+%% Continuation
 [singularities, datafile] = contL(@equilibriumL,x0,v0,opt);
 
 %% Plot results
