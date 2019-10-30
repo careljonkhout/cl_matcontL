@@ -1,65 +1,135 @@
-function do_one_correction_pd(x0,x,v)
-  [phases_0, v, period, parameters] = pd_ss_extract_data(x);
-  [phases_end, monodromy] = compute_monodromy(phases_0, period, parameters);
-  jacobian          = [monodromy-eye(cds.nphases); cds.previous_dydt_0'];
+function x_corrected = do_one_correction_pd(x0,x,v_cont)
+  global cds contopts
+  [phi_0, v, T, parameters] = pd_ss_extract_data(x);
+  % phi_0 is the current approximation of the reference point on the cycle.
+  % v is the current approximation of the eigenvector associated the the
+  % eigenvavlue -1
+  % T is the current approximation of the period of the cycle.
+  % parameters are the parameters value of the two active parameters
+  [phi_end, M] = compute_phi_end_and_monodromy(phi_0, T, parameters);
+  I            = eye(cds.nphases);
+  jacobian     = [M - I; cds.previous_dydt_0'];
   % add d_phi__d_T and d_s__d_T
-  d_phi_d_T         = cds.dydt_ode(0, phases_end, parameters{:});
+  d_phi_d_T         = cds.dydt_ode(0, phi_end, parameters{:});
   d_s_d_T           = cds.previous_dydt_0' * d_phi_d_T;
   jacobian          = [jacobian [d_phi_d_T; d_s_d_T]];
   
-  rhs = [ phases_end(:) - phases_0(:); % r
-          phases_0 - cds.previous_phases)' * cds.previous_dydt_0 ] %s
+  rhs = [ phi_end(:) - phi_0(:); % r
+         (phi_0 - cds.previous_phases)' * cds.previous_dydt_0 ]; %s
   
-  delta_x_r__and__delta_T_r = - jacobian \ rhs;
-  delta_x_r = delta_x_r__and__delta_T_r(1:end-1);
-  detla_T_r = delta_x_r__and__delta_T_r(end);
+  D_x_r__and__D_T_r = - jacobian \ rhs;
+  D_x_r = D_x_r__and__D_T_r(1:end-1);
+  D_T_r = D_x_r__and__D_T_r(end);
+  
+  h = contopts.Increment;
+  
+  M_x_v_x_r = M_x_v(D_x_r, phi_0, v, T, parameters);
   
   
   
+  M_v_1 = compute_monodromy(phi_0, T - h, parameters) * v;
+  M_v_2 = compute_monodromy(phi_0, T + h, parameters) * v;
+  M_T_v = (M_v_2 - M_v_1) / (2 * h);
   
-
+  M_T_v_T_r = M_T_v * D_T_r;
+  
+ 
+  D_x_p      = zeros(cds.nphases, 2);
+  D_T_p      = zeros(1          , 2);
+  M_x_v_x_p  = zeros(cds.nphases, 2);
+  M_p_v      = zeros(cds.nphases, 2);
+  M_T_v_T_p  = zeros(cds.nphases, 2);
+ 
+  
+  
+  for i=1:2
+    ap_idx     = cds.ActiveParams(i);
+    d_phi__d_p = compute_d_phi_d_p(phi_0, T, parameters, ap_idx);
+    d_s__d_p   = cds.previous_dydt_0' * d_phi__d_p;
     
-  compute_d_phi_d_p = @NewtonPicard.compute_d_phi_d_p;
-  d_phi__d_p        = compute_d_phi_d_p(phases, period, parameters, p_idx);
-  d_s__d_p          = cds.previous_dydt_0' * d_phi__d_p;
+    D_x_p__and__D_T_p = jacobian \ [d_phi__d_p; d_s__d_p];
+    
+    D_x_p(:,i)     = D_x_p__and__D_T_p(1:end-1);
+    D_T_p(:,i)     = D_x_p__and__D_T_p(end);
+    M_x_v_x_p(:,i) = M_x_v(D_x_p(:,i), phi_0, v, T, parameters);
+    
+    p1 = parameters;
+    p1{ap_idx} = p1{ap_idx} - h;
+    M_v_1 = compute_monodromy(phi_0, T, p1) * v;
+    p2 = parameters;
+    p2{ap_idx} = p2{ap_idx} + h;
+    M_v_2 = compute_monodromy(phi_0, T, p2) * v;
+    
+    M_p_v(:,i) = (M_v_2 - M_v_1) / 2 / h;
+    
+    M_T_v_T_p(:,i) = M_T_v * D_T_p(i);
+  end
 
-  delta_x_gamma__and__delta_T_gamma = jacobian \ [d_phi__d_p; d_s__d_p];
-  delta_x_gamma = delta_x_gamma + delta_x_gamma__and__delta_T_gamma(1:end-1);
-  delta_T_gamma = delta_T_gamma + delta_x_gamma__and__delta_T_gamma(end);
-
-  M_v_1 = compute_monodromy(phases_0, period, parameters) * v;
-  M_v_2 = compute_monodromy(phases_0, period, parameters) * v;
-  
-  M_v_1 = compute_monodromy(phases_0 - h * delta_x_gamma, period, parameters) * v;
-  M_v_2 = compute_monodromy(phases_0 + h * delta_x_gamma, period, parameters) * v;
-  M_x_v_x = (M_v_2 - M_v_1) / (2 * h);
-  
-  M_v_1 = compute_monodromy(phases_0, period - h, parameters) * v;
-  M_v_2 = compute_monodromy(phases_0, period + h, parameters) * v;
-  M_T_v_T = (M_v_2 - M_v_1) / (2 * h) * delta_T_gamma;
-  
   
 
+
+  
+  lhs_1_2 = M_p_v(:,1) + M_x_v_x_p(:,1) + M_T_v_T_p(:,1);
+  lhs_1_3 = M_p_v(:,2) + M_x_v_x_p(:,2) + M_T_v_T_p(:,2);
+  
+  lhs_3_1 = v_cont(cds.nphases + 1 : 2 * cds.nphases)'; 
+  
+  c_n     = v_cont(1:cds.nphases);
+  lhs_3_2 = v_cont(end-1) + c_n' * D_x_p(:,1) + v_cont(end-2) * D_T_p(:,1);
+  lhs_3_3 = v_cont(end  ) + c_n' * D_x_p(:,2) + v_cont(end-2) * D_T_p(:,2);
+  
+  lhs = [ M + I       lhs_1_2     lhs_1_3    ;
+          cds.l'      0           0          ;
+          lhs_3_1     lhs_3_2     lhs_3_3   ];
+ 
+  
+
+  n = v_cont' * (x - x0);
+        
+  rhs          = (M + I) * v + M_x_v_x_r + M_T_v_T_r;
+  rhs(end + 1) = cds.l' * v - 1;
+  rhs(end + 1) = n + c_n' * D_x_r + v_cont(end-2) * D_T_r;
+  
+  D_v__and__D_p = lhs \ (- rhs);
+  
+  D_v = D_v__and__D_p(1:cds.nphases);
+  D_p = D_v__and__D_p(end-1:end);
+  
+  D_x = D_x_r + D_x_p(:,1) * D_p(1) + D_x_p(:,2) * D_p(2);
+  D_T = D_T_r + D_T_p(:,1) * D_p(1) + D_T_p(:,2) * D_p(2);
+  
+  
+  x_corrected = [
+    phi_0    + D_x;
+    v        + D_v;
+    T        + D_T;
+    x(end-1) + D_p(1);
+    x(end  ) + D_p(2);];
  
 end
-function M_x_v_x = compute_M_x_v(x, phases_0, v, period, parameters);
-  h = 1e-5;
-  M_x_v_1 = compute_monodromy(phases_0 - h * x, period, parameters) * v;
-  M_x_v_2 = compute_monodromy(phases_0 + h * x, period, parameters) * v;
+function M_x_v_x = M_x_v(x, phi_0, v, period, parameters)
+  global contopts
+  h = contopts.Increment;
+  M_x_v_1 = compute_monodromy(phi_0 - h * x, period, parameters) * v;
+  M_x_v_2 = compute_monodromy(phi_0 + h * x, period, parameters) * v;
   M_x_v_x = (M_x_v_2 - M_x_v_1) / (2 * h);
 end
-  
+
 %-------------------------------------------------------------------------------
 % Computes the monodromy matrix of the current approximation of the cycle 
 % starting from the point x near the cycle.
-function [y_end, monodromy] = compute_monodromy(x, period, parameters)
+function monodromy = compute_monodromy(phi_0, period, parameters)
+  [~, monodromy] = compute_phi_end_and_monodromy(phi_0, period, parameters);
+end   
+
+function [phi_T, M] = compute_phi_end_and_monodromy(phi_0, period, parameters)
   global cds
   if cds.using_cvode
-    [y_end, monodromy] = monodromy_cvode(x,period, parameters);
+    [phi_T, M] = monodromy_cvode(phi_0,period, parameters);
   elseif ~ cds.options.PartitionMonodromy
-    [y_end, monodromy] = monodromy_full(x, period, parameters);
+    [phi_T, M] = monodromy_full(phi_0, period, parameters);
   else
-    [y_end, monodromy] = monodromy_column_by_column(x, period, parameters);
+    [phi_T, M] = monodromy_column_by_column(phi_0, period, parameters);
   end
 end 
 %-------------------------------------------------------------------------------
@@ -154,16 +224,11 @@ end
 % w.r.t. the active parameter, evaluated at x.
 % todo: use variational method instead for improved accuracy
 % todo: implement computation of d_phi_d_p by cvodes
-function d_phi_d_p = compute_d_phi_d_p(x0, delta_t, parameters)
-  global cds
-  p_idx_1 = cds.ActiveParams(1);
-  p_idx_2 = cds.ActiveParams(2);
+function d_phi_d_p = compute_d_phi_d_p(x0, delta_t, parameters, ap_idx)
   h = 1e-5;
-  parameters{p_idx_1} = parameters{p_idx_1} - h;
-  parameters{p_idx_2} = parameters{p_idx_2} - h;
+  parameters{ap_idx} = parameters{ap_idx} - h;
   phi_1 = NewtonPicard.shoot(x0, delta_t, parameters);
-  parameters{p_idx_1} = parameters{p_idx_1} + 2*h;
-  parameters{p_idx_2} = parameters{p_idx_2} + 2*h;
+  parameters{ap_idx} = parameters{ap_idx} + 2*h;
   phi_2 = NewtonPicard.shoot(x0, delta_t, parameters);
   d_phi_d_p = (phi_2 - phi_1)/h/2;
   

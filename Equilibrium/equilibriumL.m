@@ -50,6 +50,7 @@ function options                % DV
 %% ---------------------------------------------------------------
 function [out, failed] = testf(id, X, v, CISdata)
 print_diag(5,'In equilibriumL/testf\n');
+global contopts
 
 evl_r  = CISdata.evl_r;
 NSub   = CISdata.NSub;
@@ -61,6 +62,7 @@ for i = id
     lastwarn('');
     switch i
         case 1 % BP
+          if ~ contopts.switch
             [x0, p] = rearr(X); p = num2cell(p);
             A = ejac(x0, p);
             b = ejacp(x0, p);
@@ -73,6 +75,7 @@ for i = id
             evl_r_min = min(abs((evl_r)));
             m_u = sum((real(evl_r)>0));
             out(1) = sign(deltas)*(-1)^m_u*evl_r_min;
+          end
         case 2 % H1
             k=1;
             bialt= zeros(NSub*(NSub-1)/2,1);
@@ -155,7 +158,7 @@ switch id
         s.data.l1 = l1;
         s.data.kapa = kapa;
         
-        print_diag(1,'Lyapunov Coefficient = %e\n', s.data.l1);
+        print_diag(0,'Lyapunov Coefficient = %e\n', s.data.l1);
         s.msg = 'Hopf point';
         
     case 3 % LP

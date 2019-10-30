@@ -1,10 +1,5 @@
 %RUN ME FIRST!
 function init
-  if exist('contL', 'file')
-    % in this case some other version of matcont might be on the path
-    restoredefaultpath
-    % clearvars
-  end
 
   %addpath(genpath(pwd))
 
@@ -26,9 +21,6 @@ function init
   addpath([pwd '/PeriodDoubling/']);
   addpath([pwd '/SystemFileGenerator/']);
   addpath([pwd '/Systems/']);
-  addpath([pwd '/TimeIntegration/']);
-
-
 
   source_files = {
     'BVP_LC_jac';
@@ -54,6 +46,13 @@ function init
     compile_if_needed(source_files{i})
   end
   
+  my_path = mfilename('fullpath');
+  my_path = my_path(1:end-length(mfilename));
+  my_path = fullfile(my_path,'SystemFileGenerator');
+  
+  cd(my_path)
+  
+  compile_if_needed('replace_symbols');
   
   function compile_if_needed(file)
     if ~(exist(strcat(file, '.', mexext),'file'))

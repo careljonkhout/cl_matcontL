@@ -83,7 +83,7 @@ for i = 1:MaxCorrIters
           if isequal(cds.curve, @limitcycleL)
             dx = linear_solver_collocation(B,Q);
           else
-            dx = B \ Q;
+            dx = lsqminnorm(B, Q);
           end
         end
         
@@ -133,7 +133,12 @@ for i = 1:MaxCorrIters
             if isequal(cds.curve,@limitcycleL)
               v = linear_solver_collocation([A;v'],R');
             else
-              v = bordCIS1([A;v'],R',1);
+              if contopts.switch
+                kernel = null(A);
+                v = kernel(:,1);
+              else
+                v = bordCIS1([A;v'],R',1);
+              end
               if any(isnan(v))
                 pout = [];
                 return

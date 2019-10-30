@@ -63,10 +63,11 @@ if contopts.contL_ParallelComputing && isempty(gcp('NoCreate'))
   parpool(contopts.num_cores);   
 end
 
-if UsingNewtonPicard && ( ~ isequal(curvefile, @single_shooting) ...
-                       && ~ isequal(curvefile, @multiple_shooting) )
-  warning(['Newton-Picard is only implemented for single shooting' ...
-        ' or multiple shooting. Newton-Picard will not be used.'])
+if UsingNewtonPicard && ( ~ isequal(curvefile, @single_shooting   ) ...
+                     &&   ~ isequal(curvefile, @multiple_shooting ) ...
+                     &&   ~ isequal(curvefile, @perioddoubling_ss))
+  warning(['Newton-Picard is only implemented for the curve file %s. ' ...
+           'Newton-Picard will not be used.'], curvefile)
   contopts.NewtonPicard = false;
   UsingNewtonPicard = false;
 end
@@ -564,15 +565,20 @@ global cds contopts
 if isempty(v0)
     A = contjac(x0, CISdata0);
     if isempty(A); v0 = []; return; end
-    v = zeros(length(x0),1);
-    v(end) = 1;
-    B = [A; v'];
-    C = zeros(length(x0),1);
-    C(end) = -1;
-    if isequal(cds.curve, @limitcycleL)
-      v0 = linear_solver_collocation(B,C);
+    if contopts.switch
+      kernel = null(A);
+      v0 = kernel(:,1);
     else
-      v0 = bordCIS1(B,C,1);
+      v = zeros(length(x0),1);
+      v(end) = 1;
+      B = [A; v'];
+      C = zeros(length(x0),1);
+      C(end) = -1;
+      if isequal(cds.curve, @limitcycleL)
+        v0 = linear_solver_collocation(B,C);
+      else
+        v0 = bordCIS1(B,C,1);
+      end
     end
     if contopts.newtcorrL_use_max_norm
       v0 = v0 / max(abs(v0));

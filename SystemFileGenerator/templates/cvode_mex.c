@@ -17,6 +17,7 @@
 
 #include "user_data.h"
 #include "cvode_with_checks.c"
+#include "mex_utils.c"
 
 #define OUTPUT_T           0
 #define OUTPUT_Y           1
@@ -53,13 +54,14 @@ void error_handler(int error_code, const char *module,
                           const char *function, char *msg, void *eh_data);
 
 
-double* my_mex_get_doubles(const mxArray* array);
-void check_double    (const mxArray* array,               char* arrayname);
-void check_bool      (const mxArray* array,               char* arrayname);
-void check_size      (const mxArray* array, int expected, char* arrayname);
-void check_positive  (const mxArray* array,               char* arrayname);
+// double* my_mex_get_doubles(const mxArray* array);
+// void check_double    (const mxArray* array,               char* arrayname);
+// void check_bool      (const mxArray* array,               char* arrayname);
+// void check_size      (const mxArray* array, int expected, char* arrayname);
+// void check_positive  (const mxArray* array,               char* arrayname);
+// double*  get_doubles (const mxArray* array, char* input_name, int size);
+
 N_Vector get_N_Vector(const mxArray* array, char* input_name, int size);
-double*  get_doubles (const mxArray* array, char* input_name, int size);
 N_Vector new_N_Vector(int length);
 
 void check_argument_given(void* pointer,                char* arrayname);
@@ -94,6 +96,9 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   double       rel_tol                  = DEFAULT_REL_TOL;
   /* abs_tol and rel_tol will be overwritten if the caller specifies them */
   
+  double       initial_step_size        = 0;
+  booleantype  initial_step_size_given  = false;
+  
   
   UserData user_data = malloc(sizeof(UserData));
   check_null(user_data, "malloc user_data");
@@ -106,8 +111,7 @@ void mexFunction(int n_output,       mxArray *mex_output[],
                      "The number for arguments is %d. "
                      "Arguments must be supplied as name-value pairs", n_input);
   }
-    
-  
+
   for ( int i = 0; i < n_input; i += 2 ) {
     
     if ( !mxIsChar(mex_input[i]) ) {
@@ -179,6 +183,15 @@ void mexFunction(int n_output,       mxArray *mex_output[],
       check_size    (mex_input[i + 1], 1, "rel_tol");
       check_positive(mex_input[i + 1],    "rel_tol");
       rel_tol = mxGetScalar(mex_input[i + 1]);
+      
+    } else if ( ! strcmp(arg_name, "initial_step_size"  ) ) {
+      
+      check_double  (mex_input[i + 1],    "initial_step_size");
+      check_size    (mex_input[i + 1], 1, "initial_step_size");
+      check_positive(mex_input[i + 1],    "initial_step_size");
+      initial_step_size = mxGetScalar(mex_input[i + 1]);
+      initial_step_size_given = true;
+      
       
     } else if ( ! strcmp(arg_name, "verbose"      ) ) {
       
@@ -264,6 +277,10 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   CVodeSetUserData_checked    (cvode, user_data                            );
   CVodeSStolerances_checked   (cvode, rel_tol       , abs_tol              );
   CVodeSetMaxNumSteps_checked (cvode, MAX_NUM_STEPS                        );
+  
+  if (initial_step_size_given) {
+    CVodeSetInitStep(cvode, initial_step_size);
+  }
      
   #if JACOBIAN_STORAGE == DENSE
   A  = SUNDenseMatrix_nullchecked(NEQ, NEQ);
@@ -405,13 +422,7 @@ void mexFunction(int n_output,       mxArray *mex_output[],
 }
 
 
-double* my_mex_get_doubles(const mxArray* array) {
-  #if MX_HAS_INTERLEAVED_COMPLEX
-  return (double*) mxGetDoubles(array);
-  #else
-  return (double*) mxGetPr(     array);
-  #endif 
-}
+
 
 int return_to_plane(double t, N_Vector y, double *gout, 
                                                               void *user_data) {
@@ -429,8 +440,6 @@ int return_to_plane(double t, N_Vector y, double *gout,
   return 0;
 }
 
-#define BUFFER_LENGTH 1000
-
 void error_handler(int error_code, const char* module,
          const char* function, char* message, void *eh_data) {
   if (error_code < 0) {
@@ -440,65 +449,28 @@ void error_handler(int error_code, const char* module,
             function, module,
             error_code, CVodeGetReturnFlagName(error_code), message);
   } else {
-    char* message_buffer = mxMalloc(BUFFER_LENGTH * sizeof(char));
-    char* buffer = mxMalloc((BUFFER_LENGTH - 100) * sizeof(char));
-    snprintf(message_buffer, BUFFER_LENGTH - 100, 
-            "Error in %s() in sundails module %s. error code: %d: %s. %s", 
-            function, module, error_code, 
-            CVodeGetReturnFlagName(error_code), message);       
-    snprintf(buffer, BUFFER_LENGTH, "print_diag(0,'%s\\\n')", message_buffer);
+    char* format_string = "print_diag(1, "
+             "'Error in %s() in sundails module %s. error code: %d: %s. %s\\n'"
+             ")\n";
+    // We measure how long the text buffer needs to be;
+    ssize_t buffer_size = snprintf(NULL, 0, format_string, function, module,
+            error_code, CVodeGetReturnFlagName(error_code), message);
+    // We allocate a buffer, adding 1 to the buffer size to account for the null
+    // character needed to terminate the c string.
+    char* buffer = mxMalloc((buffer_size + 1) * sizeof(char));
+    // We print the string into the buffer.
+    snprintf(buffer, buffer_size + 1, format_string, function, module,
+            error_code, CVodeGetReturnFlagName(error_code), message);
+    
     mexEvalString(buffer);
-  }
-}
-
-void check_double(const mxArray* array, char* arrayname) {
-  if ( !mxIsDouble(array) ) {
-    mexErrMsgIdAndTxt("cvode:not_double", 
-             "Input vector %s is not a vector of doubles.", arrayname);
-  }
-}
-
-void check_bool(const mxArray* array, char* arrayname) {
-  if ( !mxIsLogicalScalar(array) ) {
-    mexErrMsgIdAndTxt("cvode:not_bool", 
-            "Input %s is not a boolean.", arrayname);
-  }
-}
-
-void check_size(const mxArray* array, int size, char* arrayname) {
-  if ( mxGetNumberOfElements(array) != size ) {
-    mexErrMsgIdAndTxt("cvode:incorrect_size",  
-            "Error: Input vector %s does not have the correct size. "
-            "The correct size is %d. The actual size is %d.",
-            arrayname, size, (int)mxGetNumberOfElements(array));
-  }
-}
-
-void check_positive(const mxArray* scalar, char* scalarname) {
-  if (mxGetScalar(scalar) <= 0) {
-    mexErrMsgIdAndTxt("cvode:not_positive",  
-            "Error: Input %s is not positive.", scalarname);
   }
 }
 
 void check_argument_given(void * pointer, char* argument_name) {
   if (argument_name == NULL) {
-    mexErrMsgIdAndTxt("cvode:missing_argument",  
+    mexErrMsgIdAndTxt("mex_utils:missing_argument",  
                       "Argument '%s' was not passed to cvode.", argument_name);  
   }
-}
-
-double* get_doubles(const mxArray* array, char* input_name, int size) {
-  check_double(array,       input_name);
-  check_size  (array, size, input_name);
-  return my_mex_get_doubles(array);
-}
-
-N_Vector get_N_Vector(const mxArray* array, char* input_name, int size) {
-  check_double(array,       input_name);
-  check_size  (array, size, input_name);
-  double* data = my_mex_get_doubles(array);
-  return N_VMake_Serial(size, data);
 }
 
 N_Vector new_N_Vector(int length) {
@@ -510,6 +482,15 @@ N_Vector new_N_Vector(int length) {
   #endif
   return v;
 }
+
+N_Vector get_N_Vector(const mxArray* array, char* input_name, int size) {
+  check_double(array,       input_name);
+  check_size  (array, size, input_name);
+  double* data = my_mex_get_doubles(array);
+  return N_VMake_Serial(size, data);
+}
+
+
 
 /*
  * Print some final statistics located in the CVODES memory

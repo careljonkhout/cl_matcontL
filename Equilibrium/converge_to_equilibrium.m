@@ -35,7 +35,7 @@ function equilibrium = converge_to_equilibrium(in)
   
   if in.show_plot
     my_figure = figure;
-    plot(orbit_to_equilibrm_t, orbit_to_equilibrm_y);
+    plot(orbit_to_equilibrm_t, in.plot_transformation(orbit_to_equilibrm_y));
     xlabel('t')
     ylabel('phase variables')
     disp('Now showing plot from t = 0 to t = time_to_converge_to_equilibrium')

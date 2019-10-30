@@ -14,21 +14,22 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, M_delta_q_r, ...
     contopts = contset;
   end
   
-  [phases_0,period,parameters] = ...
+  [phases_0, period, parameters] = ...
     NewtonPicard.SingleShooting.extract_phases_period_and_parameters(x);
   active_par_val = parameters{cds.ActiveParams};
-  
-
-  
+ 
   using_cvode = cds.using_cvode;
+  
 
   if using_cvode
+ 
     [~,y] = cds.integrator( ...
       't_values',                [0 period], ...
       'initial_point',           phases_0, ...
       'ode_parameters',          cell2mat(parameters), ...
       'abs_tol',                 contopts.integration_abs_tol, ...
       'rel_tol',                 contopts.integration_rel_tol);
+    
     phi = y(end,:)';
     cds.phases_0 = phases_0;
   else

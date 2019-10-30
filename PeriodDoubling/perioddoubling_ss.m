@@ -28,37 +28,23 @@ function f = curve_function(varargin)
   f = [phases_end - phases_0; 
       (phases_0 - cds.previous_phases)' * cds.previous_dydt_0;
       Mv + v;
-      cds.l' * v]; 
+      cds.l' * v - 1];
 end
 
 function J = jacobian(varargin)
-  global contopts cds
-  if false || false
-    x = varargin{1};
-    x1 = x;
-    x2 = x;
-    J = zeros(length(x)-1, length(x));
-    for i = 1:length(x)
-      x1(i) = x1(i) - contopts.Increment;
-      x2(i) = x2(i) + contopts.Increment;
-      J(:,i) = curve_function(x2) - curve_function(x1);
-      x1(i) = x(i);
-      x2(i) = x(i);
-    end
-    J = J/(2*contopts.Increment);
-  else
-    [phases_0, v, period, parameters] = pd_ss_extract_data(varargin{1});
-    [phases_T, monodromy] = compute_monodromy(phases_0, period, parameters);
-    jacobian     = [monodromy-eye(cds.nphases); cds.previous_dydt_0'];
-    % add d_phi__d_T and d_s__d_T
-    d_phi_d_T         = cds.dydt_ode(0, phases_T, parameters{:});
-    d_s_d_T           = cds.previous_dydt_0' * d_phi_d_T;
-    jacobian          = [jacobian [d_phi_d_T; d_s_d_T]];
-    compute_d_phi_d_p = @NewtonPicard.compute_d_phi_d_p;
-    d_phi__d_p        = compute_d_phi_d_p(phases, period, parameters);
-    d_s__d_p          = cds.previous_dydt_0' * d_phi__d_p;
-    jacobian          = [jacobian [d_phi__d_p; d_s__d_p]];
+  global contopts
+  x = varargin{1};
+  x1 = x;
+  x2 = x;
+  J = zeros(length(x)-1, length(x));
+  for i = 1:length(x)
+    x1(i) = x1(i) - contopts.Increment;
+    x2(i) = x2(i) + contopts.Increment;
+    J(:,i) = curve_function(x2) - curve_function(x1);
+    x1(i) = x(i);
+    x2(i) = x(i);
   end
+  J = J/(2*contopts.Increment);
 end
 
 function point = default_processor(varargin)

@@ -14,6 +14,7 @@ function initial_continuation_data = init_EP_integration(varargin)
     'AbsTol', contopts.integration_abs_tol, ...
     'RelTol', contopts.integration_rel_tol);
   input.show_plot                       = false;
+  input.plot_transformation             = @(x) x;
   
   i=1;
   while i <= nargin

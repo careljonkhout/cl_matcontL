@@ -287,6 +287,10 @@ function options = defaultOptions()
   options.is_extension               = false;
   % causes previously saved singularities to by loaded, if the options.Filename
   % is set to the Filename of a previously saved continuation.
+  
+  options.switch                     = false;
+  % general purpose switch for use in development
+  
 
                               %% Determine testpath
   options.Filename = [];           

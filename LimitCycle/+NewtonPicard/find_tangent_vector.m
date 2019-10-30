@@ -1,9 +1,16 @@
 function v = find_tangent_vector(curvefile, x, v0)
-  if     isequal(curvefile, @single_shooting)
-    v = NewtonPicard.SingleShooting.find_tangent_vector(x);
-  elseif isequal(curvefile, @multiple_shooting)
-    v = NewtonPicard.MultipleShooting.find_tangent_vector(x);
-  else
+
+  switch func2str(curvefile)
+    case 'single_shooting'
+      v = NewtonPicard.SingleShooting.find_tangent_vector(x);
+    case 'multiple_shooting'
+      v = NewtonPicard.MultipleShooting.find_tangent_vector(x);
+    case 'perioddoubling_ss'
+      handles  = feval(curvefile);
+      jacobian = feval(handles{4}, x);
+      kernel   = null(jacobian);
+      v        = kernel(:,1);
+    otherwise
     error_format_string = ['internal error in' ...
       ' Continuer/+NewtonPicard/find_tangent_vector.m:\n' ...
           'The Newton-Picard method does not support %s'];

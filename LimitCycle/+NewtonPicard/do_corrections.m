@@ -1,7 +1,7 @@
 function point = do_corrections(x0,v)
   
   global cds contopts
-  try
+%   try
     curve_function_norm        = max(abs(feval(cds.curve_func,x0)));
     correction_norm            = 0;
     lowest_curve_function_norm = curve_function_norm;
@@ -17,8 +17,8 @@ function point = do_corrections(x0,v)
           x = NewtonPicard.SingleShooting.do_one_correction(x0,x,v);
         case 'multiple_shooting'
           x = NewtonPicard.MultipleShooting.do_one_correction(x0,x,v);
-        case 'period_doubling_ss'
-          x= NewtonPicard.SingleShooting.do_one_correction_pd(x0,x,v);
+        case 'perioddoubling_ss'
+          x = NewtonPicard.SingleShooting.do_one_correction_pd(x0,x,v);
         otherwise
           print_diag(0,'Newton_Picard_Corrections: wrong curvefile.\n');
           point = [];
@@ -33,7 +33,7 @@ function point = do_corrections(x0,v)
       curve_function_norm = max(abs(feval(cds.curve_func,x)));
 
       if curve_function_norm > ...
-                   contopts.max_rel_funcnorm_increase * lowest_curve_function_norm
+                 contopts.max_rel_funcnorm_increase * lowest_curve_function_norm
         print_diag(1,[ ...
           'Current curve function norm is now more than %d times ' ...
           'the lowest curve function norm that ' ...
@@ -58,16 +58,16 @@ function point = do_corrections(x0,v)
       point = [];
       return
     end
-  catch the_error
-    switch the_error.identifier
-      case 'cvode:integrator_error'
-        point = [];
-        print_diag(1, the_error.message);
-        return
-      otherwise
-        rethrow(the_error)
-    end
-  end
+%   catch the_error
+%     switch the_error.identifier
+%       case 'cvode:integrator_error'
+%         point = [];
+%         print_diag(1, the_error.message);
+%         return
+%       otherwise
+%         rethrow(the_error)
+%     end
+%   end
 end
 
 function print_stats(curve_function_norm, correction_norm, corrections)

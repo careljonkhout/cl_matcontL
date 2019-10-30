@@ -54,10 +54,20 @@ function x = do_one_correction(x0,x,v0)
     v0'*(x-x0)  + v0(1:end-2)' * reshape(delta_q_r,numel(delta_q_r),1);
   ];
 
-  delta_p__delta_T_and_delta_gamma = left_hand_side \ right_hand_side;
-  delta_p     = delta_p__delta_T_and_delta_gamma(1:end-2);
-  delta_T     = delta_p__delta_T_and_delta_gamma(end-1);
-  delta_gamma = delta_p__delta_T_and_delta_gamma(end);
+  delta_p_delta_T_and_delta_gamma = lsqminnorm(left_hand_side, right_hand_side);
+  
+  % delta_p containts the corrections in the subspace V all the mesh points on
+  % the cycle. The subspace V is the subspace associated the leading eigenvalues
+  % of the current approximation of the monodromy matrix of the curr. approx. of
+  % the cycle. Note that we store m mesh points and have m mesh intervals.
+  % Hence, after the corrections in a continuation step have converged, the
+  % first mesh point does NOT coincide with the last mesh point continuation.
+  % (In contrast the cl_matcontL implementation of cycle continuation by
+  % orthogonal collocation, the first and the last mesh point do approximately
+  % coincide, when the corrections have converged)
+  delta_p     = delta_p_delta_T_and_delta_gamma(1:end-2);
+  delta_T     = delta_p_delta_T_and_delta_gamma(end-1);
+  delta_gamma = delta_p_delta_T_and_delta_gamma(end);
 
   V_delta_p = zeros(cds.nphases*m,1);
   for i=1:m

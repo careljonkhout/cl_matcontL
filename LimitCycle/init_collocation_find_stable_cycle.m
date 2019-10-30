@@ -132,6 +132,7 @@ function initial_continuation_data = init_collocation_find_stable_cycle(varargin
   input.lower_bound_period        = [];
   input.upper_bound_period        = [];
   input.nMeshIntervals            = [];
+  input.plot_coordinates          = 'all';
   
   % optional arguments, i.e. arguments with default values
   input.time_integration_method   = @ode15s;
@@ -213,10 +214,11 @@ function [solution_t, solution_x] = compute_periodic_solution(in)
   jacobian_ode = handles{3};
   cds.nphases  = length(in.point_on_limitcycle);
 
-  tangent_to_limitcycle ...   
-    = dydt_ode(0,in.point_on_limitcycle, in.ode_parameters{:});
+  tangent_to_limitcycle = dydt_ode( ...
+                               0, in.point_on_limitcycle, in.ode_parameters{:});
+                     
   in.time_integration_options = odeset(in.time_integration_options, ...
-    'Events',       @returnToPlane);
+                                        'Events',       @returnToPlane);
   
   if ~ isempty(jacobian_ode)
     in.time_integration_options = odeset(in.time_integration_options, ...
@@ -233,14 +235,20 @@ function [solution_t, solution_x] = compute_periodic_solution(in)
 
   solution = odextend(solution,[],1.1*period);
   
-  solution_t = linspace(0,1.1*period, ...
-    3 * in.nMeshIntervals * in.nCollocationPoints);
+  solution_t = linspace(0, 1.1 * period, ...
+          3 * in.nMeshIntervals * in.nCollocationPoints);
+        
   solution_x = deval(solution, solution_t);
   
   
   if in.show_plots
     my_figure = figure;
-    plot(solution_t, solution_x - solution_x(:,1))
+    if strcmp(in.plot_coordinates,'all')
+      plot(solution_t, solution_x - solution_x(:,1))
+    else
+      plot(solution_t, solution_x(in.plot_coordinates, :) ...
+                     - solution_x(in.plot_coordinates, 1))
+    end
     xlabel('t')
     ylabel('deviation form initial value')
     disp(['Now showing plot from t = time_to_converge_to_cycle to ' ...

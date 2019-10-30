@@ -23,7 +23,7 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
     output_type       % string. should equal odefile, C, or cvode
     
     app               % optional: GUI class that calls System_of_ODEs
-                      % if app is given then status notifications
+                      % if app is specified then status notifications
                       % will be passed to app by
                       % calling app.updatStatus(status)
                       
@@ -48,7 +48,7 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
     internal_vars % cell array of char arrays
     internal_pars % cell array of char arrays
     
-    internal_vars_str  % char array
+    internal_vars_str % char array
     internal_pars_str % char array
     
     % symbols in the form that is written to the system file
@@ -121,8 +121,7 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
         max_ord_derivatives,...
         rhs,...
         app,...
-        output_type, ...
-        varargin)
+        output_type)
             
       % set defining properties
       s.name                = strtrim(char(name));
@@ -217,112 +216,126 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
           s.generate_c_files();
           s.generate_cvode_files();
         case 'odefile'
-          path = get_path();
-
-          filename = fullfile(path, '../Systems', [s.name,'.m']);
-          file_contents = emat2('system.m.emat');
-          fileID = fopen(filename,'w');
-          fprintf(fileID,'%s',file_contents);
+          path = System_of_ODEs.get_cl_matcontL_path();
+          templates_dir = fullfile(path, 'SystemFileGenerator', 'templates');
+          filename = fullfile(path, 'Systems', [s.name,'.m']);
+          content = emat2(fullfile(templates_dir, 'system.m.emat'));
+          System_of_ODEs.print_to_file(filename, content);
       end
     end
     
     function generate_c_files(s)
-      system = fullfile(get_path(), '../Systems', ['+' s.name]);
-      if ~ exist(system, 'dir')
-        mkdir(system)
+      path          = System_of_ODEs.get_cl_matcontL_path();
+      system_dir    = fullfile(path, 'Systems', ['+' s.name]);
+      templates_dir = fullfile(path, 'SystemFileGenerator', 'templates');
+      if ~ exist(system_dir, 'dir')
+        mkdir(system_dir)
       end
       
-      filename = fullfile(system, 'odefile_mex.m');
-      contents = emat2('system_mex.m.emat');
-      fprintf(fopen(filename,'w'),'%s',contents);
+      filename = fullfile(system_dir, 'odefile_mex.m');
+      content = emat2(fullfile(templates_dir, 'system_mex.m.emat'));
+      System_of_ODEs.print_to_file(filename, content);
       
-      filename = fullfile(system, 'dydt_mex.c');
-      contents = emat2('system_dydt.c.emat');
-      fprintf(fopen(filename,'w'),'%s',contents);
+      filename = fullfile(system_dir, 'dydt_mex.c');
+      content = emat2(fullfile(templates_dir, 'system_dydt.c.emat'));
+      System_of_ODEs.print_to_file(filename, content);
       
-      mex_file = fullfile(system, 'dydt_mex');
-      mex(filename,'-output', mex_file);
+      mex_file = fullfile(system_dir, 'dydt_mex');
+      mex(filename, ['-I' templates_dir], '-output', mex_file);
       
       if (s.max_ord_derivatives < 1)
         return
       end
       
-      filename = fullfile(system, 'jacobian_mex.c');
-      contents = emat2('system_jacobian.c.emat');
-      fprintf(fopen(filename,'w'),'%s',contents);
+      filename = fullfile(system_dir, 'jacobian_mex.c');
+      content = emat2(fullfile(templates_dir, 'system_jacobian.c.emat'));
+      System_of_ODEs.print_to_file(filename, content);
         
-      mex_file = fullfile(system, 'jacobian_mex');
-      mex(filename,'-output', mex_file);
+      mex_file = fullfile(system_dir, 'jacobian_mex');
+      mex(filename, ['-I' templates_dir],'-output', mex_file);
+      
 
-      filename = fullfile(system, 'jacobian_params_mex.c');
-      contents = emat2('system_jacobian_params.c.emat');
-      fprintf(fopen(filename,'w'), '%s', contents);
+      filename = fullfile(system_dir, 'jacobian_params_mex.c');
+      content = emat2(fullfile(templates_dir, 'system_jacobian_params.c.emat'));
+      System_of_ODEs.print_to_file(filename, content);
 
-      mex_file = fullfile(system, 'jacobian_params_mex');
-      mex(filename,'-output', mex_file);
+      mex_file = fullfile(system_dir, 'jacobian_params_mex');
+      mex(filename, ['-I' templates_dir], '-output', mex_file);
 
     end
     
     function generate_cvode_files(s)
-      system_dir    = fullfile(get_path(), '../Systems', ['+' s.name]);
-      templates_dir = fullfile(get_path(), 'templates');
-      cvodes_dir    = fullfile(get_path(), 'cvodes');
+      path          = System_of_ODEs.get_cl_matcontL_path();
+      system_dir    = fullfile(path, 'Systems', ['+' s.name]);
+      templates_dir = fullfile(path, 'SystemFileGenerator', 'templates');
+      cvodes_dir    = fullfile(path, 'SystemFileGenerator', 'cvodes');
       if ~ exist(system_dir, 'dir')
         mkdir(system_dir)
       end
       
-      filename = fullfile(system_dir ,'dydt_cvode.c');
-      contents = emat2(fullfile(templates_dir, 'dydt_cvode.c.emat'));
-      fprintf(fopen(filename,'w'),'%s',contents);
+      filename = fullfile(system_dir, 'dydt_cvode.c');
+      content = emat2(fullfile(templates_dir, 'dydt_cvode.c.emat'));
+      System_of_ODEs.print_to_file(filename, content);
+      
       
       filename = fullfile(system_dir , 'user_data.h');
-      contents = emat2(fullfile(templates_dir, 'user_data.h.emat'));
-      fprintf(fopen(filename,'w'),'%s',contents);
+      content = emat2(fullfile(templates_dir, 'user_data.h.emat'));
+      System_of_ODEs.print_to_file(filename, content);
       
       if s.max_ord_derivatives >= 1
         filename = fullfile(system_dir ,'jacobian_cvode.c');
-        contents = emat2(fullfile(templates_dir, 'jacobian_cvode.c.emat'));
-        fprintf(fopen(filename,'w'),'%s',contents);
+        content = emat2(fullfile(templates_dir, 'jacobian_cvode.c.emat'));
+        System_of_ODEs.print_to_file(filename, content);
 
         filename = fullfile(system_dir , 'd_sensitivity_dt.c');
-        contents = emat2(fullfile(templates_dir, 'd_sensitivity_dt.c.emat'));
-        fprintf(fopen(filename,'w'),'%s',contents);
+        content = emat2(fullfile(templates_dir, 'd_sensitivity_dt.c.emat'));
+        System_of_ODEs.print_to_file(filename, content);
       end
     
       cvodes_sources = dir(fullfile(cvodes_dir,'**','*.c'));
       cvodes_sources = arrayfun(@(f) fullfile(f.folder,f.name), ...
-                                        cvodes_sources, 'UniformOutput', false);
+                            cvodes_sources, 'UniformOutput', false);
+                                      
+      cvodes_sources = strrep(cvodes_sources, path, '');
       
+      cvodes_sources = cellfun(@(f) ...
+              {sprintf('fullfile(path, ''%s'')', f)}, ...
+              cvodes_sources);
+
       if s.max_ord_derivatives >= 1
-        mex_arguments = strjoin([
-          {fullfile(templates_dir, 'cvode_mex.c')}, ...
-          {fullfile(system_dir, 'dydt_cvode.c')}, ...
-          {fullfile(system_dir, 'jacobian_cvode.c')}, ...
-          {fullfile(system_dir, 'd_sensitivity_dt.c')}, ...
-          {['-I' fullfile(cvodes_dir, 'include')]}, ...
-          {['-I' system_dir]}, ...
-          {'-g'}, ...  % -g enables debugging symbols
+        mex_arguments = strjoin([ ...
+          {'fullfile(path, ''SystemFileGenerator'', ''templates'', ''cvode_mex.c'')'}, ...
+          {'fullfile(path, ''Systems'', dirname, ''dydt_cvode.c'')'}, ...    
+          {'fullfile(path, ''Systems'', dirname, ''jacobian_cvode.c'')'}, ...
+          {'fullfile(path, ''Systems'', dirname, ''d_sensitivity_dt.c'')'}, ...
+          {'sprintf(''-I%s'', fullfile(path, ''SystemFileGenerator'', ''cvodes'', ''include''))'}, ...
+          {'sprintf(''-I%s'', fullfile(path, ''Systems'', dirname))'}, ...
+          {'''-g'''}, ...  % -g enables debugging symbols
           cvodes_sources(:)', ...
-          {'-output'}, ...
-          {fullfile(system_dir, 'cvode')}, ...
-        ], ''', ... \n  ''');
+          {'''-output'''}, ...
+          {'fullfile(path, ''Systems'', filename)'}, ...
+        ], ', ... \n  ');
       else
-        mex_arguments = strjoin([
-          {fullfile(templates_dir, 'cvode_mex.c')}, ...
-          {fullfile(system_dir, 'dydt_cvode.c')}, ...
-          {['-I' fullfile(cvodes_dir, 'include')]}, ...
-          {['-I' system_dir]}, ...
-          {'-g'}, ...  % -g enables debugging symbols
-          cvodes_sources(:)', ...
-          {'-output'}, ...
-          {fullfile(system_dir, 'cvode')}, ...
-        ], ''', ... \n  ''');
+        mex_arguments = strjoin([ ...
+          {'fullfile(path, ''SystemFileGenerator'', ''templates'', ''cvode_mex.c'')'}, ...
+          {'fullfile(path, ''Systems'', dirname, ''dydt_cvode.c'')'}, ...    
+          {'sprintf(''-I%s'', fullfile(path, ''SystemFileGenerator'', ''cvodes'', ''include''))'}, ...
+          {'sprintf(''-I%s'', fullfile(path, ''Systems'', dirname))'}, ...
+          {'''-g'''}, ...  % -g enables debugging symbols
+          {strjoin(cvodes_sources, ', ... \n  ')}, ...
+          {'''-output'''}, ...
+          {'fullfile(path, ''Systems'', filename)'}, ...
+        ], ', ... \n  ');
       end
     
-      mex_build = sprintf('mex( ... \n  ''%s'' ... \n)', mex_arguments);
+      mex_build = sprintf([
+              'path = System_of_ODEs.get_cl_matcontL_path;\n', ...'
+              'filename = ''%s'';\n', ...
+              'dirname = ''+%s'';\n', ...
+              'mex( ... \n  %s ... \n)'], ...
+               s.name, s.name, mex_arguments);
       filename = fullfile(system_dir, 'recompile_cvode_mex.m');
-      fprintf(fopen(filename,'w'),'%s', mex_build);
-      
+      System_of_ODEs.print_to_file(filename, mex_build);
       eval(mex_build);
     end
       
@@ -370,30 +383,40 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
     end
 
     function formatted_rhs = format_rhs(s)
+      fprintf('formatting right hand side:\n');
+      nBytes = fprintf('loading syms');
       switch s.output_type
         case {'C', 'cvode'}
+          
           eval(['syms ' s.syms_arg]);
           dydt_elements = cell(length(s.rhs),1);
           for i = 1 : length(s.rhs)
+            % print backspaces to overwrite previous console output
+            fprintf(repmat('\b', 1, nBytes))
+            nBytes = fprintf('equation %d of %d', i, length(s.rhs));
 
             raw_c_code = eval(sprintf('ccode(%s)',s.rhs{i}));
             tokens    = regexp(raw_c_code, '.*=(.*);', 'tokens');
             c_code    = tokens{1}{1};
             dydt_elements{i} = sprintf('  dydt[%d] = %s;', i-1, c_code);
+           
           end
           formatted_rhs = strjoin(dydt_elements, '\n');
         case 'odefile'
           formatted_rhs = ['[' strjoin(s.rhs, '; ') ']'];
       end
+      fprintf(repmat('\b', 1, nBytes))
+      nBytes = fprintf('replacing symbols');
       formatted_rhs = replace_symbols(formatted_rhs, ...
                                                 s.internal_syms, s.output_syms);
+      fprintf(repmat('\b', 1, nBytes))
     end
 
     function [in, internal, out] = generate_sym_lists(s)
       symbols_length = length(s.input_vars) + length(s.input_pars);
-      in       = cell(1, symbols_length + 1);
-      internal = cell(1, symbols_length + 1);
-      out      = cell(1, symbols_length + 1);
+      in       = cell(1, symbols_length);
+      internal = cell(1, symbols_length);
+      out      = cell(1, symbols_length);
       for i=1:length(s.input_vars)
         in{i}           = s.input_vars{i};
         internal{i} = ['v_', s.input_vars{i}];
@@ -415,11 +438,6 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
           out{vars_len + i}          = ['par_', s.input_pars{i}]; 
         end
       end
-      % replace 0.0 by 0 in output
-      % in      {end} = '0'; is needed for getPropertyGroup method
-      in      {end} = '0';
-      internal{end} = '0.0';
-      out     {end} = '0';
     end
     
     function [jacobian, sensitivity, storage, ...
@@ -437,7 +455,7 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
       switch s.output_type
         
         case {'C', 'cvode'}
-          
+        fprintf('formatting jacobian:\n');
         c_code_of_jac_elements = s.to_c_code_matrix(jacobian_sym);
         
         if strcmp(vars_or_pars, 'vars')
@@ -504,9 +522,6 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
        
       end
       jacobian = replace_symbols(jacobian, s.internal_syms, s.output_syms);
-     
-      
-     
     end
     
     % input type:  symbolic_mat: array of symbolic expressions of any size.
@@ -526,7 +541,7 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
       % symbolic_mat is [p_a ; p_b], then the variable "symbolic_mat" now
       % contains the string "@(p_a, p_b) [p_a, p_b]".
       
-      % We ignore the everything between the first pair of parentheses by
+      % We discard everything between the first pair of parentheses by
       % @\(.*?\) and capture the rest by (.*). The question mark makes the
       % expression .* in @\(.*?\) lazy (see mathworks documentation on regexp)
       tokens   = regexp(symbolic_mat, '@\(.*?\)(.*)','tokens');
@@ -541,18 +556,22 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
     % the C code that evaluates the array of symbolic expressions. Note that the
     % output is 1D even if the input is 2D, 3D or any higher dimension.    
     function c_code = to_c_code(s, expressions)
+      nBytes = fprintf('loading syms');
       eval(['syms ' s.syms_arg]);
       c_code = cell(numel(expressions),1);
       for i = 1 : numel(expressions)
         if ~ strcmp(char(expressions(i)),'0')
+          fprintf(repmat('\b', 1, nBytes));
+          nBytes = fprintf('element %d of %d', i, numel(expressions));
           my_c_code = ccode(expressions(i));
           tokens    = regexp(my_c_code, '.*=(.*);', 'tokens');
           c_code{i} = tokens{1}{1};
         end
       end
+      fprintf(repmat('\b', 1, nBytes));
     end
     
-        % input type:  expressions : array of symbolic expressions of any size.
+    % input type:  expressions : array of symbolic expressions of any size.
     % output type: symbolic_mat: 1d char array.
     %
     % converts an array of symbolic expressions whose symbols are listed in the
@@ -560,15 +579,19 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
     % the C code that evaluates the array of symbolic expressions. Note that the
     % output is 1D even if the input is 2D, 3D or any higher dimension.    
     function c_code = to_c_code_matrix(s, expressions)
+      nBytes = fprintf('loading syms');
       eval(['syms ' s.syms_arg]);
       c_code = cell(size(expressions));
       for i = 1 : numel(expressions)
         if ~ strcmp(char(expressions(i)), '0')
+          fprintf(repmat('\b', 1, nBytes));
+          nBytes = fprintf('element %d of %d', i, numel(expressions));
           my_c_code = ccode(expressions(i));
           tokens    = regexp(my_c_code, '.*=(.*);', 'tokens');
           c_code{i} = tokens{1}{1};
         end
       end
+      fprintf(repmat('\b', 1, nBytes));
     end
 
     function d = compute_hessians(s, vars_or_pars)
@@ -686,7 +709,7 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
       d = replace_symbols(d, s.internal_syms, s.output_syms);
     end
 
-    function result=safe_eval_w_syms(s,evalstr)
+    function result = safe_eval_w_syms(s,evalstr)
       try 
         eval(['syms ' s.syms_arg]);
         result = eval(evalstr);        
@@ -797,12 +820,26 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
       throw(exception);
     end
     
-    function s=new(name, var_str, par_str, time, max_ord, rhs, output_type)
+    function s = new(name, var_str, par_str, time, max_ord, rhs, output_type)
       if nargin == 6
         output_type = 'odefile';
       end
       s = System_of_ODEs(name,var_str,par_str,time,max_ord,rhs,[],output_type);
-    end    
+    end
+    
+    function path = get_cl_matcontL_path()
+      stack         = dbstack('-completenames');
+      path_elements = strsplit(stack(1).file, filesep);
+      path          = strjoin(path_elements(1:end-2), filesep);
+    end
+    
+    function print_to_file(filename, content)
+      file_id = fopen(filename, 'w');
+      fprintf(file_id, '%s', content);
+      fclose(file_id);
+    end
+      
+      
   end   
   
 end

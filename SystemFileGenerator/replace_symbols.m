@@ -1,4 +1,11 @@
 function out_str=replace_symbols(in_str, old_symbols, new_symbols)
+  in_str
+  old_symbols
+  new_symbols
+  out_str = replace_symbols_mex(in_str, old_symbols, new_symbols);
+  out_str;
+  return
+  
   parse_list = parse_expression(in_str, old_symbols);
   out_str_parts = cell(length(parse_list),1);
   for i=1:length(parse_list)

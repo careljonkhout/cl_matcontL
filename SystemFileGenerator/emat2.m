@@ -13,7 +13,7 @@ function result = emat2(template_filename)
     eval_results{i} = to_string(evalin('caller', block));
   end
   
-  result = replace_symbols(template, full_blocks, eval_results);
+  result = replace(template, full_blocks, eval_results);
 end
 
 function str = to_string(obj)
