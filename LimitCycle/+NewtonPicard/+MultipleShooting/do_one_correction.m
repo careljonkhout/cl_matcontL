@@ -7,41 +7,45 @@
 %	  year={1997},
 % }
 % most variable names are derived from variable names in \cite{lust-phd}.
-function x = do_one_correction(x0,x,v0)
+function x = do_one_correction(x0, x, v0)
   global cds;
 
   [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
           phases_0, phi, period, active_par_val] = ...
     NewtonPicard.MultipleShooting.compute_reduced_jacobian(x);
   
-  basis_size = size(V,2);
   m = cds.nMeshIntervals;
   
-  lhs_3_1 = zeros(1,basis_size * m);
-  for i=1:m % m == cds.nMeshIntervals
-    indices_lhs_3_1          = (i-1)*basis_size  + (1:basis_size);
-    indices_v0               = (i-1)*cds.nphases + (1:cds.nphases);
-    lhs_3_1(indices_lhs_3_1) = v0(indices_v0)' * V(:,:,i);
+  lhs_3_1 = zeros(1, cds.reduced_jac_size);
+  col_offset = 0;
+  for i = 1 : m % m == cds.nMeshIntervals
+    indices_lhs_3_1          = col_offset  + ( 1 : size(V{i}, 2) );
+    indices_v0               = (i - 1) * cds.nphases + (1 : cds.nphases);
+    lhs_3_1(indices_lhs_3_1) = v0(indices_v0)' * V{i};
+    col_offset               = col_offset + size(V{i}, 2);
   end
   
   c_n__delta_q_gamma = 0;
   
-  for i=1:m
-    indices_v0          = (i-1)*cds.nphases + (1:cds.nphases);
-    c_n__delta_q_gamma  = c_n__delta_q_gamma + v0(indices_v0)' * delta_q_gamma(:,i);
+  for i = 1 : m
+    indices_v0          = (i-1) * cds.nphases + (1:cds.nphases);
+    c_n__delta_q_gamma  = c_n__delta_q_gamma + ...
+                                  v0(indices_v0)' * delta_q_gamma(:,i);
   end
   
   left_hand_side = [
     reduced_jacobian;
-    lhs_3_1    v0(end-1)         v0(end) + c_n__delta_q_gamma;
+    lhs_3_1    v0(end-1)  v0(end) + c_n__delta_q_gamma;
   ];
 
 
-  rhs_1 = zeros(basis_size*m,1);
+  rhs_1      = zeros(cds.reduced_jac_size, 1);
+  row_offset = 0;
   for i=1:m
-    indices        = (i-1) * basis_size + (1:basis_size);
     ni             = next_index_in_cycle(i,m);
-    rhs_1(indices) = V(:,:,ni)'*(phi(:,i) - phases_0(:,ni) + G_delta_q_r(:,i));
+    indices        = row_offset + ( 1 : size(V{ni}, 2) );
+    rhs_1(indices) = V{ni}' * ( phi(:,i) - phases_0(:,ni) + G_delta_q_r(:,i) );
+    row_offset     = row_offset + size(V{ni}, 2);
   end
  
   
@@ -69,19 +73,23 @@ function x = do_one_correction(x0,x,v0)
   delta_T     = delta_p_delta_T_and_delta_gamma(end-1);
   delta_gamma = delta_p_delta_T_and_delta_gamma(end);
 
-  V_delta_p = zeros(cds.nphases*m,1);
-  for i=1:m
-    indices1 = (i-1) * cds.nphases + (1:cds.nphases);
-    indices2 = (i-1) * basis_size  + (1:basis_size );
-    V_delta_p(indices1) = V(:,:,i) * delta_p(indices2);
+  V_delta_p = zeros(cds.nphases * m, 1);
+  col_offset = 0;
+  for i = 1 : m
+    indices_delta_p              = col_offset + ( 1 : size(V{i}, 2) );
+    indices_V_delta_p            = (i - 1) * cds.nphases + (1 : cds.nphases);
+    V_delta_p(indices_V_delta_p) = V{i} * delta_p(indices_delta_p);
+    col_offset                   = col_offset + size(V{i}, 2);
   end
-  phases_0 = reshape(phases_0,numel(phases_0),1);
-  delta_q         = delta_q_r + delta_gamma * delta_q_gamma;
-  phases_0        = phases_0 + V_delta_p + reshape(delta_q,numel(delta_q),1);
-  period          = period + delta_T;
-  active_par_val  = active_par_val + delta_gamma;
-  x = [phases_0; period; active_par_val];
-  %v = find_tangent_vector(phases_0, period, parameters, V);
+  
+  % note x = x(:) reshapes x into a column vector
+  
+  phases_0       = phases_0(:);
+  delta_q        = delta_q_r + delta_gamma * delta_q_gamma;
+  phases_0       = phases_0 + V_delta_p + delta_q(:);
+  period         = period + delta_T;
+  active_par_val = active_par_val + delta_gamma;
+  x              = [phases_0; period; active_par_val];
 end
 
 function index = next_index_in_cycle(i,m)

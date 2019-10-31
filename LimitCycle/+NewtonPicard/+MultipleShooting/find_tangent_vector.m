@@ -2,10 +2,8 @@ function v = find_tangent_vector(x)
   global cds
   m = cds.nMeshIntervals;
   
-  [V, reduced_jacobian, delta_q_gamma, delta_q_r, ~, ~, ~, ~, ~] = ...
+  [V, reduced_jacobian, delta_q_gamma, ~, ~, ~, ~, ~, ~] = ...
     NewtonPicard.MultipleShooting.compute_reduced_jacobian(x);
-  
-  basis_size = size(V,2);
 
 %   [~, ~, delta_p__delta_T_and_delta_gamma] = ...
 %           svds(reduced_jacobian, 1, 'smallest');
@@ -16,15 +14,17 @@ function v = find_tangent_vector(x)
   delta_T     = delta_p__delta_T_and_delta_gamma(end-1);
   delta_gamma = delta_p__delta_T_and_delta_gamma(end);
 
-  V_delta_p = zeros(cds.nphases*m,1);
-  for i=1:m % m == cds.nMeshIntervals
-    indices1 = (i-1) * cds.nphases + (1:cds.nphases);
-    indices2 = (i-1) * basis_size  + (1:basis_size );
-    V_delta_p(indices1) = V(:,:,i) * delta_p(indices2);
+  V_delta_p = zeros(cds.nphases * m, 1);
+  col_offset = 0;
+  for i = 1 : m
+    indices_delta_p              = col_offset + ( 1 : size(V{i}, 2) );
+    indices_V_delta_p            = (i-1) * cds.nphases + (1:cds.nphases);
+    V_delta_p(indices_V_delta_p) = V{i} * delta_p(indices_delta_p);
+    col_offset                   = col_offset + size(V{i}, 2);
   end
   
-  delta_q      = delta_q_r + delta_gamma * delta_q_gamma;
-  delta_phases = V_delta_p + reshape(delta_q,numel(delta_q),1);
+  delta_q      = delta_gamma * delta_q_gamma;
+  delta_phases = V_delta_p + delta_q(:); % x = x(:) turns x into a column vector
   v = [delta_phases; delta_T; delta_gamma];
 end
     

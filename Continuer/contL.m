@@ -231,7 +231,7 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
        trialpoint = NewtonPicard.do_corrections(xpre, currpoint.v);
       if ~ isempty(trialpoint)
         trialpoint.v = NewtonPicard.find_tangent_vector(...
-                                curvefile,trialpoint.x,trialpoint.v);
+                                curvefile, trialpoint.x, trialpoint.v);
       end
     else
       try

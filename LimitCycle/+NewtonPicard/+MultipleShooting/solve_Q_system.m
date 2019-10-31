@@ -10,7 +10,7 @@
 %
 % inputs:
 % - V: bases for the subspace of the monodromy matrix at point x_i on the
-% cycle. That is, V(:,:,i) contains column vectors that span the subspace.
+% cycle. That is, the columns of V{i} span the subspace.
 %
 % - rhs: the right hand side of the Q system
 % note: the minus in rhs is implicit, i.e. this function solves .... = - rhs
@@ -25,32 +25,32 @@ function [delta_q, G_delta_q] = solve_Q_system(V, rhs, delta_t, parameters)
   m = cds.nMeshIntervals;
   for i=1:m
     ni = next_index_in_cycle(i,m);
-    rhs(:,i) = rhs(:,i) - V(:,:,ni) * V(:,:,ni)' * rhs(:,i);
+    rhs(:,i) = rhs(:,i) - V{ni} * V{ni}' * rhs(:,i);
   end
   
-  G_delta_q  = zeros(cds.nphases,m);
-  delta_q    = zeros(cds.nphases,m);
+  G_delta_q  = zeros(cds.nphases, m);
+  delta_q    = zeros(cds.nphases, m);
   
   minimum_residual = Inf;
+  monodromy_map = @NewtonPicard.MultipleShooting.monodromy_map;
+  
   for iteration_number = 1:contopts.MaxPicardIterations
    
     for i=2:m %  m == cds.nMeshIntervals;
-      delta_q(:,i) = G_delta_q(:,i-1) + rhs(:,i-1);
-      delta_q(:,i) = delta_q(:,i) - V(:,:,i) * V(:,:,i)' * delta_q(:,i);
-      G_delta_q(:,i) = NewtonPicard.MultipleShooting.monodromy_map(i, ...
-                                      delta_q(:,i), delta_t(i), parameters);
+      delta_q(:,i)   = G_delta_q(:,i-1) + rhs(:,i-1);
+      delta_q(:,i)   = delta_q(:,i) - V{i} * (V{i}' * delta_q(:,i));
+      G_delta_q(:,i) = monodromy_map(i, delta_q(:,i), delta_t(i), parameters);
     end
-    condensed_residual = G_delta_q(:,m) + rhs(:,m);
-    condensed_residual = condensed_residual ...
-                         - V(:,:,1) * V(:,:,1)' * condensed_residual;
-    residual_norm = max(max(abs(delta_q(:,1) - condensed_residual)));
+    % condensed_res means condensed_residual
+    condensed_res = G_delta_q(:,m) + rhs(:,m); 
+    condensed_res = condensed_res - V{1} * (V{1}' * condensed_res);
+    residual_norm = max(max(abs(delta_q(:,1) - condensed_res)));
     if residual_norm < contopts.PicardTolerance
       break
     elseif residual_norm < minimum_residual
       minimum_residual = residual_norm;
-      delta_q(:,1) = condensed_residual;
-      G_delta_q(:,1) = NewtonPicard.MultipleShooting.monodromy_map( ...
-        1, delta_q(:,1), delta_t(1), parameters);
+      delta_q(:,1) = condensed_res;
+      G_delta_q(:,1) = monodromy_map(1, delta_q(:,1), delta_t(1), parameters);
     else % if residual_norm >= minumim_residual
       print_diag(4,'poor convergence in solve_q_system. residual: %.5e\n', ...
                     residual_norm);

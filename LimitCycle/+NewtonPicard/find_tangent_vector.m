@@ -11,10 +11,10 @@ function v = find_tangent_vector(curvefile, x, v0)
       kernel   = null(jacobian);
       v        = kernel(:,1);
     otherwise
-    error_format_string = ['internal error in' ...
-      ' Continuer/+NewtonPicard/find_tangent_vector.m:\n' ...
-          'The Newton-Picard method does not support %s'];
-    error(error_format_string, func2str(curvefile));
+      error_format_string = ['internal error in' ...
+        ' Continuer/+NewtonPicard/find_tangent_vector.m:\n' ...
+            'The Newton-Picard method does not support %s'];
+      error(error_format_string, func2str(curvefile));
   end
   % v0' * v is the inner product of v and v0, which equals the cosine of the
   % angle between v and v0. If the cosine of the angle is less than zero, then

@@ -24,7 +24,7 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
 
 
   m          = cds.nMeshIntervals;
-  phases_T_i = zeros(cds.nphases,m);
+  phases_T_i = zeros(cds.nphases, m);
   
   integrator            = cds.integrator;
   dydt_ode              = @(t,y) cds.dydt_ode(t, y, parameters{:});
@@ -50,7 +50,7 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
   
 
   if contopts.contL_ParallelComputing && cds.using_cvode
-    raise 'parallel computing with cvode not yet implemented for multiple shooting'
+    error('parallel computing with cvode not yet implemented for multiple shooting')
   end
   parfor_failed = false;
   try 
@@ -103,97 +103,107 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
       end
     end
   end
-  
-  
-  
-  cds.p = cds.preferred_basis_size;
 
+  V    = cell(m,1);
+  V{1} = compute_subspace(1, period, parameters);
+  V{2} = compute_subspace(2, period, parameters);
+  MV   = cell(m,1);
+  M    = @NewtonPicard.MultipleShooting.monodromy_map; 
   
-  V1             = compute_subspace(1, period, parameters);
-  basis_size     = size(V1,2);
-  cds.basis_size = basis_size;
-  V              = zeros(cds.nphases, basis_size, m);
-  V(:,:,1)       = V1;
-  for i=2:m % m == cds.nMeshIntervals
+  for j = 1 : size(V{1}, 2)
+    MV{1}(:, j) = M(i, V{1}(:, j), delta_t(1), parameters);
+  end
+  
+  for i = 2 : m % m == cds.nMeshIntervals
     print_diag(6,'G %d\n',i);
-    for j = 1:size(V,2)
-      V(:,j,i) = NewtonPicard.MultipleShooting.monodromy_map(...
-                                   i-1, V(:,j,i-1), delta_t(i-1), parameters);
+    for j = 1 : size(V{i}, 2)
+      MV{i}(:, j) = M(i, V{i}(:, j), delta_t(i), parameters);
     end
-    orth_V_i = orth(V(:,:,i));
-    if size(orth_V_i,2) == size(V(:,:,i),2)
-      V(:,:,i) = orth_V_i;
-    else
-      print_diag(1, ...
-                 'subspace is rank deficient. computing subspace using eigs\n')
-      V(:,:,i) = compute_subspace(i, period, parameters);
-    end
-  end
-
-  cds.V = V;
-  basis_size     = size(V,2);
-  cds.basis_size = basis_size;
-  
-
-  MV = zeros(cds.nphases,basis_size,cds.nMeshIntervals);
- 
-
-
-  % the variable name F_0_pp corresponds with L^0_pp in Lust
-  % we compute the number of nonzero's (nnz):
-  nnz = m * basis_size * basis_size; % blocks on diagonal;
-  nnz = nnz + m * basis_size;        % identity matrices on superdiagonal
-  F_0_pp = spalloc(m*basis_size, m*basis_size, nnz);
-  
-  for i=1:m % note that: m == cds.nMeshIntervals
-
-    for j=1:basis_size
-      MV(:,j,i) = NewtonPicard.MultipleShooting.monodromy_map( ...
-                                          i, V(:,j,i), delta_t(i), parameters);
-    end
-
-    indices = basis_size*(i-1) + (1:basis_size);
-    ni = next_index_in_cycle(i,m);
-    F_0_pp(indices,indices)= V(:,:,ni)' * MV(:,:,i); %#ok<SPRIX>
-    % Indexation might be slow, but it is not the bottleneck in the code. (The
-    % bottle neck is time-integration). Therefore we ignore the <SPRIX> code
-    % analyzer warnings.
-    
     if i < m
-      F_0_pp(indices, indices + basis_size) = - eye(basis_size); %#ok<SPRIX>
-    else
-      F_0_pp(indices, 1:basis_size)         = - eye(basis_size); %#ok<SPRIX>
+      V_i_plus_one = orth(MV{i});
+      if size(V_i_plus_one, 2) >= cds.preferred_basis_size
+        V{i+1} = V_i_plus_one;
+      else
+        print_diag(1, ...
+                 'subspace is rank deficient. computing subspace using eigs\n');
+        V{i + 1} = compute_subspace(i + 1, period, parameters);
+      end
     end
   end
   
+  cds.V = V;
+  
+  % we compute the number of nonzero's (nnz):
+  block_size = cds.preferred_basis_size + 1 ;
+  nnz = m * block_size^2;      % blocks on diagonal;
+  nnz = nnz + m * block_size;  % identity matrices on super-block-diagonal
+  reduced_jac_size = 0;
+  for i = 1 : m
+    reduced_jac_size = reduced_jac_size + size(V{i}, 2);
+  end
+  cds.reduced_jac_size = reduced_jac_size;
+  
+  % the variable name F_0_pp corresponds with L^0_pp in Lust
+  F_0_pp = spalloc(reduced_jac_size, reduced_jac_size, nnz);
+  
+  row_offset = 0;
+  col_offset = 0;
+  for i=1:m % note that: m == cds.nMeshIntervals
+    ni = next_index_in_cycle(i,m);
+    row_indices = row_offset + (1 : size(V{ni}, 2));
+    col_indices = col_offset + (1 : size(V{ i}, 2));
+    F_0_pp(row_indices, col_indices) = V{ni}' * MV{i}; %#ok<SPRIX>
+    % Indexation might be slow, but it the most time-consuming part of the
+    % algorithm. (The most time consuming part of the algorithm is
+    % time-integration). Therefore we ignore the <SPRIX> code analyzer warnings.
+    col_offset = col_offset + size(V{ i}, 2);
+    row_offset = row_offset + size(V{ni}, 2);
+  end
+
+  % add the negative identity matrices to F_0_pp
+  row_offset = 0;
+  col_offset = size(V{1}, 2);
+  for i = 1 : m-1
+    ni          = next_index_in_cycle(i, m);
+    eye_size    = size(V{ni}, 2);
+    row_indices = row_offset + (1 : eye_size);
+    col_indices = col_offset + (1 : eye_size);
+    F_0_pp(row_indices, col_indices) = - eye(eye_size); %#ok<SPRIX>
+    row_offset  = row_offset + eye_size;
+    col_offset  = col_offset + eye_size;
+  end
+  eye_size = size(V{m}, 2);
+  F_0_pp( end-eye_size+1 : end,  1 : eye_size) = - eye(eye_size); 
   
   
-  V_T__b_T = zeros(basis_size * m,1); % V_p^T b_T      in \cite{lust-phd}
+  V_T__b_T = zeros(reduced_jac_size, 1); % V_p^T b_T      in \cite{lust-phd}
   
-  indices = 1:basis_size;
+  row_offset = 0;
   for i=1:m
+    ni                = next_index_in_cycle(i,m);
+    indices           = row_offset + (1 : size(V{ni},2));
     b_T_i             = cds.dydt_ode(0, phases_T_i(:,i), parameters{:}) * ...
-                          delta_t(i) / period;
-    V_T__b_T(indices) = V(:,:,next_index_in_cycle(i,m))' * b_T_i;
-    indices           = indices + basis_size;
+                                delta_t(i) / period;
+    V_T__b_T(indices) = V{ni}' * b_T_i;
+    row_offset        = row_offset + size(V{ni},2);
   end
   
 
   rhs_delta_q_gamma = zeros(cds.nphases,m);
  
-  V_T__b_g = zeros(basis_size * m,1);
- 
+  V_T__b_g = zeros(reduced_jac_size, 1);
   
-  indices = 1:basis_size;
+  row_offset = 0;
   for i=1:m
     b_g_i                  = NewtonPicard.compute_d_phi_d_p(phases_0(:,i), ...
                                            delta_t(i), parameters);
-    
     ni                     = next_index_in_cycle(i,m);
-    V_T__b_g(indices)      = V(:,:,ni)' * b_g_i;
+    indices                = row_offset + (1 : size(V{ni},2));
+    V_T__b_g(indices)      = V{ni}' * b_g_i;
     
-    rhs_delta_q_gamma(:,i) = b_g_i - V(:,:,ni) * V_T__b_g(indices);
-    indices                = indices + basis_size;
+    rhs_delta_q_gamma(:,i) = b_g_i - V{ni} * V_T__b_g(indices);
+    
+    row_offset             = row_offset + size(V{ni},2);
   end
   
   
@@ -201,61 +211,62 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
   
   rhs_delta_q_r = zeros(cds.nphases,m);
   
+  
   for i=1:m % m == cds.nMeshIntervals
     ni                 = next_index_in_cycle(i,m);
     r                  = phases_T_i(:,i) - phases_0(:,ni);
-    rhs_delta_q_r(:,i) = r - V(:,:,ni) * V(:,:,ni)' * r;
+    rhs_delta_q_r(:,i) = r - V{ni} * (V{ni}' * r);
   end
   
-  [delta_q_gamma, G_delta_q_gamma] = ...
-    NewtonPicard.MultipleShooting.solve_Q_system(V, ...
-    rhs_delta_q_gamma, delta_t, parameters);
+  solve_Q_system = @NewtonPicard.MultipleShooting.solve_Q_system;
+  
+  [delta_q_gamma, G_delta_q_gamma] = solve_Q_system(V, rhs_delta_q_gamma, ...
+                                            delta_t, parameters);
 
-  [delta_q_r    , G_delta_q_r]     = ...
-    NewtonPicard.MultipleShooting.solve_Q_system(V, ...
-    rhs_delta_q_r, delta_t, parameters);
-  
-  
-  V_T_d_phi_d_T = zeros(basis_size*m,1);
-  for i=1:m % m == cds.nMeshIntervals
-    indices = (i-1)*basis_size + (1:basis_size);
-    ni = next_index_in_cycle(i,m);
-    V_T_d_phi_d_T(indices) = ( V(:,:,ni)' * ...
-      cds.dydt_ode(0,phases_T_i(:,i),parameters{:}) ) * delta_t(i) / period;
-  end
+  [delta_q_r    , G_delta_q_r    ] = solve_Q_system(V, rhs_delta_q_r, ...
+                                            delta_t, parameters);
  
-  lhs_1_3 = V_T__b_g;
+  jac_1_3 = V_T__b_g;
   
+  row_offset = 0;
   for i=1:m % m == cds.nMeshIntervals
-    indices           = (i-1)*basis_size + (1:basis_size);
     ni                = next_index_in_cycle(i,m);
-    lhs_1_3(indices)  = lhs_1_3(indices) + V(:,:,ni)' * G_delta_q_gamma(:,i);
+    indices           = row_offset + (1 : size(V{ni},2));
+    jac_1_3(indices)  = jac_1_3(indices) + V{ni}' * G_delta_q_gamma(:,i);
+    row_offset        = row_offset + size(V{ni},2);
   end
 
   d_s_d_T      = 0;
   d_s_d_gamma  = 0;
-
-  lhs_2_1 = [cds.previous_dydt_0' * V(:,:,1)    zeros(1,(m-1)*basis_size)];
   
   
+  jac_2_1                         = zeros(1, reduced_jac_size);
+  jac_2_1( 1, 1 : size(V{1}, 2) ) = cds.previous_dydt_0' * V{1};
   
-  
+  jac_2_3 = d_s_d_gamma + cds.previous_dydt_0' * delta_q_gamma(:,1);
+ 
   reduced_jacobian = [
-    F_0_pp     V_T_d_phi_d_T     lhs_1_3     ;
-    lhs_2_1    d_s_d_T           d_s_d_gamma + cds.previous_dydt_0' * delta_q_gamma(:,1);
+    F_0_pp     V_T__b_T     jac_1_3;
+    jac_2_1    d_s_d_T      jac_2_3;
   ];
-
+  
 end
 
   
 function V = compute_subspace(i, period, parameters)
   global cds
   
+  n_eigenvalues = min(cds.nphases,cds.p + 1);
+  
+  if i == 1
+    n_eigenvalues = min(cds.nphases, n_eigenvalues + 2);
+  end
+  
   [eigenvectors, eigenvalues, no_convergence] = eigs( ...
     @(x) NewtonPicard.MultipleShooting.monodromy_map( ...
        i, x, period, parameters), ...
     cds.nphases, ...
-    min(cds.nphases,cds.p + 1));
+    n_eigenvalues);
 
 
   if no_convergence
@@ -270,7 +281,7 @@ function V = compute_subspace(i, period, parameters)
 
   i = 1;
 
-  while i <= cds.p
+  while i <= n_eigenvalues
     basis(:, i) = real(eigenvectors(:,i));
     i = i + 1;
     if max(abs(imag(eigenvalues(i-1)))) > 1e-14
