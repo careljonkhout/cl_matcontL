@@ -3,7 +3,7 @@ function multipliers = multipliers_variational(x)
   print_diag(3,'computing multipliers\n');
   points_on_cycle              = x(1:end-2);
   points_on_cycle              = reshape(points_on_cycle, ...
-                                         cds.nphases, length(lds.finemsh));
+                                         cds.n_phases, length(lds.finemsh));
   period                       = x(end);
   active_parameter_value       = x(end-1);
   parameters                   = num2cell(lds.P0);
@@ -12,7 +12,7 @@ function multipliers = multipliers_variational(x)
   
  [~, multiplier_matrix, no_convergence] = eigs( ...
       @(x) monodromy_map(x, points_on_cycle, period, parameters), ...
-      cds.nphases, cds.nphases);
+      cds.n_phases, cds.n_phases);
   multipliers = diag(multiplier_matrix);
 
   if no_convergence

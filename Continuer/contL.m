@@ -67,7 +67,7 @@ if UsingNewtonPicard && ( ~ isequal(curvefile, @single_shooting   ) ...
                      &&   ~ isequal(curvefile, @multiple_shooting ) ...
                      &&   ~ isequal(curvefile, @perioddoubling_ss))
   warning(['Newton-Picard is only implemented for the curve file %s. ' ...
-           'Newton-Picard will not be used.'], curvefile)
+           'Newton-Picard will not be used.'], func2str(curvefile))
   contopts.NewtonPicard = false;
   UsingNewtonPicard = false;
 end
@@ -175,7 +175,7 @@ if contopts.set_direction
   if abs(firstpoint.v(end)) < 1e-6
     Vdir = sign(sum(firstpoint.v(1:end-1)));
   else
-    Vdir = sign(v_cont(end));
+    Vdir = sign(firstpoint.v(end));
   end
   if (Backward && Vdir > 0) || (~Backward && Vdir < 0)
       firstpoint.v = -firstpoint.v;
@@ -227,25 +227,26 @@ while cds.i < MaxNumPoints && ~cds.lastpointfound
     reduce_stepsize = 0;
 
     %% B. Correct
-    if UsingNewtonPicard
-       trialpoint = NewtonPicard.do_corrections(xpre, currpoint.v);
-      if ~ isempty(trialpoint)
-        trialpoint.v = NewtonPicard.find_tangent_vector(...
-                                curvefile, trialpoint.x, trialpoint.v);
-      end
-    else
-      try
-        trialpoint = newtcorrL(xpre, currpoint.v, currpoint.CISdata);
-      catch my_error
-        switch my_error.identifier
-          case 'cvode:integrator_error'
-            print_diag(0, my_error.message);
-            trialpoint = [];
-          otherwise
-            rethrow(my_error)
+    try
+      if UsingNewtonPicard
+         trialpoint = NewtonPicard.do_corrections(xpre, currpoint.v);
+        if ~ isempty(trialpoint)
+          trialpoint.v = NewtonPicard.find_tangent_vector(...
+                                  curvefile, trialpoint.x, trialpoint.v);
         end
+      else
+         trialpoint = newtcorrL(xpre, currpoint.v, currpoint.CISdata);
+      end
+    catch my_error
+      switch my_error.identifier
+        case {'cvode:integrator_error', 'npms:wrong_basis_size'}
+          print_diag(0, my_error.message);
+          trialpoint = [];
+        otherwise
+          rethrow(my_error)
       end
     end
+     
     if isempty(trialpoint)
       if UsingNewtonPicard 
         print_diag(0, 'contL: NewtonPicard.do_corrections failed\n')
@@ -735,14 +736,14 @@ point = feval(cds.curve_defaultprocessor, varargin{:});
 % function [x,v,R,i,p1,p2] =
 %LocateTestFunction(id, p1, p2, MaxIters, FunTolerance, VarTolerance)
 function [pout,p1,p2] = LocateTestFunction(id, p1, p2)
-tic
+bisection_start_time = tic;
 global contopts cds
 
 pout = [];
-MaxIters  = contopts.MaxTestIters;            % DV MP: Use new options
+MaxTestIters  = contopts.MaxTestIters;
 
-FunTolerance  = contopts.contL_Testf_FunTolerance;   % MP:
-VarTolerance  = contopts.contL_Testf_VarTolerance;   % MP:
+FunTolerance  = contopts.contL_Testf_FunTolerance;
+VarTolerance  = contopts.contL_Testf_VarTolerance;
 
 
 % default locator: bisection
@@ -767,9 +768,8 @@ else
   tmax = 10 * max(abs(t1), abs(t2));
 end
 p    = 1;
-failed2 = 1;
-%R = [];
-for i = 1:MaxIters
+is_within_tolerances = false;
+for i = 1:MaxTestIters
     if tmax < Inf
         % WM: make educated guess of where the zero point might be
         r = abs(t1(id)/(t1(id)-t2(id)))^p;
@@ -824,15 +824,17 @@ for i = 1:MaxIters
     dist2 = 2*norm(p3.x-p2.x)/(norm(p2.x)+norm(p3.x) + 1);
     
     if abs(tval(id)) > tmax
-        print_diag(3,'Testfunction behaving badly.\n');
+        print_diag(3, ['Could not locate the zero of testfunction %d, ' ... 
+         'because the testfunction is not monotonous between the ' ...
+         'two points where the zero of the testfunction was the detected.\n']);
         break;
     end
     
-    if (abs(tval(id)) <= FunTolerance && min(dist1,dist2) < VarTolerance)
-        failed2 = 0;
+    if (abs(tval(id)) <= FunTolerance && min(dist1,dist2) <= VarTolerance)
+        is_within_tolerances = true;
         pout = p3;
         break;
-    elseif sign(tval(id))==sign(t2(id))
+    elseif sign(tval(id)) == sign(t2(id))
         p2 = p3;
         t2 = tval;
         p  = 1.02;
@@ -843,11 +845,23 @@ for i = 1:MaxIters
     end
 end
 
-if failed2  % DV: When MaxIters is reached without meeting tolerances
+if ~ is_within_tolerances
+  if abs(tval(id)) > FunTolerance
+    print_diag(3, ['Could not reach the specified FunTolerance. ' ...
+                   'FunTolerance: %.3e test function value: %.3e ' ...
+                   'MaxTestIters: %d\n'], FunTolerance, tval(id), MaxTestIters);
+  end
+  if min(dist1,dist2) > VarTolerance
+     print_diag(3, ['Could not reach the specified VarTolerance. ' ...
+                   'VarTolerance: %.3e ', ...
+                   'upper bound on distance to singularity: %.3e ' ...
+                   'MaxTestIters: %d\n'], ...
+                    VarTolerance, min(dist1,dist2), MaxTestIters);
+  end
     pout = [];
 end
 
-print_diag(1,'Time spent in bisection: %f\n', toc);
+print_diag(1,'Time spent in bisection: %f\n', toc(bisection_start_time));
 
 %--< END OF locatetestfunction>--
 %---------------------------------------------

@@ -1,8 +1,8 @@
 function out = odefile_mex
 out{1} = @init;
-out{2} = @fusion_N_25_cvode_max_ord_1.dydt_mex;
-out{3} = @fusion_N_25_cvode_max_ord_1.jacobian_mex;
-out{4} = @fusion_N_25_cvode_max_ord_1.jacobian_params_mex;
+out{2} = @fusion_N_25_cvode.dydt_mex;
+out{3} = @fusion_N_25_cvode.jacobian_mex;
+out{4} = @fusion_N_25_cvode.jacobian_params_mex;
 out{5} = [];
 out{6} = [];
 out{7} = [];

@@ -11,7 +11,7 @@
 %   'active_parameter_index',    3, ...
 %   'lower_bound_period',        1, ...
 %   'upper_bound_period',        20, ...
-%   'nMeshIntervals',            20, ...
+%   'n_mesh_intervals',            20, ...
 %   'show_plots',                false ...
 % );
 %
@@ -114,7 +114,7 @@
 % continuation increases as the square of nCollocationPoints, so higher values
 % of nCollocationPoints will likely increase computation times significantly.
 % Therefore, if one wants to increase the accuracy of the cycles in the
-% continuation, it is recommended to increase nMeshIntervals to increase the
+% continuation, it is recommended to increase n_mesh_intervals to increase the
 % accuracy of the continuation, and to keep nCollocationPoints at the default
 % value (, although it has not been ruled out entirely that higher values of
 % nCollocationPoints might be advantageous in some special cases.) 
@@ -131,8 +131,9 @@ function initial_continuation_data = init_collocation_find_stable_cycle(varargin
   input.active_parameter_index    = [];
   input.lower_bound_period        = [];
   input.upper_bound_period        = [];
-  input.nMeshIntervals            = [];
+  input.n_mesh_intervals          = [];
   input.plot_coordinates          = 'all';
+  input.cvode_verbose             = false;
   
   % optional arguments, i.e. arguments with default values
   input.time_integration_method   = @ode15s;
@@ -143,6 +144,10 @@ function initial_continuation_data = init_collocation_find_stable_cycle(varargin
   input.show_plots                = false;
   input.collocation_tolerance     = 1e-2;
   input.nCollocationPoints        = 4;
+  input.plot_transformation       = @(x) x;
+  input.ylabel                    = 'phase variables';
+  input.n_computed_points         = 100;
+  input.n_interpolated_points     = 10000;
   
   i=1;
   while i <= nargin
@@ -169,10 +174,10 @@ function initial_continuation_data = init_collocation_find_stable_cycle(varargin
     error('nCollocationPoints must be an integer, at least 2, and at most 7')
   end
 
-  ntst = input.nMeshIntervals;
+  ntst = input.n_mesh_intervals;
   
   if ~ isnumeric(ntst) || numel(ntst) ~= 1 || floor(ntst) ~= ntst || ntst < 2
-    error('nMeshIntervals must be an integer greater than 1')
+    error('n_mesh_intervals must be an integer greater than 1')
   end
   
   if ~ iscell(input.ode_parameters)
@@ -189,7 +194,7 @@ function initial_continuation_data = init_collocation_find_stable_cycle(varargin
   input.y             = input.y'; % transpose y
   input.p             = cell2mat(input.ode_parameters);
   input.ap            = input.active_parameter_index;
-  input.ntst          = input.nMeshIntervals;
+  input.ntst          = input.n_mesh_intervals;
   input.ncol          = input.nCollocationPoints;
   input.tolerance     = input.collocation_tolerance;
   
@@ -212,7 +217,7 @@ function [solution_t, solution_x] = compute_periodic_solution(in)
   handles      = feval(in.odefile);
   dydt_ode     = handles{2};
   jacobian_ode = handles{3};
-  cds.nphases  = length(in.point_on_limitcycle);
+  cds.n_phases  = length(in.point_on_limitcycle);
 
   tangent_to_limitcycle = dydt_ode( ...
                                0, in.point_on_limitcycle, in.ode_parameters{:});
@@ -231,13 +236,11 @@ function [solution_t, solution_x] = compute_periodic_solution(in)
     in.point_on_limitcycle, ...
     in.time_integration_options); 
   
-  period                    = solution.x(end); 
-
-  solution = odextend(solution,[],1.1*period);
+  period   = solution.x(end);
+  solution = odextend(solution, [], 1.1 * period);
   
   solution_t = linspace(0, 1.1 * period, ...
-          3 * in.nMeshIntervals * in.nCollocationPoints);
-        
+          3 * in.n_mesh_intervals * in.nCollocationPoints);
   solution_x = deval(solution, solution_t);
   
   
@@ -253,8 +256,7 @@ function [solution_t, solution_x] = compute_periodic_solution(in)
     ylabel('deviation form initial value')
     disp(['Now showing plot from t = time_to_converge_to_cycle to ' ...
                                't = time_to_converge_to_cycle + 1.1 * period']);
-    disp('Press a key to continue')
-    pause
+    input('Press a enter to continue of ctrl-c to abort')
     if isvalid(my_figure)
       close(my_figure.Number)
     end

@@ -33,9 +33,9 @@ function initial_continuation_data = init_multiple_shooting_from_pd(varargin)
   parameters            = pd.P0;
   parameters(pd.ap)     = pd.x(end);
   parameters            = num2cell(parameters);
-  nMeshIntervals        = length(pd.time_mesh) - 1;
-  nphases               = (length(pd.x) - 2) / nMeshIntervals;
-  point_on_limitcycle   = pd.x(1:nphases);
+  n_mesh_intervals        = length(pd.time_mesh) - 1;
+  n_phases               = (length(pd.x) - 2) / n_mesh_intervals;
+  point_on_limitcycle   = pd.x(1:n_phases);
   ode_handles           = feval(input.odefile);
   dydt_ode              = ode_handles{2};
   using_cvode           = endsWith(func2str(time_integration_method),'cvode');
@@ -43,13 +43,13 @@ function initial_continuation_data = init_multiple_shooting_from_pd(varargin)
   
   global cds;
   cds = [];
-  cds.nphases                    = nphases;
+  cds.n_phases                    = n_phases;
   cds.probfile                   = odefile;
-  cds.options.PartitionMonodromy = cds.nphases > 20;
+  cds.options.PartitionMonodromy = cds.n_phases > 20;
   cds.nap                        = 1;
-  cds.ndim                       = cds.nphases * nMeshIntervals + 2;
+  cds.ndim                       = cds.n_phases * n_mesh_intervals + 2;
   cds.usernorm                   = [];
-  cds.ncoo                       = cds.nphases * nMeshIntervals + 1;
+  cds.ncoo                       = cds.n_phases * n_mesh_intervals + 1;
   cds.ActiveParams               = pd.ap;
   cds.P0                         = cell2mat(parameters);
   cds.previous_phases            = point_on_limitcycle(:);
@@ -61,7 +61,7 @@ function initial_continuation_data = init_multiple_shooting_from_pd(varargin)
   cds.p                          = basis_size;
   cds.mv_count                   = 0;
   cds.curve                      = @multiple_shooting;
-  cds.nMeshIntervals             = nMeshIntervals;
+  cds.n_mesh_intervals             = n_mesh_intervals;
   cds.mesh                       = pd.time_mesh;
   cds.using_cvode                = using_cvode;
 
@@ -71,13 +71,13 @@ function initial_continuation_data = init_multiple_shooting_from_pd(varargin)
   
   
   initial_continuation_data = init_multiple_shooting( ...
-    'point_on_limitcycle',      pd.x(1:cds.nphases) + h * pd_vector, ...
+    'point_on_limitcycle',      pd.x(1:cds.n_phases) + h * pd_vector, ...
     'odefile',                  input.odefile, ...
     'ode_parameters',           parameters, ...
     'active_parameter_index',   pd.ap, ...
     'lower_bound_period',       1.9 * period, ...
     'upper_bound_period',       2.1 * period, ...
-    'nMeshIntervals',           pd.nMeshIntervals, ...
+    'n_mesh_intervals',           pd.n_mesh_intervals, ...
     'subspace_size',            input.basis_size, ...
     'time_integration_method',  input.time_integration_method, ...
     'show_plots',               input.show_plots);

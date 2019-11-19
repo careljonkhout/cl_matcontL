@@ -120,6 +120,10 @@ function initial_continuation_data = ...
   input.poincare_tolerance        = 5e-2;
   input.show_plots                = false;
   input.cvode_verbose             = false;
+  input.plot_transformation       = @(x) x;
+  input.ylabel                    = 'phase variables';
+  input.n_computed_points         = 100;
+  input.n_interpolated_points     = 10000;
 
   
   i=1;

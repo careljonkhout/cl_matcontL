@@ -11,7 +11,7 @@
 %   'ode_parameters',               point.parametervalues, ...
 %   'active_parameter_index',       3, ...
 %   'time_mesh',                    point.timemesh, ...
-%   'current_nMeshIntervals',       point.ntst, ...
+%   'current_n_mesh_intervals',       point.ntst, ...
 %   'current_nCollocationPoints',   point.ncol ...
 % );
 %
@@ -21,9 +21,9 @@
 %% continuation_state
 % The continuation state vector of point from which the continuation should be
 % extended. The continuation state vector for continuation of cycles using
-% collocation in cl_matcontL contains (current_nMeshIntervals *
+% collocation in cl_matcontL contains (current_n_mesh_intervals *
 % current_nCollocationPoints + 1) * nphase + 2 elements. The first
-% (current_nMeshIntervals * current_nCollocationPoints + 1) * nphase points
+% (current_n_mesh_intervals * current_nCollocationPoints + 1) * nphase points
 % contain the coordinates of the points on the cycle. The first nphase elements
 % contain the coordinates of the first point, and so on. The first and last
 % points are the same. The butlast element of the contiuation state vector
@@ -48,16 +48,16 @@
 %
 %% time_mesh
 % The time_mesh of the cycle from which the extension is started. When using
-% collocation, the period of the cycle is subdivided into nMeshIntervals
+% collocation, the period of the cycle is subdivided into n_mesh_intervals
 % intervals. The width of these intervals is adapted, to optimize the
 % performance of the continuation. Thus, the time_mesh is variable, and must be
 % provided to make the extension of a continuation possible. time_mesh contains
-% nMeshIntervals + 1 points. Each interval in further subdivided into
+% n_mesh_intervals + 1 points. Each interval in further subdivided into
 % nCollocationPoints parts to obtain a fine mesh. Within each mesh interval the
 % fine mesh is equidistant, and can be obtained using
 % Limitcycle/get_fine_mesh.m.
 %
-%% current_nMeshIntervals
+%% current_n_mesh_intervals
 % The number of mesh intervals used in the cycle continuation that is to be
 % extended.
 %
@@ -67,7 +67,7 @@
 %
 %% +++++ optional arguments +++++
 %
-%% new_nMeshIntervals
+%% new_n_mesh_intervals
 % The number of mesh intervals that is to be used in the extension.
 %
 %% new_nCollocationPoints
@@ -95,9 +95,9 @@ function [continuation_state, continuation_tangent] = ...
   input.ode_parameters              = must_be_specified_by_user;
   input.active_parameter_index      = must_be_specified_by_user;
   input.time_mesh                   = must_be_specified_by_user;
-  input.current_nMeshIntervals      = must_be_specified_by_user;
+  input.current_n_mesh_intervals      = must_be_specified_by_user;
   input.current_nCollocationPoints  = must_be_specified_by_user;
-  input.new_nMeshIntervals          = 0; % default value: current_nMeshIntervals
+  input.new_n_mesh_intervals          = 0; % default value: current_n_mesh_intervals
   input.new_nCollocationPoints      = 0; % default value: current_nCollocationPoints
   
   i=1;
@@ -122,8 +122,8 @@ function [continuation_state, continuation_tangent] = ...
     input.continuation_tangent = [];
   end
   
-  if input.new_nMeshIntervals == 0
-    input.new_nMeshIntervals = input.current_nMeshIntervals;
+  if input.new_n_mesh_intervals == 0
+    input.new_n_mesh_intervals = input.current_n_mesh_intervals;
   end
   
   if input.new_nCollocationPoints == 0
@@ -176,12 +176,12 @@ function [continuation_state, continuation_tangent] = ...
   
   nPoint_coordinates = size(in.continuation_state, 1);
   nPoints_on_cycle   = ...
-    in.current_nMeshIntervals * in.current_nCollocationPoints + 1;
+    in.current_n_mesh_intervals * in.current_nCollocationPoints + 1;
   
   lds.nphase = round(nPoint_coordinates / nPoints_on_cycle);
   lds.ActiveParams = in.active_parameter_index; % duplicate of cds.Activeparams, todo: carefully remove
   lds.P0           = in.ode_parameters;         % duplicate of cds.Activeparams, todo: carefully remove
-  set_ntst_ncol(in.current_nMeshIntervals, ...
+  set_ntst_ncol(in.current_n_mesh_intervals, ...
                 in.current_nCollocationPoints, ...
                 in.time_mesh);
   lds.T = in.continuation_state(end-1); % used for fixed period limitcycles
@@ -190,7 +190,7 @@ function [continuation_state, continuation_tangent] = ...
   [continuation_state, continuation_tangent] = new_mesh(...
                         in.continuation_state, ...
                         in.continuation_tangent, ...
-                        in.new_nMeshIntervals, ...
+                        in.new_n_mesh_intervals, ...
                         in.new_nCollocationPoints);
   % note: set_ntst_ncol is called from new_mesh
   

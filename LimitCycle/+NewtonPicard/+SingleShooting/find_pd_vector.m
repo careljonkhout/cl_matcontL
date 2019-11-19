@@ -31,7 +31,7 @@ function pd_vector = find_pd_vector(x)
   
 
   [eigenvectors, eigenvalues_matrix] = ...
-          eigs(monodromy_map, cds.nphases, cds.preferred_basis_size);
+          eigs(monodromy_map, cds.n_phases, cds.preferred_basis_size);
                                                     
   eigenvalues                             = diag(eigenvalues_matrix);
   distance_to_minus_one                   = abs(eigenvalues + 1);

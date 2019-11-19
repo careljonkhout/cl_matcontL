@@ -12,8 +12,8 @@
 function V = continue_subspace(i,period, parameters)
   global cds contopts
   V_extended = [cds.V(:,:,i) ...
-    rand(cds.nphases, cds.p + 2 - size(cds.V(:,:,i),2))];
-  %V_extended = [rand(cds.nphases, cds.p + cds.p_extra)];
+    rand(cds.n_phases, cds.p + 2 - size(cds.V(:,:,i),2))];
+  %V_extended = [rand(cds.n_phases, cds.p + cds.p_extra)];
   p = cds.p;
   
   if ~ cds.using_cvode

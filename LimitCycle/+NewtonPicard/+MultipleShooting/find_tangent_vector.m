@@ -1,6 +1,6 @@
 function v = find_tangent_vector(x)
   global cds
-  m = cds.nMeshIntervals;
+  m = cds.n_mesh_intervals;
   
   [V, reduced_jacobian, delta_q_gamma, ~, ~, ~, ~, ~, ~] = ...
     NewtonPicard.MultipleShooting.compute_reduced_jacobian(x);
@@ -14,11 +14,11 @@ function v = find_tangent_vector(x)
   delta_T     = delta_p__delta_T_and_delta_gamma(end-1);
   delta_gamma = delta_p__delta_T_and_delta_gamma(end);
 
-  V_delta_p = zeros(cds.nphases * m, 1);
+  V_delta_p = zeros(cds.n_phases * m, 1);
   col_offset = 0;
   for i = 1 : m
     indices_delta_p              = col_offset + ( 1 : size(V{i}, 2) );
-    indices_V_delta_p            = (i-1) * cds.nphases + (1:cds.nphases);
+    indices_V_delta_p            = (i-1) * cds.n_phases + (1:cds.n_phases);
     V_delta_p(indices_V_delta_p) = V{i} * delta_p(indices_delta_p);
     col_offset                   = col_offset + size(V{i}, 2);
   end

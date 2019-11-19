@@ -7,7 +7,7 @@ function x_corrected = do_one_correction_pd(x0,x,v_cont)
   % T is the current approximation of the period of the cycle.
   % parameters are the parameters value of the two active parameters
   [phi_end, M] = compute_phi_end_and_monodromy(phi_0, T, parameters);
-  I            = eye(cds.nphases);
+  I            = eye(cds.n_phases);
   jacobian     = [M - I; cds.previous_dydt_0'];
   % add d_phi__d_T and d_s__d_T
   d_phi_d_T         = cds.dydt_ode(0, phi_end, parameters{:});
@@ -34,11 +34,11 @@ function x_corrected = do_one_correction_pd(x0,x,v_cont)
   M_T_v_T_r = M_T_v * D_T_r;
   
  
-  D_x_p      = zeros(cds.nphases, 2);
+  D_x_p      = zeros(cds.n_phases, 2);
   D_T_p      = zeros(1          , 2);
-  M_x_v_x_p  = zeros(cds.nphases, 2);
-  M_p_v      = zeros(cds.nphases, 2);
-  M_T_v_T_p  = zeros(cds.nphases, 2);
+  M_x_v_x_p  = zeros(cds.n_phases, 2);
+  M_p_v      = zeros(cds.n_phases, 2);
+  M_T_v_T_p  = zeros(cds.n_phases, 2);
  
   
   
@@ -72,9 +72,9 @@ function x_corrected = do_one_correction_pd(x0,x,v_cont)
   lhs_1_2 = M_p_v(:,1) + M_x_v_x_p(:,1) + M_T_v_T_p(:,1);
   lhs_1_3 = M_p_v(:,2) + M_x_v_x_p(:,2) + M_T_v_T_p(:,2);
   
-  lhs_3_1 = v_cont(cds.nphases + 1 : 2 * cds.nphases)'; 
+  lhs_3_1 = v_cont(cds.n_phases + 1 : 2 * cds.n_phases)'; 
   
-  c_n     = v_cont(1:cds.nphases);
+  c_n     = v_cont(1:cds.n_phases);
   lhs_3_2 = v_cont(end-1) + c_n' * D_x_p(:,1) + v_cont(end-2) * D_T_p(:,1);
   lhs_3_3 = v_cont(end  ) + c_n' * D_x_p(:,2) + v_cont(end-2) * D_T_p(:,2);
   
@@ -92,7 +92,7 @@ function x_corrected = do_one_correction_pd(x0,x,v_cont)
   
   D_v__and__D_p = lhs \ (- rhs);
   
-  D_v = D_v__and__D_p(1:cds.nphases);
+  D_v = D_v__and__D_p(1:cds.n_phases);
   D_p = D_v__and__D_p(end-1:end);
   
   D_x = D_x_r + D_x_p(:,1) * D_p(1) + D_x_p(:,2) * D_p(2);
@@ -152,31 +152,31 @@ end
 % is recomended to use NewtonPicard or orthogonal collocation.
 function [y_end, monodromy] = monodromy_full(x_0, period, parameters)
   global cds contopts
-  nphases = cds.nphases;
+  n_phases = cds.n_phases;
   f =@(t, y) dydt_monodromy_full(t, y, parameters);
   integration_opt = odeset(...
     'AbsTol',      contopts.integration_abs_tol,    ...
     'RelTol',      contopts.integration_abs_tol     ... % todo add JPattern
   );
 
-  x_with_monodromy = [x_0; reshape(eye(nphases),[nphases^2 1])];
+  x_with_monodromy = [x_0; reshape(eye(n_phases),[n_phases^2 1])];
   [~, trajectory] = cds.integrator(...
     f, [0 period], x_with_monodromy, integration_opt);
-  y_end = trajectory(end,1:nphases)';
-  monodromy = trajectory(end,nphases+1:end);
-  monodromy = reshape(monodromy, [nphases nphases]);
+  y_end = trajectory(end,1:n_phases)';
+  monodromy = trajectory(end,n_phases+1:end);
+  monodromy = reshape(monodromy, [n_phases n_phases]);
 end
 %-------------------------------------------------------------------------------
 function dydt_mon = dydt_monodromy_full(t,y, parameters)
   global cds
-  y_ode = y(1:cds.nphases);
+  y_ode = y(1:cds.n_phases);
   
-  y_mon = reshape(y(cds.nphases+1:end),cds.nphases,cds.nphases);
+  y_mon = reshape(y(cds.n_phases+1:end),cds.n_phases,cds.n_phases);
   dydt_mon = [
       cds.dydt_ode(t, y_ode, parameters{:}); 
       reshape( ...
         cds.jacobian_ode(t, y_ode, parameters{:}) * y_mon, ...
-        [cds.nphases^2 1]) 
+        [cds.n_phases^2 1]) 
   ];
 end
 %-------------------------------------------------------------------------------   
@@ -190,12 +190,12 @@ function [y_end, monodromy] = monodromy_column_by_column(x, period, parameters)
   f = @(t, y) cds.dydt_ode(t, y, parameters{:});
   cycle = cds.integrator(f, [0 period], x, integration_opt);
   y_end = deval(cycle,period);
-  monodromy = eye(cds.nphases);
+  monodromy = eye(cds.n_phases);
   integration_opt = odeset(integration_opt, 'Jacobian', ...
     @(t,y) feval(cds.jacobian_ode, t, deval(cycle,t), parameters{:}));
   f = @(t, y) cds.jacobian_ode(t, deval(cycle,t), parameters{:}) * y;
   integrator = cds.integrator;
-  for i=1:cds.nphases
+  for i=1:cds.n_phases
     fprintf('%d ',i);
     [~, monodromy_map_trajectory] = feval(integrator, ...
       f, [0 period], monodromy(:,i),integration_opt);
@@ -204,9 +204,9 @@ function [y_end, monodromy] = monodromy_column_by_column(x, period, parameters)
 end
 function [y_end, M] = monodromy_cvode(x, period, parameters)
   global cds contopts
-  M = zeros(cds.nphases);
-  for i=1:cds.nphases
-    e_i = zeros(cds.nphases,1);
+  M = zeros(cds.n_phases);
+  for i=1:cds.n_phases
+    e_i = zeros(cds.n_phases,1);
     e_i(i) = 1;
     [~,y,M(:,i)] = feval(cds.integrator, ...
       't_values',                [0 period], ...

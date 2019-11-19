@@ -37,7 +37,7 @@ function do_init_single_shooting_extend_curve(in)
   handles                = feval(in.odefile);
   dydt_ode               = handles{2};
   jacobian_ode           = handles{3};
-  cds.nphases            = length(in.initial_continuation_state) - 2;
+  cds.n_phases            = length(in.initial_continuation_state) - 2;
   ode_parameters         = convert_to_cell_if_needed(in.ode_parameters);
   
   point_on_limitcycle    = in.initial_continuation_state(1:end-2);
@@ -46,11 +46,11 @@ function do_init_single_shooting_extend_curve(in)
   
   cds.using_cvode     = false; % todo: add cvode support
   cds.probfile        = in.odefile;
-  cds.options.PartitionMonodromy = cds.nphases > 20;
+  cds.options.PartitionMonodromy = cds.n_phases > 20;
   cds.nap             = 1;
-  cds.ndim            = cds.nphases + 2;
+  cds.ndim            = cds.n_phases + 2;
   cds.usernorm        = [];
-  cds.ncoo            = cds.nphases + 1;
+  cds.ncoo            = cds.n_phases + 1;
   cds.ActiveParams    = in.active_parameter_index;
   cds.P0              = cell2mat(ode_parameters);
   cds.previous_phases = point_on_limitcycle;

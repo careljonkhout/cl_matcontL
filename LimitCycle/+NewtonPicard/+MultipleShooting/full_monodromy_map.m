@@ -1,30 +1,15 @@
-function Mx  = full_monodromy_map(x, period, parameters)
+function Mx  = full_monodromy_map(i, x, period, parameters)
   global cds contopts
-  if cds.using_cvode
+  if ~ contopts.monodromy_by_finite_differences
     Mx = x;
     delta_t = diff(cds.mesh) * period;
-    for i = 1 : cds.nMeshIntervals
-      Mx = NewtonPicard.MultipleShooting.monodromy_map(i, Mx, delta_t(i), ...
+    mesh_interval_sequence = [ i : cds.n_mesh_intervals,  1 : i-1 ];
+    for j = mesh_interval_sequence
+      Mx = NewtonPicard.MultipleShooting.monodromy_map(j, Mx, delta_t(j), ...
                                   parameters, ...
                                   contopts.multipliers_abs_tol, ...
                                   contopts.multipliers_rel_tol);
     end
-  elseif ~ contopts.monodromy_by_finite_differences
-    int_opt = odeset(...
-      'AbsTol',       contopts.multipliers_abs_tol,    ...
-      'RelTol',       contopts.multipliers_rel_tol,    ...
-      'Jacobian',     @(t,y) feval(cds.jacobian_ode, ...
-                        t, interp1(cds.t_cycle,cds.y_cycle,t,'spline'), ...
-                        parameters{:}) ...
-    );
-
-    dydt_mon = @(t, y) ...
-      cds.jacobian_ode(t,interp1(cds.t_cycle,cds.y_cycle,t,'spline'), ...
-        parameters{:}) * y;
-
-    [~,orbit] = cds.integrator(dydt_mon, [0 period], x, int_opt);
-
-    Mx = orbit(end,:)';
   else
     % Below an alternative method of computing the action of the monodromy
     % matrix is implemented. Here, the action of the monodromy matrix is
@@ -40,16 +25,16 @@ function Mx  = full_monodromy_map(x, period, parameters)
     h = 5e-5;
     x_cycle = deval(cds.orbits(1),0);
     f  = @(t, x) cds.dydt_ode(0,x,parameters{:});
-    ff = @(t, x1_and_x2) [f(0, x1_and_x2(1:cds.nphases    ))
-                          f(0, x1_and_x2(  cds.nphases+1:end))];
+    ff = @(t, x1_and_x2) [f(0, x1_and_x2(1:cds.n_phases    ))
+                          f(0, x1_and_x2(  cds.n_phases+1:end))];
     [~, orbit] = ode15s(ff, ...
       [0 period], ...
       [x_cycle - h * x; x_cycle+h * x], ...
       integration_opt);
     
     phi_x1__and__phi_x2 = orbit(end,:)';
-    phi_x1 = phi_x1__and__phi_x2(1:cds.nphases);
-    phi_x2 = phi_x1__and__phi_x2(cds.nphases+1:end);
+    phi_x1 = phi_x1__and__phi_x2(1:cds.n_phases);
+    phi_x2 = phi_x1__and__phi_x2(cds.n_phases+1:end);
     
     Mx = (phi_x2 - phi_x1)/h/2; 
   end

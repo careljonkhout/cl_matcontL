@@ -137,18 +137,16 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   mex_output[0] = mxCreateString(output_string);
 
   for (int i = 0; i < n_symbols; i++ ) {
-    //mxFree(old_symbols[i]);
-    //mxFree(new_symbols[i]);
+    mxFree(old_symbols[i]);
+    mxFree(new_symbols[i]);
   }
 
   mxFree(old_symbols    );
   mxFree(old_symbols_len);
   mxFree(new_symbols    );
   mxFree(new_symbols_len);
-  //mxFree(input_string);
-  //mxFree(output_string);
-  
-  
+  mxFree(input_string);
+  mxFree(output_string);
   
 }
   
@@ -162,24 +160,24 @@ void split_at_symbol(int si, Node* list) {
             char* pch = strstr(node -> str, old_symbols[si]);
             pch;
             pch = strstr(pch + 1, old_symbols[si])) {
-      bool previous_char_is_alpha;
+      bool symbol_continues_on_left;
       if (pch == list -> str) {
-        previous_char_is_alpha = false;
+        symbol_continues_on_left = false;
       } else {
-        previous_char_is_alpha = isalpha(pch[-1]);
+        symbol_continues_on_left = isalpha(pch[-1]) || pch[-1] == '_';
       }
-      if (previous_char_is_alpha) {
+      if (symbol_continues_on_left) {
         continue;
       }
       
-      bool next_char_is_alphanum;
+      bool symbol_continues_on_right;
       if (pch[old_symbols_len[si]] == '\0') {
-        next_char_is_alphanum = false;
+        symbol_continues_on_right = false;
       } else {
-        char* ptr = pch + old_symbols_len[si];
-        next_char_is_alphanum = isalnum(*ptr) || *ptr == '_';
+        char s = pch[ old_symbols_len[si] ];
+        symbol_continues_on_right = isalnum(s) || s == '_';
       }
-      if (next_char_is_alphanum) {
+      if (symbol_continues_on_right) {
         continue;
       }
       

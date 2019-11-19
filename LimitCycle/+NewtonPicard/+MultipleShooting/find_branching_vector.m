@@ -1,6 +1,6 @@
 function v = find_branching_vector(x, v_orig)
   global cds
-  m = cds.nMeshIntervals;
+  m = cds.n_mesh_intervals;
   
   [V, reduced_jacobian, delta_q_gamma, delta_q_r, ~, ~, ~, ~, ~] = ...
     NewtonPicard.MultipleShooting.compute_reduced_jacobian(x);
@@ -31,9 +31,9 @@ function v = find_branching_vector(x, v_orig)
   % We project the parts of the tangent vector that correspond the P_i -
   % components of the tangent vector at each mesh point to the full dimenional
   % space. Note that the P_i space is spanned the columns of V(:,:,i).
-  V_delta_p_s = zeros(cds.nphases * m, 2);
-  for i=1:m % m == cds.nMeshIntervals
-    indices1 = (i-1) * cds.nphases + (1:cds.nphases);
+  V_delta_p_s = zeros(cds.n_phases * m, 2);
+  for i=1:m % m == cds.n_mesh_intervals
+    indices1 = (i-1) * cds.n_phases + (1:cds.n_phases);
     indices2 = (i-1) * basis_size  + (1:basis_size );
     V_delta_p_s(indices1, :) = V(:,:,i) * delta_p_s(indices2, :);
   end

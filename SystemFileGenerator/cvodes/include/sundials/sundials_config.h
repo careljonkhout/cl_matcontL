@@ -19,6 +19,8 @@
  * -----------------------------------------------------------------*/
 
 /* Define SUNDIALS version numbers */
+#include <set_precision.h>
+
 #define SUNDIALS_VERSION "4.1.0"
 #define SUNDIALS_VERSION_MAJOR 4
 #define SUNDIALS_VERSION_MINOR 1
@@ -49,7 +51,7 @@
  *     #define SUNDIALS_DOUBLE_PRECISION 1
  *     #define SUNDIALS_EXTENDED_PRECISION 1
  */
-#define SUNDIALS_DOUBLE_PRECISION 1
+
 
 /* Define type of vector indices in SUNDIALS 'sunindextype'. 
  * Depending on user choice of index type, one of the following 

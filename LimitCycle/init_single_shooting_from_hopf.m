@@ -10,7 +10,7 @@ function [x0, v0] = init_single_shooting_from_hopf( odefile, ...
   end
   
 
-  cds.nphases = length(x) - 1;
+  cds.n_phases = length(x) - 1;
   cds.curve = @single_shooting;
   [max_order, ~] = find_maximum_order_of_symbolic_derivatives(odefile);
   cds.options.SymDerivative = max_order;
@@ -31,12 +31,12 @@ function [x0, v0] = init_single_shooting_from_hopf( odefile, ...
   
   
   % calculate eigenvalues and eigenvectors
-  [V,D] = eigs(A, cds.nphases);
+  [V,D] = eigs(A, cds.n_phases);
   % find pair of complex eigenvalues
   d = diag(D);
   smallest_sum = Inf;
-  for j=1:cds.nphases-1
-    [val,idx] = min(abs(d(j+1:cds.nphases)+d(j)));
+  for j=1:cds.n_phases-1
+    [val,idx] = min(abs(d(j+1:cds.n_phases)+d(j)));
     if val < smallest_sum
       idx1 = j;
       idx2 = j+idx;
@@ -66,20 +66,20 @@ function [x0, v0] = init_single_shooting_from_hopf( odefile, ...
   
   active_param_val = ode_parameters{active_parameter_index};
   
-  x0 = [x(1:cds.nphases); 2*pi/omega; active_param_val] + h*v0;
+  x0 = [x(1:cds.n_phases); 2*pi/omega; active_param_val] + h*v0;
   v0 = v0/norm(v0);
 
 
-  point_on_limitcycle    = x0(1:cds.nphases);
+  point_on_limitcycle    = x0(1:cds.n_phases);
   tangent_to_limitcycle  = dydt_ode(0, point_on_limitcycle, ode_parameters{:});
 
   cds.using_cvode     = false;
   cds.probfile        = odefile;
-  cds.options.PartitionMonodromy = cds.nphases > 20;
+  cds.options.PartitionMonodromy = cds.n_phases > 20;
   cds.nap             = 1;
-  cds.ndim            = cds.nphases + 2;
+  cds.ndim            = cds.n_phases + 2;
   cds.usernorm        = [];
-  cds.ncoo            = cds.nphases + 1;
+  cds.ncoo            = cds.n_phases + 1;
   cds.ActiveParams    = active_parameter_index;
   cds.P0              = cell2mat(ode_parameters);
   cds.previous_phases = point_on_limitcycle;

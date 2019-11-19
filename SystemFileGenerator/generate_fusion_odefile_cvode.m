@@ -1,4 +1,4 @@
-N = 30;
+N = 25;
 
 handles = fusion_symbolic();
 
@@ -38,7 +38,7 @@ vars = vars(10:end-3);
 tic
 max_ord = 1;
 
-name = sprintf('fusion_N_%d_cvode_max_ord_%d', N, max_ord);
+name = sprintf('fusion_N_%d_cvode', N);
 
 pars = 'a b q_inf';
 time = 't';

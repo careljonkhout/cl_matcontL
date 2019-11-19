@@ -5,7 +5,7 @@ function equilibrium = converge_to_equilibrium(in)
   handles      = feval(in.odefile);
   dydt_ode     = handles{2};
   jacobian_ode = handles{3};
-  cds.nphases  = length(in.initial_point);
+  cds.n_phases  = length(in.initial_point);
   using_cvode  = endsWith(func2str(in.time_integration_method), 'cvode');
   
   if ~ isempty(jacobian_ode) && ~ using_cvode

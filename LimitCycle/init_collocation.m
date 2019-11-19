@@ -12,7 +12,7 @@ function initial_continuation_data = init_collocation(varargin)
   input.poincare_tolerance       = 5e-2;
   input.show_plot                = false;
   input.nCollocationPoints       = 4;
-  input.nMeshIntervals           = [];
+  input.n_mesh_intervals           = [];
   input.collocation_tolerance    = 1e-2;
   
   i=1;
@@ -38,7 +38,7 @@ function initial_continuation_data = init_collocation(varargin)
   input.y             = input.y'; % transpose y
   input.p             = cell2mat(input.ode_parameters);
   input.ap            = input.active_parameter_index;
-  input.ntst          = input.nMeshIntervals;
+  input.ntst          = input.n_mesh_intervals;
   input.ncol          = input.nCollocationPoints;
   input.tolerance     = input.collocation_tolerance;
   
@@ -61,7 +61,7 @@ function [solution_t, solution_x] = compute_periodic_solution(in)
   handles      = feval(in.odefile);
   dydt_ode     = handles{2};
   jacobian_ode = handles{3};
-  cds.nphases  = length(in.point_on_limitcycle);
+  cds.n_phases  = length(in.point_on_limitcycle);
 
   tangent_to_limitcycle = dydt_ode(...
                              0,in.point_on_limitcycle, in.ode_parameters{:});
@@ -95,7 +95,7 @@ function [solution_t, solution_x] = compute_periodic_solution(in)
   solution = odextend(solution,[],1.1*period);
   
   solution_t = linspace(0,1.1*period, ...
-    3 * in.nMeshIntervals * in.nCollocationPoints);
+    3 * in.n_mesh_intervals * in.nCollocationPoints);
   solution_x = deval(solution, solution_t);
   
   

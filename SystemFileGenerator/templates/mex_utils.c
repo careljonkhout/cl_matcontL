@@ -75,5 +75,21 @@ double* get_doubles(const mxArray* array, char* input_name, int size) {
   return my_mex_get_doubles(array);
 }
 
+double get_scalar(const mxArray* array, char* input_name) {
+  check_double(array, input_name);
+  check_real  (array, input_name);
+  check_scalar(array, input_name);
+  return mxGetScalar(array);
+}
+
+
+double get_positive_scalar(const mxArray* array, char* input_name) {
+  check_double  (array, input_name);
+  check_real    (array, input_name);
+  check_scalar  (array, input_name);
+  check_positive(array, input_name);
+  return mxGetScalar(array);
+}
+
 
 

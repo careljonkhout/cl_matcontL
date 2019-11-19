@@ -50,9 +50,9 @@ function initial_continuation_data = ...
   input.active_parameter_index   = [];
   input.lower_bound_period       = [];
   input.upper_bound_period       = [];
-  input.nMeshIntervals           = [];
+  input.n_mesh_intervals           = [];
   input.subspace_size            = []; 
-  % todo: set a default for subspace size, for instance nphases / 2
+  % todo: set a default for subspace size, for instance n_phases / 2
   input.time_integration_method  = @ode15s;
   input.time_integration_options = odeset( ...
     'AbsTol', contopts.integration_abs_tol, ...
@@ -77,8 +77,8 @@ function initial_continuation_data = ...
       error(['You must specifiy ' fields{i} '.'])
     end
   end
-  if input.nMeshIntervals <= 1
-    error('nMeshIntervals must be greater than one');
+  if input.n_mesh_intervals <= 1
+    error('n_mesh_intervals must be greater than one');
   end
   
   

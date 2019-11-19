@@ -266,41 +266,43 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
     
     function generate_cvode_files(s)
       path          = System_of_ODEs.get_cl_matcontL_path();
-      system_dir    = fullfile(path, 'Systems', ['+' s.name]);
-      templates_dir = fullfile(path, 'SystemFileGenerator', 'templates');
-      cvodes_dir    = fullfile(path, 'SystemFileGenerator', 'cvodes');
-      if ~ exist(system_dir, 'dir')
-        mkdir(system_dir)
+      system_path    = fullfile(path, 'Systems', ['+' s.name]);
+      templates_path = fullfile(path, 'SystemFileGenerator', 'templates');
+      cvodes_path    = fullfile(path, 'SystemFileGenerator', 'cvodes');
+      if ~ exist(system_path, 'dir')
+        mkdir(system_path)
       end
       
-      filename = fullfile(system_dir, 'dydt_cvode.c');
-      content = emat2(fullfile(templates_dir, 'dydt_cvode.c.emat'));
+      filename = fullfile(system_path, 'dydt_cvode.c');
+      content = emat2(fullfile(templates_path, 'dydt_cvode.c.emat'));
       System_of_ODEs.print_to_file(filename, content);
       
       
-      filename = fullfile(system_dir , 'user_data.h');
-      content = emat2(fullfile(templates_dir, 'user_data.h.emat'));
+      filename = fullfile(system_path , 'user_data.h');
+      content = emat2(fullfile(templates_path, 'user_data.h.emat'));
       System_of_ODEs.print_to_file(filename, content);
+      
+      copyfile(fullfile(templates_path, 'set_precision.h'), ...
+               fullfile(system_path,    'set_precision.h'));
       
       if s.max_ord_derivatives >= 1
-        filename = fullfile(system_dir ,'jacobian_cvode.c');
-        content = emat2(fullfile(templates_dir, 'jacobian_cvode.c.emat'));
+        filename = fullfile(system_path ,'jacobian_cvode.c');
+        content = emat2(fullfile(templates_path, 'jacobian_cvode.c.emat'));
         System_of_ODEs.print_to_file(filename, content);
 
-        filename = fullfile(system_dir , 'd_sensitivity_dt.c');
-        content = emat2(fullfile(templates_dir, 'd_sensitivity_dt.c.emat'));
+        filename = fullfile(system_path , 'd_sensitivity_dt.c');
+        content = emat2(fullfile(templates_path, 'd_sensitivity_dt.c.emat'));
         System_of_ODEs.print_to_file(filename, content);
       end
     
-      cvodes_sources = dir(fullfile(cvodes_dir,'**','*.c'));
+      cvodes_sources = dir(fullfile(cvodes_path,'**','*.c'));
       cvodes_sources = arrayfun(@(f) fullfile(f.folder,f.name), ...
                             cvodes_sources, 'UniformOutput', false);
                                       
-      cvodes_sources = strrep(cvodes_sources, path, '');
+      cvodes_sources = strrep(cvodes_sources, cvodes_path, '');
       
       cvodes_sources = cellfun(@(f) ...
-              {sprintf('fullfile(path, ''%s'')', f)}, ...
-              cvodes_sources);
+              {sprintf('fullfile(cvodes_path, ''%s'')', f)}, cvodes_sources);
 
       if s.max_ord_derivatives >= 1
         mex_arguments = strjoin([ ...
@@ -308,34 +310,36 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
           {'fullfile(path, ''Systems'', dirname, ''dydt_cvode.c'')'}, ...    
           {'fullfile(path, ''Systems'', dirname, ''jacobian_cvode.c'')'}, ...
           {'fullfile(path, ''Systems'', dirname, ''d_sensitivity_dt.c'')'}, ...
-          {'sprintf(''-I%s'', fullfile(path, ''SystemFileGenerator'', ''cvodes'', ''include''))'}, ...
-          {'sprintf(''-I%s'', fullfile(path, ''Systems'', dirname))'}, ...
-          {'''-g'''}, ...  % -g enables debugging symbols
+          {'[''-I'' fullfile(path, ''SystemFileGenerator'', ''cvodes'', ''include'')]'}, ...
+          {'[''-I'' fullfile(path, ''Systems'', dirname)]'}, ...
+          ... {'''-g'''}, ...  % -g enables debugging symbols
           cvodes_sources(:)', ...
           {'''-output'''}, ...
-          {'fullfile(path, ''Systems'', filename)'}, ...
+          {'fullfile(path, ''Systems'', dirname, ''cvode'')'}, ...
         ], ', ... \n  ');
       else
         mex_arguments = strjoin([ ...
           {'fullfile(path, ''SystemFileGenerator'', ''templates'', ''cvode_mex.c'')'}, ...
-          {'fullfile(path, ''Systems'', dirname, ''dydt_cvode.c'')'}, ...    
-          {'sprintf(''-I%s'', fullfile(path, ''SystemFileGenerator'', ''cvodes'', ''include''))'}, ...
-          {'sprintf(''-I%s'', fullfile(path, ''Systems'', dirname))'}, ...
-          {'''-g'''}, ...  % -g enables debugging symbols
+          {'fullfile(path, ''Systems'', dirname, ''dydt_cvode.c'')'}, ...
+          {'[''-I'' fullfile(path, ''SystemFileGenerator'', ''cvodes'', ''include'')]'}, ...
+          {'[''-I'' fullfile(path, ''Systems'', dirname)]'}, ...
+          ... {'''-g'''}, ...  % -g enables debugging symbols
           {strjoin(cvodes_sources, ', ... \n  ')}, ...
           {'''-output'''}, ...
-          {'fullfile(path, ''Systems'', filename)'}, ...
+          {'fullfile(path, ''Systems'', dirname, ''cvode'')'}, ...
         ], ', ... \n  ');
       end
     
       mex_build = sprintf([
-              'path = System_of_ODEs.get_cl_matcontL_path;\n', ...'
-              'filename = ''%s'';\n', ...
-              'dirname = ''+%s'';\n', ...
-              'mex( ... \n  %s ... \n)'], ...
-               s.name, s.name, mex_arguments);
-      filename = fullfile(system_dir, 'recompile_cvode_mex.m');
-      System_of_ODEs.print_to_file(filename, mex_build);
+        'path        = System_of_ODEs.get_cl_matcontL_path;\n', ...'
+        'cvodes_path = fullfile(path, ''SystemFileGenerator'', ''cvodes'');\n', ...
+        'dirname     = ''+%s'';\n', ...      
+        'mex( ... \n  %s ... \n)'], ...
+        s.name, mex_arguments);
+      filename = fullfile(system_path, 'recompile_cvode_mex.m');
+      recompile = sprintf( ...
+              'function recompile_cvode_mex()\n %s\n end', mex_build);
+      System_of_ODEs.print_to_file(filename, recompile);
       eval(mex_build);
     end
       
@@ -460,15 +464,15 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
         
         if strcmp(vars_or_pars, 'vars')
           sparsity_pattern = cellfun(@(e) ~ isempty(e), c_code_of_jac_elements);
-          [lower, upper] = bandwidth(double(sparsity_pattern));
-          lower_bandwidth = lower;
-          upper_bandwidth = upper;
+          [lower, upper]   = bandwidth(double(sparsity_pattern));
+          lower_bandwidth  = lower;
+          upper_bandwidth  = upper;
           if lower + upper < length(s.input_vars) / 2
             storage = 'BANDED';
           end
         end
         
-        jacobian_lines         = cell(numel(jacobian_sym),1);
+        jacobian_lines = cell(numel(jacobian_sym),1);
         j = 1;
         for i = 1 : numel(jacobian_sym)
           if ~ isempty(c_code_of_jac_elements{i})
@@ -478,8 +482,8 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
 	          j = j + 1;
           end
         end
-        number_of_nonzeros = j;
-        jacobian = strjoin(jacobian_lines(1:number_of_nonzeros-1), '\n');
+        number_of_nonzeros = j - 1;
+        jacobian = strjoin(jacobian_lines(1:number_of_nonzeros), '\n');
         
         
         eval(['syms ' s.syms_arg]);
@@ -757,8 +761,8 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
     % is printed using the disp function see:
     % https://mathworks.com/help/matlab/ref/matlab.mixin.util.propertygroup-class.html
     function propgrp = getPropertyGroups(s)
-      my_rhs = replace_symbols(strjoin(s.rhs, ', '), ...
-        s.internal_syms, s.input_syms);
+      my_rhs = replace_symbols(strjoin(s.rhs, '; '), ...
+              s.internal_syms, s.input_syms);
       props = struct( ...
          'name',                          s.name, ...
          'variables',                     s.input_vars_str, ...
@@ -768,33 +772,36 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
          'right_hand_side',               my_rhs ...
          );
       if s.max_ord_derivatives >= 1
-        props.jacobian        = ...
-                replace_symbols(s.jacobian,        s.output_syms, s.input_syms);
-        props.jacobian_params = ...
-                replace_symbols(s.jacobian_params, s.output_syms, s.input_syms);
+        props.jacobian        = s.improve_readability(s.jacobian);
+        props.jacobian_params = s.improve_readability(s.jacobian_params);
       end
       if s.max_ord_derivatives >= 2
-        props.hessians        = ...
-                        replace_symbols(s.hessians,s.output_syms, s.input_syms);
-        props.hessians_params = ...
-                replace_symbols(s.hessians_params, s.output_syms, s.input_syms);
+        props.hessians        = s.improve_readability(s.hessians);
+        props.hessians_params = s.improve_readability(s.hessians_params);
       end
       if s.max_ord_derivatives >= 3
-        props.third_order_derivatives = replace_symbols(...
-                        s.third_order_derivatives, s.output_syms, s.input_syms);
+        props.third_order_derivatives  = s.improve_readability( ...
+                s.third_order_derivatives);
       end
       if s.max_ord_derivatives >= 4
-        props.fourth_order_derivatives = replace_symbols(...
-                       s.fourth_order_derivatives, s.output_syms, s.input_syms);
+        props.fourth_order_derivatives = s.improve_readability( ...
+                s.fourth_order_derivatives);
       end
       if s.max_ord_derivatives >= 5
-        props.fifth_order_derivatives = replace_symbols(...
-                        s.fifth_order_derivatives, s.output_syms, s.input_syms);
+        props.fifth_order_derivatives  = s.improve_readability( ...
+                s.fifth_order_derivatives);
       end
 
       propgrp = matlab.mixin.util.PropertyGroup(props);
     end
+    
+    function out = improve_readability(s, in)
+      out = replace_symbols(in, s.output_syms, s.input_syms);
+    end
+      
   end
+  
+  
     
   methods(Static)
 

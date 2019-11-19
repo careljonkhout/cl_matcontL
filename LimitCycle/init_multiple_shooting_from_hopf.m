@@ -1,5 +1,5 @@
 function [x0, v0] = init_multiple_shooting_from_hopf( odefile, x, ...
-   ode_parameters, active_parameter_index, h, nMeshIntervals, subspace_size)
+   ode_parameters, active_parameter_index, h, n_mesh_intervals, subspace_size)
 
 
   global cds
@@ -10,19 +10,19 @@ function [x0, v0] = init_multiple_shooting_from_hopf( odefile, x, ...
   end
   
 
-  cds.nphases = length(x) - 1;
+  cds.n_phases = length(x) - 1;
   cds.curve = @single_shooting;
   [max_order, ~] = find_maximum_order_of_symbolic_derivatives(odefile);
   cds.options.SymDerivative = max_order;
 
-  cds.mesh            = linspace(0, 1, nMeshIntervals + 1);
+  cds.mesh            = linspace(0, 1, n_mesh_intervals + 1);
   
   handles                = feval(odefile);
   dydt_ode               = handles{2};
   jacobian_ode           = handles{3};
   
   cds.func = dydt_ode;
-  cds.ncoo = cds.nphases;
+  cds.ncoo = cds.n_phases;
   
   if isnumeric(ode_parameters)
     ode_parameters = num2cell(ode_parameters);
@@ -35,12 +35,12 @@ function [x0, v0] = init_multiple_shooting_from_hopf( odefile, x, ...
   end
   
   % calculate eigenvalues and eigenvectors
-  [V,D] = eigs(A, cds.nphases);
+  [V,D] = eigs(A, cds.n_phases);
   % find pair of complex eigenvalues
   d = diag(D);
   smallest_sum = Inf;
-  for j=1:cds.nphases-1
-    [val,idx] = min(abs(d(j+1:cds.nphases)+d(j)));
+  for j=1:cds.n_phases-1
+    [val,idx] = min(abs(d(j+1:cds.n_phases)+d(j)));
     if val < smallest_sum
       idx1 = j;
       idx2 = j+idx;
@@ -74,24 +74,24 @@ function [x0, v0] = init_multiple_shooting_from_hopf( odefile, x, ...
   
   active_param_val = ode_parameters{active_parameter_index};
   
-  x = x(1:cds.nphases);
+  x = x(1:cds.n_phases);
   
   x0 = [repmat(x,length(cds.mesh)-1,1);2*pi/omega;active_param_val]+h*v0;
   
   v0 = v0/norm(v0);
 
 
-  point_on_limitcycle    = x0(1:cds.nphases);
+  point_on_limitcycle    = x0(1:cds.n_phases);
   tangent_to_limitcycle  = dydt_ode(0, point_on_limitcycle, ode_parameters{:});
   
   cds.using_cvode     = false; % todo: add cvode support
-  cds.nMeshIntervals  = nMeshIntervals;
+  cds.n_mesh_intervals  = n_mesh_intervals;
   cds.probfile        = odefile;
-  cds.options.PartitionMonodromy = cds.nphases > 20;
+  cds.options.PartitionMonodromy = cds.n_phases > 20;
   cds.nap             = 1;
-  cds.ndim            = nMeshIntervals * cds.nphases + 2;
+  cds.ndim            = n_mesh_intervals * cds.n_phases + 2;
   cds.usernorm        = [];
-  cds.ncoo            = cds.nphases + 1;
+  cds.ncoo            = cds.n_phases + 1;
   cds.ActiveParams    = active_parameter_index;
   cds.P0              = cell2mat(ode_parameters);
   cds.previous_phases = point_on_limitcycle;

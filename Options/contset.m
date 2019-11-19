@@ -105,7 +105,7 @@ function options = defaultOptions()
   options.SymDerivativeP = [1 1];       % ADDED Boolen Array indicating whether symbolic derivaties are used (when supplied in problem file)
   options.Increment      = 1e-5;        % Increment for finite difference approximations    DV: old name 'Cont_IncrFinDiff'
   options.FunTolerance   = 1e-6;        % residual tolerance for curve   DV: old name     'Cont_FunTolerance'
-  options.VarTolerance   = 1e-6;        % Tolerance for curve            DV: old name     'Cont_VarTolerance'
+  options.VarTolerance   = 1e-5;        % Tolerance for curve            DV: old name     'Cont_VarTolerance'
   options.NewtonPicardBasisTolerance = 1e-6; % Tolerance for the basis in Newton Picard corrections, see continuer/Newton_Picard_Correction.m
   options.NewtonPicardMaxSubspaceIterations = 10; % number of iterations before subspace iteration in Newton Picard is aborted, see continuer/Newton_Picard_Correction.m
   % TestTolerance (NOT SUPPORTED: cl_matcontL now makes a distinction between

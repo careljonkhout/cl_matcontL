@@ -1,4 +1,4 @@
-function print_diag(priority,message,varargin)
+function print_diag(priority, message, varargin)
 %This function prints diagnostic messages  
 global contopts cds
 

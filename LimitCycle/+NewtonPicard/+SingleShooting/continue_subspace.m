@@ -13,8 +13,8 @@ function V = continue_subspace(period, parameters)
   global cds contopts
   mv_count = 0;
   V_extended = [cds.V ...
-    rand(cds.nphases, cds.p + 2 - size(cds.V,2))];
-  %V_extended = [rand(cds.nphases, cds.p + cds.p_extra)];
+    rand(cds.n_phases, cds.p + 2 - size(cds.V,2))];
+  %V_extended = [rand(cds.n_phases, cds.p + cds.p_extra)];
   p = cds.p;
   
   int_opt = odeset(...

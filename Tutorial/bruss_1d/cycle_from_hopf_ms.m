@@ -58,11 +58,11 @@ function cycle_from_hopf_ms
   h = 1e-1;
   % subspace size is the size of the subspace used in the Newton-Picard algorithm
   subspace_size = floor(N/2);
-  nMeshIntervals = 2;
+  n_mesh_intervals = 2;
 
   % we run the initializer for continuation of cycles using single shooting:
   [x0, v0] = init_multiple_shooting_from_hopf(@brusselator_1d, x, ...
-              ode_parameters, active_parameter, h, nMeshIntervals, subspace_size);
+              ode_parameters, active_parameter, h, n_mesh_intervals, subspace_size);
 
   % we specify the options for the continuation of cycles using single shooting:
   opts_h_lc = contset();

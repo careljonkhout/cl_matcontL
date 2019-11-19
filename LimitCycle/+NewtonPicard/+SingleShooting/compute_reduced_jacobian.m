@@ -62,7 +62,7 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, M_delta_q_r, ...
   end
 
 
-  MV = zeros(cds.nphases,basis_size);
+  MV = zeros(cds.n_phases,basis_size);
   
   integrator = cds.integrator;
   rel_tol = contopts.integration_rel_tol;

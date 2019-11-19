@@ -3,11 +3,11 @@
 % subspaces at each point seems to be faster.
 function V = continue_subspaces(delta_t, parameters)
   global cds contopts
-  m = cds.nMeshIntervals;         
+  m = cds.n_mesh_intervals;         
   extended_basis_size = cds.p + 4;
-  V_extended = zeros([cds.nphases extended_basis_size m+1]);
+  V_extended = zeros([cds.n_phases extended_basis_size m+1]);
   V_extended(:,:,1) = [cds.V(:,:,1) ...
-    rand(cds.nphases, extended_basis_size - size(cds.V,2))];
+    rand(cds.n_phases, extended_basis_size - size(cds.V,2))];
   
   p_eff = 0;
   iteration = 0;
@@ -42,7 +42,7 @@ function V = continue_subspaces(delta_t, parameters)
 
     integrator = cds.integrator;
     
-    for i=1:m % m == cds.nMeshIntervals
+    for i=1:m % m == cds.n_mesh_intervals
       int_opt = odeset(...
         'AbsTol',       contopts.integration_abs_tol,    ...
         'RelTol',       contopts.integration_rel_tol,    ...
@@ -84,8 +84,8 @@ function V = continue_subspaces(delta_t, parameters)
       p_eff, basis_norm);
     V_extended(:,:,1) = V_extended(:,:,m+1);
   end
-  V = zeros(cds.nphases,p_eff,m);
-  for i=1:m % m == cds.nMeshIntervals
+  V = zeros(cds.n_phases,p_eff,m);
+  for i=1:m % m == cds.n_mesh_intervals
     V_i_orth = orth(V_extended(:,:,i));
     V(:,:,i) = V_i_orth(:,1:p_eff);
   end

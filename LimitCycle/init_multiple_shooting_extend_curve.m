@@ -8,7 +8,7 @@ function init_multiple_shooting_extend_curve(varargin)
   input.time_integration_method             = @ode15s;
   input.time_mesh                           = [];
   input.subspace_size                       = [];
-  input.nMeshIntervals                      = [];
+  input.n_mesh_intervals                      = [];
   
   i=1;
   while i <= nargin
@@ -41,19 +41,19 @@ function do_init_multiple_shooting_extend_curve(in)
   handles                = feval(in.odefile);
   dydt_ode               = handles{2};
   jacobian_ode           = handles{3};
-  cds.nphases            = (length(in.initial_continuation_state) - 2) / ...
-                              in.nMeshIntervals;
+  cds.n_phases            = (length(in.initial_continuation_state) - 2) / ...
+                              in.n_mesh_intervals;
                             
   ode_parameters         = convert_to_cell_if_needed(in.ode_parameters);
   
-  point_on_limitcycle    = in.initial_continuation_state(1:cds.nphases);
+  point_on_limitcycle    = in.initial_continuation_state(1:cds.n_phases);
   tangent_to_limitcycle  = dydt_ode(0, point_on_limitcycle, ode_parameters{:});
 
   cds.using_cvode     = false; % todo: add cvode support
-  cds.nMeshIntervals  = in.nMeshIntervals;
+  cds.n_mesh_intervals  = in.n_mesh_intervals;
   cds.mesh            = in.time_mesh;
   cds.probfile        = in.odefile;
-  cds.options.PartitionMonodromy = cds.nphases > 20;
+  cds.options.PartitionMonodromy = cds.n_phases > 20;
   cds.nap             = 1;
   cds.ndim            = length(in.initial_continuation_state);
   cds.usernorm        = [];

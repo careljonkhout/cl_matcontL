@@ -18,8 +18,8 @@ int jacobian_dydt(
                realtype t, N_Vector y_vec, N_Vector fy, SUNMatrix jacobian,
               void* user_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
   
-  double* y          = N_VGetArrayPointer(y_vec);
-  double* parameters = ((UserData) user_data)->parameters;
+  realtype* y          = N_VGetArrayPointer(y_vec);
+  realtype* parameters = ((UserData) user_data)->parameters;
 
   #if JACOBIAN_STORAGE == DENSE
   if (SUNMatGetID(jacobian) != SUNMATRIX_DENSE) {

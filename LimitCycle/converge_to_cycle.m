@@ -2,18 +2,20 @@ function point_on_cycle = converge_to_cycle(in)
     
   global cds;
   
-  handles      = feval(in.odefile);
-  dydt_ode     = handles{2};
-  jacobian_ode = handles{3};
-  cds.nphases  = length(in.initial_point);
-  using_cvode  = endsWith(func2str(in.time_integration_method), 'cvode');
+  handles       = feval(in.odefile);
+  dydt_ode      = handles{2};
+  jacobian_ode  = handles{3};
+  cds.n_phases  = length(in.initial_point);
+  using_cvode   = endsWith(func2str(in.time_integration_method), 'cvode') || ...
+                  endsWith(func2str(in.time_integration_method), 'arkode') ;
   
   if ~ isempty(jacobian_ode) && ~ using_cvode
     in.time_integration_options = odeset(in.time_integration_options, ...
                    'Jacobian', @(t,y) jacobian_ode(0, y, in.ode_parameters{:}));
   end
   
-  orbit_to_cycle_t = linspace(0, in.time_to_converge_to_cycle, 5000);
+  orbit_to_cycle_t = linspace(0, in.time_to_converge_to_cycle, ...
+                                 in.n_computed_points);
   
   if using_cvode
     [~, orbit_to_cycle_y]= feval(in.time_integration_method, ...
@@ -36,12 +38,17 @@ function point_on_cycle = converge_to_cycle(in)
   
   if in.show_plots
     my_figure = figure;
-    plot(orbit_to_cycle_t, orbit_to_cycle_y);
+    plot_t = linspace(0, in.time_to_converge_to_cycle, ...
+                         in.n_interpolated_points);
+    transformed = in.plot_transformation(orbit_to_cycle_y);
+    transformed(isinf(transformed)) = 0;
+    transformed(isnan(transformed)) = 0;
+    plot_y = interp1(orbit_to_cycle_t, transformed, plot_t, 'makima');
+    plot(plot_t', plot_y);
     xlabel('t')
-    ylabel('phase variables')
-    disp('Now showing plot from t = 0 to t = time_to_converge_to_cycle')
-    disp('Press a key to continue')
-    pause
+    ylabel(in.ylabel)
+    disp('Now showing plot from  t = 0  to  t = time_to_converge_to_cycle')
+    input('Press enter to continue or ctrl-c to abort', 's')
     if isvalid(my_figure)
       close(my_figure.Number)
     end

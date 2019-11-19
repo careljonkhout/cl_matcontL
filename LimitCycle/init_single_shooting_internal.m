@@ -12,7 +12,7 @@ function initial_continuation_data = init_single_shooting_internal(in)
   handles      = feval(in.odefile);
   dydt_ode     = handles{2};
   jacobian_ode = handles{3};
-  cds.nphases  = length(in.point_on_limitcycle);
+  cds.n_phases  = length(in.point_on_limitcycle);
   norm_of_gap  = Inf;
   
   tangent_to_limitcycle ...   
@@ -65,19 +65,19 @@ function initial_continuation_data = init_single_shooting_internal(in)
   
   
   period                    = orbit_t(end);
-  initial_continuation_data = zeros(cds.nphases + 2, 1);
-  initial_continuation_data(1:cds.nphases) = in.point_on_limitcycle;
+  initial_continuation_data = zeros(cds.n_phases + 2, 1);
+  initial_continuation_data(1:cds.n_phases) = in.point_on_limitcycle;
   
   
   initial_continuation_data(end-1) = period;
   initial_continuation_data(end) = in.ode_parameters{in.active_parameter_index};
   
   cds.probfile        = in.odefile;
-  cds.options.PartitionMonodromy = cds.nphases > 20;
+  cds.options.PartitionMonodromy = cds.n_phases > 20;
   cds.nap             = 1;
-  cds.ndim            = cds.nphases + 2;
+  cds.ndim            = cds.n_phases + 2;
   cds.usernorm        = [];
-  cds.ncoo            = cds.nphases + 1;
+  cds.ncoo            = cds.n_phases + 1;
   cds.ActiveParams    = in.active_parameter_index;
   cds.P0              = cell2mat(in.ode_parameters);
   cds.previous_phases = in.point_on_limitcycle(:);

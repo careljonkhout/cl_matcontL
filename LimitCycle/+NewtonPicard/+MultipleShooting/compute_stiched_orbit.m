@@ -1,12 +1,9 @@
 % computes the orbit of the cycle by "stiching together" all the partial orbits
 % started from all the mesh-points
 
+% called in function find_mesh_points_multiple_shooting in multiple_shooting.m
 function compute_stiched_orbit(x, abs_tol, rel_tol)
   global cds contopts;
-  
-  if cds.using_cvode
-    
-  end
   
   if nargin == 1
     abs_tol = contopts.integration_abs_tol;
@@ -27,8 +24,8 @@ function compute_stiched_orbit(x, abs_tol, rel_tol)
   dydt       = @(t,x) cds.dydt_ode(t, x, parameters{:});
   t_cycle = [];
   y_cycle = [];
-  indices = 1:cds.nphases;
-  for i=1:cds.nMeshIntervals
+  indices = 1:cds.n_phases;
+  for i=1:cds.n_mesh_intervals
     time_interval = period * [cds.mesh(i) cds.mesh(i+1)];
     if cds.using_cvode
       [t_mesh_interval, y_mesh_interval] = cds.integrator( ...
@@ -41,7 +38,7 @@ function compute_stiched_orbit(x, abs_tol, rel_tol)
       [t_mesh_interval, y_mesh_interval] = ...
         cds.integrator(dydt, time_interval, phases_0(indices), int_opt);
     end
-    if i < cds.nMeshIntervals
+    if i < cds.n_mesh_intervals
       t_cycle = [t_cycle; t_mesh_interval(1:end-1,:)]; %#ok<AGROW>
       y_cycle = [y_cycle; y_mesh_interval(1:end-1,:)]; %#ok<AGROW>
     else
@@ -51,7 +48,7 @@ function compute_stiched_orbit(x, abs_tol, rel_tol)
     % We do not know the end size of t_cycle and y_cycle beforehand, therefore,
     % we ignore the 'variable appears to change size on every loop iteration' -
     % warning.
-    indices = indices + cds.nphases;
+    indices = indices + cds.n_phases;
   end
   
   cds.t_cycle = t_cycle;

@@ -9,7 +9,7 @@
 %   'odefile',                   @my_odefile,  ...
 %   'ode_parameters',            {0.1, 0.2, 0.3}, ...
 %   'active_parameter_index',    3, ...
-%   'nMeshIntervals',            100, ...
+%   'n_mesh_intervals',            100, ...
 %   'lower_bound_period',        1, ...
 %   'upper_bound_period',        20, ...
 %   'subspace_size',             10, ...
@@ -65,7 +65,7 @@
 % in init_multiple_shooting_internal and "how a cycle is detected" above to see
 % how lower_bound_period is used internally.
 %
-%% nMeshIntervals
+%% n_mesh_intervals
 % the number of mesh intervals used in the multiple shooting method.
 %
 %% subspace_size
@@ -117,7 +117,7 @@ function initial_continuation_data = ...
   input.active_parameter_index    = [];
   input.lower_bound_period        = [];
   input.upper_bound_period        = [];
-  input.nMeshIntervals            = [];
+  input.n_mesh_intervals            = [];
   input.subspace_size             = []; 
   input.time_integration_method   = @ode15s;
   input.time_integration_options  = odeset( ...
@@ -126,6 +126,10 @@ function initial_continuation_data = ...
   input.poincare_tolerance        = 1e-2;
   input.show_plots                = false;
   input.cvode_verbose             = false;
+  input.plot_transformation       = @(x) x;
+  input.ylabel                    = 'phase variables';
+  input.n_computed_points         = 100;
+  input.n_interpolated_points     = 10000;
   
   i=1;
   while i <= nargin
@@ -161,9 +165,9 @@ function initial_continuation_data = ...
   Assert.scalar  ('upper_bound_period', input.time_to_converge_to_cycle);
   Assert.positive('upper_bound_period', input.time_to_converge_to_cycle);
   
-  Assert.scalar      (   'nMeshIntervals', input.nMeshIntervals); 
-  Assert.integer     (   'nMeshIntervals', input.nMeshIntervals);
-  Assert.greater_than(1, 'nMeshIntervals', input.nMeshIntervals);
+  Assert.scalar      (   'n_mesh_intervals', input.n_mesh_intervals); 
+  Assert.integer     (   'n_mesh_intervals', input.n_mesh_intervals);
+  Assert.greater_than(1, 'n_mesh_intervals', input.n_mesh_intervals);
 
   Assert.scalar   ('subspace_size', input.subspace_size); 
   Assert.integer  ('subspace_size', input.subspace_size);

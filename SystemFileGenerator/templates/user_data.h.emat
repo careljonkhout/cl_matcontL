@@ -14,6 +14,8 @@
 #define OPEN_MP               false
 #define N_THREADS             2
 
+#define SUNDAILS_DOUBLE_PRECISION 1
+
 typedef struct {
-  double* parameters;
+  realtype* parameters;
 } *UserData;

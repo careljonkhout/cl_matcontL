@@ -14,13 +14,13 @@ function x = do_one_correction(x0, x, v0)
           phases_0, phi, period, active_par_val] = ...
     NewtonPicard.MultipleShooting.compute_reduced_jacobian(x);
   
-  m = cds.nMeshIntervals;
+  m = cds.n_mesh_intervals;
   
   lhs_3_1 = zeros(1, cds.reduced_jac_size);
   col_offset = 0;
-  for i = 1 : m % m == cds.nMeshIntervals
+  for i = 1 : m % m == cds.n_mesh_intervals
     indices_lhs_3_1          = col_offset  + ( 1 : size(V{i}, 2) );
-    indices_v0               = (i - 1) * cds.nphases + (1 : cds.nphases);
+    indices_v0               = (i - 1) * cds.n_phases + (1 : cds.n_phases);
     lhs_3_1(indices_lhs_3_1) = v0(indices_v0)' * V{i};
     col_offset               = col_offset + size(V{i}, 2);
   end
@@ -28,7 +28,7 @@ function x = do_one_correction(x0, x, v0)
   c_n__delta_q_gamma = 0;
   
   for i = 1 : m
-    indices_v0          = (i-1) * cds.nphases + (1:cds.nphases);
+    indices_v0          = (i-1) * cds.n_phases + (1:cds.n_phases);
     c_n__delta_q_gamma  = c_n__delta_q_gamma + ...
                                   v0(indices_v0)' * delta_q_gamma(:,i);
   end
@@ -73,11 +73,11 @@ function x = do_one_correction(x0, x, v0)
   delta_T     = delta_p_delta_T_and_delta_gamma(end-1);
   delta_gamma = delta_p_delta_T_and_delta_gamma(end);
 
-  V_delta_p = zeros(cds.nphases * m, 1);
+  V_delta_p = zeros(cds.n_phases * m, 1);
   col_offset = 0;
   for i = 1 : m
     indices_delta_p              = col_offset + ( 1 : size(V{i}, 2) );
-    indices_V_delta_p            = (i - 1) * cds.nphases + (1 : cds.nphases);
+    indices_V_delta_p            = (i - 1) * cds.n_phases + (1 : cds.n_phases);
     V_delta_p(indices_V_delta_p) = V{i} * delta_p(indices_delta_p);
     col_offset                   = col_offset + size(V{i}, 2);
   end

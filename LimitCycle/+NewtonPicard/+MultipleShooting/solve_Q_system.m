@@ -22,21 +22,21 @@
 function [delta_q, G_delta_q] = solve_Q_system(V, rhs, delta_t, parameters)
   global cds contopts;
   
-  m = cds.nMeshIntervals;
+  m = cds.n_mesh_intervals;
   for i=1:m
     ni = next_index_in_cycle(i,m);
     rhs(:,i) = rhs(:,i) - V{ni} * V{ni}' * rhs(:,i);
   end
   
-  G_delta_q  = zeros(cds.nphases, m);
-  delta_q    = zeros(cds.nphases, m);
+  G_delta_q  = zeros(cds.n_phases, m);
+  delta_q    = zeros(cds.n_phases, m);
   
   minimum_residual = Inf;
   monodromy_map = @NewtonPicard.MultipleShooting.monodromy_map;
   
   for iteration_number = 1:contopts.MaxPicardIterations
    
-    for i=2:m %  m == cds.nMeshIntervals;
+    for i=2:m %  m == cds.n_mesh_intervals;
       delta_q(:,i)   = G_delta_q(:,i-1) + rhs(:,i-1);
       delta_q(:,i)   = delta_q(:,i) - V{i} * (V{i}' * delta_q(:,i));
       G_delta_q(:,i) = monodromy_map(i, delta_q(:,i), delta_t(i), parameters);

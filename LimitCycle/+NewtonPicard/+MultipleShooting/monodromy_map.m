@@ -52,8 +52,7 @@ function Mx  = monodromy_map(i, x, time_interval, parameters, abs_tol, rel_tol)
     dydt_mon = @(t, y) ...
       cds.jacobian_ode(t, deval(cds.orbits(i), t), parameters{:}) * y;
 
-    [~,orbit] = cds.integrator(...
-      dydt_mon, [0 time_interval], x, int_opt);
+    [~,orbit] = cds.integrator(dydt_mon, [0 time_interval], x, int_opt);
 
     Mx = orbit(end,:)';
   else 
@@ -74,16 +73,16 @@ function Mx  = monodromy_map(i, x, time_interval, parameters, abs_tol, rel_tol)
     h = 5e-5;
     x_cycle = deval(cds.orbits(i),0);
     f  = @(t, x) cds.dydt_ode(0,x,parameters{:});
-    ff = @(t, x1_and_x2) [f(0, x1_and_x2(1:cds.nphases    ))
-                          f(0, x1_and_x2(  cds.nphases+1:end))];
+    ff = @(t, x1_and_x2) [f(0, x1_and_x2(1:cds.n_phases    ))
+                          f(0, x1_and_x2(  cds.n_phases+1:end))];
     [~, orbit] = ode15s(ff, ...
       [0 time_interval], ...
       [x_cycle - h * x; x_cycle+h * x], ...
       integration_opt);
     
     phi_x1__and__phi_x2 = orbit(end,:)';
-    phi_x1 = phi_x1__and__phi_x2(1:cds.nphases);
-    phi_x2 = phi_x1__and__phi_x2(cds.nphases+1:end);
+    phi_x1 = phi_x1__and__phi_x2(1:cds.n_phases);
+    phi_x2 = phi_x1__and__phi_x2(cds.n_phases+1:end);
     
     Mx = (phi_x2 - phi_x1)/h/2; 
   end

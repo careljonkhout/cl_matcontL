@@ -8,19 +8,19 @@ function x = init_single_shooting_branching(odefile, bpc, h, ...
   dydt_ode              = ode_handles{2};
   tangent_to_limitcycle = feval(dydt_ode,0, point_on_limitcycle, parameters{:});
   using_cvode           = endsWith(func2str(time_integration_method), 'cvode');
-  nphases               = length(bpc.x) - 2;
-  basis_size            = max(nphases, min(40, nphases/2));
+  n_phases               = length(bpc.x) - 2;
+  basis_size            = max(n_phases, min(40, n_phases/2));
   
   global cds;
   
   cds = [];
-  cds.nphases                    = length(bpc.x) - 2;
+  cds.n_phases                    = length(bpc.x) - 2;
   cds.probfile                   = odefile;
-  cds.options.PartitionMonodromy = cds.nphases > 20;
+  cds.options.PartitionMonodromy = cds.n_phases > 20;
   cds.nap                        = 1;
-  cds.ndim                       = cds.nphases + 2;
+  cds.ndim                       = cds.n_phases + 2;
   cds.usernorm                   = [];
-  cds.ncoo                       = cds.nphases + 1;
+  cds.ncoo                       = cds.n_phases + 1;
   cds.ActiveParams               = bpc.ap;
   cds.P0                         = cell2mat(parameters);
   cds.previous_phases            = point_on_limitcycle(:);

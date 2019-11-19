@@ -87,10 +87,10 @@ typedef double realtype;
 #elif defined(SUNDIALS_EXTENDED_PRECISION)
 
 typedef long double realtype;
-# define RCONST(x) x##L
+# define RCONST(x) x##q
 # define BIG_REAL LDBL_MAX
 # define SMALL_REAL LDBL_MIN
-# define UNIT_ROUNDOFF LDBL_EPSILON
+# define UNIT_ROUNDOFF DBL_EPSILON
 
 #endif
 

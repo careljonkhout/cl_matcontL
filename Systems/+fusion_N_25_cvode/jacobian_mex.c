@@ -5,88 +5,30 @@
 
 #include <math.h>
 #include "mex.h"
+#include "mex_utils.c"
 
-#define n_parameters 3
-#define n_inputs     5
-#define n_outputs    1
-#define system_size  72
+#define N_PARAMETERS        3
+#define REQUIRED_N_INPUTS   5
+#define SYSTEM_SIZE         72
 
-#define input_t 0
-#define input_y 1
+#define INPUT_T 0
+#define INPUT_Y 1
+#define JAC(i,j) jac[(i) + (j) * SYSTEM_SIZE]
 
+void mexFunction(int n_outputs,       mxArray *outputs[], 
+                 int n_inputs , const mxArray *inputs []) {
 
-void fusion_N_25_cvode_max_ord_1_jacobian(double* y, double* parameters, double* dydt);
+  check_n_inputs(n_inputs, REQUIRED_N_INPUTS, "jacobian_mex");
 
-void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
+  double *y = get_doubles(inputs[INPUT_Y], "Input vector y", SYSTEM_SIZE);
 
-  double parameters[n_parameters];  
-  double *y;                      /* 1xN input matrix */
-  size_t ncols;                   /* size of matrix */
-  double *outMatrix;              /* output matrix */
-
-  /* check for proper number of arguments */
-  if(nrhs != n_inputs) {
-    mexErrMsgIdAndTxt("fusion_N_25_cvode_max_ord_1_dydt:nrhs","Five inputs required.");
-  }
-  if(nlhs != n_outputs) {
-    mexErrMsgIdAndTxt("fusion_N_25_cvode_max_ord_1_dydt:nlhs","One output required.");
-  }
-
-
-  if ( !mxIsDouble(prhs[input_y]) ) {
-    mexErrMsgIdAndTxt("system_fusion_N_25_cvode_max_ord_1:not_double",
-                      "Error: Input vector y is not a double.");
-  }
-
-  if ( mxGetNumberOfElements(prhs[input_y]) != system_size ) {
-    mexErrMsgIdAndTxt("system_fusion_N_25_cvode_max_ord_1:wrong_size",
-                     "Input vector y must have 72 elements.");
-  }
-
-  for ( int i = 0; i < n_parameters; i++ ) {
-    if ( !mxIsDouble(prhs[i + 2]) ) {
-      mexErrMsgIdAndTxt("fusion_N_25_cvode_max_ord_1_dydt:not_double",
-                        "Error: one of the parameters is not a double");
-    } else if ( mxIsComplex(prhs[i + 2]) ) {
-      mexErrMsgIdAndTxt("fusion_N_25_cvode_max_ord_1_dydt:not_complex",
-                        "Error: one of the parameters not a real number");
-    } else if ( mxGetNumberOfElements(prhs[i + 2]) != 1 ) {
-      mexErrMsgIdAndTxt("fusion_N_25_cvode_max_ord_1_dydt:notScalar",
-                        "Error: one of the parameters is not scalar");
-    } else {
-      parameters[i] = mxGetScalar(prhs[i+2]);
-    }
-  }
+  double parameters[N_PARAMETERS];  
+  get_parameters(inputs, parameters, N_PARAMETERS);
     
-    
-  /* create a pointer to the real data in the input matrix  */
-  #if MX_HAS_INTERLEAVED_COMPLEX
-  y = mxGetDoubles(prhs[input_y]);
-  #else
-  y = mxGetPr(prhs[input_y]);
-  #endif
+  outputs[0] = mxCreateDoubleMatrix(SYSTEM_SIZE, SYSTEM_SIZE, mxREAL);
+  double* jac = my_mex_get_doubles(outputs[0]);
 
-  /* get dimensions of the input matrix */
-
-  /* create the output matrix */
-  plhs[0] = mxCreateDoubleMatrix(system_size, system_size, mxREAL);
-
-  /* get a pointer to the real data in the output matrix */
-  #if MX_HAS_INTERLEAVED_COMPLEX
-  outMatrix = mxGetDoubles(plhs[0]);
-  #else
-  outMatrix = mxGetPr(plhs[0]);
-  #endif
-
-  /* call the computational routine */
-  fusion_N_25_cvode_max_ord_1_jacobian(y,parameters,outMatrix);
-    
-}
-
-#define JAC(i,j) jac[(i) + (j) * system_size]
-
-void fusion_N_25_cvode_max_ord_1_jacobian(double* y, double* parameters, double* jac) {
-  JAC(0,0) =  tanh(y[2])*8.493781688157091E+4+(pow(tanh(y[2]),2.0)*(1.1E+1/1.0E+1)-1.1E+1/1.0E+1)*(y[2]*2.227227048870707E+2-y[5]*2.227227048870706E+2)*1.482109278115154E+2-1.467107746136225E+5;
+    JAC(0,0) =  tanh(y[2])*8.493781688157091E+4+(pow(tanh(y[2]),2.0)*(1.1E+1/1.0E+1)-1.1E+1/1.0E+1)*(y[2]*2.227227048870707E+2-y[5]*2.227227048870706E+2)*1.482109278115154E+2-1.467107746136225E+5;
   JAC(1,0) =  -(y[0]*2.223163917061572E+2-y[3]*2.227162071464879E+2)*((y[4]*(tanh(y[2])*(1.1E+1/1.0E+1)-1.9E+1/1.0E+1)*(-9.898546209210668E+1))/(y[0]*y[3])+1.0/(y[0]*y[0])*y[1]*(pow(tanh(y[2]),2.0)*(1.1E+1/1.0E+1)-1.1E+1/1.0E+1)*(y[2]*2.227227048870707E+2-y[5]*2.227227048870706E+2)*6.666666667000001E-1+(1.0/(y[0]*y[0])*(tanh(y[2])*(1.1E+1/1.0E+1)-1.9E+1/1.0E+1)*(y[0]*y[4]*4.783883852151659E+47-y[1]*y[3]*4.776726730347344E+47))/(y[3]*4.832915613103084E+45))-(y[4]*(tanh(y[2])*1.1E+1-1.9E+1)*6.994475581525016E+3)/y[3]+(y[1]*(tanh(y[2])*(1.1E+1/1.0E+1)-1.9E+1/1.0E+1)*7.721619716506447E+4)/y[0]-(1.0/(y[0]*y[0])*((tanh(y[2])*1.499999999925-2.590909090779545)*(y[0]*1.482109278115154E+2-y[3]*1.484774714384158E+2)-y[0]*(pow(tanh(y[2]),2.0)*1.499999999925-1.499999999925)*(y[2]*2.227227048870707E+2-y[5]*2.227227048870706E+2))*(y[0]*y[4]*4.783883852151659E+47-y[1]*y[3]*4.776726730347344E+47))/(y[3]*4.832915613103084E+45)-((y[0]*y[4]*4.783883852151659E+47-y[1]*y[3]*4.776726730347344E+47)*(tanh(y[2])*(-2.223163917061572E+2)+(pow(tanh(y[2]),2.0)*1.499999999925-1.499999999925)*(y[2]*2.227227048870707E+2-y[5]*2.227227048870706E+2)+3.840010402197261E+2))/(y[0]*y[3]*4.832915613103084E+45)+(y[1]*(pow(tanh(y[2]),2.0)*(1.1E+1/1.0E+1)-1.1E+1/1.0E+1)*(y[2]*2.227227048870707E+2-y[5]*2.227227048870706E+2)*1.482109278115154E+2)/y[0]+(y[4]*((tanh(y[2])*1.499999999925-2.590909090779545)*(y[0]*1.482109278115154E+2-y[3]*1.484774714384158E+2)-y[0]*(pow(tanh(y[2]),2.0)*1.499999999925-1.499999999925)*(y[2]*2.227227048870707E+2-y[5]*2.227227048870706E+2))*9.898546209210668E+1)/(y[0]*y[3])-1.0/(y[0]*y[0])*y[1]*(y[0]*7.721619716506447E+4-y[3]*7.693997928306486E+4)*(tanh(y[2])*(1.1E+1/1.0E+1)-1.9E+1/1.0E+1)+((tanh(y[2])*(1.1E+1/1.0E+1)-1.9E+1/1.0E+1)*(y[0]*y[4]*4.783883852151659E+47-y[1]*y[3]*4.776726730347344E+47)*4.600047042067302E-44)/(y[0]*y[3]);
   JAC(2,0) =  1.0/(y[0]*y[0]*y[0])*y[1]*7.90566590215788E+3-1.0/(y[0]*y[0]*y[0]*y[0])*y[1]*y[3]*6.533008743616947E+3-(1.0/(y[0]*y[0])*y[4]*1.78173831765792E+3)/y[3];
   JAC(3,0) =  tanh(y[5])*(-2.941189592438535E+4)-(pow(tanh(y[5]),2.0)*(1.1E+1/1.0E+1)-1.1E+1/1.0E+1)*(y[2]*(-9.424940444237912E+1)+y[5]*4.685046119950637E+1+y[8]*4.739894324287273E+1)*9.424940444237912E+1+5.08023656875747E+4;

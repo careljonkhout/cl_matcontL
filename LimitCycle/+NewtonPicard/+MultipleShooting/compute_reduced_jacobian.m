@@ -2,133 +2,53 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
           phases_0, phases_T_i, period, active_par_val] = ...
             compute_reduced_jacobian(x)
 
-  global cds contopts
+  global cds
+  
   [phases_0, period, parameters] = ...
-    NewtonPicard.MultipleShooting.extract_phases_period_and_parameters(x);
-  cds.phases_0 = phases_0;
+          NewtonPicard.MultipleShooting.extract_phases_period_and_parameters(x);
+        
+  cds.phases_0   = phases_0;
   active_par_val = parameters{cds.ActiveParams};
+  m              = cds.n_mesh_intervals;
+  mesh           = cds.mesh;
   
-  if ~ cds.using_cvode
-    % Since the result of the next time-integration will be reused many times,
-    % we set the tolerances a bit tighter than the rest.
-    integration_opt = odeset(...
-      'AbsTol',      contopts.integration_abs_tol / 10,    ...
-      'RelTol',      contopts.integration_rel_tol / 10    ...
-    );
-
-    if ~ isempty(cds.jacobian_ode)
-      integration_opt = odeset(integration_opt, ...
-      'Jacobian',     @(t,y) feval(cds.jacobian_ode,t,y,parameters{:}));
-    end
-  end
-
-
-  m          = cds.nMeshIntervals;
-  phases_T_i = zeros(cds.nphases, m);
-  
-  integrator            = cds.integrator;
-  dydt_ode              = @(t,y) cds.dydt_ode(t, y, parameters{:});
-  mesh                  = cds.mesh;
   % compute length of each mesh interval:
   delta_t               = period * diff(mesh);
-  
-  if cds.using_cvode
-    [~,y] = feval(integrator, ...
-      'initial_point',   phases_0(:,1), ...
-      't_values',        [0 delta_t(1)], ...
-      'ode_parameters',  cell2mat(parameters), ...
-      'abs_tol',         contopts.integration_abs_tol, ...
-      'rel_tol',         contopts.integration_rel_tol);
-    phases_T_i(:,1) = y(end,:)';
-  else
-    cds.orbits(1) = feval(integrator,...
-            @(t, y) feval(dydt_ode, t, y), ...
-            [0 period], ...
-            phases_0(:,1), integration_opt);
-    phases_T_i(:,1) = deval(cds.orbits(1), delta_t(1));
-  end
-  
-
-  if contopts.contL_ParallelComputing && cds.using_cvode
-    error('parallel computing with cvode not yet implemented for multiple shooting')
-  end
-  parfor_failed = false;
-  try 
-    if contopts.contL_ParallelComputing
-      parfor i=2:m
-        % The function monodromy_map cannot be used here, since it depends on
-        % the global variable cds, and global variables are not copied so the
-        % the workspace of the workers that parfor uses.
-        orbits(i) = feval(integrator,...
-          @(t, y) feval(dydt_ode, t, y), ...
-          [0 delta_t(i)], ...
-          phases_0(:,i), integration_opt);
-        phases_T_i(:,i) = deval(orbits(i), delta_t(i));
-      end
-      cds.orbits(2:m) = orbits(2:m);
-    end
-    catch my_error
-    if (strcmp(my_error.identifier, ...
-                                'MATLAB:remoteparfor:AllParforWorkersAborted'))
-      % Something went wrong with the parfor workers.
-      % We try again with ordinary for.
-      print_diag(0, 'Parfor aborted, retrying with ordinary for.\n');
-      parfor_failed = true;
-    else
-      % in case of some other error, we want to know about it, so we rethrow the
-      % error
-      rethrow(my_error)
-    end
-  end
-  
-  if ~ contopts.contL_ParallelComputing || parfor_failed
    
-    for i=2:m
-      print_diag(6,'orbit %d\n',i)
-      if cds.using_cvode
-        [~, y] = feval(integrator, ...
-          'initial_point',   phases_0(:,i), ...
-          't_values',        [0 delta_t(i)], ...
-          'ode_parameters',  cell2mat(parameters), ...
-          'abs_tol',         contopts.integration_abs_tol, ...
-          'rel_tol',         contopts.integration_rel_tol);
-        phases_T_i(:,i) = y(end,:)';
-      else
-        cds.orbits(i) = feval(integrator,...
-          @(t, y) feval(dydt_ode,t, y), ...
-          [0 delta_t(i)], ...
-          phases_0(:,i), integration_opt);
+  % when not using cvode, compute_cycle_parts must happen before computing
+  % subspaces
+  phases_T_i = NewtonPicard.MultipleShooting.compute_cycle_parts(x);
 
-        phases_T_i(:,i) = deval(cds.orbits(i), delta_t(i));
-      end
-    end
-  end
-
-  V    = cell(m,1);
-  V{1} = compute_subspace(1, period, parameters);
-  V{2} = compute_subspace(2, period, parameters);
-  MV   = cell(m,1);
-  M    = @NewtonPicard.MultipleShooting.monodromy_map; 
+  V          = cell(m,1);
+  V{1}       = compute_subspace(1, period, parameters);
+  MV         = cell(m,1);
+  M          = @NewtonPicard.MultipleShooting.monodromy_map; 
   
-  for j = 1 : size(V{1}, 2)
-    MV{1}(:, j) = M(i, V{1}(:, j), delta_t(1), parameters);
-  end
-  
-  for i = 2 : m % m == cds.nMeshIntervals
+  for i = 1 : m % m == cds.n_mesh_intervals
     print_diag(6,'G %d\n',i);
     for j = 1 : size(V{i}, 2)
       MV{i}(:, j) = M(i, V{i}(:, j), delta_t(i), parameters);
     end
-    if i < m
-      V_i_plus_one = orth(MV{i});
-      if size(V_i_plus_one, 2) >= cds.preferred_basis_size
-        V{i+1} = V_i_plus_one;
-      else
-        print_diag(1, ...
-                 'subspace is rank deficient. computing subspace using eigs\n');
-        V{i + 1} = compute_subspace(i + 1, period, parameters);
-      end
+    if i == m
+      break
     end
+    
+    V{i+1} = orth(MV{i});
+    
+    
+    if size(V{i+1}, 2) == size(V{i}, 2); continue; end
+    
+    print_diag(1,'subspace is rank deficient. computing subspace using eigs\n');
+    V{i+1} = compute_subspace(i + 1, period, parameters);
+    
+    if size(V{i+1},2) == size(V{i}, 2); continue; end
+    
+    cds.new_n_mesh_intervals = 1.5 * cds.n_mesh_intervals;
+    % todo increase number of mesh intervals here
+    % todo call "adapt" to remesh after increase of number of mesh intervals
+     error('npms:wrong_basis_size', ...
+         'subspace rank is still wrong. Abborting current continuation step\n');
+   
   end
   
   cds.V = V;
@@ -148,7 +68,7 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
   
   row_offset = 0;
   col_offset = 0;
-  for i=1:m % note that: m == cds.nMeshIntervals
+  for i=1:m % note that: m == cds.n_mesh_intervals
     ni = next_index_in_cycle(i,m);
     row_indices = row_offset + (1 : size(V{ni}, 2));
     col_indices = col_offset + (1 : size(V{ i}, 2));
@@ -159,6 +79,7 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
     col_offset = col_offset + size(V{ i}, 2);
     row_offset = row_offset + size(V{ni}, 2);
   end
+  
 
   % add the negative identity matrices to F_0_pp
   row_offset = 0;
@@ -189,7 +110,7 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
   end
   
 
-  rhs_delta_q_gamma = zeros(cds.nphases,m);
+  rhs_delta_q_gamma = zeros(cds.n_phases,m);
  
   V_T__b_g = zeros(reduced_jac_size, 1);
   
@@ -209,10 +130,10 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
   
   % the r in q_r means residual
   
-  rhs_delta_q_r = zeros(cds.nphases,m);
+  rhs_delta_q_r = zeros(cds.n_phases,m);
   
   
-  for i=1:m % m == cds.nMeshIntervals
+  for i=1:m % m == cds.n_mesh_intervals
     ni                 = next_index_in_cycle(i,m);
     r                  = phases_T_i(:,i) - phases_0(:,ni);
     rhs_delta_q_r(:,i) = r - V{ni} * (V{ni}' * r);
@@ -229,11 +150,11 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
   jac_1_3 = V_T__b_g;
   
   row_offset = 0;
-  for i=1:m % m == cds.nMeshIntervals
+  for i=1:m % m == cds.n_mesh_intervals
     ni                = next_index_in_cycle(i,m);
-    indices           = row_offset + (1 : size(V{ni},2));
+    indices           = row_offset + (1 : size(V{ni}, 2));
     jac_1_3(indices)  = jac_1_3(indices) + V{ni}' * G_delta_q_gamma(:,i);
-    row_offset        = row_offset + size(V{ni},2);
+    row_offset        = row_offset + size(V{ni}, 2);
   end
 
   d_s_d_T      = 0;
@@ -256,40 +177,28 @@ end
 function V = compute_subspace(i, period, parameters)
   global cds
   
-  n_eigenvalues = min(cds.nphases,cds.p + 1);
-  
-  if i == 1
-    n_eigenvalues = min(cds.nphases, n_eigenvalues + 2);
-  end
-  
-  [eigenvectors, eigenvalues, no_convergence] = eigs( ...
-    @(x) NewtonPicard.MultipleShooting.monodromy_map( ...
-       i, x, period, parameters), ...
-    cds.nphases, ...
+  n_eigenvalues = min(cds.n_phases, cds.preferred_basis_size + 1);
+
+  [eigenvectors, eigenvalues] = eigs( ...
+    @(x) NewtonPicard.MultipleShooting.full_monodromy_map(...
+          i, x, period, parameters), ...
+    cds.n_phases, ...
     n_eigenvalues);
 
-
-  if no_convergence
-    V = [];
-    fprintf(['Newton_Picard_Correction.m:', ...
-      ' eigenvalues of monodromy matrix did not converge.\n'])
-    return
-  end
-
   eigenvalues = diag(eigenvalues);
-  basis = zeros(cds.nphases, cds.p + 1);
+  basis = zeros(cds.n_phases, cds.preferred_basis_size + 1);
 
-  i = 1;
+  j = 1;
 
-  while i <= n_eigenvalues
-    basis(:, i) = real(eigenvectors(:,i));
-    i = i + 1;
-    if max(abs(imag(eigenvalues(i-1)))) > 1e-14
-      basis(:, i) = imag(eigenvectors(:,i-1));
-      i = i + 1;
+  while j <= cds.preferred_basis_size
+    basis(:, j) = real(eigenvectors(:,j));
+    j = j + 1;
+    if max(abs(imag(eigenvalues(j-1)))) > 1e-14
+      basis(:, j) = imag(eigenvectors(:,j-1));
+      j = j + 1;
     end
   end
-  V = orth(basis(:,1:i-1));
+  V = orth(basis(:,1:j-1));
 end
 
 

@@ -11,8 +11,8 @@
 
 function [phases,period,parameters] = extract_phases_period_and_parameters(x)
   global cds
-  phases                       = x(1:cds.nphases*cds.nMeshIntervals);
-  phases                       = reshape(phases,cds.nphases,cds.nMeshIntervals);
+  phases                       = x(1:cds.n_phases*cds.n_mesh_intervals);
+  phases                       = reshape(phases,cds.n_phases,cds.n_mesh_intervals);
   period                       = x(end-1);
   parameter_value              = x(end);
   parameters                   = cds.P0;

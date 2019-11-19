@@ -42,13 +42,13 @@ function x = init_PD_PD_SS(varargin)
   
   global cds;
   cds = [];
-  cds.nphases                    = length(pd.x) - 2;
+  cds.n_phases                    = length(pd.x) - 2;
   cds.probfile                   = odefile;
-  cds.options.PartitionMonodromy = cds.nphases > 20;
+  cds.options.PartitionMonodromy = cds.n_phases > 20;
   cds.nap                        = 2;
-  cds.ndim                       = 2 * cds.nphases + 3;
+  cds.ndim                       = 2 * cds.n_phases + 3;
   cds.usernorm                   = [];
-  cds.ncoo                       = 2 * cds.nphases + 1;
+  cds.ncoo                       = 2 * cds.n_phases + 1;
   cds.P0                         = cell2mat(parameters);
   cds.ActiveParams               = pd.ap;
   cds.previous_phases            = point_on_limitcycle(:);
