@@ -6,7 +6,7 @@ function run_all_demos(disable_pause_reset)
   % command lists files. There are no guarantees on the order in which the
   % files are run. 
 
-  pause off
+  my_pause off
 
   if nargin == 1 && disable_pause_reset
     run_demos(dir(get_path()));
@@ -14,12 +14,10 @@ function run_all_demos(disable_pause_reset)
     try
       run_demos(dir(get_path()));
     catch exception
-      pause on
+      my_pause on
       rethrow(exception)
     end
   end
-
-  pause on
 
   function run_demos(directories)
     for i = 1:length(directories)
@@ -49,9 +47,7 @@ function run_all_demos(disable_pause_reset)
           % sometimes the repeated plot commands in all the demos fail to
           % produce output or write to the wrong plot, therefore we pause to
           % reduce the chance of this happening.
-          pause on 
           pause(0.3)
-          pause off
         end
       end
     end

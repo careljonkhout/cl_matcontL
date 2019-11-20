@@ -1,8 +1,10 @@
 function [x0, v0] = init_single_shooting_from_hopf( odefile, ...
                     x, ode_parameters, active_parameter_index, h, subspace_size)
 
-
+  
   global cds
+  
+  cds = [];
   
   if length(active_parameter_index) ~= 1
       error(['One active parameter is needed for limit cycle ' ...

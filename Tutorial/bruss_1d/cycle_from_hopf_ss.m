@@ -12,38 +12,26 @@
 % It is perfectly fine to run continuations in cl_matcontL using Matlab scripts
 % without defining functions.
 function cycle_from_hopf_ss
-
-  % parameters for the system of ODEs:
-  N = 20;
-  L = 0.5; A = 2; B = 5.45; Dx = 0.008; Dy = 0.004;
-  ode_parameters = [N L A B Dx Dy];
-
-  % the continuation will be with respect to the second parameter:
-  active_parameter = 2;
+  try
+    path_to_this_file = get_path();
+    my_file = get_latest_singularity_file(path_to_this_file, 'hopf_for_cycle');
+    load(my_file, 's');
+  catch
+    fprintf(['Could not find a file with a Hopf point. ' ...
+             'You must run hopf_for_cycle.m first\n']);
+    return
+  end
   
-  % Compute the initial point "equilibrium".
-  % This equilibrium represents a spatially homogeneous equilibrium of the PDE:
-  equilibrium          = zeros(2*N,1);
-  equilibrium(1:N)     = A;
-  equilibrium(N+1:2*N) = B/A;
-  
-  [x0,v0] = init_EP_EP_L(@brusselator_1d, equilibrium, ...
-                         ode_parameters, active_parameter);
-
-  % we set the options for the equilibrium continuation:
-  opts_ep_ep = contset();
-  opts_ep_ep = contset(opts_ep_ep, ...
-    'MaxNumPoints', 23, ...
-    'Singularities', true);
-
-  % we run the equlibrium continuation:
-  singularities = contL(@equilibriumL,x0,v0, opts_ep_ep);
-
+  singularities        = s;
+  hopf                 = singularities(2);
+  x                    = hopf.data.x;
+  ode_parameters       = hopf.data.P0;
+  ode_parameters_cell  = num2cell(ode_parameters);
+  [N, ~, A, B, Dx, Dy] = deal(ode_parameters_cell{:});
   % we set the value of the active parameter (L) (the parameter in which we
   % continued the equlibrium) to the value of L at the first Hopf point:
-  hopf  = singularities(2);
-  x = hopf.data.x;
-  ode_parameters(active_parameter) = hopf.data.x(end);
+  active_parameter_index                 = 2;
+  ode_parameters(active_parameter_index) = hopf.data.x(end);
 
   % h will be the amplitude of the initial cycle
   h = 1e-1;
@@ -52,12 +40,10 @@ function cycle_from_hopf_ss
 
   % we run the initializer for continuation of cycles using single shooting:
   [x0, v0] = init_single_shooting_from_hopf(@brusselator_1d, ...
-                         x, ode_parameters, active_parameter, h, subspace_size);
+                   x, ode_parameters, active_parameter_index, h, subspace_size);
 
   % we specify the options for the continuation of cycles using single shooting:
-  opts_h_lc = contset();
-  opts_h_lc = contset(opts_h_lc, ...
-    ...
+  opts = contset( ...
     'MaxNumPoints',           30, ...
     'InitStepsize',           0.1, ...
     'MaxStepsize',            0.1, ...
@@ -93,7 +79,7 @@ function cycle_from_hopf_ss
 
 
   % we run the cycle continuation:
-  contL(@single_shooting, x0, v0, opts_h_lc, 'callback',@plot_T_versus_param);
+  contL(@single_shooting, x0, v0, opts, 'callback', @plot_T_versus_param);
 end
 
 

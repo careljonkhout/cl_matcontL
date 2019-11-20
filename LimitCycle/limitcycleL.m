@@ -39,8 +39,8 @@ end
 % limit cycle the parameter and the period. This Jacobian matrix is a N by N+1
 % matrix.
 function varargout = jacobian(varargin)
-  [x,p,T] = rearr(varargin{1});
-  varargout{1} = BVP_jac('BVP_LC_jac',x,p,T,2,2);
+  [x, parametervalues, period] = rearr(varargin{1});
+  varargout{1} = BVP_jac('BVP_LC_jac', x, parametervalues, period, 2, 2);
 end
 %-------------------------------------------------------------------------------
 function varargout = hessians(varargin)
@@ -50,7 +50,7 @@ end
 function point = defaultprocessor(varargin) 
   global lds
   point = varargin{1};
-  [~,p,T] = rearr(point.x);
+  [~, parametervalues, period] = rearr(point.x);
   update_upoldp(point.x, point.v);
   
   % calculate multipliers if requested
@@ -58,30 +58,29 @@ function point = defaultprocessor(varargin)
     update_multipliers_if_needed(point.x);
   end
   if lds.CalcPRC || lds.CalcdPRC
-      [lds.PRCdata, lds.dPRCdata] = calcPRC(point.x,lds.PRCInput,[0 0]);
+    [lds.PRCdata, lds.dPRCdata] = calcPRC(point.x,lds.PRCInput,[0 0]);
   end
-  if ~lds.CalcPRC
-      lds.PRCdata = [];
+  if ~ lds.CalcPRC
+    lds.PRCdata = [];
   end
-  if ~lds.CalcdPRC
-      lds.dPRCdata = [];
+  if ~ lds.CalcdPRC
+    lds.dPRCdata = [];
   end
-  point.multipliers = lds.multipliers;
-  point.timemesh = lds.msh;
-  point.ntst = lds.ntst;
-  point.ncol = lds.ncol;
-  point.parametervalues = p;
-  point.T = T;
-  point.phi = lds.PD_phi(lds.coords);
-  point.PRCdata = lds.PRCdata;
-  point.dPRCdata = lds.dPRCdata;
-  point.P0 = p;
+  point.multipliers     = lds.multipliers;
+  point.timemesh        = lds.msh;
+  point.ntst            = lds.ntst;
+  point.ncol            = lds.ncol;
+  point.parametervalues = parametervalues;
+  point.T               = period;
+  point.phi             = lds.PD_phi(lds.coords);
+  point.PRCdata         = lds.PRCdata;
+  point.dPRCdata        = lds.dPRCdata;
     
-  if lds.CalcMultipliers==0
-      lds.multipliers=[];
+  if lds.CalcMultipliers == 0
+    lds.multipliers = [];
   end
 
-  savePoint(point,varargin{2:end});
+  savePoint(point, varargin{2:end});
 end
 %-------------------------------------------------------------------------------
 function options
@@ -144,15 +143,15 @@ function [out, failed] = userf( userinf, id, x, ~) % unused argument is v
   end
 end
 %-------------------------------------------------------------------------------
-function [failed,s] = process_singularity(id, point, s)
+function [failed, s] = process_singularity(id, point, s)
   x = point.x;
   global cds lds contopts
   switch id
-  case 1
-    format_string = 'Branch Point cycle(period = %e, parameter = %e)\n'; 
+  case Constants.BPC_id
+    format_string = 'Branch Point cycle (period = %e, parameter = %e)\n'; 
     print_diag(0, format_string, x(end-1), x(end));
     s.msg  = sprintf('Branch Point cycle'); 
-  case 2
+  case Constants.PD_id
     if contopts.enable_nf_pd
       [~,p,T] = rearr(x); % unused argument is x0
       J = BVP_jac('BVP_PD_jac',x,p,T,1,1);
@@ -173,7 +172,7 @@ function [failed,s] = process_singularity(id, point, s)
       print_diag(0, format_string, x(end-1), x(end));
       s.msg  = 'Period Doubling';
     end
-  case 3
+  case Constants.LPC_id
     s.msg = 'Limit point cycle';
     if contopts.enable_nf_lpc
       s.data.lpccoefficient = nf_LPC(x);
@@ -185,15 +184,16 @@ function [failed,s] = process_singularity(id, point, s)
       format_string = 'Limit point cycle (period = %e, parameter = %e)\n';
       print_diag(0, format_string, x(end-1), x(end));
     end
-  case 4
+  case Constants.NS_id
 
     if contopts.enable_nf_ns
+      % todo: rewrite to de-duplicate for reporting neutral saddle
       s.data.nscoefficient = nf_NS(x);
-      if strcmp(s.data.nscoefficient,'Neutral saddle')
+      if strcmp(s.data.nscoefficient, 'Neutral saddle')
         s.msg = 'Neutral saddle cycle';
         format_string = 'Neutral Saddle Cycle (period = %e, parameter = %e)\n';
-        % A neutral saddle is not really a bifurcation, therefore we use priority 
-        % 1 instead of 0, so that it is only logged if 
+        % A neutral saddle is not really a bifurcation, therefore we use
+        % priority 1 instead of 0, so that it is only logged if
         % contopts.contL_DiagnosticsLevel is set higher than the default value
         % which is zero.
         print_diag(1, format_string, x(end-1), x(end));
@@ -218,8 +218,8 @@ function [failed,s] = process_singularity(id, point, s)
       if singularity_is_neutral_saddle
         s.msg = 'Neutral saddle cycle';
         format_string = 'Neutral Saddle Cycle (period = %e, parameter = %e)\n';
-        % A neutral saddle is not really a bifurcation, therefore we use priority 
-        % 1 instead of 0, so that it is only logged if 
+        % A neutral saddle is not really a bifurcation, therefore we use
+        % priority 1 instead of 0, so that it is only logged if
         % contopts.contL_DiagnosticsLevel is set higher than the default value
         % which is zero.
         print_diag(1, format_string, x(end-1), x(end));

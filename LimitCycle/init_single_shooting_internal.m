@@ -12,7 +12,7 @@ function initial_continuation_data = init_single_shooting_internal(in)
   handles      = feval(in.odefile);
   dydt_ode     = handles{2};
   jacobian_ode = handles{3};
-  cds.n_phases  = length(in.point_on_limitcycle);
+  cds.n_phases = length(in.point_on_limitcycle);
   norm_of_gap  = Inf;
   
   tangent_to_limitcycle ...   
@@ -45,15 +45,21 @@ function initial_continuation_data = init_single_shooting_internal(in)
       in.time_integration_options);
   end
   
+  period                    = orbit_t(end);
+  
   if in.show_plots
+  
     my_figure = figure;
-    plot(orbit_t, orbit_y - orbit_y(1,:));
+    plot_t = linspace(0, period, in.n_interpolated_points);
+    transformed_orbit = in.plot_transformation(orbit_y) ...
+                      - in.plot_transformation(orbit_y(1,:));
+    plot_y = interp1(orbit_t, transformed_orbit, plot_t, in.interpolation);
+    plot(plot_t', plot_y);
     xlabel('t')
     ylabel('deviation form initial value')
     disp(['Now showing plot from t=time_to_converge_to_cycle to ' ...
                                        't=time_to_converge_to_cycle + period']);
-    disp('Press a key to continue')
-    pause
+    my_pause();
     if isvalid(my_figure)
       close(my_figure.Number)
     end
@@ -64,7 +70,7 @@ function initial_continuation_data = init_single_shooting_internal(in)
   end
   
   
-  period                    = orbit_t(end);
+
   initial_continuation_data = zeros(cds.n_phases + 2, 1);
   initial_continuation_data(1:cds.n_phases) = in.point_on_limitcycle;
   

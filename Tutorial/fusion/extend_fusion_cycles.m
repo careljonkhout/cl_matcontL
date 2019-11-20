@@ -26,15 +26,10 @@ function extend_fusion_cycles
   opt = contset(opt, 'MinStepsize',             1e-6);
   opt = contset(opt, 'MaxStepsize',             0.25);
   opt = contset(opt, 'MaxNewtonIters',          8);
-  opt = contset(opt, 'MaxCorrIters',            10);
-  opt = contset(opt, 'MaxTestIters',            10);
-  opt = contset(opt, 'VarTolerance',            1e-6);
-  opt = contset(opt, 'FunTolerance',            1e-6);
-  opt = contset(opt, 'Adapt',                   3);
+  opt = contset(opt, 'VarTolerance',            1e-8);
+  opt = contset(opt, 'FunTolerance',            1e-8);
   opt = contset(opt, 'Multipliers',             true);
   opt = contset(opt, 'Singularities',           true);
-  opt = contset(opt, 'console_output_level',    0);
-  opt = contset(opt, 'contL_DiagnosticsLevel',  0);
   opt = contset(opt, 'MoorePenrose',            false);
   opt = contset(opt, 'contL_SmoothingAngle',    1);
   opt = contset(opt,  ...

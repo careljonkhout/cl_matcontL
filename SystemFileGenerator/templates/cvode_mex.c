@@ -350,7 +350,9 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   int      i;
   
   for(i = 1; i < n_points; i++) {
-    // mex_eval("print_temp('t=%.15e')",(double)t_values[i]);
+    #ifdef PRINT_TIME
+    mex_eval("print_temp('t=%.15e')",(double)t_values[i]);
+    #endif
     int flag = CVode(cvode, t_values[i], solver_y, &t, CV_NORMAL);
     check(flag, "CVode");
     if (sensitivity) {
@@ -371,6 +373,9 @@ void mexFunction(int n_output,       mxArray *mex_output[],
       break;
     }
   }
+  #ifdef PRINT_TIME
+  mex_eval("print_temp()");
+  #endif
   
   if (i+1 < n_points) {
     // this happens when a cycle has been detected

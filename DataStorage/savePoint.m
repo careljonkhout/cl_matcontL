@@ -133,23 +133,28 @@ function print_point(point, label, is_special)
   if is_special
     print_diag(0,'%3d  %2d  %3s :  '  ,cds.i,cds.num_sings,label);
   else
-    print_diag(0,'%3d          :  '  ,cds.i                    );
+    print_diag(0,'%3d          :  '   ,cds.i                    );
   end
-  print_diag(0,'%+.6e     '      , point.x(end-cds.nap+1:end));
+  print_diag(0, '%+.6e     ', point.x(end-cds.nap+1:end));
   if has_period(cds.curve)
-    print_diag(0,'%.6e     '      , point.x(end-1));
+    print_diag(0,'%.6e     ', point.x(end-1));
   end
-  print_diag(0,'%.6e     '       , norm(point.x(1:cds.ncoo)));
-  print_diag(0,'%.6e     '       , point.R);
-  print_diag(0,'%.6e'     , point.h);
+  print_diag(0, '%.6e     ', norm(point.x(1:cds.ncoo)));
+  print_diag(0, '%.6e     ', point.R);
+  print_diag(0, '%12.6e'     , point.h);
   
   if has_period(cds.curve)
-    distance_to_one                 = abs(point.multipliers - 1);
-    log_10_of_deviation             = log10(min(distance_to_one));
-    print_diag(0, '    %.3f', -log_10_of_deviation);
-    print_diag(0, '          %.3f', point.multipliers(1));
+    distance_to_one     = abs(point.multipliers - 1);
+    log_10_of_deviation = log10(min(distance_to_one));
+    print_diag(0, '%10.3f', -log_10_of_deviation);
+    m = point.multipliers(1);
+    if abs(imag(m)) > cds.deviation_of_trivial_multiplier
+      print_diag(0, '%18.6f +/- %.6fi norm: %.6f', real(m), abs(imag(m)), abs(m));
+    else
+      print_diag(0, '%18.6f', real(m));
+    end
   end
-
   print_diag(0, '\n');
-
 end
+
+  

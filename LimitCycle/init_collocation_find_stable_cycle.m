@@ -148,6 +148,7 @@ function initial_continuation_data = init_collocation_find_stable_cycle(varargin
   input.ylabel                    = 'phase variables';
   input.n_computed_points         = 100;
   input.n_interpolated_points     = 10000;
+  input.interpolation             = 'makima';
   
   i=1;
   while i <= nargin
@@ -256,7 +257,7 @@ function [solution_t, solution_x] = compute_periodic_solution(in)
     ylabel('deviation form initial value')
     disp(['Now showing plot from t = time_to_converge_to_cycle to ' ...
                                't = time_to_converge_to_cycle + 1.1 * period']);
-    input('Press a enter to continue of ctrl-c to abort')
+    my_pause();
     if isvalid(my_figure)
       close(my_figure.Number)
     end

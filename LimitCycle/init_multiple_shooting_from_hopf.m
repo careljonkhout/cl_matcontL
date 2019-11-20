@@ -4,6 +4,8 @@ function [x0, v0] = init_multiple_shooting_from_hopf( odefile, x, ...
 
   global cds
   
+  cds = [];
+  
   if length(active_parameter_index) ~= 1
       error(['One active parameter is needed for limit cycle ' ...
         'continuation using single shooting']);

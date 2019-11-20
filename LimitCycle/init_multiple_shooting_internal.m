@@ -5,8 +5,9 @@
 % init_multiple_shooting_from_hopf
 
 function initial_continuation_data = init_multiple_shooting_internal(in)
-  clear global
+
   global cds
+  cds = [];
   
   handles      = feval(in.odefile);
   dydt_ode     = handles{2};
@@ -57,16 +58,16 @@ function initial_continuation_data = init_multiple_shooting_internal(in)
   
   if in.show_plots
     my_figure = figure;
-    plot_t = linspace(0, period, 10000);
+    plot_t = linspace(0, period, in.n_interpolated_points);
     transformed_orbit = in.plot_transformation(orbit_y) ...
                       - in.plot_transformation(orbit_y(1,:));
-    plot_y = interp1(orbit_t, transformed_orbit, plot_t, 'makima');
+    plot_y = interp1(orbit_t, transformed_orbit, plot_t, in.interpolation);
     plot(plot_t', plot_y);
     xlabel('t')
     ylabel('deviation form initial value')
     disp(['Now showing plot from t = time_to_converge_to_cycle to ' ...
                                 't = time_to_converge_to_cycle + period']);
-    input('Press enter to continue or ctrl-c to abort', 's')
+    my_pause();
     if isvalid(my_figure)
       close(my_figure.Number)
     end

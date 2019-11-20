@@ -130,6 +130,7 @@ function initial_continuation_data = ...
   input.ylabel                    = 'phase variables';
   input.n_computed_points         = 100;
   input.n_interpolated_points     = 10000;
+  input.interpolation             = 'makima';
   
   i=1;
   while i <= nargin

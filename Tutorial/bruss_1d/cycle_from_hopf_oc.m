@@ -6,42 +6,27 @@
 % It is perfectly fine to run continuations in cl_matcontL using Matlab scripts
 % without defining functions.
 function cycle_from_hopf_oc
-  % N is the number of mesh points of the discretization of the system of PDE's
-  N = 31; 
-  % other parameters of the system of ODEs:
-  L = 0.5; A = 2; B = 5.45; Dx = 0.008; Dy = 0.004;
-  ode_parameters = [N L A B Dx Dy];
-
-
-  % the continuation will be with respect to the second parameter:
-  active_parameter = 2;
-
-  % Compute the initial point "equilibrium".
-  % This equilibrium represents a spatially homogeneous equilibrium of the PDE:
-  equilibrium          = zeros(2*N,1);
-  equilibrium(1:N)     = A;
-  equilibrium(N+1:2*N) = B/A;
+  try
+    path_to_this_file = get_path();
+    my_file = get_latest_singularity_file(path_to_this_file, 'hopf_for_cycle');
+    load(my_file, 's');
+  catch
+    fprintf(['Could not find a file with a Hopf point. ' ...
+             'You must run hopf_for_cycle.m first\n']);
+    return
+  end
   
-  odefile = @brusselator_1d;
-  
-  [x0,v0] = init_EP_EP_L(odefile, equilibrium, ...
-                         ode_parameters, active_parameter);
-
-
-  % we set the options for the equilibrium continuation:
-
-  opts_ep_ep = contset(...
-    'MaxNumPoints', 23, ...
-    'Singularities', true);
-
-  % we run the equlibrium continuation:
-  singularities = contL(@equilibriumL,x0,v0, opts_ep_ep);
-
+  singularities        = s;
+  hopf                 = singularities(2);
+  x                    = hopf.data.x;
+  ode_parameters       = hopf.data.P0;
+  ode_parameters_cell  = num2cell(ode_parameters);
+  [N, ~, A, B, Dx, Dy] = deal(ode_parameters_cell{:});
   % we set the value of the active parameter (L) (the parameter in which we
   % continued the equlibrium) to the value of L at the first Hopf point:
-  hopf  = singularities(2);
-  x = hopf.data.x;
-  ode_parameters(active_parameter) = hopf.data.x(end);
+  active_parameter_index                 = 2;
+  ode_parameters(active_parameter_index) = hopf.data.x(end);
+
 
   % h will be the amplitude of the initial cycle
   h = 0.01;
@@ -56,7 +41,8 @@ function cycle_from_hopf_oc
   % We run the initializer for continuation of cycles by collocation from a Hopf
   % point:
   [x0, v0] = init_collocation_from_hopf(...
-           @brusselator_1d, x, ode_parameters, active_parameter, h, ntst, ncol);
+          @brusselator_1d, x, ode_parameters, active_parameter_index, ...
+          h, ntst, ncol);
 
   % We specify the options for the cycle continuation.
   opts_h_lc = contset( ...

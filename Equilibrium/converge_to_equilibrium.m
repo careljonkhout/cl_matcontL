@@ -40,7 +40,7 @@ function equilibrium = converge_to_equilibrium(in)
     ylabel('phase variables')
     disp('Now showing plot from t = 0 to t = time_to_converge_to_equilibrium')
     disp('Press a key to continue')
-    pause
+    my_pause();
     if isvalid(my_figure)
       close(my_figure.Number)
     end

@@ -1,4 +1,4 @@
-function out = fusion_N_25_max_ord_1
+function out = fusion_N_25
 out{1} = @init;
 out{2} = @fun_eval;
 out{3} = @jacobian;
