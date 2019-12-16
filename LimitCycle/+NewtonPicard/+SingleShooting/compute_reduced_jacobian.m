@@ -51,15 +51,10 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, M_delta_q_r, ...
     phi = deval(cds.cycle_orbit,period);
   end
   
-  if ~ isfield(cds, 'V') || true
-    cds.V = NewtonPicard.SingleShooting.compute_subspace(period, parameters);
-    V = cds.V;
-    basis_size = size(V,2);
-  else
-    cds.V = NewtonPicard.SingleShooting.continue_subspace(period, parameters);
-    V = cds.V;
-    basis_size = size(V,2);
-  end
+ 
+  cds.V = NewtonPicard.SingleShooting.compute_subspace(period, parameters);
+  V = cds.V;
+  basis_size = size(V,2);
 
 
   MV = zeros(cds.n_phases,basis_size);

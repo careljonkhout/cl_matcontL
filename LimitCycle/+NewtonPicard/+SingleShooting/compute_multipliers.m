@@ -30,16 +30,12 @@ function multipliers = compute_multipliers(x, nMults_to_compute)
   
   nMults_to_compute = min(nMults_to_compute, length(x));
                       
-  [~, multiplier_matrix, no_convergence] = eigs(monodromy_map, cds.n_phases, ...
+  [~, multiplier_matrix] = eigs(monodromy_map, cds.n_phases, ...
                                                 nMults_to_compute);
                                               %'largestabs', ... 
                                               %'Tolerance', 1e-12);
   multipliers = diag(multiplier_matrix);
   
-  if no_convergence
-    print_diag(0, 'multipliers did not converge\n');
-    return
-  end
   
   print_diag(1, multipliers2str(multipliers));
 end

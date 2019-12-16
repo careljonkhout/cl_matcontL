@@ -1,9 +1,10 @@
 #include <nvector/nvector_serial.h>
 #include <sundials/sundials_types.h>
 #include <math.h>
+#include <mex.h>
 #include "user_data.h"
 
-int d_sensitivity_dt(int Ns, realtype t,
+int d_sensitivity_dt_pars(int Ns, realtype t,
                 N_Vector y_vector, 
                 N_Vector ydot,
                 int parameter_index,
@@ -14,12 +15,7 @@ int d_sensitivity_dt(int Ns, realtype t,
    
   realtype* y = N_VGetArrayPointer(y_vector);
                 
-    
-  realtype* s          = N_VGetArrayPointer( s_vector);
-  realtype* ds         = N_VGetArrayPointer(ds_vector);
-  realtype* parameters = ((UserData) user_data)->parameters;
- 
-<%= s.d_sensitivity_dt_code %>
-
+  mexErrMsgIdAndTxt("cvode:not_implemented", 
+                    "d_sensitivity_dt_pars is not implemented");
   return 0;
 }

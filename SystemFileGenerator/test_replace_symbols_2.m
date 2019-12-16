@@ -1,3 +1,5 @@
+
+cd(get_path())
 mex replace_symbols.c
 
 

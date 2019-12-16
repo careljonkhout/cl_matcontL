@@ -15,5 +15,5 @@
 #define N_THREADS             2
 
 typedef struct {
-  double* parameters;
+  realtype* parameters;
 } *UserData;

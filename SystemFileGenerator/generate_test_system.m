@@ -1,5 +1,6 @@
 name = 'test_system';
-s = System_of_ODEs.new(name,'x y','a b c','t',5,{'sin(a*x*y)','sin(x*x*y*b)'});
+s = SystemFileGenerator.new(name,'a b c','t',5, ...
+    {'x''=sin(a*x*y)','y''=sin(x*x*y*b)'});
 s.generate_file
 
 old_path = pwd;

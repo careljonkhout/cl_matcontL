@@ -1,14 +1,15 @@
 
 max_ord = 3;
 name = sprintf('SEI_max_ord_%d', max_ord);
-
-rhs=["mu - mu * s - beta*(1 + delta * u) * s * i"
-    "beta*(1+delta*i) *s*i - (mu + alpha)*e"
-    "alpha*e - (mu+gamma)*i"
-    "u-2*pi*v - (u^2+v^2)*u"
-    "2* pi * u + v - (u^2+v^2)*v"];
+pars = "alpha beta mu delta gamma";
+equations = [
+    "s' = mu - mu * s - beta*(1 + delta * u) * s * i"
+    "e' = beta*(1+delta*i) *s*i - (mu + alpha)*e"
+    "i' = alpha*e - (mu+gamma)*i"
+    "u' = u-2*pi*v - (u^2+v^2)*u"
+    "v' = 2* pi * u + v - (u^2+v^2)*v"];
  
-s = System_of_ODEs.new(name,"s e i u v","alpha beta mu delta gamma","t",max_ord,rhs);
+s = SystemFileGenerator.new(name,pars,"t",max_ord,equations);
 s.generate_file
 
 old_path = pwd;

@@ -45,9 +45,11 @@ function initial_continuation_data = init_single_shooting_internal(in)
       in.time_integration_options);
   end
   
-  period                    = orbit_t(end);
+  period = orbit_t(end);
   
-  if in.show_plots
+  matlab_gui_running = usejava('jvm');
+  
+  if in.show_plots && matlab_gui_running
   
     my_figure = figure;
     plot_t = linspace(0, period, in.n_interpolated_points);

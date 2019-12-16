@@ -21,19 +21,24 @@ function phases_T_i = compute_cycle_parts(x)
     end
   end
   
-  
   phases_T_i = zeros(cds.n_phases, m);
-  for i=1:m
-    print_diag(6,'orbit %d\n',i)
-    if cds.using_cvode
-      [~, y] = cds.integrator( ...
-        'initial_point',   phases_0(:,i), ...
-        't_values',        [0 delta_t(i)], ...
-        'ode_parameters',  cell2mat(parameters), ...
-        'abs_tol',         contopts.integration_abs_tol, ...
-        'rel_tol',         contopts.integration_rel_tol);
-      phases_T_i(:,i) = y(end,:)';
+  
+  if cds.using_cvode
+    common_args.abs_tol    = contopts.integration_abs_tol;
+    common_args.rel_tol    = contopts.integration_rel_tol;
+    common_args.integrator = cds.integrator;
+    common_args.parameters = cell2mat(parameters);
+    if contopts.contL_ParallelComputing
+      parfor i = 1 : m
+        phases_T_i(:,i) = shoot_cvode(phases_0(:,i), delta_t(i), common_args);
+      end
     else
+      for i = 1 : m
+        phases_T_i(:,i) = shoot_cvode(phases_0(:,i), delta_t(i), common_args);
+      end
+    end
+  else
+    for i = 1 : m
       cds.orbits(i) = cds.integrator(...
         @(t, y) cds.dydt_ode(t, y, parameters{:}), ...
         [0 delta_t(i) * 1.1], ...
@@ -42,5 +47,15 @@ function phases_T_i = compute_cycle_parts(x)
       phases_T_i(:,i) = deval(cds.orbits(i), delta_t(i));
     end
   end
-  
 end
+
+function phases_T_i = shoot_cvode(phases_0, delta_t, args)
+  [~, y] = feval(args.integrator, ...
+      'initial_point',   phases_0, ...
+      't_values',        [0 delta_t], ...
+      'ode_parameters',  args.parameters, ...
+      'abs_tol',         args.abs_tol, ...
+      'rel_tol',         args.rel_tol);
+    phases_T_i = y(end,:)';
+end
+    

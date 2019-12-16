@@ -76,7 +76,9 @@ function is_isolated = is_isolated(str, symbol, match_index)
     is_isolated_left = true;
   else
     prev_char = str(match_index - 1);
-    is_isolated_left = ~ isletter(prev_char) && prev_char ~= '_';
+    is_isolated_left = isstrprop(prev_char, 'alphanum') && prev_char ~= '_' ...
+                                                        && prev_char ~= '.';
+    % prev_char ~= '.' is to prevent the 'e' being replaced in 1.e-2 
   end
  
   if match_index + length(symbol) == length(str) + 1

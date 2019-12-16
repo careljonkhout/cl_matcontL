@@ -7,6 +7,7 @@ function initial_continuation_data = init_EP_integration(varargin)
   input.odefile                         = [];
   input.ode_parameters                  = [];
   input.active_parameter_index          = [];
+  input.cvode_verbose                   = false;
   
   % optional arguments, i.e. arguments with default values
   input.time_integration_method         = @ode15s;

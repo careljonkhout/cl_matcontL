@@ -33,13 +33,14 @@ function equilibrium = converge_to_equilibrium(in)
   
   equilibrium = orbit_to_equilibrm_y(end,:)';
   
-  if in.show_plot
+  matlab_gui_running = usejava('jvm');
+  
+  if in.show_plot && matlab_gui_running
     my_figure = figure;
     plot(orbit_to_equilibrm_t, in.plot_transformation(orbit_to_equilibrm_y));
     xlabel('t')
     ylabel('phase variables')
     disp('Now showing plot from t = 0 to t = time_to_converge_to_equilibrium')
-    disp('Press a key to continue')
     my_pause();
     if isvalid(my_figure)
       close(my_figure.Number)

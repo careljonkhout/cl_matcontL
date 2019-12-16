@@ -164,7 +164,10 @@ void split_at_symbol(int si, Node* list) {
       if (pch == list -> str) {
         symbol_continues_on_left = false;
       } else {
-        symbol_continues_on_left = isalpha(pch[-1]) || pch[-1] == '_';
+        symbol_continues_on_left = isalnum(pch[-1]) || pch[-1] == '_' 
+                                                    || pch[-1] == '.';
+        // pch[-1] == '.' is to prevent the 'e' possibly being replaced 
+        // in 1.e-2 
       }
       if (symbol_continues_on_left) {
         continue;
@@ -174,8 +177,8 @@ void split_at_symbol(int si, Node* list) {
       if (pch[old_symbols_len[si]] == '\0') {
         symbol_continues_on_right = false;
       } else {
-        char s = pch[ old_symbols_len[si] ];
-        symbol_continues_on_right = isalnum(s) || s == '_';
+        char c = pch[ old_symbols_len[si] ];
+        symbol_continues_on_right = isalnum(c) || c == '_';
       }
       if (symbol_continues_on_right) {
         continue;

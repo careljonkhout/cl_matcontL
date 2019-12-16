@@ -3,7 +3,7 @@
 #include <math.h>
 #include "user_data.h"
 
-int d_sensitivity_dt(int Ns, realtype t,
+int d_sensitivity_dt_pars(int Ns, realtype t,
                 N_Vector y_vector, 
                 N_Vector ydot,
                 int parameter_index,
@@ -19,7 +19,7 @@ int d_sensitivity_dt(int Ns, realtype t,
   realtype* ds         = N_VGetArrayPointer(ds_vector);
   realtype* parameters = ((UserData) user_data)->parameters;
  
-<%= s.d_sensitivity_dt_code %>
+<%= s.d_sensitivity_dt_pars_code %>
 
   return 0;
 }

@@ -36,7 +36,9 @@ function point_on_cycle = converge_to_cycle(in)
   
   point_on_cycle = orbit_to_cycle_y(end,:)';
   
-  if in.show_plots
+  matlab_gui_running = usejava('jvm');
+  
+  if in.show_plots && matlab_gui_running
     my_figure = figure;
     plot_t = linspace(0, in.time_to_converge_to_cycle, ...
                          in.n_interpolated_points);

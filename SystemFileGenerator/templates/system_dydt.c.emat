@@ -27,5 +27,5 @@ void mexFunction(int n_outputs,       mxArray *outputs[],
   outputs[0] = mxCreateDoubleMatrix(SYSTEM_SIZE, 1, mxREAL);
   double* dydt = my_mex_get_doubles(outputs[0]);
 
-  <%= s.formatted_rhs %>
+<%= s.formatted_rhs %>
 }

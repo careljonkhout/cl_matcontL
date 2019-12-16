@@ -6,17 +6,17 @@ function test_lorenz
   close all
 
   name = 'lorenz';
-  vars = 'x y z';
   pars = 'sigma r b';
   time = 't';
   max_ord = 1;
-  rhs = {
-  'sigma * (-x + y)'
-  'r*x - y - x*z'
-  '-b*z + x*y'
+  equations = {
+  'x'' = sigma * (-x + y)'
+  'y'' = r*x - y - x*z'
+  'z'' = -b*z + x*y'
   };
 
-  lorenz_system = System_of_ODEs.new(name,vars,pars,time,max_ord,rhs,'cvode');
+  lorenz_system = SystemFileGenerator.new( ...
+                          name,pars,time,max_ord,equations,'cvode');
   lorenz_system.generate_file()
 
   sigma = 10;
@@ -29,7 +29,7 @@ function test_lorenz
 
 
   [t,y]= feval(@lorenz.cvode, ...
-    't_values',                linspace(0,500,10000), ...
+    't_values',                linspace(0,10,100), ...
     'initial_point',           100*ones(3,1), ...
     'ode_parameters',          [sigma r b], ...
     'abs_tol',                 tol, ...
@@ -65,6 +65,9 @@ function test_lorenz
 
 
   [~, eigenvalues, ~]  = eigs(@monodromy_map, 3, 3);
+  global contopts;
+  contopts = contset();
+  
   disp(multipliers2str(diag(eigenvalues)));
 
   function Mx = monodromy_map(x)

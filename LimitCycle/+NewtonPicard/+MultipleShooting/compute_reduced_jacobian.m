@@ -25,7 +25,6 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
   M          = @NewtonPicard.MultipleShooting.monodromy_map; 
   
   for i = 1 : m % m == cds.n_mesh_intervals
-    print_diag(6,'G %d\n',i);
     for j = 1 : size(V{i}, 2)
       MV{i}(:, j) = M(i, V{i}(:, j), delta_t(i), parameters);
     end
@@ -68,7 +67,7 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
   
   row_offset = 0;
   col_offset = 0;
-  for i=1:m % note that: m == cds.n_mesh_intervals
+  for i = 1 : m % note that: m == cds.n_mesh_intervals
     ni = next_index_in_cycle(i,m);
     row_indices = row_offset + (1 : size(V{ni}, 2));
     col_indices = col_offset + (1 : size(V{ i}, 2));
@@ -110,12 +109,12 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
   end
   
 
-  rhs_delta_q_gamma = zeros(cds.n_phases,m);
+  rhs_delta_q_gamma = zeros(cds.n_phases, m);
  
   V_T__b_g = zeros(reduced_jac_size, 1);
   
   row_offset = 0;
-  for i=1:m
+  for i = 1 : m
     b_g_i                  = NewtonPicard.compute_d_phi_d_p(phases_0(:,i), ...
                                            delta_t(i), parameters);
     ni                     = next_index_in_cycle(i,m);
@@ -150,7 +149,7 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
   jac_1_3 = V_T__b_g;
   
   row_offset = 0;
-  for i=1:m % m == cds.n_mesh_intervals
+  for i = 1 : m % m == cds.n_mesh_intervals
     ni                = next_index_in_cycle(i,m);
     indices           = row_offset + (1 : size(V{ni}, 2));
     jac_1_3(indices)  = jac_1_3(indices) + V{ni}' * G_delta_q_gamma(:,i);
@@ -174,7 +173,7 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
 end
 
   
-function V = compute_subspace(i, period, parameters)
+function V = compute_subspace_with_eigs(i, period, parameters)
   global cds
   
   n_eigenvalues = min(cds.n_phases, cds.preferred_basis_size + 1);
@@ -200,6 +199,92 @@ function V = compute_subspace(i, period, parameters)
   end
   V = orth(basis(:,1:j-1));
 end
+
+function V = compute_subspace(i, period, parameters)
+  global cds
+  
+  if ~ cds.using_cvode
+    V = compute_subspace_with_eigs(i, period, parameters);
+    return;
+  end
+  
+  n_eigenvalues = min(cds.n_phases, cds.preferred_basis_size + 1);
+  options.k = n_eigenvalues;
+  options.blsz = 1;
+  [Q, T] = ahbschur( ...
+    @(X) multiple_monodromy_map_cvode(i, X, period, parameters), ...
+    cds.n_phases, ...
+    options);
+
+  basis = zeros(cds.n_phases, cds.preferred_basis_size + 1);
+
+  j = 1;
+
+  while j <= cds.preferred_basis_size
+    basis(:, j) = Q(:, j);
+    j = j + 1;
+    if T(j, j-1) ~= 0
+      basis(:, j) = Q(:, j + 1);
+      j = j + 1;
+    end
+  end
+  V = basis(:,1:j-1);
+end
+
+function MX = multiple_monodromy_map(i, X, period, parameters)
+  global cds contopts
+  
+  args.n_mesh_intervals = cds.n_mesh_intervals;
+  args.mesh             = cds.mesh;
+  args.phases_0         = cds.phases_0;
+  args.integrator       = cds.integrator;
+  args.i                = i;
+  args.period           = period;
+  args.parameters       = cell2mat(parameters);
+  args.abs_tol          = contopts.integration_abs_tol;
+  args.rel_tol          = contopts.integration_rel_tol;
+  
+  
+  MX = zeros(size(X));
+  for j = 1 : size(X,2)
+    MX(:,j) = full_monodromy_parfor_enabled(X(:,j), args);
+  end
+end
+
+function Mx = full_monodromy_parfor_enabled(x, args)
+  Mx = x;
+  delta_t = diff(args.mesh) * args.period;
+  mesh_interval_sequence = [ args.i : args.n_mesh_intervals,  1 : args.i-1 ];
+  for j = mesh_interval_sequence
+    [~,~,Mx] = feval(args.integrator, ...
+      't_values',                [0 delta_t(j)], ...
+      'initial_point',           args.phases_0(:,j), ...
+      'sensitivity_vector',      Mx, ...
+      'ode_parameters',          args.parameters, ...
+      'abs_tol',                 args.abs_tol, ...
+      'rel_tol',                 args.rel_tol);
+  end
+end
+
+function MX = multiple_monodromy_map_cvode(i, X, period, parameters)
+  global cds contopts
+  MX = X;
+  delta_t = diff(cds.mesh) * period;
+  mesh_interval_sequence = [ i : cds.n_mesh_intervals, 1 : i - 1];
+  for j = mesh_interval_sequence
+    [~, ~, MX] = feval(cds.integrator, ...
+      't_values', [0 delta_t(j)], ...
+      'initial_point', cds.phases_0(:, j), ...
+      'sensitivity_vector', MX, ...
+      'ode_parameters', cell2mat(parameters), ...
+      'abs_tol', contopts.integration_abs_tol, ...
+      'rel_tol', contopts.integration_rel_tol);
+  end
+  
+end
+                  
+    
+
 
 
 function index = next_index_in_cycle(i,m)

@@ -24,7 +24,7 @@ out{15}= @x5;
 
 % --------------------------------------------------------------------------
 function dydt = fun_eval(t,y, <%= s.parameter_arguments %>)
-dydt=<%= s.formatted_rhs %>;
+<%= s.formatted_rhs %>;
 % --------------------------------------------------------------------------
 function options = init()
 handles = feval(<%= s.name %>);
