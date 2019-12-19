@@ -1,0 +1,25 @@
+#include <nvector/nvector_serial.h>
+#include <sundials/sundials_types.h>
+#include <math.h>
+#include "user_data.h"
+
+int d_sensitivity_dt_pars(int Ns, realtype t,
+                N_Vector y_vector, 
+                N_Vector ydot,
+                int parameter_index,
+                N_Vector s_vector, 
+                N_Vector ds_vector,
+                void *user_data,
+                N_Vector tmp1, N_Vector tmp2) {
+   
+  realtype* y = N_VGetArrayPointer(y_vector);
+                
+    
+  realtype* s          = N_VGetArrayPointer( s_vector);
+  realtype* ds         = N_VGetArrayPointer(ds_vector);
+  realtype* parameters = ((UserData) user_data)->parameters;
+ 
+<%= s.d_sensitivity_dt_pars_code %>
+
+  return 0;
+}

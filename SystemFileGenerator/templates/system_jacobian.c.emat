@@ -28,5 +28,5 @@ void mexFunction(int n_outputs,       mxArray *outputs[],
   outputs[0] = mxCreateDoubleMatrix(SYSTEM_SIZE, SYSTEM_SIZE, mxREAL);
   double* jac = my_mex_get_doubles(outputs[0]);
 
-  <%= s.jacobian %>
+<%= s.jacobian %>
 }

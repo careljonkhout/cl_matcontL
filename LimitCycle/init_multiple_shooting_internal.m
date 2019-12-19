@@ -56,7 +56,9 @@ function initial_continuation_data = init_multiple_shooting_internal(in)
   
   period   = orbit_t(end);
   
-  if in.show_plots
+  matlab_gui_running = usejava('jvm');
+  
+  if in.show_plots && matlab_gui_running
     my_figure = figure;
     plot_t = linspace(0, period, in.n_interpolated_points);
     transformed_orbit = in.plot_transformation(orbit_y) ...

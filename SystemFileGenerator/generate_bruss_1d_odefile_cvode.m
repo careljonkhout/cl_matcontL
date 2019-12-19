@@ -1,6 +1,6 @@
 tic
 
-N = 15;
+N = 10;
 y = sym('y', [1 2*N]);
 syms L A B Dx Dy
 

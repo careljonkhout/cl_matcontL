@@ -33,7 +33,7 @@ global cds
   parameters                   = cds.P0;
   parameters(cds.ActiveParams) = active_par_val;
   parameters                   = num2cell(parameters);
-  shoot                        = @NewtonPicard.shoot;
+  shoot                        = @NP_shoot;
   phases_end                   = shoot(phases_0, period, parameters);
   f = [phases_end - phases_0; 
       (phases_0 - cds.previous_phases)' * cds.previous_dydt_0  ]; 
@@ -82,7 +82,7 @@ function jacobian = jacobian(varargin)
   d_phi_d_T         = cds.dydt_ode(0,y_end,parameters{:});
   d_s_d_T           = cds.previous_dydt_0' * d_phi_d_T;
   jacobian          = [jacobian [d_phi_d_T; d_s_d_T]];
-  compute_d_phi_d_p = @NewtonPicard.compute_d_phi_d_p;
+  compute_d_phi_d_p = @NP_compute_d_phi_d_p;
   d_phi__d_p        = compute_d_phi_d_p(phases, period, parameters);
   d_s__d_p          = cds.previous_dydt_0' * d_phi__d_p;
   jacobian          = [jacobian [d_phi__d_p; d_s__d_p]];
@@ -118,7 +118,7 @@ end
 % integrate x and each column of M separately.
 %
 % This method is for testing purposes only. For actual continuation of cycles it
-% is recomended to use NewtonPicard or orthogonal collocation.
+% is recomended to use Newton Picard or orthogonal collocation.
 function [y_end, monodromy] = monodromy_full(x_0, period, parameters)
   global cds contopts
   n_phases = cds.n_phases;
@@ -202,10 +202,10 @@ function out = default_processor(varargin)
     if abs(cds.multipliers(end)) > contopts.basis_grow_threshold
       basis_size_changed = true;
       print_diag(2, 'expanding basis\n');
-      nMults_to_compute = cds.preferred_basis_size + 10;
+      nMults_to_compute = cds.preferred_basis_size + 3;
       nMults_to_compute = min(nMults_to_compute, cds.n_phases);
       cds.multipliersX = point.x;
-      cds.multipliers = NewtonPicard.SingleShooting.compute_multipliers(...
+      cds.multipliers = NP_SS_compute_multipliers(...
         point.x, nMults_to_compute);
       
       i = length(cds.multipliers);
@@ -271,7 +271,7 @@ function update_multipliers_if_needed(x)
   global cds
   if ~ isfield(cds,'multipliersX') || all(cds.multipliersX ~= x)
     cds.multipliersX = x;
-    cds.multipliers = NewtonPicard.SingleShooting.compute_multipliers(x, ...
+    cds.multipliers = NP_SS_compute_multipliers(x, ...
                        cds.preferred_basis_size);
   end
 end

@@ -1,0 +1,9 @@
+
+Version: 2.1
+Description: added support up through R2018a
+Details:
+- Note that in R2017b, a new Krylov Schur algorithm replaces ARPACK
+
+Version: 2.0
+Description: initial public release
+Details: n/a

@@ -1,9 +1,6 @@
 function out = cycle_testfunctions(ids_testf_requested, multipliers, v)
   global cds
   const = Constants;
-  print_diag(6,'evaluating testfunctions with multipliers:\n')
-  print_diag(6,'%s\n', multipliers2str(multipliers));
-  
   
   if any(ismember(const.BPC_id, ids_testf_requested))
     distance_to_one = abs(multipliers - 1);

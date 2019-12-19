@@ -18,7 +18,7 @@ function initial_continuation_data = init_single_shooting_internal(in)
   tangent_to_limitcycle ...   
     = dydt_ode(0,in.point_on_limitcycle, in.ode_parameters{:});
   
-  using_cvode = endsWith(func2str(in.time_integration_method), 'cvode');
+  using_cvode = true;
   
   if using_cvode
     [orbit_t,orbit_y] = feval(in.time_integration_method, ...
@@ -45,9 +45,11 @@ function initial_continuation_data = init_single_shooting_internal(in)
       in.time_integration_options);
   end
   
-  period                    = orbit_t(end);
+  period = orbit_t(end);
   
-  if in.show_plots
+  matlab_gui_running = usejava('jvm');
+  
+  if in.show_plots && matlab_gui_running
   
     my_figure = figure;
     plot_t = linspace(0, period, in.n_interpolated_points);
@@ -60,9 +62,6 @@ function initial_continuation_data = init_single_shooting_internal(in)
     disp(['Now showing plot from t=time_to_converge_to_cycle to ' ...
                                        't=time_to_converge_to_cycle + period']);
     my_pause();
-    if isvalid(my_figure)
-      close(my_figure.Number)
-    end
   end
   
   if ~ using_cvode

@@ -244,8 +244,9 @@ function [solution_t, solution_x] = compute_periodic_solution(in)
           3 * in.n_mesh_intervals * in.nCollocationPoints);
   solution_x = deval(solution, solution_t);
   
+  matlab_gui_running = usejava('jvm');
   
-  if in.show_plots
+  if in.show_plots && matlab_gui_running
     my_figure = figure;
     if strcmp(in.plot_coordinates,'all')
       plot(solution_t, solution_x - solution_x(:,1))

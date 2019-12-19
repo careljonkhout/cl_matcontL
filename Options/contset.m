@@ -72,66 +72,112 @@ function options = defaultOptions()
   options.CIS_MaxUnstable     =   10;         % too big?
 
                               %% CIS: RIC solver options
-  options.CIS_Ric_Cayley_Shift   = 1;        % Cayley transform shift parameter (sparse solvers only)
+  options.CIS_Ric_Cayley_Shift   = 1;        % Cayley transform shift parameter
+  % (sparse solvers only)
   options.CIS_Ric_Euler          = 0;        % use Euler predictor?
-  options.CIS_Ric_FunTolerance   = 1e-5;     % Newton residual convergence tolerance
+  options.CIS_Ric_FunTolerance   = 1e-5;     % Newton residual convergence 
+  % olerance
   options.CIS_Ric_VarTolerance   = 1e-5;     % Newton step convergence tolerance
   options.CIS_Ric_MaxNewtonIters = 15;       % maximum allowed Newton steps
   options.CIS_Ric_PartialQ       = 0;        % Keep only Q1 even in dense case?
-  options.CIS_Ric_SubspaceSelect = 'ric';    % Method used to select subspace (or 'eig')    MP 2018
-  options.CIS_Ric_Transform      = 'cayley'; % transformation (none, invert, cayley) (sparse solvers only)
-  options.CIS_Ric_schur_blsz     = 3;        % Block size used for Schur decomposition (sparse solvers only)
-  options.CIS_Ric_schur_nbls     = 10;       % Number of blocks used in computation (sparse solvers only)
-  options.CIS_Ric_schur_maxit    = 100;      % Maximum number of iterations for Schur decomposition (sparse solvers only)
-  options.CIS_Ric_schur_tol      = 1e-6;     % Tolerance use in Schur decomposition (sparse solvers only)
+  options.CIS_Ric_SubspaceSelect = 'ric';    % Method used to select subspace
+  % (or 'eig')    MP 2018
+  options.CIS_Ric_Transform      = 'cayley'; % transformation (none, invert, 
+  % cayley) (sparse solvers only)
+  options.CIS_Ric_schur_blsz     = 3;        % Block size used for Schur 
+  % decomposition (sparse solvers only)
+  options.CIS_Ric_schur_nbls     = 10;       % Number of blocks used in 
+  % computation (sparse solvers only)
+  options.CIS_Ric_schur_maxit    = 100;      % Maximum number of iterations for
+  % Schur decomposition (sparse solvers only)
+  options.CIS_Ric_schur_tol      = 1e-6;     % Tolerance use in Schur
+  % decomposition (sparse solvers only)
 
                               %% Continuer Options
-  % DV: Continuer options mostly match standard matcont options (compare to list of names in contid.m)
+  % DV: Continuer options mostly match standard matcont options 
+  % (compare to list of names in contid.m)
   % A few standard matcont options are currently not supported, and
   % cl_matcontL has additional options
-  % A warning will be printed when an unsupported options is set
-  options.InitStepsize   = 0.01;        % Initial Stepsize    DV: old name 'Cont_InitStepsize'
-  options.MinStepsize    = 1e-5;        % Minimum stepsize    DV: old name 'Cont_MinStepsize'
-  options.MaxStepsize    =  0.1;        % Maximum stepsize    DV: old name 'Cont_MaxStepsize'
+  % A warning will be printed when an unsupporte option is set
+  options.InitStepsize   = 0.01;        % Initial Stepsize 
+  % DV: old name 'Cont_InitStepsize'
+  options.MinStepsize    = 1e-5;        % Minimum stepsize
+  % DV: old name 'Cont_MinStepsize'
+  options.MaxStepsize    =  0.1;        % Maximum stepsize
+  % DV: old name 'Cont_MaxStepsize'
 
-  options.h_inc_fac      = 1.3;         % Factor to increase stepsize  MP: old name 'Stepsize_Inc_fac'
-  options.h_dec_fac      = 0.5;         % Factor to decrease stepsize  MP: old name 'Stepsize_Dec_fac'   
-  options.MaxCorrIters   =  10;         % Maximum number of correction steps   DV: old name 'Cont_MaxCorrIters'
-  options.MaxNewtonIters =   3;         % Maximum number of times that the jacobian is computed per continuation step DV: old name 'Cont_MaxNewtonIters'
+  options.h_inc_fac      = 1.3;         % Factor to increase stepsize
+  % MP: old name 'Stepsize_Inc_fac'
+  options.h_dec_fac      = 0.5;         % Factor to decrease stepsize
+  % MP: old name 'Stepsize_Dec_fac'   
+  options.MaxCorrIters   =  10;         % Maximum number of correction steps
+  % DV: old name 'Cont_MaxCorrIters'
+  options.MaxNewtonIters =   3;         % Maximum number of times that the 
+  % jacobian is computed per continuation step DV: old name 'Cont_MaxNewtonIters'
   % MaxTestIters (SUPPORTED: see locator options below)
-  options.max_rel_funcnorm_increase = 20;    % maximum relative increase in function norm that does not lead to corrections being aborted
-  options.MoorePenrose   =   1;         % Solver to be used   DV: old name 'Cont_Solver' 
-  options.SymDerivative  = [1 1 1 1 1]; % ADDED Boolen Array indicating whether symbolic derivaties are used (when supplied in problem file)
-  options.SymDerivativeP = [1 1];       % ADDED Boolen Array indicating whether symbolic derivaties are used (when supplied in problem file)
-  options.Increment      = 1e-5;        % Increment for finite difference approximations    DV: old name 'Cont_IncrFinDiff'
-  options.FunTolerance   = 1e-6;        % residual tolerance for curve   DV: old name     'Cont_FunTolerance'
-  options.VarTolerance   = 1e-5;        % Tolerance for curve            DV: old name     'Cont_VarTolerance'
-  options.NewtonPicardBasisTolerance = 1e-6; % Tolerance for the basis in Newton Picard corrections, see continuer/Newton_Picard_Correction.m
-  options.NewtonPicardMaxSubspaceIterations = 10; % number of iterations before subspace iteration in Newton Picard is aborted, see continuer/Newton_Picard_Correction.m
+  options.max_rel_funcnorm_increase = 20;    % maximum relative increase in 
+  % function norm that does not lead to corrections being aborted
+  options.MoorePenrose   =   1;         % Solver to be used   
+  % DV: old name 'Cont_Solver' 
+  options.SymDerivative  = [1 1 1 1 1]; % ADDED Boolen Array indicating whether 
+  % symbolic derivaties are used (when supplied in problem file)
+  options.SymDerivativeP = [1 1];       % ADDED Boolen Array indicating whether 
+  % symbolic derivaties are used (when supplied in problem file)
+  options.Increment      = 1e-5;        % Increment for 
+  %  finite difference approximations
+  % DV: old name 'Cont_IncrFinDiff'
+  options.FunTolerance   = 1e-6;        % residual tolerance for curve 
+  % DV: old name     'Cont_FunTolerance'
+  options.VarTolerance   = 1e-5;        % Tolerance for curve
+  % DV: old name     'Cont_VarTolerance'
+  
   % TestTolerance (NOT SUPPORTED: cl_matcontL now makes a distinction between
   % fun and var tolerance, see locator options below) MP why??????
-  options.Singularities   =    0;       % Whether or not to detect Singularities     DV: old name 'Cont_Singularities'
-  options.MaxNumPoints    =  300;       % Maximum Number of Steps to be taken        DV: old name 'Cont_MaxNumPoints'
-  options.Backward        =    0;       % Direction of continuation {0,1} = {Forward, Backwards}   DV: old name 'Cont_Direction'
-  options.CheckClosed     =   50;       % Number of steps to start checking for closed loops   DV: old name 'Cont_CheckClosed '
+  options.Singularities   =    0;       % Whether or not to detect Singularities
+  % DV: old name 'Cont_Singularities'
+  options.MaxNumPoints    =  300;       % Maximum Number of Steps to be taken   
+  % DV: old name 'Cont_MaxNumPoints'
+  options.Backward        =    0;       % Direction of continuation 
+  % {0,1} = {Forward, Backwards}   DV: old name 'Cont_Direction'
+  options.CheckClosed     =   50;       % Number of steps to start checking for 
+  % closed loops   DV: old name 'Cont_CheckClosed '
   % Testfunctions
   % Workspace
-  options.Locators        =   [];       % Boolean Array: Toggles which locators to use   DV: old name 'Loc_UseLocators'
-  options.Adapt           =    3;       % Number of steps before automatic adapt         DV: old name 'Cont_AdaptSteps'
+  options.Locators        =   [];       % Boolean Array: Toggles which locators 
+  % to use   DV: old name 'Loc_UseLocators'
+  options.Adapt           =    3;       % Number of steps before automatic adapt
+  % DV: old name 'Cont_AdaptSteps'
   % IgnoreSingularity (SUPPORTED: see locator options below)
   % ActiveParams
-  options.Multipliers     =    0;       % Whether or not to calculate multipliers DV 2018
-  options.Eigenvalues     =    0;       % Whether or not to calculate and save eigenvalues     DV: old name 'Cont_Eigenvalues'
-  options.Userfunctions   =    0;       % Whether or not to detect userfunctions      DV: old name 'Cont_Userfunctions'
-  options.UserFuncInfo    =    [];      % Struct:                                        DV: old name 'Cont_UserfuncInfo'
-  options.PRC             =    0;       % PRC means phase response curve. is related to limitcycleL
+  options.Multipliers     =    0;       % Whether or not to calculate 
+  % multipliers DV 2018
+  options.Eigenvalues     =    0;       % Whether or not to calculate and save 
+  % eigenvalues     DV: old name 'Cont_Eigenvalues'
+  options.Userfunctions   =    0;       % Whether or not to detect userfunctions
+  % DV: old name 'Cont_Userfunctions'
+  options.UserFuncInfo    =    [];      % Struct: 
+  % DV: old name 'Cont_UserfuncInfo'
+  options.PRC             =    0;       % PRC means phase response curve. 
+  % is related to limitcycleL
   options.dPRC            =    0;       % DV 2018
   options.Input           =    0;       % DV 2018
-  options.NewtonPicard    =    false;
+  options.NewtonPicard    =    false;   % set to true to use the Newton-Picard 
+  options.PoincareIterations = false;
+  % method instead of the regular Newton method for the corrections. Applies
+  % only to limitcycle continuations
+  options.PoincareMaxPeriodIncFactor = 10;
+  % Factor by which the period can increase, while still being detected by a
+  % Poincare iteration. If set too low, stepsize might decrease unnessecariyly,
+  % if set to high, the Poincare iteration might take longer than nessecary.
+  
   options.monodromy_by_finite_differences = false;
   % in case an analytic Jacobian of the system of ODEs is not available, a
   % continuation by single shooting with Newton-Picard can still be done by
   % enabling this option.
+  
+  options.parameter_sensitivity_by_finite_diff = false;
+  % only affects single shooting and multiple shooting methods.
+  
 
   % ActiveUParams
   % ActiveSParams
@@ -146,15 +192,15 @@ function options = defaultOptions()
   % parellelize part of the comptutations for mutliple shooting with
   % Newton-Picard, I (Carel Jonkhout) found that memory use increased about
   % tenfold, and matlab workers repeatedly abborted. Hence, I do not expect the
-  % current version of the parallel computing toolbox to be of much use, unless
-  % the computations are extremely parallelizable and really simple, or if one
-  % has an enormous amount of RAM available.
+  % current version of the parallel computing toolbox to be of much use for 
+  % speeding up continuations of multiple shooting, unless one uses a Matlab
+  % cluster.
 
 
                               %% Locator options
   options.contL_EQ_BranchingMethod = 0;    % 0: Normal Form Method, 1: Perpendicular Guess, 2: Bisection
   options.contL_EQ_SingLinSystTol  = 0.01; % Bordered System Options
-  options.IgnoreSingularity        = [];   % Boolean Array: Toggles which singularities to ignore  DV: old name 'Loc_IgnoreSings'
+  options.IgnoreSingularity        = [];   % Index Array: Toggles which singularities to ignore  DV: old name 'Loc_IgnoreSings'
 
   options.MaxTestIters     =   20;         % Tolerances for bisection to detect singularities (without locators)   DV: old name 'Loc_Testf_MaxIters'
   options.contL_Testf_FunTolerance = 1e-5; % DV: similar to TestTolerance
@@ -210,7 +256,7 @@ function options = defaultOptions()
   % Integration tolerances smaller than 1e-13 may give 'unable to meet tolerances'
   % warnings.
   
-  options.num_cores                        = feature('numcores');
+  options.num_cores                        = 2;
   % set the number of cores to be used in parallel computing to the number of
   % physical cores on the local machine. Only relevant if
   % contL_ParallelComputing is true.

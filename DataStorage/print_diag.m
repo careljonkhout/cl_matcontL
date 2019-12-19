@@ -9,10 +9,14 @@ end
 
 if priority <= contopts.console_output_level
   fprintf(message,varargin{:});
+  if exist('OCTAVE_VERSION', 'builtin') 
+    fflush(stdout);
+  end
 end
 
 if priority <= contopts.contL_DiagnosticsLevel
   if isfield(cds, 'logFID') && cds.logFID
     fprintf(cds.logFID, message,varargin{:});  
+    
   end
 end

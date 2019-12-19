@@ -33,7 +33,9 @@ function equilibrium = converge_to_equilibrium(in)
   
   equilibrium = orbit_to_equilibrm_y(end,:)';
   
-  if in.show_plot
+  matlab_gui_running = usejava('jvm');
+  
+  if in.show_plot && matlab_gui_running
     my_figure = figure;
     plot(orbit_to_equilibrm_t, in.plot_transformation(orbit_to_equilibrm_y));
     xlabel('t')

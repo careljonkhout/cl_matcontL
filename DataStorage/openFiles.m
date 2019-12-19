@@ -16,9 +16,11 @@ stack        = dbstack();
 % script that runs the continuation. Hence, we expect stack(3).file to be a
 % good name for the files in which the data and logs are saved.
 scriptname   = stack(3).file;
-% remvome .m from the scriptname
-scriptname   = scriptname(1:end-2);
-my_timestamp = timestamp();
+% note: in octave file with include full path to the file. Hence, we must
+% exclucde it.
+scriptname_parts = strsplit(stack(3).file, filesep);
+scriptname       = scriptname_parts{end};
+my_timestamp     = timestamp();
 
 cds.runID = contopts.Filename;
 if isempty(cds.runID) 

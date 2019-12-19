@@ -1,0 +1,15 @@
+eigsPlus provides an enhanced, alternative version to Matlab's eigs 
+routine, supported on Matlab R2012b and later and Octave.
+
+eigsPlus is AGPL licensed.  See the LICENSE_INFO folder for more 
+information.
+
+For documentation, in Matlab type:
+
+> help eigsPlus
+> help makeEigsPlus
+> help cleanEigsPlus
+
+and/or see:
+
+http://www.timmitchell.com/software/eigsPlus/

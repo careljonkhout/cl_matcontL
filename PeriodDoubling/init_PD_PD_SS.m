@@ -65,7 +65,7 @@ function x = init_PD_PD_SS(varargin)
   period                         = pd.x(end-1);
   
   
-  pd_vector = NewtonPicard.SingleShooting.find_pd_vector(pd.x);
+  pd_vector = NP_SS_find_pd_vector(pd.x);
   
   cds.l = pd_vector;
   

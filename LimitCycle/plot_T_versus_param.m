@@ -20,5 +20,5 @@ function plot_T_versus_param(currpoint, trialpoint)
   %print_diag(3,'\nplotting: [%.3e %.3e]  [%.3e %.3e] \n\n', ...
   %              [curr_param trial_param],[curr_T trial_T])
   plot([curr_param trial_param],[curr_T trial_T],'b');
-  drawnow limitrate
+  drawnow
 end

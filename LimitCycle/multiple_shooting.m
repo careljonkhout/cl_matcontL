@@ -38,7 +38,7 @@ function func = curve_func(varargin)
   for i = 0 : cds.n_mesh_intervals - 1
     indices = (1:cds.n_phases) + i * cds.n_phases;
     delta_t = period * (cds.mesh(i+2) - cds.mesh(i+1));
-    y_end(indices) = NewtonPicard.shoot(y_0(indices), delta_t, parameters);
+    y_end(indices) = NP_shoot(y_0(indices), delta_t, parameters);
   end
   r = zeros(cds.n_phases * cds.n_mesh_intervals,1); % residuals
   for i = 0 : cds.n_mesh_intervals - 2
@@ -90,7 +90,7 @@ function jacobian = jacobian(varargin)
     indices = (1:cds.n_phases) + i * cds.n_phases;
     delta_t = period * (cds.mesh(i+2) - cds.mesh(i+1));
     jacobian(indices,M+2) = ...
-       NewtonPicard.compute_d_phi_d_p(y_0(indices), delta_t, parameters);
+       NP_compute_d_phi_d_p(y_0(indices), delta_t, parameters);
   end
   % specify d_s_d_y
   jacobian(M+1, 1:cds.n_phases) = cds.previous_dydt_0';
@@ -255,7 +255,7 @@ function point = adjust_basis_size(point)
   global cds contopts;
   basis_size_changed = false;
   
-  if contopts.NewtonPicard
+  if contotps.NewtonPicard
     update_multipliers_if_needed(point.x)
     if abs(cds.multipliers(end)) > contopts.basis_grow_threshold
       basis_size_changed = true;
@@ -263,7 +263,7 @@ function point = adjust_basis_size(point)
       nMults_to_compute = cds.preferred_basis_size + 10;
       nMults_to_compute = min(nMults_to_compute, cds.n_phases);
       cds.multipliersX = point.x;
-      cds.multipliers = NewtonPicard.MultipleShooting.compute_multipliers(...
+      cds.multipliers = NP_MS_compute_multipliers(...
         point.x, nMults_to_compute);
       
       i = length(cds.multipliers);
@@ -289,7 +289,7 @@ function point = adjust_basis_size(point)
     end
   end
   
-  if contopts.Multipliers || contopts.NewtonPicard
+  if contopts.Multipliers || contotps.NewtonPicard
     update_multipliers_if_needed(point.x)
     point.multipliers = cds.multipliers;
   end
@@ -326,7 +326,7 @@ function mesh_points = find_mesh_points_multiple_shooting(x, fineness)
     'RelTol', contopts.integration_rel_tol  ...
   );
   [~, period, parameters] = getComponents(x);
-  NewtonPicard.MultipleShooting.compute_stiched_orbit(x);
+  NP_MS_compute_stiched_orbit(x);
   cycle_gradient_norm = @(t,x) norm(cds.dydt_ode(...
       t, interp1(cds.t_cycle,cds.y_cycle,t,'spline'), parameters{:}));
   
@@ -356,7 +356,7 @@ function update_multipliers_if_needed(x)
   global cds
   if ~ isfield(cds,'multipliersX') || all(cds.multipliersX ~= x)
     cds.multipliersX = x;
-    cds.multipliers = NewtonPicard.MultipleShooting.compute_multipliers(x, ...
+    cds.multipliers = NP_MS_compute_multipliers(x, ...
                               cds.preferred_basis_size);
   end
 end

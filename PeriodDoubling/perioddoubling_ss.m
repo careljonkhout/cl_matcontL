@@ -20,10 +20,10 @@ end
 function f = curve_function(varargin)
   global cds
   [phases_0, v, period, parameters] = pd_ss_extract_data(varargin{1});
-  shoot                        = @NewtonPicard.shoot;
+  shoot                        = @NP_shoot;
   phases_end                   = shoot(phases_0, period, parameters);
   cds.phases_0                 = phases_0;
-  M                            = @NewtonPicard.SingleShooting.monodromy_map;
+  M                            = @NP_SS_monodromy_map;
   Mv                           = M(v, period, parameters);
   f = [phases_end - phases_0; 
       (phases_0 - cds.previous_phases)' * cds.previous_dydt_0;

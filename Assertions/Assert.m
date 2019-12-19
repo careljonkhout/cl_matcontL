@@ -22,7 +22,7 @@ classdef Assert
     end
     
     function function_handle(name, value)
-      assert(isa(value, 'function_handle'), [name 'must be a function handle.']);
+      assert(isa(value, 'function_handle'), [name ' must be a function handle.']);
     end
     
   end

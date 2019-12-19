@@ -27,9 +27,9 @@ function p_out = locate_NS(p1, p2, testfunctions)
     v3 = p1.v + (p2.v-p1.v)/2;
     v3 = v3/norm(v3);
     if contopts.NewtonPicard
-      p3 = NewtonPicard.do_corrections(x3,v3);
+      p3 = NP_do_corrections(x3,v3);
       if isempty(p3)
-        print_diag(3, 'NewtonPicard algorithm failed during bisection')
+        print_diag(3, 'NP_algorithm failed during bisection')
         return
       end
     else

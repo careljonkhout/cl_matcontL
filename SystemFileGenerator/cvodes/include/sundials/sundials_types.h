@@ -55,6 +55,7 @@
 
 #include <float.h>
 #include <stdint.h>
+#include <set_precision.h>
 
 #ifdef __cplusplus  /* wrapper to enable C++ usage */
 extern "C" {
@@ -86,7 +87,7 @@ typedef double realtype;
 
 #elif defined(SUNDIALS_EXTENDED_PRECISION)
 
-typedef __float128 realtype;
+typedef HIGHER_PRECISION realtype;
 # define RCONST(x) x##q
 # define BIG_REAL LDBL_MAX
 # define SMALL_REAL LDBL_MIN

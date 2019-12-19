@@ -62,11 +62,19 @@ function [sout, datafile] = contL(curvefile, x0, v_cont, opts, varargin)
     % initialize new parallel pool when none is available
     parpool(contopts.num_cores);   
   end
-
-  if UsingNewtonPicard && ( ~ isequal(curvefile, @single_shooting   ) ...
+  
+  if contopts.PoincareIterations && Singularities
+    Singularities = false;
+    contopts.Singularities = false;
+    warning(['It is not possible to detect singularities while using ' ...
+             'Poincare Iterations. ' ...
+             'Singularity detection has been switched off'])
+  end
+  
+  if UsingNewtonPicard&& ( ~ isequal(curvefile, @single_shooting   ) ...
                        &&   ~ isequal(curvefile, @multiple_shooting ) ...
                        &&   ~ isequal(curvefile, @perioddoubling_ss))
-    warning(['Newton-Picard is only implemented for the curve file %s. ' ...
+    warning(['Newton-Picard not implemented for the curve file %s. ' ...
              'Newton-Picard will not be used.'], func2str(curvefile))
     contopts.NewtonPicard = false;
     UsingNewtonPicard = false;
@@ -101,7 +109,6 @@ function [sout, datafile] = contL(curvefile, x0, v_cont, opts, varargin)
     end
   end
 
-  %% Algorithm starts here
   cds.StartTime = clock;
 
   feval(cds.curve_init, x0, v_cont);
@@ -113,17 +120,22 @@ function [sout, datafile] = contL(curvefile, x0, v_cont, opts, varargin)
        v_cont = find_initial_tangent_vector(x0, v_cont, 1);
        print_diag(1,'found tangent vector\n')
      end
-     firstpoint = newtcorrL(x0, v_cont, 1);
+     first_point = newtcorrL(x0, v_cont, 1);
   elseif UsingNewtonPicard
     if isempty(v_cont)
-      v_cont = NewtonPicard.find_tangent_vector(curvefile, x0);
+      v_cont = NP_find_tangent_vector(curvefile, x0);
     end
-    firstpoint = NewtonPicard.do_corrections(x0,v_cont);
-    if isempty(firstpoint)
+    first_point = NP_do_corrections(x0,v_cont);
+    if isempty(first_point)
       print_diag(0,'Correction of first point does not converge\n');
       return;
     end
-    firstpoint.v =  NewtonPicard.find_tangent_vector(curvefile, x0, v_cont);
+    first_point.v =  NP_find_tangent_vector(curvefile, x0, v_cont);
+  elseif contopts.PoincareIterations
+    first_point = poincare_iterations(x0);
+    if ~ isempty(first_point)
+      first_point.v = [];
+    end
   else
     try 
       cds.curve_func    (x0); 
@@ -148,20 +160,19 @@ function [sout, datafile] = contL(curvefile, x0, v_cont, opts, varargin)
         return;
       end
     end
-    firstpoint = newtcorrL(x0, v_cont, CISdata0);
+    first_point = newtcorrL(x0, v_cont, CISdata0);
   end
 
-  if isempty(firstpoint)
+  if isempty(first_point)
     print_diag(0,'contL: no convergence at x0.\n');
     sout = [];
     return;
   end
-  firstpoint.h = cds.h;
+  first_point.h = cds.h;
 
   %% CIS data algorithm
-
-  firstpoint.CISdata = feval(cds.curve_CIS_first_point, x0);
-  if isempty(firstpoint.CISdata)
+  first_point.CISdata = feval(cds.curve_CIS_first_point, x0);
+  if isempty(first_point.CISdata)
     print_diag(0,'contL: failed to intialize CIS algorithm.\n'); 
     sout = []; 
     return; 
@@ -169,27 +180,24 @@ function [sout, datafile] = contL(curvefile, x0, v_cont, opts, varargin)
 
 
   %% Direction Vector Determination
-  if contopts.set_direction
+  if contopts.set_direction && ~ contopts.PoincareIterations
     Backward       = contopts.Backward;
-    if abs(firstpoint.v(end)) < 1e-6
-      Vdir = sign(sum(firstpoint.v(1:end-1)));
+    if abs(first_point.v(end)) < 1e-6
+      Vdir = sign(sum(first_point.v(1:end-1)));
     else
-      Vdir = sign(firstpoint.v(end));
+      Vdir = sign(first_point.v(end));
     end
     if (Backward && Vdir > 0) || (~Backward && Vdir < 0)
-        firstpoint.v = -firstpoint.v;
+        first_point.v = -first_point.v;
     end
   end
 
-
-
-
   %% Test and user functions
 
-  firstpoint.tvals = [];
+  first_point.tvals = [];
   if Singularities
     % We calculate all testfunctions at once
-    [firstpoint.tvals, failed] = EvalTestFunc(0, firstpoint);
+    [first_point.tvals, failed] = EvalTestFunc(0, first_point);
     if failed
       message = 'contL: Evaluation of test functions failed at start point.\n';
       print_diag(0, message);
@@ -199,9 +207,9 @@ function [sout, datafile] = contL(curvefile, x0, v_cont, opts, varargin)
     end
   end
 
-  firstpoint.uvals = [];
+  first_point.uvals = [];
   if Userfunctions
-    [firstpoint.uvals,failed] = feval(cds.curve_userf, 0, UserInfo, x0);
+    [first_point.uvals,failed] = feval(cds.curve_userf, 0, UserInfo, x0);
     if failed
       message = 'contL: Evaluation of user functions failed at start point.\n';
       print_diag(0, message);
@@ -211,11 +219,11 @@ function [sout, datafile] = contL(curvefile, x0, v_cont, opts, varargin)
     end
   end
 
-  firstpoint.angle = 0;
-  firstpoint = DefaultProcessor(firstpoint); 
+  first_point.angle = 0;
+  first_point = DefaultProcessor(first_point); 
 
   %% II. Main Loop
-  currpoint = firstpoint;
+  currpoint = first_point;
   while cds.i < MaxNumPoints && ~cds.lastpointfound
     corrections = 1;
     print_diag(1,'\n --- Step %d ---\n',cds.i);
@@ -225,35 +233,51 @@ function [sout, datafile] = contL(curvefile, x0, v_cont, opts, varargin)
       %% A. Predict
       if UsingNewtonPicard
         xpre = currpoint.x + cds.h * currpoint.v;
+      elseif contopts.PoincareIterations
+        xpre = currpoint.x;
+        if contopts.Backward
+          xpre(end) = xpre(end) - cds.h;
+        else
+          xpre(end) = xpre(end) + cds.h;
+        end
       else
         xpre = currpoint.x + cds.h * currpoint.v(1:cds.ndim);
       end
       reduce_stepsize = 0;
 
       %% B. Correct
-      try
+      %try
         if UsingNewtonPicard
-           trialpoint = NewtonPicard.do_corrections(xpre, currpoint.v);
+           trialpoint = NP_do_corrections(xpre, currpoint.v);
           if ~ isempty(trialpoint)
-            trialpoint.v = NewtonPicard.find_tangent_vector(...
+            trialpoint.v = NP_find_tangent_vector(...
                                     curvefile, trialpoint.x, trialpoint.v);
           end
-        else
-           trialpoint = newtcorrL(xpre, currpoint.v, currpoint.CISdata);
+        elseif contopts.PoincareIterations
+          trialpoint = poincare_iterations(xpre);
+          if ~ isempty(trialpoint)
+            trialpoint.v = [];
+          end
+        else 
+          trialpoint = newtcorrL(xpre, currpoint.v, currpoint.CISdata);
         end
-      catch my_error
-        switch my_error.identifier
-          case {'cvode:integrator_error', 'npms:wrong_basis_size'}
-            print_diag(0, my_error.message);
-            trialpoint = [];
-          otherwise
-            rethrow(my_error)
-        end
-      end
+%       catch my_error
+%         switch my_error.identifier
+%           case {'cvode:integrator_error', 'npms:wrong_basis_size'}
+%             print_diag(0, my_error.message);
+%             trialpoint = [];
+%           otherwise
+%             rethrow(my_error)
+%         end
+%       end
+      
+      
 
       if isempty(trialpoint)
-        if UsingNewtonPicard 
-          print_diag(0, 'contL: NewtonPicard.do_corrections failed\n')
+        if UsingNewtonPicard
+          print_diag(0, 'contL: NP_do_corrections failed\n')
+        elseif contopts.PoincareIterations
+          print_diag(0, 'contL: poincare_iterations failed\n')
         else
           print_diag(0, 'contL: newtcorrL failed\n')
         end
@@ -263,8 +287,11 @@ function [sout, datafile] = contL(curvefile, x0, v_cont, opts, varargin)
       %% C. curve smoothing
       if ~reduce_stepsize
         trialpoint.h = cds.h;
-        trialpoint.angle = innerangle(currpoint.v,trialpoint.v);
-        if trialpoint.angle > SmoothingAngle && cds.i > 1
+        if ~ isempty(currpoint.v)
+          trialpoint.angle = innerangle(currpoint.v, trialpoint.v);
+        end
+        if isfield(trialpoint, 'angle') && trialpoint.angle > SmoothingAngle ... 
+                && cds.i > 1
           print_diag(0, ...
             'contL: Innerangle too large, innerangle is %f degrees\n', ...
             trialpoint.angle / pi * 180);
@@ -537,7 +564,7 @@ function [sout, datafile] = contL(curvefile, x0, v_cont, opts, varargin)
     if CheckClosed>0 && cds.i>= CheckClosed && norm(trialpoint.x-x0) < cds.h
       cds.i=cds.i+1;
       cds.lastpointfound = 1;
-      currpoint = firstpoint;
+      currpoint = first_point;
       print_diag(1, '\nClosed curve detected at step %d\n', cds.i);
       DefaultProcessor(currpoint);
       break;
@@ -782,14 +809,14 @@ function [pout, p1, p2] = LocateTestFunction(id, p1, p2)
       end
     end
     if contopts.NewtonPicard
-      p3 = NewtonPicard.do_corrections(x3,v3);
+      p3 = NP_do_corrections(x3,v3);
       if isempty(p3)
         print_diag(3, 'Newton-Picard corrections failed during bisection\n')
         return        
       end
       if id == Constants.LPC_id 
         % if we are locating a limit point of cycles (LPC)
-        p3.v = NewtonPicard.find_tangent_vector(cds.curve, p3.x, p3.v);
+        p3.v = NP_find_tangent_vector(cds.curve, p3.x, p3.v);
       end
     else
       p3 = newtcorrL(x3,v3, CISdata3);

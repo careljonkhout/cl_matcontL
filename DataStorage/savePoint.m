@@ -55,7 +55,10 @@ function [ failed ] = savePoint( varargin )
       label = '  ';
       is_special = false;
       print_point(point, label, is_special);
-      print_diag(2,'Angle Between Tangents:  %+f degrees\n',point.angle/pi*180);
+      if isfield(point, 'angle')
+        print_diag(2, 'Angle Between Tangents:  %+f degrees\n', ...
+                point.angle / pi * 180);
+      end
   elseif nargin == 2
       % 'singular' point
       s = varargin{2};
@@ -143,7 +146,7 @@ function print_point(point, label, is_special)
   print_diag(0, '%.6e     ', point.R);
   print_diag(0, '%12.6e'     , point.h);
   
-  if has_period(cds.curve)
+  if has_period(cds.curve) && has_nonempty_field(point, 'multipliers')
     distance_to_one     = abs(point.multipliers - 1);
     log_10_of_deviation = log10(min(distance_to_one));
     print_diag(0, '%10.3f', -log_10_of_deviation);
@@ -155,6 +158,10 @@ function print_point(point, label, is_special)
     end
   end
   print_diag(0, '\n');
+end
+
+function has_nonempty_field = has_nonempty_field(struct, field)
+  has_nonempty_field = isfield(struct, field) && ~ isempty(struct.(field));
 end
 
   

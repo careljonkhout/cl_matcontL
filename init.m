@@ -21,6 +21,7 @@ function init
   addpath([pwd '/PeriodDoubling/']);
   addpath([pwd '/SystemFileGenerator/']);
   addpath([pwd '/Systems/']);
+  addpath([pwd '/primme/Matlab']);
 
   source_files = {
     'BVP_LC_jac';

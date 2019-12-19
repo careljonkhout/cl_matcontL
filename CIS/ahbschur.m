@@ -100,7 +100,7 @@ if nargin == 0, error('No input arguments'), end
 % Set all input options to default values or set to empty arrays.
 blsz = 3; adjust = []; cholB = 0;  dispr = 0;  K = 6; B=[];
 maxit = 100; nbls = 10; permB = []; sigma = 'LM'; tol = 1d-6; V=[];
-nval=[]; options = []; extra = [];
+nval=[]; options = []; extra = {};
 
 % Get matrix A.
 A = varargin{1};

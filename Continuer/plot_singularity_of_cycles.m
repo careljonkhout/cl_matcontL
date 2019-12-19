@@ -21,6 +21,6 @@ function plot_singularity_of_cycles(s)
   plot(parameter_value, period, 'r*')
   text(parameter_value, period, s.label, ...
         'VerticalAlignment', vertical_alignment)
-	drawnow limitrate
+	drawnow
 end
 

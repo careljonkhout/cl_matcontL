@@ -38,7 +38,7 @@ function x = init_multiple_shooting_branching(odefile, bpc, h, ...
   cds.mesh                       = bpc.time_mesh;
   
   
-  v = NewtonPicard.MultipleShooting.find_branching_vector(bpc.x, bpc.v);
+  v = NP_MS_find_branching_vector(bpc.x, bpc.v);
   v = v / max(v);
   x = bpc.x + h * v;
   

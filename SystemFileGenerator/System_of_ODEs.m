@@ -1,11 +1,11 @@
-classdef System_of_ODEs < matlab.mixin.CustomDisplay
+classdef System_of_ODEs < handle
   % 
   % see README for instructions on how to use this tool to generate
   % system files for (cl_)matcont/matcontL
   %
   % defining properties
   % These properties are supplied by the user and fully define the system.
-  properties (SetAccess=immutable)
+  properties
     name              % name of the system, used to create a filename
                       % char array
     input_vars_str    % list of variables of the system
@@ -31,7 +31,7 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
   
   % These properties are computed from the defining propeties when an
   % instance of this class is created.
-  properties (SetAccess=immutable)
+  properties
     input_vars % cell array of char arrays
     input_pars % cell array of char arrays
     
@@ -55,6 +55,10 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
     % cell array of char arrays 
     output_syms
     
+    jacobian_vars_sym
+    jacobian_pars_sym
+    
+    
     % all fields below contain char arrays
     syms_arg   
     formatted_rhs
@@ -63,7 +67,8 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
     jacobian_handle                   = '[]'
     jacobian_params                   = '[]'
     jacobian_params_handle            = '[]'
-    sensitivity                       = '[]'
+    d_sensitivity_dt_code     
+    d_sensitivity_dt_pars_code
     hessians                          = '[]'
     hessians_handle                   = '[]'
     hessians_params                   = '[]'
@@ -147,7 +152,7 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
       s.input_vars_str  = strjoin(s.input_vars, ' ');
       [s.input_syms, s.internal_syms, s.output_syms] = s.generate_sym_lists;
       
-      s.verify_inputs()
+      % s.verify_inputs()
 
       for i=1:length(s.rhs)
         s.rhs{i} = replace_symbols(s.rhs{i}, s.input_syms, s.internal_syms);
@@ -167,10 +172,15 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
       
       if (s.max_ord_derivatives >= 1)
         s.analytic_jacobian = 'true';
-        [s.jacobian, s.sensitivity,s.jacobian_storage, ...
-            s.jacobian_upper_bandwidth, s.jacobian_lower_bandwidth] = ...
-                                                     s.compute_jacobian('vars');
-        s.jacobian_params = s.compute_jacobian('pars');
+        [jac, storage, uppr_bw, lwr_bw] = s.compute_jacobian('vars');
+        s.jacobian                 = jac;
+        s.jacobian_storage         = storage;
+        s.jacobian_upper_bandwidth = uppr_bw;
+        s.jacobian_lower_bandwidth = lwr_bw;
+        s.jacobian_params          = s.compute_jacobian('pars');
+        % s.compute_sensitivity_right_hand_sides must happen after
+        % s.compute_jacobian('vars') and s.compute_jacobian('pars');
+        s.compute_sensitivity_right_hand_sides;
         switch s.output_type
           case {'c', 'cvode'}
             s.jacobian_handle       =sprintf('@%s.jacobian_mex'       , s.name);
@@ -218,8 +228,8 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
         case 'odefile'
           path = System_of_ODEs.get_cl_matcontL_path();
           templates_dir = fullfile(path, 'SystemFileGenerator', 'templates');
-          filename = fullfile(path, 'Systems', [s.name,'.m']);
-          content = emat2(fullfile(templates_dir, 'system.m.emat'));
+          filename      = fullfile(path, 'Systems', [s.name,'.m']);
+          content       = emat2(fullfile(templates_dir, 'system.m.emat'));
           System_of_ODEs.print_to_file(filename, content);
       end
     end
@@ -293,6 +303,10 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
         filename = fullfile(system_path , 'd_sensitivity_dt.c');
         content = emat2(fullfile(templates_path, 'd_sensitivity_dt.c.emat'));
         System_of_ODEs.print_to_file(filename, content);
+        
+        filename = fullfile(system_path , 'd_sensitivity_dt_pars.c');
+        content = emat2(fullfile(templates_path, 'd_sensitivity_dt_pars.c.emat'));
+        System_of_ODEs.print_to_file(filename, content);
       end
     
       cvodes_sources = dir(fullfile(cvodes_path,'**','*.c'));
@@ -310,9 +324,13 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
           {'fullfile(path, ''Systems'', dirname, ''dydt_cvode.c'')'}, ...    
           {'fullfile(path, ''Systems'', dirname, ''jacobian_cvode.c'')'}, ...
           {'fullfile(path, ''Systems'', dirname, ''d_sensitivity_dt.c'')'}, ...
+          {'fullfile(path, ''Systems'', dirname, ''d_sensitivity_dt_pars.c'')'}, ...
           {'[''-I'' fullfile(path, ''SystemFileGenerator'', ''cvodes'', ''include'')]'}, ...
           {'[''-I'' fullfile(path, ''Systems'', dirname)]'}, ...
-          ... {'''-g'''}, ...  % -g enables debugging symbols
+          {' ... ''-g'' % uncomment to enable debugging symbols'''}, ... 
+          {' ... not including preprocessor definitions'}, ... 
+          {' ... ''CFLAGS=$CFLAGS -g3'' % uncomment to enable debugging symbols '}, ... 
+          {' ... including preprocessor definitions (for gcc)' }
           cvodes_sources(:)', ...
           {'''-output'''}, ...
           {'fullfile(path, ''Systems'', dirname, ''cvode'')'}, ...
@@ -323,7 +341,10 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
           {'fullfile(path, ''Systems'', dirname, ''dydt_cvode.c'')'}, ...
           {'[''-I'' fullfile(path, ''SystemFileGenerator'', ''cvodes'', ''include'')]'}, ...
           {'[''-I'' fullfile(path, ''Systems'', dirname)]'}, ...
-          ... {'''-g'''}, ...  % -g enables debugging symbols
+          {' ... ''-g'' % uncomment to enable debugging symbols'''}, ... 
+          {' ... not including preprocessor definitions'}, ... 
+          {' ... ''CFLAGS=$CFLAGS -g3'' % uncomment to enable debugging symbols '}, ...
+          {' ... inlucluding preprocessor definitions (for gcc)' }
           {strjoin(cvodes_sources, ', ... \n  ')}, ...
           {'''-output'''}, ...
           {'fullfile(path, ''Systems'', dirname, ''cvode'')'}, ...
@@ -344,7 +365,7 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
     end
       
     function verify_inputs(s)
-      all_equations = join(s.rhs);
+      all_equations = strjoin(s.rhs);
       if isempty(s.name)
         s.throwException('You must provide a system name.');
       elseif isempty(s.input_vars_str)
@@ -444,11 +465,10 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
       end
     end
     
-    function [jacobian, sensitivity, storage, ...
-           upper_bandwidth, lower_bandwidth] = compute_jacobian(s, vars_or_pars)
+    function [jac, storage, uppr_bw, lwr_bw] = compute_jacobian(s, vars_or_pars)
       storage = 'DENSE';
-      upper_bandwidth = 'NOT_APPLICABLE';
-      lower_bandwidth = 'NOT_APPLICABLE';
+      uppr_bw = 'NOT_APPLICABLE';
+      lwr_bw = 'NOT_APPLICABLE';
       switch vars_or_pars
         case 'vars'; differentiation_vars = s.internal_vars_str;
         case 'pars'; differentiation_vars = s.internal_pars_str;
@@ -456,146 +476,102 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
       eval_str = sprintf('jacobian([%s],[%s])', strjoin(s.rhs, ','), ...
                                                           differentiation_vars);
       jacobian_sym = s.safe_eval_w_syms(eval_str);
+      switch vars_or_pars
+        case 'vars'; s.jacobian_vars_sym = jacobian_sym;
+        case 'pars'; s.jacobian_pars_sym = jacobian_sym;
+      end
+      
       switch s.output_type
         
         case {'C', 'cvode'}
         fprintf('formatting jacobian:\n');
-        c_code_of_jac_elements = s.to_c_code_matrix(jacobian_sym);
+        jac_code = System_of_ODEs.to_c_code_matrix(jacobian_sym);
         
         if strcmp(vars_or_pars, 'vars')
-          sparsity_pattern = cellfun(@(e) ~ isempty(e), c_code_of_jac_elements);
-          [lower, upper]   = bandwidth(double(sparsity_pattern));
-          lower_bandwidth  = lower;
-          upper_bandwidth  = upper;
-          if lower + upper < length(s.input_vars) / 2
+          sparsity_pattern = cellfun(@(e) ~ isempty(e), jac_code);
+          [lwr_bw, uppr_bw] = bandwidth(double(sparsity_pattern));
+          if lwr_bw + uppr_bw < length(s.input_vars) / 2
             storage = 'BANDED';
           end
         end
         
-        jacobian_lines = cell(numel(jacobian_sym),1);
+        lines = cell(numel(jacobian_sym),1);
         j = 1;
         for i = 1 : numel(jacobian_sym)
-          if ~ isempty(c_code_of_jac_elements{i})
-            [row, col] = ind2sub(size(c_code_of_jac_elements), i);
-            jacobian_lines{j} = sprintf('  JAC(%d,%d) = %s;', row-1, col-1, ...
-                                                     c_code_of_jac_elements{i});
+          if ~ isempty(jac_code{i})
+            [row, col] = ind2sub(size(jac_code), i);
+            lines{j} = sprintf('  JAC(%d,%d) = %s;', row-1, col-1, jac_code{i});
 	          j = j + 1;
           end
         end
         number_of_nonzeros = j - 1;
-        jacobian = strjoin(jacobian_lines(1:number_of_nonzeros), '\n');
-        
-        
-        eval(['syms ' s.syms_arg]);
-        sens = sym('s',[length(s.input_vars),1]); 
-     
-        
-        if strcmp(vars_or_pars, 'vars')
-        
-          sensitivity = jacobian_sym * sens;
+        jac = strjoin(lines(1:number_of_nonzeros), '\n');
 
-          c_code_sensitivity = s.to_c_code(sensitivity);
-          sensitivity_lines = cell(numel(sensitivity),1); 
-          for i = 1 : numel(c_code_sensitivity)
-            sensitivity_lines{i} = sprintf('  ds[%d] = %s;', i-1, ...
-                                                      c_code_sensitivity{i});
-          end
-
-          sensitivity = strjoin(sensitivity_lines, '\n');
-          sens_internal = cell(1,length(s.input_vars));
-          sens_output   = cell(1,length(s.input_vars));
-          for i = 1 : length(s.input_vars)
-            sens_internal{i} = sprintf('s%d', i);
-            sens_output{i}   = sprintf('s[%d]',i-1);
-          end
-          
-          
-          % [cell_array_1(:); cell_array_2(:)] concatenates cell_array_1 and
-          % cell_array_2 into a column cell vector.
-          sensitivity = replace_symbols(sensitivity, ...
-                          [s.internal_syms(:); sens_internal(:)], ...
-                          [s.output_syms(:)  ; sens_output(:)  ]);
-        else
-          sensitivity = '[]';
-        end
-        
         case 'odefile'
           
-        jacobian = s.symbolic_mat_to_matlab_code(jacobian_sym);
-        sensitivity = '[]';
+        jac = System_of_ODEs.symbolic_mat_to_matlab_code(jacobian_sym);
        
       end
-      jacobian = replace_symbols(jacobian, s.internal_syms, s.output_syms);
+      jac = replace_symbols(jac, s.internal_syms, s.output_syms);
     end
     
-    % input type:  symbolic_mat: array of symbolic expressions of any size.
-    % output type: symbolic_mat: 1d char array.
-    %
-    % converts an array of symbolic expressions whose symbols are listed in
-    % the instance variable "syms_arg" to a char array containing
-    % the Matlab code that evaluates the array of symbolic expressions.
-    %
-    % The input "symbolic_mat" should be an array of symbols. "symbolic_mat" can
-    % have any dimension.
-    function symbolic_mat = symbolic_mat_to_matlab_code(s, symbolic_mat)
+    function compute_sensitivity_right_hand_sides(s)
       eval(['syms ' s.syms_arg]);
-      symbolic_mat = char(matlabFunction(symbolic_mat));
-      % The variable "symbolic_mat" now contains a char array with the matlab
-      % code that evaluates the input "symbolic_mat". For instance if the input
-      % symbolic_mat is [p_a ; p_b], then the variable "symbolic_mat" now
-      % contains the string "@(p_a, p_b) [p_a, p_b]".
+      n_equations = length(s.input_vars);
       
-      % We discard everything between the first pair of parentheses by
-      % @\(.*?\) and capture the rest by (.*). The question mark makes the
-      % expression .* in @\(.*?\) lazy (see mathworks documentation on regexp)
-      tokens   = regexp(symbolic_mat, '@\(.*?\)(.*)','tokens');
-      symbolic_mat = tokens{1}{1};
-    end
-    
-    % input type:  expressions : array of symbolic expressions of any size.
-    % output type: symbolic_mat: 1d char array.
-    %
-    % converts an array of symbolic expressions whose symbols are listed in the
-    % instance variable "syms_arg" to a 1D cell array of char arrays containing
-    % the C code that evaluates the array of symbolic expressions. Note that the
-    % output is 1D even if the input is 2D, 3D or any higher dimension.    
-    function c_code = to_c_code(s, expressions)
-      nBytes = fprintf('loading syms');
-      eval(['syms ' s.syms_arg]);
-      c_code = cell(numel(expressions),1);
-      for i = 1 : numel(expressions)
-        if ~ strcmp(char(expressions(i)),'0')
-          fprintf(repmat('\b', 1, nBytes));
-          nBytes = fprintf('element %d of %d', i, numel(expressions));
-          my_c_code = ccode(expressions(i));
-          tokens    = regexp(my_c_code, '.*=(.*);', 'tokens');
-          c_code{i} = tokens{1}{1};
-        end
+      sensitivity = sym('s',[n_equations, 1]);      
+      d_sensitivity_dt = s.jacobian_vars_sym * sensitivity;
+      
+      ds_dt_p_code = System_of_ODEs.to_c_code(d_sensitivity_dt);
+      lines = cell(n_equations, 1); 
+      for i = 1 : n_equations
+        lines{i} = sprintf('  ds[%d] = %s;', i-1, ds_dt_p_code{i});
       end
-      fprintf(repmat('\b', 1, nBytes));
-    end
-    
-    % input type:  expressions : array of symbolic expressions of any size.
-    % output type: symbolic_mat: 1d char array.
-    %
-    % converts an array of symbolic expressions whose symbols are listed in the
-    % instance variable "syms_arg" to a 1D cell array of char arrays containing
-    % the C code that evaluates the array of symbolic expressions. Note that the
-    % output is 1D even if the input is 2D, 3D or any higher dimension.    
-    function c_code = to_c_code_matrix(s, expressions)
-      nBytes = fprintf('loading syms');
-      eval(['syms ' s.syms_arg]);
-      c_code = cell(size(expressions));
-      for i = 1 : numel(expressions)
-        if ~ strcmp(char(expressions(i)), '0')
-          fprintf(repmat('\b', 1, nBytes));
-          nBytes = fprintf('element %d of %d', i, numel(expressions));
-          my_c_code = ccode(expressions(i));
-          tokens    = regexp(my_c_code, '.*=(.*);', 'tokens');
-          c_code{i} = tokens{1}{1};
-        end
+
+      s.d_sensitivity_dt_code = strjoin(lines, '\n');
+      
+      % generate lists of char array representations sensitivity variables
+      % internal representations: 's1', 's2', ... ( must be valid Matlab names )
+      % output representations: 's[0]', 's[1]', ... ( C array locations )
+      sensitivity_internal = cell(1, length(s.input_vars));
+      sensitivity_output   = cell(1, length(s.input_vars));
+      for i = 1 : n_equations
+        sensitivity_internal{i} = sprintf('s%d', i);
+        sensitivity_output{i}   = sprintf('s[%d]',i-1);
       end
-      fprintf(repmat('\b', 1, nBytes));
+          
+      n_params = length(s.input_pars);
+      ds_dt_p_code_strings = cell(n_params, 1);
+      for i = 1 : n_params
+        ds_dt_pars = d_sensitivity_dt + s.jacobian_pars_sym(:,i);
+        ds_dt_p_code = System_of_ODEs.to_c_code(ds_dt_pars);
+        lines = cell(n_equations + 2, 1);
+        lines{1} = sprintf('  case %d:', i - 1);
+        for j = 1 : n_equations
+          lines{j+1} = sprintf('  ds[%d] = %s;', j-1, ds_dt_p_code{j});
+        end
+        lines{end} = '  break;\n';
+        ds_dt_p_code_strings{i} = strjoin(lines, '\n');
+      end
+      
+      s.d_sensitivity_dt_pars_code = sprintf([ ...
+        '  switch (parameter_index) {\n', ...
+        strjoin(ds_dt_p_code_strings, ''), ...
+        '  }\n', ...
+      ]);
+
+%     [cell_array_1(:); cell_array_2(:)] concatenates cell_array_1 and
+%     cell_array_2 into a column cell vector.
+      my_internal_symbols = [s.internal_syms(:); sensitivity_internal(:)];
+      my_output_symbols   = [s.output_syms(:)  ; sensitivity_output(:)  ];
+
+
+      s.d_sensitivity_dt_code = replace_symbols(s.d_sensitivity_dt_code, ...
+              my_internal_symbols, my_output_symbols);
+                    
+      s.d_sensitivity_dt_pars_code = replace_symbols( ...
+              s.d_sensitivity_dt_pars_code, ...
+              my_internal_symbols, my_output_symbols);
     end
 
     function d = compute_hessians(s, vars_or_pars)
@@ -617,7 +593,7 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
           end
         end
       end
-      d = s.symbolic_mat_to_matlab_code(d_sym);
+      d = System_of_ODEs.symbolic_mat_to_matlab_code(d_sym);
       d = replace_symbols(d, s.internal_syms, s.output_syms);
     end
     
@@ -669,7 +645,7 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
           end
         end
       end
-      d = s.symbolic_mat_to_matlab_code(d_sym);
+      d = System_of_ODEs.symbolic_mat_to_matlab_code(d_sym);
       d = replace_symbols(d, s.internal_syms, s.output_syms);
     end
 
@@ -709,40 +685,13 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
           end
         end
       end
-      d = s.symbolic_mat_to_matlab_code(d_sym);
+      d = System_of_ODEs.symbolic_mat_to_matlab_code(d_sym);
       d = replace_symbols(d, s.internal_syms, s.output_syms);
     end
 
-    function result = safe_eval_w_syms(s,evalstr)
-      try 
-        eval(['syms ' s.syms_arg]);
-        result = eval(evalstr);        
-      catch exception
-        switch exception.identifier
-          case'MATLAB:UndefinedFunction'
-            regex = '''\w*''';
-            variable = regexp(exception.message, regex, 'match');
-            msg = 'The system equations contain the variable';
-            msg = [msg ' ' variable{1} ' '];
-            msg = [msg 'which you did not specify in the variables '];
-            msg = [msg 'or the parameters. '];
-            msg = [msg 'Add ' variable{1} ' to the variables '];
-            msg = [msg 'or parameters and try again.'];
-            MException('System_of_ODEs:UndefinedFunctionInEval', ...
-              msg).throw;
-%         case 'symbolic:sym:SymsCannotOvershadow'
-%           exception.rethrow();
-          otherwise
-            msg = 'An error occured while ' ;
-            msg = [msg 'evaluating the statement: " '];
-            msg = [msg char(evalstr) ' "\n'];
-            msg = [msg 'The error was: \" '];
-            msg = [msg exception.message ' "\n'];
-            msg = [msg 'The symbolic variables in this context were: '];
-            msg = [msg char(s.syms_arg)];
-            MException('System_of_ODEs:EvalError', msg).throw;
-        end
-      end
+    function result = safe_eval_w_syms(s, evalstr)
+      eval(['syms ' s.syms_arg]);
+      result = eval(evalstr);             
     end
     
     function show_status(s,status)
@@ -752,59 +701,9 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
         disp(status)
       end
     end
-     
   end
-  
-  methods (Access = protected)
-    % this method defines the customized output that is displayed when
-    % inspecting a System_of_ODEs on the command line or when a System_of_ODEs
-    % is printed using the disp function see:
-    % https://mathworks.com/help/matlab/ref/matlab.mixin.util.propertygroup-class.html
-    function propgrp = getPropertyGroups(s)
-      my_rhs = replace_symbols(strjoin(s.rhs, '; '), ...
-              s.internal_syms, s.input_syms);
-      props = struct( ...
-         'name',                          s.name, ...
-         'variables',                     s.input_vars_str, ...
-         'parameters',                    s.input_pars_str, ...
-         'maximum_order_of_derivatives',  num2str(s.max_ord_derivatives), ...
-         'time_variable',                 s.time, ...
-         'right_hand_side',               my_rhs ...
-         );
-      if s.max_ord_derivatives >= 1
-        props.jacobian        = s.improve_readability(s.jacobian);
-        props.jacobian_params = s.improve_readability(s.jacobian_params);
-      end
-      if s.max_ord_derivatives >= 2
-        props.hessians        = s.improve_readability(s.hessians);
-        props.hessians_params = s.improve_readability(s.hessians_params);
-      end
-      if s.max_ord_derivatives >= 3
-        props.third_order_derivatives  = s.improve_readability( ...
-                s.third_order_derivatives);
-      end
-      if s.max_ord_derivatives >= 4
-        props.fourth_order_derivatives = s.improve_readability( ...
-                s.fourth_order_derivatives);
-      end
-      if s.max_ord_derivatives >= 5
-        props.fifth_order_derivatives  = s.improve_readability( ...
-                s.fifth_order_derivatives);
-      end
-
-      propgrp = matlab.mixin.util.PropertyGroup(props);
-    end
-    
-    function out = improve_readability(s, in)
-      out = replace_symbols(in, s.output_syms, s.input_syms);
-    end
-      
-  end
-  
-  
     
   methods(Static)
-
     
     function parentheses_match = match_parentheses(str)
       parentheses_level = 0;
@@ -823,8 +722,7 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
     end
         
     function throwException(msg)
-      exception = MException('System_of_ODEs:BadInput', msg);
-      throw(exception);
+      exception = error(msg);
     end
     
     function s = new(name, var_str, par_str, time, max_ord, rhs, output_type)
@@ -845,7 +743,74 @@ classdef System_of_ODEs < matlab.mixin.CustomDisplay
       fprintf(file_id, '%s', content);
       fclose(file_id);
     end
+    
+    % input type:  expressions : array of symbolic expressions of any size.
+    % output type: symbolic_mat: 1d char array.
+    %
+    % converts an array of symbolic expressions whose symbols are listed in the
+    % instance variable "syms_arg" to a 1D cell array of char arrays containing
+    % the C code that evaluates the array of symbolic expressions. Note that the
+    % output is 1D even if the input is 2D, 3D or any higher dimension.    
+    function c_code = to_c_code(expressions)
+      nBytes = fprintf('loading syms');
+      %eval(['syms ' s.syms_arg]);
+      c_code = cell(numel(expressions),1);
+      for i = 1 : numel(expressions)
+        if ~ strcmp(char(expressions(i)),'0')
+          fprintf(repmat('\b', 1, nBytes));
+          nBytes = fprintf('element %d of %d', i, numel(expressions));
+          my_c_code = ccode(expressions(i));
+          tokens    = regexp(my_c_code, '.*=(.*);', 'tokens');
+          c_code{i} = tokens{1}{1};
+        end
+      end
+      fprintf(repmat('\b', 1, nBytes));
+    end
+        
+    % input type:  expressions : array of symbolic expressions of any size.
+    % output type: symbolic_mat: 1d char array.
+    %
+    % converts an array of symbolic expressions whose symbols are listed in the
+    % instance variable "syms_arg" to a 1D cell array of char arrays containing
+    % the C code that evaluates the array of symbolic expressions. Note that the
+    % output is 1D even if the input is 2D, 3D or any higher dimension.    
+    function c_code = to_c_code_matrix(expressions)
+      n_bytes = 0;
+      c_code = cell(size(expressions));
+      for i = 1 : numel(expressions)
+        if ~ strcmp(char(expressions(i)), '0')
+          fprintf(repmat('\b', 1, n_bytes));
+          n_bytes = fprintf('element %d of %d', i, numel(expressions));
+          my_c_code = ccode(expressions(i));
+          tokens    = regexp(my_c_code, '.*=(.*);', 'tokens');
+          c_code{i} = tokens{1}{1};
+        end
+      end
+      fprintf(repmat('\b', 1, n_bytes));
+    end
+    
+    % input type:  symbolic_mat: array of symbolic expressions of any size.
+    % output type: symbolic_mat: 1d char array.
+    %
+    % converts an array of symbolic expressions whose symbols are listed in
+    % the instance variable "syms_arg" to a char array containing
+    % the Matlab code that evaluates the array of symbolic expressions.
+    %
+    % The input "symbolic_mat" should be an array of symbols. "symbolic_mat" can
+    % have any dimension.
+    function symbolic_mat = symbolic_mat_to_matlab_code(symbolic_mat)
+      symbolic_mat = char(matlabFunction(symbolic_mat));
+      % The variable "symbolic_mat" now contains a char array with the matlab
+      % code that evaluates the input "symbolic_mat". For instance if the input
+      % symbolic_mat is [p_a ; p_b], then the variable "symbolic_mat" now
+      % contains the string "@(p_a, p_b) [p_a, p_b]".
       
+      % We discard everything between the first pair of parentheses by
+      % @\(.*?\) and capture the rest by (.*). The question mark makes the
+      % expression .* in @\(.*?\) lazy (see mathworks documentation on regexp)
+      tokens   = regexp(symbolic_mat, '@\(.*?\)(.*)','tokens');
+      symbolic_mat = tokens{1}{1};
+    end
       
   end   
   

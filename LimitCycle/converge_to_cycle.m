@@ -6,8 +6,7 @@ function point_on_cycle = converge_to_cycle(in)
   dydt_ode      = handles{2};
   jacobian_ode  = handles{3};
   cds.n_phases  = length(in.initial_point);
-  using_cvode   = endsWith(func2str(in.time_integration_method), 'cvode') || ...
-                  endsWith(func2str(in.time_integration_method), 'arkode') ;
+  using_cvode   = true || true;
   
   if ~ isempty(jacobian_ode) && ~ using_cvode
     in.time_integration_options = odeset(in.time_integration_options, ...
@@ -36,8 +35,10 @@ function point_on_cycle = converge_to_cycle(in)
   
   point_on_cycle = orbit_to_cycle_y(end,:)';
   
-  if in.show_plots
-    my_figure = figure;
+  matlab_gui_running = usejava('jvm');
+  
+  if in.show_plots && matlab_gui_running
+    % my_figure = figure;
     plot_t = linspace(0, in.time_to_converge_to_cycle, ...
                          in.n_interpolated_points);
     transformed = in.plot_transformation(orbit_to_cycle_y);
@@ -49,8 +50,5 @@ function point_on_cycle = converge_to_cycle(in)
     ylabel(in.ylabel)
     disp('Now showing plot from  t = 0  to  t = time_to_converge_to_cycle')
     my_pause
-    if isvalid(my_figure)
-      close(my_figure.Number)
-    end
   end
 end

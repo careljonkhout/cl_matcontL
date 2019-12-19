@@ -1,3 +1,14 @@
+#include <sundials/sundials_types.h>
+#include <string.h>
+#include <mex.h>
+#include <math.h>
+
+typedef struct {
+  char* name;
+  const mxArray* value;
+} Argument;
+
+
 void check_n_inputs(int n_inputs, int required, char* function) {
   if (n_inputs != required) {
     mexErrMsgIdAndTxt("mex_utils:n_inputs",
@@ -89,6 +100,31 @@ double get_positive_scalar(const mxArray* array, char* input_name) {
   check_scalar  (array, input_name);
   check_positive(array, input_name);
   return mxGetScalar(array);
+}
+
+int get_int(const mxArray* array, char* input_name) {
+  double value = get_scalar(array, input_name);
+  if (round(value) != value) {
+    mexErrMsgIdAndTxt("mex_utils:not_integer",  
+            "Input %s is not a whole number.", input_name);
+  }
+  if (value < 0) {
+    mexErrMsgIdAndTxt("mex_utils:negative",  
+            "Input %s is negative.", input_name);
+  }
+  // note: casting to int does not round, but truncates
+  // therefore we add 0.5
+  return (int) (value + 0.5);
+}
+
+
+booleantype get_positive_scalar_if_name_matches(Argument arg, char* name,
+                                                              realtype* ptr) {
+  booleantype matches = ! strcmp(name, arg.name);
+  if ( matches ) {
+    *ptr = (realtype) get_positive_scalar(arg.value, arg.name);
+  }
+  return matches;
 }
 
 

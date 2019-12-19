@@ -113,7 +113,7 @@ function initial_continuation_data = ...
   input.lower_bound_period        = [];
   input.upper_bound_period        = [];
   input.subspace_size             = [];
-  input.time_integration_method   = @ode15s;
+  input.time_integration_method   = [];
   input.time_integration_options = odeset( ...
     'AbsTol', contopts.integration_abs_tol, ...
     'RelTol', contopts.integration_rel_tol);
@@ -124,7 +124,7 @@ function initial_continuation_data = ...
   input.ylabel                    = 'phase variables';
   input.n_computed_points         = 100;
   input.n_interpolated_points     = 10000;
-  input.interpolation             = 'makima';
+  input.interpolation             = 'linear';
 
   
   i=1;

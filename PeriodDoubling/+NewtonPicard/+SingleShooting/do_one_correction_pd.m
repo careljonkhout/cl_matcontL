@@ -149,7 +149,7 @@ end
 % integrate x and each column of M separately.
 %
 % This method is for testing purposes only. For actual continuation of cycles it
-% is recomended to use NewtonPicard or orthogonal collocation.
+% is recomended to use NP_or orthogonal collocation.
 function [y_end, monodromy] = monodromy_full(x_0, period, parameters)
   global cds contopts
   n_phases = cds.n_phases;
@@ -227,11 +227,11 @@ end
 function d_phi_d_p = compute_d_phi_d_p(x0, delta_t, parameters, ap_idx)
   h = 1e-5;
   parameters{ap_idx} = parameters{ap_idx} - h;
-  phi_1 = NewtonPicard.shoot(x0, delta_t, parameters);
+  phi_1 = NP_shoot(x0, delta_t, parameters);
   parameters{ap_idx} = parameters{ap_idx} + 2*h;
-  phi_2 = NewtonPicard.shoot(x0, delta_t, parameters);
+  phi_2 = NP_shoot(x0, delta_t, parameters);
   d_phi_d_p = (phi_2 - phi_1)/h/2;
   
-  % d_phi_d_p_var = NewtonPicard.d_phi_d_p_variational(x0, delta_t, parameters);
+  % d_phi_d_p_var = NP_d_phi_d_p_variational(x0, delta_t, parameters);
   % print_diag(1,'%.6f\n', norm(d_phi_d_p - d_phi_d_p_var));
 end

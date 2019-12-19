@@ -6,7 +6,7 @@
 int d_sensitivity_dt(int Ns, realtype t,
                 N_Vector y_vector, 
                 N_Vector ydot,
-                int iS,
+                int parameter_index,
                 N_Vector s_vector, 
                 N_Vector ds_vector,
                 void *user_data,
@@ -19,7 +19,7 @@ int d_sensitivity_dt(int Ns, realtype t,
   realtype* ds         = N_VGetArrayPointer(ds_vector);
   realtype* parameters = ((UserData) user_data)->parameters;
  
-<%= s.sensitivity %>
+<%= s.d_sensitivity_dt_code %>
 
   return 0;
 }
