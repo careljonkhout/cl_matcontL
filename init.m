@@ -21,7 +21,6 @@ function init
   addpath([pwd '/PeriodDoubling/']);
   addpath([pwd '/SystemFileGenerator/']);
   addpath([pwd '/Systems/']);
-  addpath([pwd '/primme/Matlab']);
 
   source_files = {
     'BVP_LC_jac';
@@ -63,7 +62,7 @@ function init
 
   function compile(file)
     % we quote the path to support spaces in the path
-    compile_options = [];
+    compile_options = '';
     if ~isempty(regexp(mexext,'64','match'))
       compile_options = [compile_options ' -largeArrayDims'];
     end
