@@ -37,7 +37,7 @@ function do_init_single_shooting_extend_curve(in)
   handles                = feval(in.odefile);
   dydt_ode               = handles{2};
   jacobian_ode           = handles{3};
-  cds.n_phases            = length(in.initial_continuation_state) - 2;
+  cds.n_phases           = length(in.initial_continuation_state) - 2;
   ode_parameters         = convert_to_cell_if_needed(in.ode_parameters);
   
   point_on_limitcycle    = in.initial_continuation_state(1:end-2);
@@ -57,6 +57,7 @@ function do_init_single_shooting_extend_curve(in)
   cds.previous_dydt_0 = tangent_to_limitcycle;
   cds.dydt_ode        = dydt_ode;
   cds.jacobian_ode    = jacobian_ode;
+  cds.jacobian_p_ode  = handles{4};
   cds.integrator      = in.time_integration_method;
   cds.preferred_basis_size  = in.subspace_size;
   cds.p               = in.subspace_size;

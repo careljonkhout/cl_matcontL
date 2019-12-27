@@ -130,6 +130,7 @@ function initial_continuation_data = init_multiple_shooting_internal(in)
   cds.previous_dydt_0      = tangent_to_limitcycle(:);
   cds.dydt_ode             = dydt_ode;
   cds.jacobian_ode         = jacobian_ode;
+  cds.jacobian_p_ode       = handles{4};
   cds.integrator           = in.time_integration_method;
   cds.preferred_basis_size  = in.subspace_size;
   cds.p                    = in.subspace_size;

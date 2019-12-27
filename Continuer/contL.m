@@ -275,11 +275,11 @@ function [sout, datafile] = contL(curvefile, x0, v_cont, opts, varargin)
 
       if isempty(trialpoint)
         if UsingNewtonPicard 
-          print_diag(0, 'contL: NewtonPicard.do_corrections failed\n')
+          print_diag(1, 'contL: NewtonPicard.do_corrections failed\n')
         elseif contopts.PoincareIterations
-          print_diag(0, 'contL: poincare_iterations failed\n')
+          print_diag(1, 'contL: poincare_iterations failed\n')
         else
-          print_diag(0, 'contL: newtcorrL failed\n')
+          print_diag(1, 'contL: newtcorrL failed\n')
         end
         reduce_stepsize = 1;
       end
@@ -292,7 +292,7 @@ function [sout, datafile] = contL(curvefile, x0, v_cont, opts, varargin)
         end
         if isfield(trialpoint, 'angle') && trialpoint.angle > SmoothingAngle ... 
                 && cds.i > 1
-          print_diag(0, ...
+          print_diag(1, ...
             'contL: Innerangle too large, innerangle is %f degrees\n', ...
             trialpoint.angle / pi * 180);
           reduce_stepsize = 1;

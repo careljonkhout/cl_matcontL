@@ -1,7 +1,18 @@
 function d_phi_d_p = compute_d_phi_d_p(x, delta_t, parameters)
   global cds contopts
+  persistent warning_given
   
   if contopts.parameter_sensitivity_by_finite_diff
+    d_phi_d_p = compute_d_phi_d_p_finite_diff(x, delta_t, parameters);
+    return
+  end
+  
+  if isempty(cds.jacobian_p_ode)
+    if ~ warning_given
+      warning(['Jacobian of ODE system w.r.t. parameters not found. ' ...
+               'using finite differences for parameter sensitivity']);
+      warning_given = true;
+    end
     d_phi_d_p = compute_d_phi_d_p_finite_diff(x, delta_t, parameters);
     return
   end

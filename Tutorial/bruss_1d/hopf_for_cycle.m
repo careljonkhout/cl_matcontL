@@ -7,7 +7,7 @@ function hopf_for_cycle
 
 
   % the continuation will be with respect to the second parameter:
-  active_parameter = 2;
+  active_param = 2;
 
   % We specify the initial point "equilibrium".
   % This equilibrium represents a spatially homogeneous equilibrium of the PDE:
@@ -17,8 +17,7 @@ function hopf_for_cycle
   
   odefile = @brusselator_1d;
   
-  [x0,v0] = init_EP_EP_L(odefile, equilibrium, ...
-                    ode_parameters, active_parameter);
+  [x0, v0] = init_EP_EP_L(odefile, equilibrium, ode_parameters, active_param);
 
   % we specify the options for the equilibrium continuation, by creating a
   % struct opts_ep_ep, which will be passed to contL.
@@ -28,5 +27,5 @@ function hopf_for_cycle
     'Singularities', true);
 
   % we run the equlibrium continuation:
-  contL(@equilibriumL,x0,v0, opts_ep_ep);
+  contL(@equilibriumL, x0, v0, opts_ep_ep);
 end

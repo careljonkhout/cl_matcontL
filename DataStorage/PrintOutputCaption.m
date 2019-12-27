@@ -1,7 +1,7 @@
 function PrintOutputCaption
   global cds
 
-  print_diag(0,'             :  ')
+  print_diag(0,'              :  ')
   for i = 1:cds.nap
       print_diag(0,'p(%d)              ', cds.ActiveParams(i))
   end

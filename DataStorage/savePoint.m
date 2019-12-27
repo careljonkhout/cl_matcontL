@@ -125,39 +125,56 @@ end
 
 
 function print_point(point, label, is_special)
-  global cds
-  if mod(cds.i, 20) == 0
-    PrintOutputCaption
+  global cds contopts
+
+  if ~ isfield(cds, 'n_points_printed')
+    cds.n_points_printed = 0;
   end
+ 
+  if mod(cds.n_points_printed, 20) == 0 || contopts.console_output_level >= 1
+    PrintOutputCaption()
+  end
+  
+  if is_special
+    print_diag(0, '%3d  %2d  %4s :  ' , cds.i ,cds.num_sings, label);
+    priority = 0;
+  else
+    print_diag(1, '%3d           :  '  , cds.i                     );
+    priority = 1;
+  end
+ 
 % example of output produced by this function:
 %  S  ID   PT:     p(2)          norm of point   curve function norm 	 step size 
 %  1	 1   00:  +5.000000e-01    6.760362e+01    0.000000e+00          1.000000e-02    
 %  2         :  +5.100000e-01    6.760362e+01    0.000000e+00          1.000000e-02  
-  if is_special
-    print_diag(0,'%3d  %2d  %3s :  '  ,cds.i,cds.num_sings,label);
-  else
-    print_diag(0,'%3d          :  '   ,cds.i                    );
-  end
-  print_diag(0, '%+.6e     ', point.x(end-cds.nap+1:end));
+  
+  
+
+  
+  print_diag(priority, '%+.6e     ', point.x(end-cds.nap+1:end));
   if has_period(cds.curve)
-    print_diag(0,'%.6e     ', point.x(end-1));
+    print_diag(priority, '%.6e     ', point.x(end-1));
   end
-  print_diag(0, '%.6e     ', norm(point.x(1:cds.ncoo)));
-  print_diag(0, '%.6e     ', point.R);
-  print_diag(0, '%12.6e'     , point.h);
+  print_diag(priority, '%.6e     ', norm(point.x(1:cds.ncoo)));
+  print_diag(priority, '%.6e     ', point.R);
+  print_diag(priority, '%12.6e'   , point.h);
   
   if has_period(cds.curve) && has_nonempty_field(point, 'multipliers')
     distance_to_one     = abs(point.multipliers - 1);
     log_10_of_deviation = log10(min(distance_to_one));
-    print_diag(0, '%10.3f', -log_10_of_deviation);
+    print_diag(priority, '%10.3f', -log_10_of_deviation);
     m = point.multipliers(1);
     if abs(imag(m)) > cds.deviation_of_trivial_multiplier
-      print_diag(0, '%18.6f +/- %.6fi norm: %.6f', real(m), abs(imag(m)), abs(m));
+      print_diag(priority, '%18.6f +/- %.6fi norm: %.6f', ...
+                        real(m), abs(imag(m)), abs(m));
     else
-      print_diag(0, '%18.6f', real(m));
+      print_diag(priority, '%18.6f', real(m));
     end
   end
-  print_diag(0, '\n');
+  print_diag(priority, '\n');
+  if is_special
+    cds.n_points_printed = cds.n_points_printed + 1;
+  end
 end
 
 function has_nonempty_field = has_nonempty_field(struct, field)

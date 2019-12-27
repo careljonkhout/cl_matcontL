@@ -72,8 +72,6 @@ end
 
 cds.num_sings = 1;
 
-PrintOutputCaption
-
 
 % load previous bifurcations if we are extending a curve
 if exist([fullfile(cds.datapath, cds.runID), '.mat'], 'file')

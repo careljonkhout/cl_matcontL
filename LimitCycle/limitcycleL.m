@@ -143,10 +143,10 @@ function [out, failed] = userf( userinf, id, x, ~) % unused argument is v
   end
 end
 %-------------------------------------------------------------------------------
-function [failed, s] = process_singularity(id, point, s)
+function [failed, s] = process_singularity(singularity_id, point, s)
   x = point.x;
   global cds lds contopts
-  switch id
+  switch singularity_id
   case Constants.BPC_id
     format_string = 'Branch Point cycle (period = %e, parameter = %e)\n'; 
     print_diag(0, format_string, x(end-1), x(end));
@@ -203,7 +203,7 @@ function [failed, s] = process_singularity(id, point, s)
         print_diag(0, format_string, x(end-1) ,x(end));
         print_diag(0, 'Normal form coefficient = %d\n', s.data.nscoefficient);
       end
-    else
+    else % if not conopts.enable_nf_ns
       d = lds.multipliers;
       smallest_sum = Inf;
       for jk=1:lds.nphase-1
@@ -229,8 +229,8 @@ function [failed, s] = process_singularity(id, point, s)
         print_diag(0, format_string, x(end-1) ,x(end));
         %print_diag(0, 'Normal form coefficient = %d\n', s.data.nscoefficient);
       end
-    end
-  end
+    end % of if contopts.enable_nf_ns
+  end % of switch singularity_id
   failed = 0;
 end
 %-------------------------------------------------------------------------------
@@ -505,7 +505,7 @@ end
 function jacx = BVP_jac(BVP_func,x,p,T,pars,nc)
   global lds
   
-  print_diag(4,'running %s ... ',BVP_func);
+  print_diag(5,'running %s ... ',BVP_func);
   
   p2 = num2cell(p);
   tic_time = tic;
