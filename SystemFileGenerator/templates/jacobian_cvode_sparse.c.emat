@@ -1,0 +1,37 @@
+#include <nvector/nvector_serial.h>
+#include <sundials/sundials_types.h>
+#include <sunmatrix/sunmatrix_sparse.h>
+#include <math.h>
+#include <mex.h>
+#include "user_data.h"
+
+int jacobian_dydt(
+              realtype t, N_Vector y_vec, N_Vector fy, SUNMatrix jacobian,
+              void* user_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
+  
+  realtype* y          = N_VGetArrayPointer(y_vec);
+  realtype* parameters = ((UserData) user_data)->parameters;
+
+
+  if (SUNMatGetID(jacobian) != SUNMATRIX_SPARSE) {
+    mexErrMsgIdAndTxt("cvode:wrong_matrix_type",
+            "expected type %d = SUNMATRIX_BAND, got type %d",
+            SUNMATRIX_SPARSE, SUNMatGetID(jacobian));
+  }
+
+  if (SM_SPARSETYPE_S(jacobian) != CSC_MAT) {
+    mexErrMsgIdAndTxt("cvode:wrong_matrix_type",
+            "Wrong format of sparse matrix. "
+            "Expected CSC_MAT (compressed sparse column), "
+            "but got CSR_MAT (compressed sparse row).");
+  }
+
+
+  realtype*     data      = SM_DATA_S     (jacobian);
+  sunindextype* indexvals = SM_INDEXVALS_S(jacobian);
+  sunindextype* indexptrs = SM_INDEXPTRS_S(jacobian);
+
+<%= s.jacobian_sparse %>
+  
+  return 0;
+}

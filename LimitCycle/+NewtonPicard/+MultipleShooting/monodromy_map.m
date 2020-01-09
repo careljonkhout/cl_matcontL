@@ -6,7 +6,7 @@
 % time_interval:    length of the time interval for time integration
 %                   (time_interval should be equal to the period of the cycle
 %                   if the full monodromy map is to be evaluated. In multiple
-%                   shooting partial monodromy, the value of time_interval
+%                   shooting, the value of time_interval
 %                   passed to this method can be less than the period of the
 %                   cycle, since "partial" monodromy maps must also be
 %                   evaluated during a multiple shooting continuation.)

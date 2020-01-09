@@ -29,6 +29,9 @@ function phases_T_i = compute_cycle_parts(x)
     common_args.integrator = cds.integrator;
     common_args.parameters = cell2mat(parameters);
     if contopts.contL_ParallelComputing
+      % note: although parfor is used here, it does not lead to significant
+      % speedups, since this loop is not the most time consuming loop in
+      % multiple shooting continuations.
       parfor i = 1 : m
         phases_T_i(:,i) = shoot_cvode(phases_0(:,i), delta_t(i), common_args);
       end

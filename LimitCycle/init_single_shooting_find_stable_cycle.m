@@ -125,6 +125,7 @@ function initial_continuation_data = ...
   input.n_computed_points         = 100;
   input.n_interpolated_points     = 10000;
   input.interpolation             = 'makima';
+  input.first_plot_only           = false;
 
   
   i=1;
@@ -175,6 +176,10 @@ function initial_continuation_data = ...
   end
  
   input.point_on_limitcycle = converge_to_cycle(input);
+  if input.first_plot_only
+    initial_continuation_data = [];
+    return
+  end
   
   initial_continuation_data = init_single_shooting_internal(input);    
 end

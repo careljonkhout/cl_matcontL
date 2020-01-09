@@ -114,12 +114,13 @@ function [V, reduced_jacobian, delta_q_gamma, delta_q_r, G_delta_q_r, ...
   V_T__b_g = zeros(reduced_jac_size, 1);
   
   row_offset = 0;
+  
   for i = 1 : m
-    b_g_i                  = NewtonPicard.compute_d_phi_d_p(phases_0(:,i), ...
+    b_g_i                 = NewtonPicard.compute_d_phi_d_p(phases_0(:,i), ...
                                            delta_t(i), parameters);
-    ni                     = next_index_in_cycle(i,m);
-    indices                = row_offset + (1 : size(V{ni},2));
-    V_T__b_g(indices)      = V{ni}' * b_g_i;
+    ni                    = next_index_in_cycle(i,m);
+    indices               = row_offset + (1 : size(V{ni},2));
+    V_T__b_g(indices)     = V{ni}' * b_g_i;
     
     rhs_delta_q_gamma(:,i) = b_g_i - V{ni} * V_T__b_g(indices);
     

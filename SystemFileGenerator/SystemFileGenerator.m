@@ -1,7 +1,9 @@
 classdef SystemFileGenerator < matlab.mixin.CustomDisplay & handle
-  % 
-  % see README for instructions on how to use this tool to generate
-  % system files for (cl_)matcont/matcontL
+  %
+  % written by Carel Jonkhout 2018-2020
+  %
+  % see Readme for instructions on how to use this tool to generate
+  % system files for cl_matcontL
   %
   % defining properties
   % These properties are supplied by the user and fully define the system.
@@ -29,7 +31,8 @@ classdef SystemFileGenerator < matlab.mixin.CustomDisplay & handle
                       % y' = f * x (differential equation)
                           
     
-    output_type       % A char array. Should equal 'odefile', 'C', or 'cvode'
+    output_type       % A char array. Should equal 'odefile', 'C', 'cvode'
+                      % 'C_sparse', or 'cvode_sparse'
     
     app               % optional: GUI class that calls SystemFileGenerator
                       % if app is specified then status notifications
@@ -114,9 +117,41 @@ classdef SystemFileGenerator < matlab.mixin.CustomDisplay & handle
     %       x + i_g*y(2)]; 
     parameter_arguments % e.g. par_p, par_q
     jacobian                          = '[]' 
-    % if max_ord is greater than 1
-    % 'reshape([p^2,1], [1,q^2],2,2)'
-    % otherwise '[]'
+    % if max_ord is zero jacobian will equal '[]'
+    % if max_ord is greater than or equal to 1
+    %   if  output_type is equal to 'odefile'
+    %     'reshape([par_p^2,1], [1,par_q^2],2,2)'
+    %   if output_type is equal to 'C' or 'cvode'
+    %     JAC(0,0) = parameters[0]^2;
+    %     JAC(1,0) = 1; 
+    %     JAC(0,1) = 1;
+    %     JAC(1,1) = parameters[1]^2;
+    jacobian_sparse = '[]'
+    % if max_ord is zero jacobian_sparse will equal '[]'
+    % if output_type is anything other than 'cvode_sparse'
+    %     jacobian_sparse will equal '[]'
+    % 
+    % if output_type is equal to 'cvode_sparse'
+    %   see also documentation on SUNMatrix_sparse in the CVODES manual
+    %   the matrix storage format is compressed sparse row
+    %   jacobian_sparse for the example input will be:
+    %   'data[0] = parameters[0]^2;
+    %    data[1] = 1;
+    %    data[2] = 1;
+    %    data[3] = parameters[1]^2;
+    %    indexvals[0] = 0;
+    %    indexvals[1] = 1;
+    %    indexvals[2] = 0;
+    %    indexvals[3] = 1;
+    %    indexptrs[0] = 0;
+    %    indexptrs[1] = 2;
+    %    indexptrs[2] = 4;'
+    
+    jacobian_nnz                      = '[]'
+    % number of nonzeros of the Jacobian of the right hand side of the system
+    % w.r.t. the variables.
+
+    
     jacobian_handle                   = '[]'
     jacobian_params                   = '[]'
     jacobian_params_handle            = '[]'
@@ -185,7 +220,7 @@ classdef SystemFileGenerator < matlab.mixin.CustomDisplay & handle
       s.time                = strtrim(char(time));
       s.app                 = app;
       s.output_type         = output_type;
-            
+      
       % set derived properties
       if isempty(s.input_pars_str)
         SystemFileGenerator.throwException( ...
@@ -234,7 +269,7 @@ classdef SystemFileGenerator < matlab.mixin.CustomDisplay & handle
         % s.compute_jacobian('vars') and s.compute_jacobian('pars');
         s.compute_sensitivity_right_hand_sides;
         switch s.output_type
-          case {'c', 'cvode'}
+          case {'C', 'C_sparse', 'cvode', 'cvode_sparse'}
             s.jacobian_handle       =sprintf('@%s.jacobian_mex'       , s.name);
             s.jacobian_params_handle=sprintf('@%s.jacobian_params_mex', s.name);
           case 'odefile'
@@ -391,9 +426,9 @@ classdef SystemFileGenerator < matlab.mixin.CustomDisplay & handle
     
     function generate_file(s)
       switch s.output_type
-        case 'C'
+        case {'C', 'C_sparse'}
           s.generate_c_files();
-        case 'cvode'
+        case {'cvode', 'cvode_sparse'}
           s.generate_c_files();
           s.generate_cvode_files();
         case 'odefile'
@@ -428,8 +463,15 @@ classdef SystemFileGenerator < matlab.mixin.CustomDisplay & handle
         return
       end
       
+      
+        
+      if endsWith(s.output_type, '_sparse')
+        content = emat2(fullfile(templates_dir, ...
+                            'system_jacobian_sparse.c.emat'));
+      else
+        content = emat2(fullfile(templates_dir, 'system_jacobian.c.emat'));
+      end
       filename = fullfile(system_dir, 'jacobian_mex.c');
-      content = emat2(fullfile(templates_dir, 'system_jacobian.c.emat'));
       SystemFileGenerator.print_to_file(filename, content);
         
       mex_file = fullfile(system_dir, 'jacobian_mex');
@@ -446,10 +488,10 @@ classdef SystemFileGenerator < matlab.mixin.CustomDisplay & handle
     end
     
     function generate_cvode_files(s)
-      path          = SystemFileGenerator.get_cl_matcontL_path();
-      system_path    = fullfile(path, 'Systems', ['+' s.name]);
-      templates_path = fullfile(path, 'SystemFileGenerator', 'templates');
-      cvodes_path    = fullfile(path, 'SystemFileGenerator', 'cvodes');
+      mc_path        = SystemFileGenerator.get_cl_matcontL_path();
+      system_path    = fullfile(mc_path, 'Systems', ['+' s.name]);
+      templates_path = fullfile(mc_path, 'SystemFileGenerator', 'templates');
+      cvodes_path    = fullfile(mc_path, 'SystemFileGenerator', 'cvodes');
       if ~ exist(system_path, 'dir')
         mkdir(system_path)
       end
@@ -468,7 +510,13 @@ classdef SystemFileGenerator < matlab.mixin.CustomDisplay & handle
       
       if s.max_ord_derivatives >= 1
         filename = fullfile(system_path ,'jacobian_cvode.c');
-        content = emat2(fullfile(templates_path, 'jacobian_cvode.c.emat'));
+        switch s.output_type
+          case 'cvode'
+            template = 'jacobian_cvode.c.emat';
+          case 'cvode_sparse'
+            template = 'jacobian_cvode_sparse.c.emat';
+        end
+        content = emat2(fullfile(templates_path, template));
         SystemFileGenerator.print_to_file(filename, content);
 
         filename = fullfile(system_path , 'd_sensitivity_dt.c');
@@ -482,56 +530,52 @@ classdef SystemFileGenerator < matlab.mixin.CustomDisplay & handle
       end
     
       cvodes_sources = dir(fullfile(cvodes_path,'**','*.c'));
-      cvodes_sources = arrayfun(@(f) fullfile(f.folder,f.name), ...
+      cvodes_sources = arrayfun(@(f) fullfile(f.folder, f.name), ...
                             cvodes_sources, 'UniformOutput', false);
                                       
       cvodes_sources = strrep(cvodes_sources, cvodes_path, '');
       
-      cvodes_sources = cellfun(@(f) ...
-              {sprintf('fullfile(cvodes_path, ''%s'')', f)}, cvodes_sources);
+      add_fullfile = @(f) {sprintf('fullfile(cvodes_path, ''%s'')', f)};
+      cvodes_sources = cellfun(add_fullfile, cvodes_sources);
 
-      if s.max_ord_derivatives >= 1
-        mex_arguments = strjoin([ ...
-          {'fullfile(path, ''SystemFileGenerator'', ''templates'', ''cvode_mex.c'')'}, ...
-          {'fullfile(path, ''Systems'', dirname, ''dydt_cvode.c'')'}, ...    
-          {'fullfile(path, ''Systems'', dirname, ''jacobian_cvode.c'')'}, ...
-          {'fullfile(path, ''Systems'', dirname, ''d_sensitivity_dt.c'')'}, ...
-          {'fullfile(path, ''Systems'', dirname, ''d_sensitivity_dt_pars.c'')'}, ...
-          {'[''-I'' fullfile(path, ''SystemFileGenerator'', ''cvodes'', ''include'')]'}, ...
-          {'[''-I'' fullfile(path, ''Systems'', dirname)]'}, ...
-          {' ... ''-g'' % uncomment to enable debugging symbols'''}, ... 
+      
+      mex_arguments = [ ...
+          {'fullfile(generator_path, ''templates'', ''cvode_mex.c'')'}, ...
+          {'fullfile(system_path, ''dydt_cvode.c'')'}, ...    
+          {'[''-I'' fullfile(generator_path, ''cvodes'', ''include'')]'}, ...
+          {'[''-I'' system_path]'}, ...
+          {' ... ''-g'' % uncomment to enable debugging symbols'}, ... 
           {' ... not including preprocessor definitions'}, ... 
           {' ... ''CFLAGS=$CFLAGS -g3'' % uncomment to enable debugging symbols '}, ... 
           {' ... including preprocessor definitions (for gcc)' }, ...
           cvodes_sources(:)', ...
           {'''-output'''}, ...
-          {'fullfile(path, ''Systems'', dirname, ''cvode'')'}, ...
-        ], ', ... \n  ');
-      else
-        mex_arguments = strjoin([ ...
-          {'fullfile(path, ''SystemFileGenerator'', ''templates'', ''cvode_mex.c'')'}, ...
-          {'fullfile(path, ''Systems'', dirname, ''dydt_cvode.c'')'}, ...
-          {'[''-I'' fullfile(path, ''SystemFileGenerator'', ''cvodes'', ''include'')]'}, ...
-          {'[''-I'' fullfile(path, ''Systems'', dirname)]'}, ...
-          {' ... ''-g'' % uncomment to enable debugging symbols'''}, ... 
-          {' ... not including preprocessor definitions'}, ... 
-          {' ... ''CFLAGS=$CFLAGS -g3'' % uncomment to enable debugging symbols '}, ...
-          {' ... inlucluding preprocessor definitions (for gcc)' }, ...
-          {strjoin(cvodes_sources, ', ... \n  ')}, ...
-          {'''-output'''}, ...
-          {'fullfile(path, ''Systems'', dirname, ''cvode'')'}, ...
-        ], ', ... \n  ');
+          {'fullfile(system_path, ''cvode'')'}, ...
+        ];
+      if s.max_ord_derivatives >= 1
+        mex_arguments = [ mex_arguments(:)', ...
+          {'fullfile(system_path, ''jacobian_cvode.c'')'}, ...
+          {'fullfile(system_path, ''d_sensitivity_dt.c'')'}, ...
+          {'fullfile(system_path, ''d_sensitivity_dt_pars.c'')'}, ...
+        ];
       end
-    
-      mex_build = sprintf([
-        'path        = SystemFileGenerator.get_cl_matcontL_path;\n', ...'
-        'cvodes_path = fullfile(path, ''SystemFileGenerator'', ''cvodes'');\n', ...
-        'dirname     = ''+%s'';\n', ...      
-        'mex( ... \n  %s ... \n)'], ...
-        s.name, mex_arguments);
+      
+      mex_build_lines = sprintf([ ...
+        '  mc_path        = SystemFileGenerator.get_cl_matcontL_path;\n', ...
+        '  generator_path = fullfile(mc_path, ''SystemFileGenerator'');\n', ...
+        '  cvodes_path    = fullfile(generator_path, ''cvodes'');\n', ...
+        '  dirname        = ''+%s'';\n', ...
+        '  system_path    = fullfile(mc_path, ''Systems'', dirname);\n', ...
+      ], s.name);
+        
+      mex_build_lines = [mex_build_lines '\n  mex( ... \n    %s ... \n  )'];
+      mex_arguments = strjoin(mex_arguments, ', ... \n    ');
+      mex_build     = sprintf(mex_build_lines, mex_arguments);
+
+              
       filename = fullfile(system_path, 'recompile_cvode_mex.m');
       recompile = sprintf( ...
-              'function recompile_cvode_mex()\n %s\n end', mex_build);
+              'function recompile_cvode_mex()\n%s\nend', mex_build);
       SystemFileGenerator.print_to_file(filename, recompile);
       eval(mex_build);
     end
@@ -551,26 +595,21 @@ classdef SystemFileGenerator < matlab.mixin.CustomDisplay & handle
         s.throwException('The equations may not contain a semicolon.');
       elseif contains(all_equations, '=')
         s.throwException('The equations may not contain an equals sign.');
-      elseif strcmp(s.output_type, 'C') && (s.max_ord_derivatives > 1)
+      elseif ~ any(strcmp({'odefile', 'C', 'C_sparse', ...
+               'cvode', 'cvode_sparse'},  s.output_type))
+        s.throwException([s.output_type ' is not a valid output type']);
+      elseif startsWith(s.output_type, 'C') && (s.max_ord_derivatives > 1)
         s.throwException( ...
          'C-output of derivatives of order greater than 1 is not implemented.');
-      elseif strcmp(s.output_type, 'cvode') && (s.max_ord_derivatives > 1)
+      elseif startsWith(s.output_type, 'cvode') && (s.max_ord_derivatives > 1)
         s.throwException( ...
          ['cvode-output of derivatives of order greater than 1 is not ' ...
           'implemented.']);
-      elseif ~ any(strcmp({'odefile', 'C', 'cvode'},s.output_type))
-        s.throwException([s.output_type ' is not a valid output type']);
+     
       elseif floor(s.max_ord_derivatives) ~= s.max_ord_derivatives ...
              || s.max_ord_derivatives < 0 || s.max_ord_derivatives > 5
         s.throwException(['max_ord_derivatives must be a integer' ...
                                 'which is at least to 0 and at most 5'])
-      else
-        for i=1:length(s.rhs)
-          if ~ SystemFileGenerator.match_parentheses(s.rhs{i})
-            s.throwException(['There is a mismatched parenthesis in' ...
-             ' right hand side expression number ' int2str(i) '.']);
-          end
-        end
       end
     end
 
@@ -581,44 +620,36 @@ classdef SystemFileGenerator < matlab.mixin.CustomDisplay & handle
 
     function formatted_rhs = format_rhs(s)
       fprintf('formatting right hand side:\n');
-      nBytes = fprintf('loading syms');
+      clear('print_temp', 'time_print_temp');
       switch s.output_type
-        case {'C', 'cvode'}
-          
+        case {'C', 'C_sparse', 'cvode', 'cvode_sparse'}
           eval(['syms ' s.syms_arg]);
-          dydt_elements = cell(length(s.rhs),1);
+          rhs_elements = cell(length(s.rhs), 1);
           for i = 1 : length(s.rhs)
-            % print backspaces to overwrite previous console output
-            fprintf(repmat('\b', 1, nBytes))
-            nBytes = fprintf('equation %d of %d', i, length(s.rhs));
-
             raw_c_code = eval(sprintf('ccode(%s)',s.rhs{i}));
+            print_temp('equation %d of %d', i, length(s.rhs));
             tokens    = regexp(raw_c_code, '.*=(.*);', 'tokens');
             c_code    = tokens{1}{1};
-            dydt_elements{i} = sprintf('  dydt[%d] = %s;', i-1, c_code);
-           
+            rhs_elements{i} = sprintf('  dydt[%d] = %s;', i-1, c_code);
           end
-          formatted_rhs = strjoin(dydt_elements, '\n');
-        case 'odefile'
+          formatted_rhs = strjoin(rhs_elements, '\n');
+        case {'odefile'}
+          formatted_rhs = '';
           if ~ isempty(s.intermediate_expressions)
-            my_intermediate_expressions = replace_symbols(...
-              strjoin(s.intermediate_expressions, ';\n'), ...
-              s.input_syms, s.internal_syms);
-            formatted_rhs = [
-                my_intermediate_expressions, ';', newline, ...
-                'dydt =[', newline, '  ', ...
-                strjoin(s.rhs, ';\n  ') ']'];
-          else
-            formatted_rhs = [
-                'dydt =[', newline, '  ', ...
-                strjoin(s.rhs, ';\n  ') ']'];
+            formatted_rhs = replace_symbols(...
+                    strjoin(s.intermediate_expressions, ';\n'), ...
+                    s.input_syms, s.internal_syms);
+            formatted_rhs = [formatted_rhs ';\n'];
           end
+          formatted_rhs = [formatted_rhs
+                    'dydt =[\n  ', strjoin(s.rhs, ';\n  ') ']'];
       end
-      fprintf(repmat('\b', 1, nBytes))
-      nBytes = fprintf('replacing symbols');
+      
+      print_temp('replacing symbols');
       formatted_rhs = replace_symbols(formatted_rhs, ...
                               s.internal_syms, s.output_syms);
-      fprintf(repmat('\b', 1, nBytes))
+      clear('time_print_temp');
+      print_temp('');
     end
 
     function [in, internal, out] = generate_sym_lists(s)
@@ -631,7 +662,7 @@ classdef SystemFileGenerator < matlab.mixin.CustomDisplay & handle
         in{i}       = s.input_vars{i};
         internal{i} = ['v_', s.input_vars{i}];
         switch s.output_type
-          case {'C', 'cvode'}
+          case {'C', 'C_sparse', 'cvode', 'cvode_sparse'}
           out{i}          = sprintf('y[%d]', i-1);
           case 'odefile'
           out{i}          = sprintf('y(%d)', i  );
@@ -642,7 +673,7 @@ classdef SystemFileGenerator < matlab.mixin.CustomDisplay & handle
         in{vars_len + i}       = s.input_pars{i};
         internal{vars_len + i} = ['p_', s.input_pars{i}];
         switch s.output_type
-          case {'C', 'cvode'}
+          case {'C', 'C_sparse', 'cvode', 'cvode_sparse'}
           out{vars_len + i}          = sprintf('parameters[%d]', i - 1);
           case 'odefile'
           out{vars_len + i}          = ['par_', s.input_pars{i}]; 
@@ -668,6 +699,17 @@ classdef SystemFileGenerator < matlab.mixin.CustomDisplay & handle
       eval_str = sprintf('jacobian([%s],[%s])', my_rhs, differentiation_vars);
       eval(['syms ' s.syms_arg]);
       jacobian_sym = eval(eval_str);
+      fprintf('simplifying Jacobian matrix\n');
+      clear('print_temp', 'time_print_temp');
+      for i = 1 : numel(jacobian_sym)
+        print_temp('element %d of %d ', i, numel(jacobian_sym))
+        if jacobian_sym(i) ~= 0
+          jac_element_simplified = simplify(jacobian_sym(i), 'All', true);
+          jacobian_sym(i) = jac_element_simplified(end);
+        end
+      end
+      clear('time_print_temp');
+      print_temp('');
       switch vars_or_pars
         case 'vars'; s.jacobian_vars_sym = jacobian_sym;
         case 'pars'; s.jacobian_pars_sym = jacobian_sym;
@@ -675,36 +717,74 @@ classdef SystemFileGenerator < matlab.mixin.CustomDisplay & handle
       
       switch s.output_type
         
-        case {'C', 'cvode'}
+        case {'C', 'C_sparse', 'cvode', 'cvode_sparse'}
         fprintf('formatting jacobian:\n');
         jac_code = SystemFileGenerator.to_c_code_matrix(jacobian_sym);
         
-        if strcmp(vars_or_pars, 'vars')
+        if strcmp(vars_or_pars, 'vars') && endsWith(s.output_type, '_sparse')
+          storage = 'SPARSE';
+          s.assemble_sparse_jacobian(jacobian_sym, jac_code)
+        end
+        if strcmp(vars_or_pars, 'vars') && strcmp(s.output_type, 'cvode')
           sparsity_pattern = cellfun(@(e) ~ isempty(e), jac_code);
           [lwr_bw, uppr_bw] = bandwidth(double(sparsity_pattern));
           if lwr_bw + uppr_bw < length(s.input_vars) / 2
             storage = 'BANDED';
           end
         end
-        
         lines = cell(numel(jacobian_sym),1);
         j = 1;
         for i = 1 : numel(jacobian_sym)
           if ~ isempty(jac_code{i})
             [row, col] = ind2sub(size(jac_code), i);
             lines{j} = sprintf('  JAC(%d,%d) = %s;', row-1, col-1, jac_code{i});
-	          j = j + 1;
+            j = j + 1;
           end
         end
         number_of_nonzeros = j - 1;
         jac = strjoin(lines(1:number_of_nonzeros), '\n');
-
+        
         case 'odefile'
-          
         jac = SystemFileGenerator.symbolic_mat_to_matlab_code(jacobian_sym);
-       
-      end
+        
+      end % of switch s.output_type
       jac = replace_symbols(jac, s.internal_syms, s.output_syms);
+    end
+    
+    function assemble_sparse_jacobian(s, jacobian_sym, jac_code)
+      s.jacobian_nnz = nnz(jacobian_sym);
+    
+      system_size = length(s.input_vars);
+      code      = cell (s.jacobian_nnz, 1);
+      indexvals = zeros(s.jacobian_nnz, 1);
+      indexptrs = zeros(system_size + 1,  1);
+      index = 0;
+      for j = 1 : system_size
+        indexptrs(j) = index;
+        for i = 1:system_size
+          if jacobian_sym(i,j) ~= 0
+            code(index + 1) = jac_code(i,j);
+            indexvals(index+1) = i - 1;
+            index = index + 1;
+          end
+        end
+      end
+      indexptrs(system_size + 1) = index;
+
+      lines = cell(2 * s.jacobian_nnz + system_size + 1,1);
+      for i = 1 : s.jacobian_nnz
+        lines{i} = sprintf('  data[%d] = %s;', i - 1, code{i});
+      end
+      for i = 1 : s.jacobian_nnz
+        lines{s.jacobian_nnz + i} = sprintf('  indexvals[%d] = %d;', ...
+                i - 1, indexvals(i));
+      end
+      for i = 1 : system_size + 1
+        lines{2 * s.jacobian_nnz + i} = sprintf( ...
+                '  indexptrs[%d] = %d;', i - 1, indexptrs(i));
+      end
+      s.jacobian_sparse = replace_symbols(strjoin(lines, '\n'), ...
+                                  s.internal_syms, s.output_syms);
     end
     
     function compute_sensitivity_right_hand_sides(s)
@@ -1022,19 +1102,18 @@ classdef SystemFileGenerator < matlab.mixin.CustomDisplay & handle
     % the C code that evaluates the array of symbolic expressions. Note that the
     % output is 1D even if the input is 2D, 3D or any higher dimension.    
     function c_code = to_c_code(expressions)
-      nBytes = fprintf('loading syms');
-      %eval(['syms ' s.syms_arg]);
+      clear('print_temp', 'time_print_temp')
       c_code = cell(numel(expressions),1);
       for i = 1 : numel(expressions)
         if ~ strcmp(char(expressions(i)),'0')
-          fprintf(repmat('\b', 1, nBytes));
-          nBytes = fprintf('element %d of %d', i, numel(expressions));
+          print_temp('element %d of %d', i, numel(expressions));
           my_c_code = ccode(expressions(i));
           tokens    = regexp(my_c_code, '.*=(.*);', 'tokens');
           c_code{i} = tokens{1}{1};
         end
       end
-      fprintf(repmat('\b', 1, nBytes));
+      clear('time_print_temp')
+      print_temp()
     end
         
     % input type:  expressions : array of symbolic expressions of any size.
@@ -1045,18 +1124,18 @@ classdef SystemFileGenerator < matlab.mixin.CustomDisplay & handle
     % the C code that evaluates the array of symbolic expressions. Note that the
     % output is 1D even if the input is 2D, 3D or any higher dimension.    
     function c_code = to_c_code_matrix(expressions)
-      n_bytes = 0;
+      clear('print_temp');
       c_code = cell(size(expressions));
       for i = 1 : numel(expressions)
         if ~ strcmp(char(expressions(i)), '0')
-          fprintf(repmat('\b', 1, n_bytes));
-          n_bytes = fprintf('element %d of %d', i, numel(expressions));
+          print_temp('element %d of %d', i, numel(expressions));
           my_c_code = ccode(expressions(i));
           tokens    = regexp(my_c_code, '.*=(.*);', 'tokens');
           c_code{i} = tokens{1}{1};
         end
       end
-      fprintf(repmat('\b', 1, n_bytes));
+      clear('time_print_temp')
+      print_temp();
     end
     
     % input type:  symbolic_mat: array of symbolic expressions of any size.

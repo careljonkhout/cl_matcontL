@@ -25,14 +25,14 @@ void check_double(const mxArray* array, char* arrayname) {
 void check_bool(const mxArray* array, char* arrayname) {
   if ( !mxIsLogicalScalar(array) ) {
     mexErrMsgIdAndTxt("mex_utils:not_bool", 
-            "Input %s is not a boolean.", arrayname);
+            "%s is not a boolean.", arrayname);
   }
 }
 
 void check_size(const mxArray* array, int size, char* arrayname) {
   if ( mxGetNumberOfElements(array) != size ) {
     mexErrMsgIdAndTxt("mex_utils:incorrect_size",  
-            "Input vector %s does not have the correct size. "
+            "%s does not have the correct size. "
             "The correct size is %d. The actual size is %d.",
             arrayname, size, (int)mxGetNumberOfElements(array));
   }
@@ -65,7 +65,7 @@ double* get_parameters(const mxArray* inputs[],
 void check_positive(const mxArray* scalar, char* scalarname) {
   if (mxGetScalar(scalar) <= 0) {
     mexErrMsgIdAndTxt("mex_utils:not_positive",  
-            "Input %s is not positive.", scalarname);
+            "%s is not positive.", scalarname);
   }
 }
 

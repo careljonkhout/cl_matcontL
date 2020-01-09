@@ -27,7 +27,7 @@ function cycle_from_hopf_ss
   x                    = hopf.data.x;
   ode_parameters       = hopf.data.P0;
   ode_parameters_cell  = num2cell(ode_parameters);
-  [N, ~, A, B, Dx, Dy] = deal(ode_parameters_cell{:});
+  [N, ~, A, B, Dx, Dy] = ode_parameters_cell{:};
   % we set the value of the active parameter (L) (the parameter in which we
   % continued the equlibrium) to the value of L at the first Hopf point:
   active_parameter_index                 = 2;

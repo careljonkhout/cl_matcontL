@@ -33,8 +33,8 @@ function Mx = monodromy_map(x, period, parameters, abs_tol, rel_tol)
                                 t, deval(cds.cycle_orbit,t), parameters{:}));
     dydt_mon = @(t, y) ...
       cds.jacobian_ode(t, deval(cds.cycle_orbit,t), parameters{:}) * y;
-    [~,orbit] = ode15s(dydt_mon, [0 period], x, integration_opt);
-    Mx = orbit(end,:)';
+    [~, orbit] = ode15s(dydt_mon, [0 period], x, integration_opt);
+    Mx = orbit(end, :)';
   else
     % By finite differences: very inaccurate, not reccomended.
     %
@@ -53,7 +53,7 @@ function Mx = monodromy_map(x, period, parameters, abs_tol, rel_tol)
                           f(0, x1_and_x2(  cds.n_phases+1:end))];
     [~, orbit] = ode15s(ff, ...
       [0 period], ...
-      [x_cycle - h * x; x_cycle+h * x], ...
+      [x_cycle - h * x; x_cycle + h * x], ...
       integration_opt);
     
     phi_x1__and__phi_x2 = orbit(end,:)';

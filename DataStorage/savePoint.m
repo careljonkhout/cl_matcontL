@@ -42,7 +42,8 @@ function [ failed ] = savePoint( varargin )
 
           failed = savePoint(point, s);
           cds.EndTime = clock;
-          print_diag(0,'\nElapsed time  = %.1f secs\n', etime(cds.EndTime, cds.StartTime));
+          print_diag(0,'\nElapsed time  = %.1f secs\n', ...
+                        etime(cds.EndTime, cds.StartTime));
           print_diag(0,'Number of Points = %d\n', cds.i);
 
           % save .mat file with singular points and options
@@ -51,7 +52,6 @@ function [ failed ] = savePoint( varargin )
           return
       end
 
-      % print every point on command line
       label = '  ';
       is_special = false;
       print_point(point, label, is_special);
@@ -124,6 +124,8 @@ function [ failed ] = savePointDataFile( varargin )
 end
 
 
+
+
 function print_point(point, label, is_special)
   global cds contopts
 
@@ -147,10 +149,7 @@ function print_point(point, label, is_special)
 %  S  ID   PT:     p(2)          norm of point   curve function norm 	 step size 
 %  1	 1   00:  +5.000000e-01    6.760362e+01    0.000000e+00          1.000000e-02    
 %  2         :  +5.100000e-01    6.760362e+01    0.000000e+00          1.000000e-02  
-  
-  
 
-  
   print_diag(priority, '%+.6e     ', point.x(end-cds.nap+1:end));
   if has_period(cds.curve)
     print_diag(priority, '%.6e     ', point.x(end-1));

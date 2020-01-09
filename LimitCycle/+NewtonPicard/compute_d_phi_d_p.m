@@ -2,15 +2,16 @@ function d_phi_d_p = compute_d_phi_d_p(x, delta_t, parameters)
   global cds contopts
   persistent warning_given
   
+  compute_d_phi_d_p_finite_diff = @NewtonPicard.compute_d_phi_d_p_finite_diff;
   if contopts.parameter_sensitivity_by_finite_diff
     d_phi_d_p = compute_d_phi_d_p_finite_diff(x, delta_t, parameters);
     return
   end
   
   if isempty(cds.jacobian_p_ode)
-    if ~ warning_given
+    if isempty(warning_given)
       warning(['Jacobian of ODE system w.r.t. parameters not found. ' ...
-               'using finite differences for parameter sensitivity']);
+               'Using finite differences for parameter sensitivity']);
       warning_given = true;
     end
     d_phi_d_p = compute_d_phi_d_p_finite_diff(x, delta_t, parameters);
@@ -22,7 +23,9 @@ function d_phi_d_p = compute_d_phi_d_p(x, delta_t, parameters)
       'initial_point',         x, ...
       'ode_parameters',        cell2mat(parameters), ...
       't_values',              [0 delta_t], ...
-      'parameter_sensitivity', cds.ActiveParams - 1);
+      'parameter_sensitivity', cds.ActiveParams - 1, ...
+      'abs_tol',               contopts.integration_abs_tol, ...
+      'rel_tol',               contopts.integration_rel_tol);
 
   else
     f          = @(t,w) dydt(t,w,parameters);
@@ -41,17 +44,5 @@ function dydt = dydt(t, w, parameters)
   dydt       = jacobian * w + jacobian_p;
 end
 
-function d_phi_d_p = compute_d_phi_d_p_finite_diff(x0, delta_t, parameters)
-  global cds
-  ap = cds.ActiveParams;
-  h = 1e-6;
-  parameters{ap} = parameters{ap} - h;
-  phi_1 = NewtonPicard.shoot(x0, delta_t, parameters);
-  parameters{ap} = parameters{ap} + 2*h;
-  phi_2 = NewtonPicard.shoot(x0, delta_t, parameters);
-  d_phi_d_p = (phi_2 - phi_1)/h/2;
-  
-  % d_phi_d_p_var = NewtonPicard.d_phi_d_p_variational(x0, delta_t, parameters);
-  % print_diag(1,'%.6f\n', norm(d_phi_d_p - d_phi_d_p_var));
-end
+
 

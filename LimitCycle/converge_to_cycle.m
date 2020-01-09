@@ -50,6 +50,9 @@ function point_on_cycle = converge_to_cycle(in)
     xlabel('t')
     ylabel(in.ylabel)
     disp('Now showing plot from  t = 0  to  t = time_to_converge_to_cycle')
+    if in.first_plot_only
+      return
+    end
     my_pause
     if isvalid(my_figure)
       close(my_figure.Number)

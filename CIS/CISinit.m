@@ -41,18 +41,16 @@ SparseSolvers  = contopts.CIS_SparseSolvers;
 resizeable_flag= contopts.CIS_resizeable_flag; 
 %NUnstable     = contopts.CIS_NUnstable;
 MaxUnstable    = contopts.CIS_MaxUnstable;
-NStableRef     = contopts.CIS_NStableRef;
+NStableRef     = contopts.CIS_NStableRef; % used only if resizeable_flag
 NExtra         = contopts.CIS_NExtra;
 %NUnstableGuess = contopts.CIS_NUnstableGuess; % DV MP
-
-%                                                 % MP 2018 test 
-if (NSub ~= NUnstable + NStableRef) & (NUnstable ~= -1)
-   NSub 
-   NUnstable
-   NStableRef
-   error('must have: NSub = NUnstable + NStableRef');
-end
-%                                                 % MP 2018 test 
+           
+%if (NSub ~= NUnstable + NStableRef) & (NUnstable ~= -1)  MP 2019 test 
+%   NSub 
+%   NUnstable
+%   NStableRef
+%   error('must have: NSub = NUnstable + NStableRef');
+%end                      % MP 2019 test                                                 
 
 %%JH: 5/14/2007 - Fixing potential error with unresolved overlap error in
 %%first step.

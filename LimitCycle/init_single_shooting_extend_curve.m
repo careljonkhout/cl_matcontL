@@ -43,8 +43,8 @@ function do_init_single_shooting_extend_curve(in)
   point_on_limitcycle    = in.initial_continuation_state(1:end-2);
   tangent_to_limitcycle  = dydt_ode(0,point_on_limitcycle,ode_parameters{:});
   
-  
-  cds.using_cvode     = false; % todo: add cvode support
+  using_cvode = endsWith(func2str(in.time_integration_method), 'cvode');
+  cds.using_cvode     = using_cvode;
   cds.probfile        = in.odefile;
   cds.options.PartitionMonodromy = cds.n_phases > 20;
   cds.nap             = 1;

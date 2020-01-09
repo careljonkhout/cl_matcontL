@@ -246,7 +246,7 @@ function [sout, datafile] = contL(curvefile, x0, v_cont, opts, varargin)
       reduce_stepsize = 0;
 
       %% B. Correct
-      %try
+      try
         if UsingNewtonPicard
            trialpoint = NewtonPicard.do_corrections(xpre, currpoint.v);
           if ~ isempty(trialpoint)
@@ -261,15 +261,15 @@ function [sout, datafile] = contL(curvefile, x0, v_cont, opts, varargin)
         else 
           trialpoint = newtcorrL(xpre, currpoint.v, currpoint.CISdata);
         end
-%       catch my_error
-%         switch my_error.identifier
-%           case {'cvode:integrator_error', 'npms:wrong_basis_size'}
-%             print_diag(0, my_error.message);
-%             trialpoint = [];
-%           otherwise
-%             rethrow(my_error)
-%         end
-%       end
+      catch my_error
+        switch my_error.identifier
+          case {'cvode:integrator_error', 'npms:wrong_basis_size'}
+            print_diag(0, my_error.message);
+            trialpoint = [];
+          otherwise
+            rethrow(my_error)
+        end
+      end
       
       
 

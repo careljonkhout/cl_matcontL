@@ -77,7 +77,7 @@ function full_solution = linear_solver_collocation(J,b)
     % The inverse is already available, that is why the MINV warning is ignored
     % sl \  J_blocks(:,j_col_indices_A,i), may be more accurate, but it is
     % slower
-    upper  = [first_block_column, upper]; %#ok<AGROW> warning is a false positive
+    upper  = [first_block_column, upper];%#ok<AGROW> warning is a false positive
     transformed_b(b_row_indices) = p * b(b_row_indices); %#ok<MINV>
     if testing
       J(j_row_indices,j_col_indices) = upper; 

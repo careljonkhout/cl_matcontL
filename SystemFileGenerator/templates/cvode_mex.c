@@ -12,6 +12,8 @@
 #include <sunlinsol/sunlinsol_band.h>   /* access to band SUNLinearSolver */
 #include <sunmatrix/sunmatrix_dense.h>  /* access to dense SUNMatrix       */
 #include <sunlinsol/sunlinsol_dense.h>  /* access to dense SUNLinearSolver */
+#include <sunmatrix/sunmatrix_sparse.h>  /* access to dense SUNMatrix       */
+#include <sunlinsol/sunlinsol_spgmr.h>  /* access to spgmr SUNLinearSolver */
 
 #include <sundials/sundials_types.h>
 #include <sundials/sundials_math.h>
@@ -29,6 +31,7 @@
 #define DEFAULT_REL_TOL     RCONST(1.e-6) /* default relative tolerance */
 #define MAX_NUM_STEPS       10*1000*1000
 #define SENSITIVITY_METHOD  CV_SIMULTANEOUS
+
 
 // implemented in dydt_cvode.c
 int dydt_cvode(realtype t, N_Vector u, N_Vector udot, void *);
@@ -318,6 +321,11 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   A  = SUNBandMatrix_nullchecked(NEQ, UPPER_BANDWIDTH, LOWER_BANDWIDTH);
   LS = SUNLinSol_Band_nullchecked(solver_y, A);
   #endif
+  
+  #if JACOBIAN_STORAGE == SPARSE
+  A = SUNSparseMatrix(NEQ, NEQ, JACOBIAN_NNZ, CSC_MAT);
+  LS = SUNLinSol_SPGMR(solver_y, PREC_NONE, 0);
+  #endif
    
   CVodeSetLinearSolver_checked(cvode, LS, A);
  
@@ -384,6 +392,10 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   int      rootsfound = false;
   int      i;
   
+  #ifdef PRINT_TIME
+  mex_eval("clear('print_temp')");
+  #endif
+  
   for(i = 1; i < n_points; i++) {
     #ifdef PRINT_TIME
     mex_eval("print_temp('t=%.15e')", (double)t_values[i]);
@@ -410,6 +422,7 @@ void mexFunction(int n_output,       mxArray *mex_output[],
     }
   }
   #ifdef PRINT_TIME
+  mex_eval("clear('time_print_temp')");
   mex_eval("print_temp()");
   #endif
   

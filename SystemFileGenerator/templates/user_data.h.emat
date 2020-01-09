@@ -7,6 +7,7 @@
 #define SPARSE  2
 
 #define JACOBIAN_STORAGE      <%= s.jacobian_storage %>
+#define JACOBIAN_NNZ          <%= s.jacobian_nnz %>
 
 #define UPPER_BANDWIDTH       <%= s.jacobian_upper_bandwidth %>
 #define LOWER_BANDWIDTH       <%= s.jacobian_lower_bandwidth %>

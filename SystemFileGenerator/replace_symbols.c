@@ -1,3 +1,43 @@
+/*
+ * mex function which replaces symbols in a string. This function is used by the 
+ * SystemFileGenerator. This mex function replaces replace_symbols_old.m. This 
+ * mex function was written to speed up the generation of large systems.
+ *
+ * use: replace_symbols(<expression>, ...
+ *                      <cell array containing char arrays of old symbols>, ...
+ *                      <cell array containing char arrays of new symbols>)
+ *
+ * example:
+ * replace_symbols( ...
+ *      'sin(a * x * x * y)', {'x';'y';'z';'a'}, {'v_x', 'v_y', 'v_z', 'par_a'})
+ *
+ * returns 'sin(par_a * v_x * v_x * v_y)' 
+ *
+ * detailed specification:
+ *
+ * - A symbol that is to be replaced starts with a letter a-z or A-Z
+ *
+ * - A symbol contains only letters a-z, A-Z, underscores or digits 0-9.
+ *
+ * - A symbol in a string cannot be preceded by a letter, a digit, an 
+ *   underscore, or a period. If a symbol is preceded by such a character, it is 
+ *   ignored.
+ *   The reason for this requirement is to prevent the replacement of 's' in 
+ *   'cos(x)', if a user asks to replace 's'.
+ *
+ * - A symbol in a string cannot be followed by a letter, a digit or an 
+ *   underscore. If a symbol is followed by such a character, then the symbol is 
+ *   ignored.
+ *   The reason for this requirement is to prevent the replacement of 's' in 
+ *   'sin(x)', if a user asks to replace 's'.
+ * 
+ * - A symbol is only replaced once. Specifically replace_symbols scans the 
+ *   string for all old symbols, and stores their locations. After scanning for
+ *   old symbols, the detected old symbols are replaced by new symbols.
+ *   for example: replace_symbols('a', {'a','b'}, {'b', 'c'}) returns 'b'
+ * 
+ */
+
 #include <string.h>
 #include <mex.h>
 #include <stdbool.h>
