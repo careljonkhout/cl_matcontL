@@ -7,7 +7,7 @@ function point = poincare_iterations(x)
   done                       = false;
   while ~ done
     [point_on_limitcycle, period, ode_parameters] = ...
-            NewtonPicard.SingleShooting.extract_phases_period_and_parameters(x);
+            NP_SS_extract_phases_period_and_parameters(x);
           
     tangent_to_limitcycle = ...   
             cds.dydt_ode(0, point_on_limitcycle, ode_parameters{:});

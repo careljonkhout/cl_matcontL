@@ -13,11 +13,11 @@
 #define DSX_DT(i) dsdt[2*(i)]
 #define DSY_DT(i) dsdt[2*(i)+1]
 
-#define L  parameters[0]
-#define A  parameters[1]
-#define B  parameters[2]
-#define DX parameters[3]
-#define DY parameters[4]
+#define L  parameters[1]
+#define A  parameters[2]
+#define B  parameters[3]
+#define DX parameters[4]
+#define DY parameters[5]
 
 
 int d_sensitivity_dt(int Ns, realtype t,
@@ -29,14 +29,15 @@ int d_sensitivity_dt(int Ns, realtype t,
                 void *user_data,
                 N_Vector tmp1, N_Vector tmp2) {
    
-  //double* y        = N_VGetArrayPointer(   y_vector);
   double* u          = N_VGetArrayPointer(   y_vector);
   double* s          = N_VGetArrayPointer(   s_vector);
   double* dsdt       = N_VGetArrayPointer(dsdt_vector);
   double* parameters = ((UserData) user_data)->parameters;
+  
+  int n_mesh_points = (int) parameters[0];
     
-  double cx = DX * (N_MESH_POINTS + 1) * (N_MESH_POINTS+1) / (L*L);
-  double cy = DY * (N_MESH_POINTS + 1) * (N_MESH_POINTS+1) / (L*L);
+  double cx = DX * (n_mesh_points + 1) * (n_mesh_points+1) / (L * L);
+  double cy = DY * (n_mesh_points + 1) * (n_mesh_points+1) / (L * L);
   
   double jac_xx = - 2 * cx - (B+1) + 2 * X(0) * Y(0);
   double jac_xy = X(0) * X(0);
@@ -46,7 +47,7 @@ int d_sensitivity_dt(int Ns, realtype t,
   double jac_yx = B - 2 * X(0) * Y(0);
 	DSY_DT(0)     = jac_yy * SY(0) + cy * SY(1) + jac_yx * SX(0);
   
-  for (int i = 1; i < N_MESH_POINTS - 1; i++) {
+  for (int i = 1; i < n_mesh_points - 1; i++) {
     jac_xx    = - 2 * cx     - (B+1) + 2 * X(i) * Y(i);
     jac_xy    = X(i) * X(i);
     DSX_DT(i) = cx * SX(i-1) + jac_xx * SX(i) + cx * SX(i+1) + jac_xy * SY(i);
@@ -56,7 +57,7 @@ int d_sensitivity_dt(int Ns, realtype t,
     DSY_DT(i) = cy * SY(i-1) + jac_yy * SY(i) + cy * SY(i+1) + jac_yx * SX(i);
   }
   
-  int i = N_MESH_POINTS - 1;
+  int i = n_mesh_points - 1;
   
   jac_xx    = - 2 * cx     - (B+1) + 2 * X(i) * Y(i);
   jac_xy    = X(i) * X(i);

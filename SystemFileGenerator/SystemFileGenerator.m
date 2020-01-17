@@ -9,8 +9,7 @@ classdef SystemFileGenerator < matlab.mixin.CustomDisplay & handle
   % These properties are supplied by the user and fully define the system.
   properties
     name              % char array
-                      % name of the system, used for the filename ( if output is 
-                      % 'odefile', or package name, if output is 'C' or 'cvode'
+                      % name of the system, used for the filename
                       
     input_pars_str    % list of parameters of the system
                       % coded as a char array separated by spaces
@@ -252,8 +251,6 @@ classdef SystemFileGenerator < matlab.mixin.CustomDisplay & handle
       for i = 1 : length(s.rhs)
         s.rhs_with_substitutions{i} = char(eval(s.rhs{i}));
       end
-  
-
         
       s.formatted_rhs = s.format_rhs();
       
@@ -316,7 +313,6 @@ classdef SystemFileGenerator < matlab.mixin.CustomDisplay & handle
                   i, s.input_pars{i});
         end
       end
-
 
       for i = 1 : length(s.equations)
         parts = strsplit(s.equations{i}, '=');
@@ -426,11 +422,8 @@ classdef SystemFileGenerator < matlab.mixin.CustomDisplay & handle
     
     function generate_file(s)
       switch s.output_type
-        case {'C', 'C_sparse'}
+        case {'C', 'C_sparse', 'cvode', 'cvode_sparse'}
           s.generate_c_files();
-        case {'cvode', 'cvode_sparse'}
-          s.generate_c_files();
-          s.generate_cvode_files();
         case 'odefile'
           path = SystemFileGenerator.get_cl_matcontL_path();
           templates_dir = fullfile(path, 'SystemFileGenerator', 'templates');
@@ -441,143 +434,149 @@ classdef SystemFileGenerator < matlab.mixin.CustomDisplay & handle
     end
     
     function generate_c_files(s)
-      path          = SystemFileGenerator.get_cl_matcontL_path();
-      system_dir    = fullfile(path, 'Systems', ['+' s.name]);
-      templates_dir = fullfile(path, 'SystemFileGenerator', 'templates');
-      if ~ exist(system_dir, 'dir')
-        mkdir(system_dir)
-      end
-      
-      filename = fullfile(system_dir, 'odefile_mex.m');
-      content = emat2(fullfile(templates_dir, 'system_mex.m.emat'));
-      SystemFileGenerator.print_to_file(filename, content);
-      
-      filename = fullfile(system_dir, 'dydt_mex.c');
-      content = emat2(fullfile(templates_dir, 'system_dydt.c.emat'));
-      SystemFileGenerator.print_to_file(filename, content);
-      
-      mex_file = fullfile(system_dir, 'dydt_mex');
-      mex(filename, ['-I' templates_dir], '-output', mex_file);
-      
-      if (s.max_ord_derivatives < 1)
-        return
-      end
-      
-      
-        
-      if endsWith(s.output_type, '_sparse')
-        content = emat2(fullfile(templates_dir, ...
-                            'system_jacobian_sparse.c.emat'));
-      else
-        content = emat2(fullfile(templates_dir, 'system_jacobian.c.emat'));
-      end
-      filename = fullfile(system_dir, 'jacobian_mex.c');
-      SystemFileGenerator.print_to_file(filename, content);
-        
-      mex_file = fullfile(system_dir, 'jacobian_mex');
-      mex(filename, ['-I' templates_dir],'-output', mex_file);
-      
-
-      filename = fullfile(system_dir, 'jacobian_params_mex.c');
-      content = emat2(fullfile(templates_dir, 'system_jacobian_params.c.emat'));
-      SystemFileGenerator.print_to_file(filename, content);
-
-      mex_file = fullfile(system_dir, 'jacobian_params_mex');
-      mex(filename, ['-I' templates_dir], '-output', mex_file);
-
-    end
-    
-    function generate_cvode_files(s)
       mc_path        = SystemFileGenerator.get_cl_matcontL_path();
-      system_path    = fullfile(mc_path, 'Systems', ['+' s.name]);
+      systems_path   = fullfile(mc_path, 'Systems');
+      system_path    = fullfile(systems_path, s.name);
       templates_path = fullfile(mc_path, 'SystemFileGenerator', 'templates');
       cvodes_path    = fullfile(mc_path, 'SystemFileGenerator', 'cvodes');
+      
       if ~ exist(system_path, 'dir')
         mkdir(system_path)
       end
       
-      filename = fullfile(system_path, 'dydt_cvode.c');
-      content = emat2(fullfile(templates_path, 'dydt_cvode.c.emat'));
+      filename = fullfile(systems_path, [s.name '_mex.m']);
+      content = emat2(fullfile(templates_path, 'system_mex.m.emat'));
       SystemFileGenerator.print_to_file(filename, content);
       
-      
-      filename = fullfile(system_path , 'user_data.h');
-      content = emat2(fullfile(templates_path, 'user_data.h.emat'));
+      filename = fullfile(system_path, 'dydt_mex.c');
+      content = emat2(fullfile(templates_path, 'system_dydt.c.emat'));
       SystemFileGenerator.print_to_file(filename, content);
       
-      copyfile(fullfile(templates_path, 'set_precision.h'), ...
-               fullfile(system_path,    'set_precision.h'));
+      mex_command_format_string = [ ...
+        '  mex( ...\n', ...
+        '    fullfile(system_path, ''%s_mex.c''), ...\n', ...
+        '    [''-I'' fullfile(generator_path, ''templates'')], ...\n', ...
+        '    ''-output'', ...\n', ...
+        '    fullfile(systems_path, [system_name ''_%s'']))\n'];
       
-      if s.max_ord_derivatives >= 1
-        filename = fullfile(system_path ,'jacobian_cvode.c');
-        switch s.output_type
-          case 'cvode'
-            template = 'jacobian_cvode.c.emat';
-          case 'cvode_sparse'
-            template = 'jacobian_cvode_sparse.c.emat';
-        end
-        content = emat2(fullfile(templates_path, template));
-        SystemFileGenerator.print_to_file(filename, content);
-
-        filename = fullfile(system_path , 'd_sensitivity_dt.c');
-        content = emat2(fullfile(templates_path, 'd_sensitivity_dt.c.emat'));
-        SystemFileGenerator.print_to_file(filename, content);
+      build_script = sprintf(mex_command_format_string, 'dydt', 'dydt');
         
-        filename = fullfile(system_path , 'd_sensitivity_dt_pars.c');
-        content = emat2(fullfile(templates_path, ...
-                'd_sensitivity_dt_pars.c.emat'));
-        SystemFileGenerator.print_to_file(filename, content);
-      end
-    
-      cvodes_sources = dir(fullfile(cvodes_path,'**','*.c'));
-      cvodes_sources = arrayfun(@(f) fullfile(f.folder, f.name), ...
-                            cvodes_sources, 'UniformOutput', false);
-                                      
-      cvodes_sources = strrep(cvodes_sources, cvodes_path, '');
       
-      add_fullfile = @(f) {sprintf('fullfile(cvodes_path, ''%s'')', f)};
-      cvodes_sources = cellfun(add_fullfile, cvodes_sources);
+      
+      if s.max_ord_derivatives >= 1  
 
-      
-      mex_arguments = [ ...
-          {'fullfile(generator_path, ''templates'', ''cvode_mex.c'')'}, ...
-          {'fullfile(system_path, ''dydt_cvode.c'')'}, ...    
-          {'[''-I'' fullfile(generator_path, ''cvodes'', ''include'')]'}, ...
-          {'[''-I'' system_path]'}, ...
-          {' ... ''-g'' % uncomment to enable debugging symbols'}, ... 
-          {' ... not including preprocessor definitions'}, ... 
-          {' ... ''CFLAGS=$CFLAGS -g3'' % uncomment to enable debugging symbols '}, ... 
-          {' ... including preprocessor definitions (for gcc)' }, ...
-          cvodes_sources(:)', ...
-          {'''-output'''}, ...
-          {'fullfile(system_path, ''cvode'')'}, ...
-        ];
-      if s.max_ord_derivatives >= 1
-        mex_arguments = [ mex_arguments(:)', ...
-          {'fullfile(system_path, ''jacobian_cvode.c'')'}, ...
-          {'fullfile(system_path, ''d_sensitivity_dt.c'')'}, ...
-          {'fullfile(system_path, ''d_sensitivity_dt_pars.c'')'}, ...
-        ];
+        if endsWith(s.output_type, '_sparse')
+          content = emat2(fullfile(templates_path, ...
+                              'system_jacobian_sparse.c.emat'));
+        else
+          content = emat2(fullfile(templates_path, 'system_jacobian.c.emat'));
+        end
+
+        filename = fullfile(system_path, 'jacobian_mex.c');
+        SystemFileGenerator.print_to_file(filename, content);
+
+        mex_command = sprintf(mex_command_format_string, 'jacobian', ...
+                                                         'jacobian');
+        build_script = [build_script mex_command];
+        
+
+        filename = fullfile(system_path, 'jacobian_params_mex.c');
+        content = emat2(fullfile(templates_path, ...
+                          'system_jacobian_params.c.emat'));
+        SystemFileGenerator.print_to_file(filename, content);
+
+        mex_command = sprintf(mex_command_format_string, 'jacobian_params' , ...
+                                                         'jacobian_params');
+        build_script = [build_script mex_command];
       end
       
-      mex_build_lines = sprintf([ ...
+      if any(strcmp({'cvode', 'cvode_sparse'}, s.output_type))
+
+        filename = fullfile(system_path, 'dydt_cvode.c');
+        content = emat2(fullfile(templates_path, 'dydt_cvode.c.emat'));
+        SystemFileGenerator.print_to_file(filename, content);
+
+
+        filename = fullfile(system_path , 'user_data.h');
+        content = emat2(fullfile(templates_path, 'user_data.h.emat'));
+        SystemFileGenerator.print_to_file(filename, content);
+
+        copyfile(fullfile(templates_path, 'set_precision.h'), ...
+                 fullfile(system_path,    'set_precision.h'));
+
+        if s.max_ord_derivatives >= 1
+          filename = fullfile(system_path, 'jacobian_cvode.c');
+          switch s.output_type
+            case 'cvode'
+              template = 'jacobian_cvode.c.emat';
+            case 'cvode_sparse'
+              template = 'jacobian_cvode_sparse.c.emat';
+          end
+          content = emat2(fullfile(templates_path, template));
+          SystemFileGenerator.print_to_file(filename, content);
+
+          filename = fullfile(system_path , 'd_sensitivity_dt.c');
+          content = emat2(fullfile(templates_path, 'd_sensitivity_dt.c.emat'));
+          SystemFileGenerator.print_to_file(filename, content);
+
+          filename = fullfile(system_path , 'd_sensitivity_dt_pars.c');
+          content = emat2(fullfile(templates_path, ...
+                            'd_sensitivity_dt_pars.c.emat'));
+          SystemFileGenerator.print_to_file(filename, content);
+        end
+
+        cvodes_sources = dir(fullfile(cvodes_path, '**', '*.c'));
+        cvodes_sources = arrayfun(@(f) fullfile(f.folder, f.name), ...
+                                 cvodes_sources, 'UniformOutput', false);
+
+        cvodes_sources = strrep(cvodes_sources, cvodes_path, '');
+
+        add_fullfile = @(f) {sprintf('fullfile(cvodes_path, ''%s'')', f)};
+        cvodes_sources = cellfun(add_fullfile, cvodes_sources);
+
+
+        mex_arguments = [ ...
+            {'fullfile(generator_path, ''templates'', ''cvode_mex.c'')'}, ...
+            {'fullfile(system_path, ''dydt_cvode.c'')'}, ...    
+            {'[''-I'' fullfile(generator_path, ''cvodes'', ''include'')]'}, ...
+            {'[''-I'' system_path]'}, ...
+            {' ... ''-g'' % uncomment to enable debugging symbols'}, ... 
+            {' ... not including preprocessor definitions'}, ... 
+            {' ... ''CFLAGS=$CFLAGS -g3'' % uncomment to enable debugging symbols '}, ... 
+            {' ... including preprocessor definitions (for gcc)' }, ...
+            cvodes_sources(:)', ...
+            {'''-output'''}, ...
+            {sprintf('fullfile(systems_path, ''%s_cvode'')', s.name)}, ...
+          ];
+        if s.max_ord_derivatives >= 1
+          mex_arguments = [ mex_arguments(:)', ...
+            {'fullfile(system_path, ''jacobian_cvode.c'')' }, ...
+            {'fullfile(system_path, ''d_sensitivity_dt.c'')' }, ...
+            {'fullfile(system_path, ''d_sensitivity_dt_pars.c'')'}, ...
+          ];
+        end
+      end
+
+      build_script = [  sprintf([ ...
         '  mc_path        = SystemFileGenerator.get_cl_matcontL_path;\n', ...
         '  generator_path = fullfile(mc_path, ''SystemFileGenerator'');\n', ...
         '  cvodes_path    = fullfile(generator_path, ''cvodes'');\n', ...
-        '  dirname        = ''+%s'';\n', ...
-        '  system_path    = fullfile(mc_path, ''Systems'', dirname);\n', ...
-      ], s.name);
-        
-      mex_build_lines = [mex_build_lines '\n  mex( ... \n    %s ... \n  )'];
-      mex_arguments = strjoin(mex_arguments, ', ... \n    ');
-      mex_build     = sprintf(mex_build_lines, mex_arguments);
-
+        '  system_name    = ''%s'';\n', ...
+        '  systems_path   = fullfile(mc_path, ''Systems'');\n', ...
+        '  system_path    = fullfile(systems_path, system_name);\n\n', ...
+      ], s.name), build_script];
+    
+      if any(strcmp({'cvode', 'cvode_sparse'}, s.output_type))
+        build_script = [build_script '\n  mex( ... \n    %s ... \n  )'];
+        mex_arguments      = strjoin(mex_arguments, ', ... \n    ');
+        build_script = sprintf(build_script, mex_arguments);
+      end
               
-      filename = fullfile(system_path, 'recompile_cvode_mex.m');
+      filename = fullfile(system_path, 'compile.m');
       recompile = sprintf( ...
-              'function recompile_cvode_mex()\n%s\nend', mex_build);
+              'function compile()\n%s\nend', build_script);
       SystemFileGenerator.print_to_file(filename, recompile);
-      eval(mex_build);
+      eval(build_script);
     end
       
     function verify_inputs(s)

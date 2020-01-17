@@ -123,14 +123,14 @@ function [sout, datafile] = contL(curvefile, x0, v_cont, opts, varargin)
      first_point = newtcorrL(x0, v_cont, 1);
   elseif UsingNewtonPicard
     if isempty(v_cont)
-      v_cont = NewtonPicard.find_tangent_vector(curvefile, x0);
+      v_cont = NP_find_tangent_vector(curvefile, x0);
     end
-    first_point = NewtonPicard.do_corrections(x0,v_cont);
+    first_point = NP_do_corrections(x0,v_cont);
     if isempty(first_point)
       print_diag(0,'Correction of first point does not converge\n');
       return;
     end
-    first_point.v =  NewtonPicard.find_tangent_vector(curvefile, x0, v_cont);
+    first_point.v =  NP_find_tangent_vector(curvefile, x0, v_cont);
   elseif contopts.PoincareIterations
     first_point = poincare_iterations(x0);
     if ~ isempty(first_point)
@@ -248,24 +248,24 @@ function [sout, datafile] = contL(curvefile, x0, v_cont, opts, varargin)
       %% B. Correct
       try
         if UsingNewtonPicard
-           trialpoint = NewtonPicard.do_corrections(xpre, currpoint.v);
-          if ~ isempty(trialpoint)
-            trialpoint.v = NewtonPicard.find_tangent_vector(...
-                                    curvefile, trialpoint.x, trialpoint.v);
+           trailpoint = NP_do_corrections(xpre, currpoint.v);
+          if ~ isempty(trailpoint)
+            trailpoint.v = NP_find_tangent_vector(...
+                                    curvefile, trailpoint.x, trailpoint.v);
           end
         elseif contopts.PoincareIterations
-          trialpoint = poincare_iterations(xpre);
-          if ~ isempty(trialpoint)
-            trialpoint.v = [];
+          trailpoint = poincare_iterations(xpre);
+          if ~ isempty(trailpoint)
+            trailpoint.v = [];
           end
         else 
-          trialpoint = newtcorrL(xpre, currpoint.v, currpoint.CISdata);
+          trailpoint = newtcorrL(xpre, currpoint.v, currpoint.CISdata);
         end
       catch my_error
         switch my_error.identifier
           case {'cvode:integrator_error', 'npms:wrong_basis_size'}
             print_diag(0, my_error.message);
-            trialpoint = [];
+            trailpoint = [];
           otherwise
             rethrow(my_error)
         end
@@ -273,9 +273,9 @@ function [sout, datafile] = contL(curvefile, x0, v_cont, opts, varargin)
       
       
 
-      if isempty(trialpoint)
+      if isempty(trailpoint)
         if UsingNewtonPicard 
-          print_diag(1, 'contL: NewtonPicard.do_corrections failed\n')
+          print_diag(1, 'contL: NP_do_corrections failed\n')
         elseif contopts.PoincareIterations
           print_diag(1, 'contL: poincare_iterations failed\n')
         else
@@ -286,22 +286,22 @@ function [sout, datafile] = contL(curvefile, x0, v_cont, opts, varargin)
 
       %% C. curve smoothing
       if ~reduce_stepsize
-        trialpoint.h = cds.h;
+        trailpoint.h = cds.h;
         if ~ isempty(currpoint.v)
-          trialpoint.angle = innerangle(currpoint.v, trialpoint.v);
+          trailpoint.angle = innerangle(currpoint.v, trailpoint.v);
         end
-        if isfield(trialpoint, 'angle') && trialpoint.angle > SmoothingAngle ... 
+        if isfield(trailpoint, 'angle') && trailpoint.angle > SmoothingAngle ... 
                 && cds.i > 1
           print_diag(1, ...
             'contL: Innerangle too large, innerangle is %f degrees\n', ...
-            trialpoint.angle / pi * 180);
+            trailpoint.angle / pi * 180);
           reduce_stepsize = 1;
         end
 
         % In single shooting, the corrector might "correct" the period down to
         % (almost) zero. This is of course not correct
         if isequal(curvefile, @single_shooting)
-          if trialpoint.x(end-1)/currpoint.x(end-1) < 0.5
+          if trailpoint.x(end-1)/currpoint.x(end-1) < 0.5
             print_diag(0, 'contL: period decreasing too much\n');
             reduce_stepsize = 1;
           end
@@ -310,19 +310,19 @@ function [sout, datafile] = contL(curvefile, x0, v_cont, opts, varargin)
 
       %% D. CIS Processing
       if ~reduce_stepsize
-        trialpoint.CISdata = feval(...
-          cds.curve_CIS_step, trialpoint.x, currpoint.CISdata);
-        if isempty(trialpoint.CISdata)
+        trailpoint.CISdata = feval(...
+          cds.curve_CIS_step, trailpoint.x, currpoint.CISdata);
+        if isempty(trailpoint.CISdata)
           print_diag(1, 'contL: Candidate step failed\n');
           reduce_stepsize = 1;
         end
       end
 
       %% E. Test Function Evaluation
-      trialpoint.tvals = [];
+      trailpoint.tvals = [];
       if ~reduce_stepsize && Singularities
         cds.previous_tvals = currpoint.tvals;
-        [trialpoint.tvals, failed] = EvalTestFunc(0, trialpoint);
+        [trailpoint.tvals, failed] = EvalTestFunc(0, trailpoint);
         if failed
           print_diag(1, ...
             'contL: Unable to evaluate Test Functions at Point %d', cds.i);
@@ -342,11 +342,11 @@ function [sout, datafile] = contL(curvefile, x0, v_cont, opts, varargin)
         print_diag(4,'%.4f ', currpoint.tvals);
         print_diag(4,'\n');
         print_diag(4,'trailpoint:');
-        print_diag(4,'%.4f ', trialpoint.tvals);
+        print_diag(4,'%.4f ', trailpoint.tvals);
         print_diag(4,'\n');
 
-        signchanges = sign(trialpoint.tvals) ~= sign(currpoint.tvals);
-        changes     =      trialpoint.tvals  ~=      currpoint.tvals;
+        signchanges = sign(trailpoint.tvals) ~= sign(currpoint.tvals);
+        changes     =      trailpoint.tvals  ~=      currpoint.tvals;
         if any(signchanges) || any(changes)
           % Every crossing that is required occurs
           % Every crossing that is not required does not occur
@@ -367,7 +367,7 @@ function [sout, datafile] = contL(curvefile, x0, v_cont, opts, varargin)
           % %#ok<AGROW>. The array singsdetected does not grow.
 
           if sum(singsdetected) > 1 || more_than_one_Neimark_Sacker( ...
-                                          currpoint.tvals, trialpoint.tvals)
+                                          currpoint.tvals, trailpoint.tvals)
             print_diag(3, 'More than one singularity detected: ')
             reduce_stepsize = 1;
           elseif sum(singsdetected) == 1 % exactly one singularity was detected
@@ -378,11 +378,11 @@ function [sout, datafile] = contL(curvefile, x0, v_cont, opts, varargin)
       end
 
       %% G. User Function Evaluation
-      trialpoint.uvals = [];
+      trailpoint.uvals = [];
       if ~reduce_stepsize && Userfunctions
-        [trialpoint.uvals, failed] = feval( ...
-                                      cds.curve_userf, 0, UserInfo, trialpoint.x);
-        failed = failed || isempty(trialpoint.uvals);
+        [trailpoint.uvals, failed] = feval( ...
+                                      cds.curve_userf, 0, UserInfo, trailpoint.x);
+        failed = failed || isempty(trailpoint.uvals);
         if failed
           format_str = 'contL: Unable to evaluate User Functions at Point %d: ';
           print_diag(1, format_str, cds.i);
@@ -420,9 +420,9 @@ function [sout, datafile] = contL(curvefile, x0, v_cont, opts, varargin)
 
     %% Location of singularities
     if NeedToLocate
-      % At this point in the continuation loop, we only have to deal with one 
-      % singularity at a time. If multiple singularities had been detected in one 
-      % step, the stepsize has been decreased in the previous parts of the 
+      % At this point in the continuation loop, we only have to deal with one
+      % singularity at a time. If multiple singularities had been detected in
+      % one step, the stepsize has been decreased in the previous parts of the
       % continuation loop until only one singularity is detected.
 
       format_str = 'contL: %s detected at step %d\n';
@@ -434,7 +434,7 @@ function [sout, datafile] = contL(curvefile, x0, v_cont, opts, varargin)
       if locatorAvailable
 
         p1 = currpoint;
-        p2 = trialpoint;
+        p2 = trailpoint;
 
         % Use locator
         print_diag(3,'using locator\n');
@@ -449,7 +449,7 @@ function [sout, datafile] = contL(curvefile, x0, v_cont, opts, varargin)
           singpoint = LocateSingularity(si, p1, p2);          
         end
       else
-        singpoint = LocateSingularity(si, currpoint, trialpoint);
+        singpoint = LocateSingularity(si, currpoint, trailpoint);
       end
 
       if ~ isempty(singpoint)
@@ -481,14 +481,14 @@ function [sout, datafile] = contL(curvefile, x0, v_cont, opts, varargin)
     end
 
     %% D. User Functions
-    userchanges = sign(trialpoint.uvals) ~= sign(currpoint.uvals);
+    userchanges = sign(trailpoint.uvals) ~= sign(currpoint.uvals);
     if Userfunctions && any(userchanges)
       useridx = find(userchanges);
       for ti=1:size(useridx,2)
         id = useridx(ti);
         print_diag(1,'\nStep %d: User Function %s detected ... \n', ...
           cds.i+1, UserInfo{id}.label);
-        [userpoint] = LocateUserFunction(id, UserInfo, currpoint, trialpoint);
+        [userpoint] = LocateUserFunction(id, UserInfo, currpoint, trailpoint);
 
         if isempty(userpoint)
           print_diag(0, ...
@@ -518,31 +518,32 @@ function [sout, datafile] = contL(curvefile, x0, v_cont, opts, varargin)
     %%      E. Process
 
     % DV: check if testfunctions should be updated
-    tfUpdate = isfield(trialpoint, 'CISdata');
-    tfUpdate = tfUpdate && ~isempty(trialpoint.CISdata);
-    tfUpdate = tfUpdate && isstruct(trialpoint.CISdata);
+    tfUpdate = isfield(trailpoint, 'CISdata');
+    tfUpdate = tfUpdate && ~isempty(trailpoint.CISdata);
+    tfUpdate = tfUpdate && isstruct(trailpoint.CISdata);
     tfUpdate = tfUpdate && ...
-      (        (contopts.CIS_AdaptOnOverlap && trialpoint.CISdata.overlap) ...
+      (        (contopts.CIS_AdaptOnOverlap && trailpoint.CISdata.overlap) ...
           ||   (Singularities && sum(singsdetected) > 0) ...
       );
 
     if (mod(cds.i,AdaptSteps)==0) || tfUpdate
 
-      [has_changed,x2,v2,trialpoint.CISdata] = feval(cds.curve_adapt, ...
-          trialpoint.x, trialpoint.v, trialpoint.CISdata, tfUpdate);
-      trialpoint.x = x2;
-      trialpoint.v = v2;
+      [has_changed,x2,v2,trailpoint.CISdata] = feval(cds.curve_adapt, ...
+          trailpoint.x, trailpoint.v, trailpoint.CISdata, tfUpdate);
+      trailpoint.x = x2;
+      trailpoint.v = v2;
 
       if has_changed && Singularities
         % recompute testvals            
-        [trialpoint.tvals,~] = EvalTestFunc(0,trialpoint);
+        [trailpoint.tvals,~] = EvalTestFunc(0,trailpoint);
       end
     end
+    trailpoint  = DefaultProcessor(trailpoint);
     if ~ isempty(additional_arguments.callback)
-      additional_arguments.callback(currpoint, trialpoint)
+      additional_arguments.callback(currpoint, trailpoint)
     end
-    if trialpoint.v'*currpoint.v < 0,  trialpoint.v = -trialpoint.v; end
-    currpoint = trialpoint;
+    if trailpoint.v'*currpoint.v < 0,  trailpoint.v = -trailpoint.v; end
+    currpoint = trailpoint;
 
     cds.i = cds.i + 1;
     if ~ isempty(additional_arguments.stopping_condition) && ...
@@ -553,7 +554,7 @@ function [sout, datafile] = contL(curvefile, x0, v_cont, opts, varargin)
       break;
     end
 
-    currpoint  = DefaultProcessor(currpoint);
+
 
     % stepsize control
     if cds.h < cds.h_max && corrections==1
@@ -561,7 +562,7 @@ function [sout, datafile] = contL(curvefile, x0, v_cont, opts, varargin)
     end
 
     % closed curve check
-    if CheckClosed>0 && cds.i>= CheckClosed && norm(trialpoint.x-x0) < cds.h
+    if CheckClosed>0 && cds.i>= CheckClosed && norm(trailpoint.x-x0) < cds.h
       cds.i=cds.i+1;
       cds.lastpointfound = 1;
       currpoint = first_point;
@@ -809,14 +810,14 @@ function [pout, p1, p2] = LocateTestFunction(id, p1, p2)
       end
     end
     if contopts.NewtonPicard
-      p3 = NewtonPicard.do_corrections(x3,v3);
+      p3 = NP_do_corrections(x3,v3);
       if isempty(p3)
         print_diag(3, 'Newton-Picard corrections failed during bisection\n')
         return        
       end
       if id == Constants.LPC_id 
         % if we are locating a limit point of cycles (LPC)
-        p3.v = NewtonPicard.find_tangent_vector(cds.curve, p3.x, p3.v);
+        p3.v = NP_find_tangent_vector(cds.curve, p3.x, p3.v);
       end
     else
       p3 = newtcorrL(x3,v3, CISdata3);

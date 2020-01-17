@@ -162,7 +162,12 @@ for i=id
             end
             M_u  = sum(bialt_eigs>0);
             mu_min = min(abs(bialt_eigs));
-            out(3) = mu_min*(-1)^M_u;
+            if NSub <= 2                                  %MP 01/2020
+                out(3) = 1;
+            else
+                out(3) = mu_min*(-1)^M_u;     
+            end
+            %out(3) = mu_min*(-1)^M_u;                     %MP 01/2020
         case 4  %GH
             if kapa > 0
                 l1 = nf_H_L(CISdata, x0, p1, kapa, cds.borders);

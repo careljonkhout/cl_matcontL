@@ -6,7 +6,7 @@
 #include <math.h>
 #include "mex.h"
 
-#define n_parameters 5
+#define n_parameters 6
 #define n_inputs     7
 #define n_outputs    1
 #define system_size  100

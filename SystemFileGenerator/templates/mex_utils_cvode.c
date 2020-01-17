@@ -22,15 +22,17 @@ void check_double(Argument arg) {
   }
 }
 
-
-
-void check_size(Argument arg, int size) {
-  if ( mxGetNumberOfElements(arg.value) != size ) {
+void check_size(char* name, int actual_size, int correct_size) {
+  if (actual_size != correct_size) {
     mexErrMsgIdAndTxt("mex_utils:incorrect_size",  
             "Input vector %s does not have the correct size. "
             "The correct size is %d. The actual size is %d.",
-            arg.name, size, (int)mxGetNumberOfElements(arg.value));
+            name, correct_size, actual_size);
   }
+}
+
+void check_size_arg(Argument arg, int size) {
+  check_size(arg.name, mxGetNumberOfElements(arg.value), size);
 }
 
 void check_scalar(Argument arg) {
@@ -63,9 +65,9 @@ double* my_mex_get_doubles(const mxArray* array) {
 }
 
 double* get_doubles(Argument arg, int size) {
-  check_double(arg);
-  check_real  (arg);
-  check_size  (arg, size);
+  check_double  (arg);
+  check_real    (arg);
+  check_size_arg(arg, size);
   return my_mex_get_doubles(arg.value);
 }
 

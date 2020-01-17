@@ -8,12 +8,12 @@
 #include <cvodes/cvodes.h>
 #include <nvector/nvector_serial.h>
 //#include <nvector/nvector_openmp.h>
-#include <sunmatrix/sunmatrix_band.h>   /* access to band SUNMatrix       */
-#include <sunlinsol/sunlinsol_band.h>   /* access to band SUNLinearSolver */
-#include <sunmatrix/sunmatrix_dense.h>  /* access to dense SUNMatrix       */
-#include <sunlinsol/sunlinsol_dense.h>  /* access to dense SUNLinearSolver */
-#include <sunmatrix/sunmatrix_sparse.h>  /* access to dense SUNMatrix       */
-#include <sunlinsol/sunlinsol_spgmr.h>  /* access to spgmr SUNLinearSolver */
+#include <sunmatrix/sunmatrix_band.h>    /* access to band SUNMatrix        */
+#include <sunlinsol/sunlinsol_band.h>    /* access to band SUNLinearSolver  */
+#include <sunmatrix/sunmatrix_dense.h>   /* access to dense SUNMatrix       */
+#include <sunlinsol/sunlinsol_dense.h>   /* access to dense SUNLinearSolver */
+#include <sunmatrix/sunmatrix_sparse.h>  /* access to sparse SUNMatrix      */
+#include <sunlinsol/sunlinsol_spgmr.h>   /* access to spgmr SUNLinearSolver */
 
 #include <sundials/sundials_types.h>
 #include <sundials/sundials_math.h>
@@ -31,6 +31,10 @@
 #define DEFAULT_REL_TOL     RCONST(1.e-6) /* default relative tolerance */
 #define MAX_NUM_STEPS       10*1000*1000
 #define SENSITIVITY_METHOD  CV_SIMULTANEOUS
+
+#ifdef ENABLE_INTERRUPT
+int utIsInterruptPending();
+#endif
 
 
 // implemented in dydt_cvode.c
@@ -62,33 +66,24 @@ int d_sensitivity_dt_pars(int Ns, realtype t,
                 N_Vector ds_vector,
                 void *user_data,
                 N_Vector tmp1, N_Vector tmp2);
-
-
-
 #endif
 
 int return_to_plane(realtype t, N_Vector u, realtype* g  , void *);
-
 void error_handler(int error_code, const char *module,
                           const char *function, char *msg, void *eh_data);
 
 N_Vector get_N_Vector(Argument arg, int size);
 N_Vector new_N_Vector(int length);
 
-void check_argument_given(void* pointer,                char* arrayname);
-
+void check_argument_given(void* pointer, char* arrayname);
 void PrintFinalStats(void *cvode, booleantype sensitivity);
-
-
 realtype* get_reals(Argument arg, int size);
 void copy_real_to_double(realtype* r, double* d, int length);
 void mex_eval(const char * format, ... );
 
-
 realtype     lower_bound_period;
 N_Vector     point_on_limitcycle;
 N_Vector     tangent_to_limitcycle;
-
 
 
 void mexFunction(int n_output,       mxArray *mex_output[], 
@@ -97,10 +92,12 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   int          n_points                 = 0;
   realtype*    t_values                 = NULL;
   realtype*    initial_point            = NULL;
+  int          initial_point_size       = 0;
 
   booleantype  sensitivity              = false;
   int          n_sensitivity            = 0;
   realtype*    sensitivity_vectors      = NULL;
+  int          sensitivity_vector_size  = 0;
   
   booleantype  parameter_sensitivity    = false;
   int          parameter_index          = 0;
@@ -109,7 +106,9 @@ void mexFunction(int n_output,       mxArray *mex_output[],
                lower_bound_period       = 0;
   booleantype  lower_bound_period_given = false;
                point_on_limitcycle      = NULL;
-               tangent_to_limitcycle    = NULL; 
+               tangent_to_limitcycle    = NULL;
+  
+  int          point_on_limitcycle_size = 0;
 
   booleantype  verbose                  = false;
   
@@ -120,13 +119,10 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   realtype     initial_step_size        = 0;
   booleantype  initial_step_size_given  = false;
   
-  
   UserData user_data = malloc(sizeof(UserData));
   check_null(user_data, "malloc user_data");
   user_data->parameters = NULL;
   Argument arg;
-  
-
   
   if (n_input % 2 != 0) {
     mexErrMsgIdAndTxt("cvode:nrhs_uneven",
@@ -163,7 +159,8 @@ void mexFunction(int n_output,       mxArray *mex_output[],
       
     } else if ( ! strcmp(arg.name, "initial_point"        ) ) {
       
-      initial_point         = get_reals(arg, NEQ);
+      initial_point_size    = mxGetNumberOfElements(arg.value);
+      initial_point         = get_reals(arg, initial_point_size);
       
     } else if ( ! strcmp(arg.name, "ode_parameters"       ) ) {
             
@@ -171,10 +168,11 @@ void mexFunction(int n_output,       mxArray *mex_output[],
       
     } else if ( ! strcmp(arg.name, "sensitivity_vector"   ) ) {
       
-      int n_elements      = mxGetNumberOfElements(arg.value);
-      sensitivity_vectors = get_reals(arg, n_elements);
-      n_sensitivity       = mxGetN(arg.value);
-      sensitivity         = true;
+      int n_elements          = mxGetNumberOfElements(arg.value);
+      sensitivity_vectors     = get_reals(arg, n_elements);
+      sensitivity_vector_size = mxGetM(arg.value);
+      n_sensitivity           = mxGetN(arg.value);
+      sensitivity             = true;
       
     } else if ( ! strcmp(arg.name, "cycle_detection"      ) ) {
       
@@ -187,8 +185,9 @@ void mexFunction(int n_output,       mxArray *mex_output[],
       
     } else if ( ! strcmp(arg.name, "point_on_limitcycle"  ) ) {
       
-      point_on_limitcycle = get_N_Vector(arg, NEQ);
-      tangent_to_limitcycle = new_N_Vector(NEQ);
+      point_on_limitcycle_size = mxGetNumberOfElements(arg.value);
+      point_on_limitcycle      = get_N_Vector(arg, point_on_limitcycle_size);
+      tangent_to_limitcycle    = new_N_Vector(point_on_limitcycle_size);
       
     } else if ( ! strcmp(arg.name, "abs_tol"              ) ) {
       
@@ -230,6 +229,13 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   check_argument_given((void *) initial_point          , "initial_point");
   check_argument_given((void *) (user_data->parameters), "parameters"   );
   
+  #if N_MESH_POINTS_AS_PARAMETER
+  int neq = PDE_DIMENSION * ((int) ((user_data->parameters)[0]));
+  #else
+  int neq = NEQ;
+  #endif
+  
+  check_size("initial_point", initial_point_size, neq);
 
   if (cycle_detection) {
     // we wait to compute tangent_to_limitcycle, since we need parameters to 
@@ -251,6 +257,7 @@ void mexFunction(int n_output,       mxArray *mex_output[],
                         "You enabled cycle detection, "
                         "but you did not specify point_on_limit_cycle");    
     }
+    check_size("point_on_limitcycle", point_on_limitcycle_size, neq);    
   }
   
   if( ( sensitivity || parameter_sensitivity) && n_output != 3) {
@@ -261,12 +268,23 @@ void mexFunction(int n_output,       mxArray *mex_output[],
                       "t (time), y (state variables), and s (sensitivity)");
   }
   
+  if ( sensitivity ) {
+
+    if (sensitivity_vector_size != neq) {
+      mexErrMsgIdAndTxt("cvode:wrong_sensitivity_vector_size",
+                  "The number of rows of the sensitivity vector(s) is wrong. "
+                  "The correct number of rows is %d, "
+                  "but the actual number of rows is %d.", 
+                  neq, sensitivity_vector_size);
+    }
+  }
+  
 
   void*             cvode       = NULL;
   SUNMatrix         A           = NULL;
   SUNLinearSolver   LS          = NULL;
     
-  N_Vector solver_y = new_N_Vector(NEQ);
+  N_Vector solver_y = new_N_Vector(neq);
   N_Vector* solver_s;
   realtype* s_data;
   if (sensitivity || parameter_sensitivity) {
@@ -276,13 +294,13 @@ void mexFunction(int n_output,       mxArray *mex_output[],
       // create N_Vectors whose data pointers point to the vectors in 
       // sensitivity_vectors
       for (int i = 0; i < n_sensitivity; i++) {
-        solver_s[i] = N_VMake_Serial(NEQ, sensitivity_vectors + i * NEQ);
+        solver_s[i] = N_VMake_Serial(neq, sensitivity_vectors + i * neq);
       }
     } else if (parameter_sensitivity) {
       // allocate new N_Vector
-      solver_s[0] = N_VNew_Serial(NEQ);
+      solver_s[0] = N_VNew_Serial(neq);
       s_data = N_VGetArrayPointer(solver_s[0]);
-      for (int i = 0; i < NEQ; i++) {
+      for (int i = 0; i < neq; i++) {
         s_data[i] = 0.0;
       }
     }
@@ -313,17 +331,17 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   }
      
   #if JACOBIAN_STORAGE == DENSE
-  A  = SUNDenseMatrix_nullchecked(NEQ, NEQ);
+  A  = SUNDenseMatrix_nullchecked(neq, neq);
   LS = SUNLinSol_Dense_nullchecked(solver_y, A);
   #endif
   
   #if JACOBIAN_STORAGE == BANDED
-  A  = SUNBandMatrix_nullchecked(NEQ, UPPER_BANDWIDTH, LOWER_BANDWIDTH);
+  A  = SUNBandMatrix_nullchecked(neq, UPPER_BANDWIDTH, LOWER_BANDWIDTH);
   LS = SUNLinSol_Band_nullchecked(solver_y, A);
   #endif
   
   #if JACOBIAN_STORAGE == SPARSE
-  A = SUNSparseMatrix(NEQ, NEQ, JACOBIAN_NNZ, CSC_MAT);
+  A = SUNSparseMatrix(neq, neq, JACOBIAN_NNZ, CSC_MAT);
   LS = SUNLinSol_SPGMR(solver_y, PREC_NONE, 0);
   #endif
    
@@ -364,14 +382,14 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   
   
   mxArray* t_output_array = mxCreateDoubleMatrix(1,   n_points, mxREAL);
-  mxArray* y_output_array = mxCreateDoubleMatrix(NEQ, n_points, mxREAL);
+  mxArray* y_output_array = mxCreateDoubleMatrix(neq, n_points, mxREAL);
   if (sensitivity) {
-    mex_output[OUTPUT_SENSITIVITY] = mxCreateDoubleMatrix(NEQ, n_sensitivity, 
+    mex_output[OUTPUT_SENSITIVITY] = mxCreateDoubleMatrix(neq, n_sensitivity, 
                                                                mxREAL);
   }
     
   if (parameter_sensitivity) {
-    mex_output[OUTPUT_SENSITIVITY] = mxCreateDoubleMatrix(NEQ, 1, mxREAL);
+    mex_output[OUTPUT_SENSITIVITY] = mxCreateDoubleMatrix(neq, 1, mxREAL);
   }
   
   mxDouble* t_out = my_mex_get_doubles(t_output_array);
@@ -382,9 +400,9 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   }
   
   copy_real_to_double(t_values, t_out,  n_points);
-  copy_real_to_double(y_data,   y_out, NEQ      );
+  copy_real_to_double(y_data,   y_out, neq      );
   
-  double* y_out_ptr = y_out + NEQ;
+  double* y_out_ptr = y_out + neq;
 
 
 
@@ -397,6 +415,14 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   #endif
   
   for(i = 1; i < n_points; i++) {
+    # if ENABLE_INTERRUPT
+    // to make this work link with:
+    // fullfile(matlabroot, 'bin', computer('arch'), 'libut.dll') (windows)
+    // fullfile(matlabroot, 'bin', computer('arch'), 'libut.so ') (linux)
+    if (utIsInterruptPending()) {
+      break;
+    }
+    # endif
     #ifdef PRINT_TIME
     mex_eval("print_temp('t=%.15e')", (double)t_values[i]);
     #endif
@@ -405,15 +431,15 @@ void mexFunction(int n_output,       mxArray *mex_output[],
     if (sensitivity || parameter_sensitivity) {
       flag = CVodeGetSens(cvode, &t, solver_s);
       check(flag, "CVodeGetSens");
-      copy_real_to_double(s_data, s_out, NEQ * n_sensitivity);
+      copy_real_to_double(s_data, s_out, neq * n_sensitivity);
       // todo: fix: s_out seems to be overwritten n_points times here
       // or implement sensitivity ouput at intermediate time values
     }
     if (cycle_detection) {
       CVodeGetRootInfo(cvode, &rootsfound);
     }
-    copy_real_to_double(y_data, y_out_ptr, NEQ);
-    y_out_ptr += NEQ;
+    copy_real_to_double(y_data, y_out_ptr, neq);
+    y_out_ptr += neq;
 
     if (rootsfound) {
       //mexPrintf("cvode: period: %.6f\n", t);
@@ -431,7 +457,7 @@ void mexFunction(int n_output,       mxArray *mex_output[],
     mxSetN(t_output_array, i+1);
     mxSetN(y_output_array, i+1);
   }
-  mxArray* y_transposed = mxCreateDoubleMatrix(i+1, NEQ, mxREAL);
+  mxArray* y_transposed = mxCreateDoubleMatrix(i+1, neq, mxREAL);
   mexCallMATLAB(1, &y_transposed, 1, &y_output_array, "transpose");
   mex_output[OUTPUT_Y] = y_transposed;
   
@@ -504,9 +530,9 @@ void check_argument_given(void * pointer, char* argument_name) {
 N_Vector new_N_Vector(int length) {
   N_Vector v;
   #if OPEN_MP
-  v = N_VNew_OpenMP(NEQ, N_THREADS); 
+  v = N_VNew_OpenMP(length, N_THREADS); 
   #else
-  v = N_VNew_Serial(NEQ); 
+  v = N_VNew_Serial(length); 
   #endif
   return v;
 }
@@ -578,9 +604,9 @@ void PrintFinalStats(void *cvode, booleantype sensi) {
 }
 
 realtype* get_reals(Argument arg, int size) {
-  check_double(arg);
-  check_real  (arg);
-  check_size  (arg, size);
+  check_double  (arg);
+  check_real    (arg);
+  check_size_arg(arg, size);
   
   realtype* real_data   = malloc(size * sizeof(realtype));
   double*   matlab_data = my_mex_get_doubles(arg.value);

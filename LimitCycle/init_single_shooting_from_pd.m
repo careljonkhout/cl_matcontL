@@ -63,7 +63,7 @@ function x = init_single_shooting_from_pd(varargin)
   cds.curve                      = @single_shooting;
   cds.using_cvode                = using_cvode;
   
-  pd_vector = NewtonPicard.SingleShooting.find_pd_vector(pd.x);
+  pd_vector = NP_SS_find_pd_vector(pd.x);
   period    = pd.x(end-1);
   x         = [pd.x(1:end-2) + h * pd_vector; 2 * period; pd.x(end)];
   

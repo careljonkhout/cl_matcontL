@@ -33,7 +33,7 @@ global cds
   parameters                   = cds.P0;
   parameters(cds.ActiveParams) = active_par_val;
   parameters                   = num2cell(parameters);
-  shoot                        = @NewtonPicard.shoot;
+  shoot                        = @NP_shoot;
   phases_end                   = shoot(phases_0, period, parameters);
   f = [phases_end - phases_0; 
       (phases_0 - cds.previous_phases)' * cds.previous_dydt_0  ]; 
@@ -82,7 +82,7 @@ function jacobian = jacobian(varargin)
   d_phi_d_T         = cds.dydt_ode(0,y_end,parameters{:});
   d_s_d_T           = cds.previous_dydt_0' * d_phi_d_T;
   jacobian          = [jacobian [d_phi_d_T; d_s_d_T]];
-  compute_d_phi_d_p = @NewtonPicard.compute_d_phi_d_p;
+  compute_d_phi_d_p = @NP_compute_d_phi_d_p;
   d_phi__d_p        = compute_d_phi_d_p(phases, period, parameters);
   d_s__d_p          = cds.previous_dydt_0' * d_phi__d_p;
   jacobian          = [jacobian [d_phi__d_p; d_s__d_p]];
@@ -190,7 +190,7 @@ end
 %-------------------------------------------------------------------------------
 function init(~,~); end
 %-------------------------------------------------------------------------------
-function out = default_processor(varargin)
+function point = default_processor(varargin)
   % todo: try to make function arguments explicit
   global cds contopts
   point = varargin{1};
@@ -205,7 +205,7 @@ function out = default_processor(varargin)
       nMults_to_compute = cds.preferred_basis_size + 10;
       nMults_to_compute = min(nMults_to_compute, cds.n_phases);
       cds.multipliersX = point.x;
-      cds.multipliers = NewtonPicard.SingleShooting.compute_multipliers(...
+      cds.multipliers = NP_SS_compute_multipliers(...
         point.x, nMults_to_compute);
       
       i = length(cds.multipliers);
@@ -250,20 +250,17 @@ function out = default_processor(varargin)
     print_diag(1,']\n')
   end
   
-  
   x = point.x;
-  % needed for phase condition:
-  
   
   [phases, ~, parameter_values] = getComponents(x);
-  
+  % needed for phase condition:
   cds.previous_phases           = phases;
   % needed for phase condition:
   cds.previous_dydt_0           = cds.dydt_ode(0, ...
-                                    cds.previous_phases,parameter_values{:});
+                                    cds.previous_phases, parameter_values{:});
   
-  out                           = point;
   point.parameter_values        = cell2mat(parameter_values);
+  point.amplitudes              = get_amplitudes(x);
   savePoint(point, varargin{2:end});
 end
 %-------------------------------------------------------------------------------
@@ -271,7 +268,7 @@ function update_multipliers_if_needed(x)
   global cds
   if ~ isfield(cds,'multipliersX') || all(cds.multipliersX ~= x)
     cds.multipliersX = x;
-    cds.multipliers = NewtonPicard.SingleShooting.compute_multipliers(x, ...
+    cds.multipliers = NP_SS_compute_multipliers(x, ...
                        cds.preferred_basis_size);
   end
 end
@@ -328,4 +325,10 @@ function [y,period,parameters] = getComponents(x)
   parameters                   = cds.P0;
   parameters(cds.ActiveParams) = parameter_value;
   parameters                   = num2cell(parameters);
+end
+
+function amplitudes = get_amplitudes(x)
+  [y0, period, parameters] = getComponents(x);
+  [~, y] = NP_orbit(y0, period, parameters);
+  amplitudes = max(y) - min(y);
 end

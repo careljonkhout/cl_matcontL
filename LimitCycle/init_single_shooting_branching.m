@@ -8,8 +8,8 @@ function x = init_single_shooting_branching(odefile, bpc, h, ...
   dydt_ode              = ode_handles{2};
   tangent_to_limitcycle = feval(dydt_ode,0, point_on_limitcycle, parameters{:});
   using_cvode           = endsWith(func2str(time_integration_method), 'cvode');
-  n_phases               = length(bpc.x) - 2;
-  basis_size            = max(n_phases, min(40, n_phases/2));
+  n_phases              = length(bpc.x) - 2;
+  basis_size            = min(n_phases, 2 * length(bpc.multipliers));
   
   global cds;
   
@@ -36,7 +36,7 @@ function x = init_single_shooting_branching(odefile, bpc, h, ...
   cds.using_cvode                = using_cvode;
   
   
-  v = NewtonPicard.SingleShooting.find_branching_vector(bpc.x, bpc.v);
+  v = NP_SS_find_branching_vector(bpc.x, bpc.v);
   v = v / max(v);
   x = bpc.x + h * v;
   

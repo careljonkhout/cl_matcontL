@@ -125,7 +125,6 @@ global cds
 NSub   = CISdata.NSub;
 Asub   = CISdata.T(1:NSub,1:NSub);
 evl3_r = CISdata.evl_r;
-
 Bord   = [Asub cds.borders.w; cds.borders.v' 0];
 bunit  = [zeros(NSub,1);1];
 vext   = Bord\bunit;
@@ -157,8 +156,9 @@ for i=id
             end
             mu_min = min(abs(bialt_eigs));
             M_u  = sum(real(bialt_eigs)>0);
-            if NSub == 1
-                out(2) = 2;
+            %if NSub == 1
+            if NSub <= 2                                    %MP 12/2019
+                out(2) = 1;
             else
                 out(2) = mu_min*(-1)^M_u;     
             end

@@ -1,6 +1,6 @@
 tic
 
-N = 30;
+N = 5;
 y = sym('y', [1 2*N]);
 syms L A B Dx Dy
 
@@ -17,14 +17,14 @@ name = sprintf('brusselator_1d_N_%d', N);
 pars = 'L A B Dx Dy';
 time = 't';
 
-eqtns = cell(length(dydt),1);
+equations = cell(length(dydt),1);
 
 for i = 1:length(dydt)
-  eqtns{i} = [char(y(i)) '''=' char(dydt(i))];
+  equations{i} = [char(y(i)) '''=' char(dydt(i))];
 end
 output = 'cvode';
 
 system = SystemFileGenerator.new( ...
-                name, pars, time, max_ord, eqtns, output);
+                name, pars, time, max_ord, equations, output);
 system.generate_file()
 toc

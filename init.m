@@ -15,6 +15,11 @@ function init
   addpath([pwd '/LimitPointCycle/']);
   addpath([pwd '/LimitCycle/']);
   addpath([pwd '/LimitCycle/pqzschur']);
+  addpath([pwd '/LimitCycle/NewtonPicard/']);
+  addpath([pwd '/LimitCycle/NewtonPicard/SingleShooting']);
+  addpath([pwd '/LimitCycle/NewtonPicard/MultipleShooting']);
+  addpath([pwd '/LimitCycle/pqzschur']);
+  addpath([pwd '/LimitCycle/pqzschur']);
   addpath([pwd '/LimitCycleCodim2/']);
   addpath([pwd '/MultilinearForms/']);
   addpath([pwd '/Options/']);
@@ -62,7 +67,7 @@ function init
 
   function compile(file)
     % we quote the path to support spaces in the path
-    compile_options = [];
+    compile_options = '';
     if ~isempty(regexp(mexext,'64','match'))
       compile_options = [compile_options ' -largeArrayDims'];
     end

@@ -66,7 +66,7 @@ function initial_continuation_data = init_multiple_shooting_from_pd(varargin)
   cds.using_cvode                = using_cvode;
 
   period    = pd.x(end-1);   
-  pd_vector = NewtonPicard.MultipleShooting.find_pd_vector(pd.x);
+  pd_vector = NP_MS_find_pd_vector(pd.x);
   h         = input.epsilon;
   
   

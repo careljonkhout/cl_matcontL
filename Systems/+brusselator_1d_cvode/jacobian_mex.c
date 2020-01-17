@@ -22,20 +22,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
   double *y;                      /* 1xN input matrix */
   double *outMatrix;              /* output matrix */
 
-  /* check for proper number of arguments */
-  if(nrhs != N_INPUTS) {
-    mexErrMsgIdAndTxt("brusselator_1d_N_50_dydt:nrhs","Five inputs required.");
-  }
 
-  if ( !mxIsDouble(prhs[INPUT_Y]) ) {
-    mexErrMsgIdAndTxt("system_brusselator_1d_N_50:not_double",
-                      "Error: Input vector y is not a double.");
-  }
-
-  if ( mxGetNumberOfElements(prhs[INPUT_Y]) != NEQ ) {
-    mexErrMsgIdAndTxt("system_brusselator_1d_N_50:wrong_size",
-                     "Input vector y must have 100 elements.");
-  }
 
   for ( int i = 0; i < N_PARAMETERS; i++ ) {
     if ( !mxIsDouble(prhs[i + 2]) ) {
@@ -51,6 +38,26 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
       parameters[i] = mxGetScalar(prhs[i+2]);
     }
   }
+
+  
+  int neq = PDE_DIMENSION * ((int) parameters[0]);
+
+  
+  /* check for proper number of arguments */
+  
+  if(nrhs != N_INPUTS) {
+    mexErrMsgIdAndTxt("brusselator_1d_N_50_dydt:nrhs","Five inputs required.");
+  }
+
+  if ( !mxIsDouble(prhs[INPUT_Y]) ) {
+    mexErrMsgIdAndTxt("system_brusselator_1d_N_50:not_double",
+                      "Error: Input vector y is not a double.");
+  }
+
+  if ( mxGetNumberOfElements(prhs[INPUT_Y]) != neq ) {
+    mexErrMsgIdAndTxt("system_brusselator_1d_N_50:wrong_size",
+                     "Input vector y must have 100 elements.");
+  }
     
     
   /* create a pointer to the real data in the input matrix  */
@@ -63,7 +70,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
   /* get dimensions of the input matrix */
 
   /* create the output matrix */
-  plhs[0] = mxCreateDoubleMatrix(NEQ, NEQ, mxREAL);
+  plhs[0] = mxCreateDoubleMatrix(neq, neq, mxREAL);
 
   /* get a pointer to the real data in the output matrix */
   #if MX_HAS_INTERLEAVED_COMPLEX
@@ -73,7 +80,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
   #endif
 
   /* call the computational routine */
-  jacobian_dydt_mex(y,parameters,outMatrix);
+  jacobian_dydt_mex(y, parameters, outMatrix);
     
 }
 
@@ -84,7 +91,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 #define Y(i) u[Y_INDEX(i)]
 
 
-#define ELEMENT(mat,i,j) mat[i + j*NEQ]
+#define ELEMENT(mat,i,j) mat[i + j*neq]
 
 #define JAC_XX(i,j) ELEMENT(jacobian, X_INDEX(i), X_INDEX(j))
 #define JAC_XY(i,j) ELEMENT(jacobian, X_INDEX(i), Y_INDEX(j))
@@ -92,25 +99,28 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 #define JAC_YY(i,j) ELEMENT(jacobian, Y_INDEX(i), Y_INDEX(j))
 
 
-#define L  parameters[0]
-#define A  parameters[1]
-#define B  parameters[2]
-#define DX parameters[3]
-#define DY parameters[4]
+#define L  parameters[1]
+#define A  parameters[2]
+#define B  parameters[3]
+#define DX parameters[4]
+#define DY parameters[5]
 
 void jacobian_dydt_mex(double* u, double* parameters, double* jacobian) {
   
-  double cx = DX * (N_MESH_POINTS + 1) * (N_MESH_POINTS + 1) / (L*L);
-  double cy = DY * (N_MESH_POINTS + 1) * (N_MESH_POINTS + 1) / (L*L);
+  int n_mesh_points = (int) parameters[0];
+  int neq = PDE_DIMENSION * ((int) parameters[0]);
   
-  for ( int i = 0; i < N_MESH_POINTS; i++ ) {
+  double cx = DX * (n_mesh_points + 1) * (n_mesh_points + 1) / (L*L);
+  double cy = DY * (n_mesh_points + 1) * (n_mesh_points + 1) / (L*L);
+  
+  for ( int i = 0; i < n_mesh_points; i++ ) {
     JAC_XX(i,i) = - 2 * cx - (B+1) + 2 * X(i) * Y(i);
     JAC_XY(i,i) =   X(i) * X(i);
     JAC_YX(i,i) =   B - 2 * X(i) * Y(i);
     JAC_YY(i,i) = - 2 * cy - X(i) * X(i);
   }
   
-  for ( int i = 0; i < N_MESH_POINTS - 1; i++ ) {
+  for ( int i = 0; i < n_mesh_points - 1; i++ ) {
     JAC_XX(i    , i + 1) = cx;
     JAC_XX(i + 1, i    ) = cx;
     JAC_YY(i    , i + 1) = cy;

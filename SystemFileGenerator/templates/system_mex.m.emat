@@ -1,13 +1,13 @@
-function out = odefile_mex
+function out = <%= s.name %>_mex
 out{1} = @init;
-out{2} = @<%= s.name %>.dydt_mex;
-out{3} = <%= s.jacobian_handle %>;
-out{4} = <%= s.jacobian_params_handle %>;
-out{5} = <%= s.hessians_handle %>;
-out{6} = <%= s.hessians_params_handle %>;
-out{7} = <%= s.third_order_derivatives_handle %>;
-out{8} = <%= s.fourth_order_derivatives_handle %>;
-out{9} = <%= s.fifth_order_derivatives_handle %>;
+out{2} = @<%= s.name %>_dydt_mex;
+out{3} = @<%= s.name %>_jacobian_mex;
+out{4} = @<%= s.name %>_jacobian_params_mex;
+out{5} = [];
+out{6} = [];
+out{7} = [];
+out{8} = [];
+out{9} = [];
 out{10} = [];% usernorm DV: this is the only difference between
 % the standard matcont problem file and the cl_matcontL problem file
 out{11}= @x1;

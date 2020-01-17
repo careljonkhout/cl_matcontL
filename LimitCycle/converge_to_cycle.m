@@ -46,7 +46,7 @@ function point_on_cycle = converge_to_cycle(in)
     transformed(isinf(transformed)) = 0;
     transformed(isnan(transformed)) = 0;
     plot_y = interp1(orbit_to_cycle_t, transformed, plot_t, in.interpolation);
-    plot(plot_t', plot_y);
+    plot(plot_t, plot_y);
     xlabel('t')
     ylabel(in.ylabel)
     disp('Now showing plot from  t = 0  to  t = time_to_converge_to_cycle')

@@ -19,21 +19,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
   size_t ncols;                   /* size of matrix */
   double *outMatrix;              /* output matrix */
 
-  /* check for proper number of arguments */
-  if(nrhs != N_INPUTS) {
-    mexErrMsgIdAndTxt("dydt_mex:nrhs","%d inputs required.", N_INPUTS);
-  }
 
-  if ( !mxIsDouble(prhs[INPUT_Y]) ) {
-    mexErrMsgIdAndTxt("dydt_mex:not_double",
-                      "Error: Input vector y is not a double.");
-  }
-
-  if ( mxGetNumberOfElements(prhs[INPUT_Y]) != NEQ ) {
-    mexErrMsgIdAndTxt("dydt_mex:wrong_size",
-              "Input vector y must have %d elements, but has %d elements",
-              NEQ, mxGetNumberOfElements(prhs[INPUT_Y]));
-  }
 
   for ( int i = 0; i < N_PARAMETERS; i++ ) {
     if ( !mxIsDouble(prhs[i + 2]) ) {
@@ -49,6 +35,23 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
       parameters[i] = mxGetScalar(prhs[i+2]);
     }
   }
+  
+  int neq = PDE_DIMENSION * ((int) parameters[0]);
+    /* check for proper number of arguments */
+  if(nrhs != N_INPUTS) {
+    mexErrMsgIdAndTxt("dydt_mex:nrhs", "%d inputs required.", N_INPUTS);
+  }
+
+  if ( !mxIsDouble(prhs[INPUT_Y]) ) {
+    mexErrMsgIdAndTxt("dydt_mex:not_double",
+                      "Error: Input vector y is not a double.");
+  }
+
+  if ( mxGetNumberOfElements(prhs[INPUT_Y]) != neq ) {
+    mexErrMsgIdAndTxt("dydt_mex:wrong_size",
+              "Input vector y must have %d elements, but has %d elements",
+              neq, mxGetNumberOfElements(prhs[INPUT_Y]));
+  }
     
     
   /* get a pointer to the data in the input matrix  */
@@ -59,7 +62,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
   #endif
 
   /* create the output matrix */
-  plhs[0] = mxCreateDoubleMatrix(NEQ, 1, mxREAL);
+  plhs[0] = mxCreateDoubleMatrix(neq, 1, mxREAL);
 
   /* get a pointer to the data in the output matrix */
   #if MX_HAS_INTERLEAVED_COMPLEX

@@ -2,15 +2,9 @@ Orthogonal Collocation
   - adding a field to lds is very likely crashes or unexpected behaviour, due to 
     the way fields are read form the lds structure in the mex files. It would be 
     nice to fix this.
-  - a linear solver tailored to the sparsity of the the Jacobian of cycle continuation 
-    by orthogonal collocation could be faster and use less memory. Auto already has
-    this. For his master thesis Mestrom tried this and the results were disappointing.
-    However, for large enough systems a custom solver should perform better, because
-    the default linear solver does not seem to exploit the sparsity 
-    structure very well for very large systems, leading to much unecessary fill in.
+
 Newton Picard
- 
- - implement starting form hopf for multiple shooting
+
  - implement branch switching at branching points of cycles.
  - better subspace continuation/computation. 
    Use trivial eigenvalue/eigenvector pair.
@@ -21,14 +15,8 @@ Newton Picard
 
 All cycles:
 
-
-- check if correct curvefile is supplied to contL or start contL directly form 
-  initializer
-
 - time spent in bisection is sometimes reported incorrectly
 
 
 
-see also todo comments in the code. use "find files" in matlab 
-or rgrep in linux/cygwin to find them quickly.
-
+see also todo comments in the code. 

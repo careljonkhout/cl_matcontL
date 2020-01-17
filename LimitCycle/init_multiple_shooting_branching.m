@@ -3,13 +3,13 @@ function x = init_multiple_shooting_branching(odefile, bpc, h, ...
   parameters            = bpc.P0;
   parameters(bpc.ap)    = bpc.x(end);
   parameters            = num2cell(parameters);
-  n_phases               = (length(bpc.x) - 2) / bpc.n_mesh_intervals;
+  n_phases              = (length(bpc.x) - 2) / bpc.n_mesh_intervals;
   point_on_limitcycle   = bpc.x(1:n_phases);
   ode_handles           = feval(odefile);
   dydt_ode              = ode_handles{2};
   tangent_to_limitcycle = bpc.v(1:n_phases);
   using_cvode           = endsWith(func2str(time_integration_method), 'cvode');
-  basis_size            = max(n_phases, min(40, n_phases/2));
+  basis_size            = min(2 * length(bpc.multipliers), n_nphases);
   
   global cds;
   cds = [];
@@ -38,7 +38,7 @@ function x = init_multiple_shooting_branching(odefile, bpc, h, ...
   cds.mesh                       = bpc.time_mesh;
   
   
-  v = NewtonPicard.MultipleShooting.find_branching_vector(bpc.x, bpc.v);
+  v = NP_MS_find_branching_vector(bpc.x, bpc.v);
   v = v / max(v);
   x = bpc.x + h * v;
   

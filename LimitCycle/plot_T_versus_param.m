@@ -1,6 +1,6 @@
 % meant to be passed as a function handle to contL
 
-function plot_T_versus_param(currpoint, trialpoint)
+function plot_T_versus_param(currpoint, trailpoint)
   if ~ usejava('jvm')
     % When debugging mex files with gdb (GNU debugger) on linux, we ussually
     % start matlab without jvm (java virtual machine). This clause prevents a
@@ -13,9 +13,9 @@ function plot_T_versus_param(currpoint, trialpoint)
   end
   hold on;
   curr_T      = currpoint.x(end-1);
-  trial_T     = trialpoint.x(end-1);
+  trial_T     = trailpoint.x(end-1);
   curr_param  = currpoint.x(end);
-  trial_param = trialpoint.x(end);
+  trial_param = trailpoint.x(end);
   
   %print_diag(3,'\nplotting: [%.3e %.3e]  [%.3e %.3e] \n\n', ...
   %              [curr_param trial_param],[curr_T trial_T])
