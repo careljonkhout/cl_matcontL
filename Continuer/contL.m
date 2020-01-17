@@ -538,6 +538,26 @@ function [sout, datafile] = contL(curvefile, x0, v_cont, opts, varargin)
         [trailpoint.tvals,~] = EvalTestFunc(0,trailpoint);
       end
     end
+    
+    cds.i = cds.i + 1;
+    if ~ isempty(additional_arguments.stopping_condition) && ...
+                 additional_arguments.stopping_condition(currpoint)
+      cds.lastpointfound = 1;
+      DefaultProcessor(trailpoint);
+      print_diag(1,'Stopping condition reached\n');
+      break;
+    end
+    
+    % closed curve check
+    if CheckClosed>0 && cds.i>= CheckClosed && norm(trailpoint.x-x0) < cds.h
+      cds.lastpointfound = 1;
+      currpoint = first_point;
+      print_diag(1, '\nClosed curve detected at step %d\n', cds.i);
+      DefaultProcessor(currpoint);
+      break;
+    end
+    
+    
     trailpoint  = DefaultProcessor(trailpoint);
     if ~ isempty(additional_arguments.callback)
       additional_arguments.callback(currpoint, trailpoint)
@@ -545,14 +565,7 @@ function [sout, datafile] = contL(curvefile, x0, v_cont, opts, varargin)
     if trailpoint.v'*currpoint.v < 0,  trailpoint.v = -trailpoint.v; end
     currpoint = trailpoint;
 
-    cds.i = cds.i + 1;
-    if ~ isempty(additional_arguments.stopping_condition) && ...
-                 additional_arguments.stopping_condition(currpoint)
-      cds.lastpointfound = 1;
-      DefaultProcessor(currpoint);
-      print_diag(1,'Stopping condition reached\n');
-      break;
-    end
+
 
 
 
@@ -561,15 +574,7 @@ function [sout, datafile] = contL(curvefile, x0, v_cont, opts, varargin)
       cds.h = min(cds.h*cds.h_inc_fac, cds.h_max);
     end
 
-    % closed curve check
-    if CheckClosed>0 && cds.i>= CheckClosed && norm(trailpoint.x-x0) < cds.h
-      cds.i=cds.i+1;
-      cds.lastpointfound = 1;
-      currpoint = first_point;
-      print_diag(1, '\nClosed curve detected at step %d\n', cds.i);
-      DefaultProcessor(currpoint);
-      break;
-    end
+
 
 
     if contopts.pause && mod(cds.i, contopts.nsteps_before_pause) == 0
