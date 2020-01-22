@@ -26,6 +26,7 @@
 #define OUTPUT_Y            1
 #define OUTPUT_SENSITIVITY  2
 #define INCREASING          1
+#define SENSITIVITY_H       1e-8
 
 #define DEFAULT_ABS_TOL     RCONST(1.e-6) /* default scalar absolute tolerance */
 #define DEFAULT_REL_TOL     RCONST(1.e-6) /* default relative tolerance */
@@ -39,11 +40,16 @@ int utIsInterruptPending();
 
 // implemented in dydt_cvode.c
 int dydt_cvode(realtype t, N_Vector u, N_Vector udot, void *);
+int sensitivity_fd_dydt(realtype t, N_Vector u, N_Vector udot, void *);
 
 #if ANALYTIC_JACOBIAN
 
 // implemented in jacobian_cvode.c
 int jacobian_dydt(
+               realtype t, N_Vector y_vec, N_Vector fy, SUNMatrix jac_structure,
+              void* user_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
+
+int sensitivity_fd_jacobian(
                realtype t, N_Vector y_vec, N_Vector fy, SUNMatrix jac_structure,
               void* user_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
 
@@ -89,24 +95,28 @@ N_Vector     tangent_to_limitcycle;
 void mexFunction(int n_output,       mxArray *mex_output[], 
                  int n_input,  const mxArray *mex_input []  ) {
   
-  int          n_points                 = 0;
-  realtype*    t_values                 = NULL;
-  realtype*    initial_point            = NULL;
-  int          initial_point_size       = 0;
+  int          n_points                   = 0;
+  realtype*    t_values                   = NULL;
+  realtype*    initial_point              = NULL;
+  int          initial_point_size         = 0;
 
-  booleantype  sensitivity              = false;
-  int          n_sensitivity            = 0;
-  realtype*    sensitivity_vectors      = NULL;
-  int          sensitivity_vector_size  = 0;
+  booleantype  sensitivity                = false;
+  int          n_sensitivity              = 0;
+  realtype*    sensitivity_vectors        = NULL;
+  int          sensitivity_vector_size    = 0;
   
-  booleantype  parameter_sensitivity    = false;
-  int          parameter_index          = 0;
+  booleantype  sensitivity_finite_diff    = false;
+  realtype*    snstvty_fd_vector          = NULL;
+  realtype*    snstvty_fd_ic              = NULL;
+  
+  booleantype  parameter_sensitivity      = false;
+  int          parameter_index            = 0;
 
-  booleantype  cycle_detection          = false;
-               lower_bound_period       = 0;
-  booleantype  lower_bound_period_given = false;
-               point_on_limitcycle      = NULL;
-               tangent_to_limitcycle    = NULL;
+  booleantype  cycle_detection            = false;
+               lower_bound_period         = 0;
+  booleantype  lower_bound_period_given   = false;
+               point_on_limitcycle        = NULL;
+               tangent_to_limitcycle      = NULL;
   
   int          point_on_limitcycle_size = 0;
 
@@ -122,6 +132,7 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   UserData user_data = malloc(sizeof(UserData));
   check_null(user_data, "malloc user_data");
   user_data->parameters = NULL;
+
   Argument arg;
   
   if (n_input % 2 != 0) {
@@ -212,6 +223,12 @@ void mexFunction(int n_output,       mxArray *mex_output[],
       n_sensitivity = 1;
       parameter_sensitivity = true;
       
+    } else if( ! strcmp(arg.name, "sensitivity_finite_diff") ) {
+      
+      sensitivity_finite_diff = true;
+      snstvty_fd_vector       = get_reals(arg, NEQ);
+      snstvty_fd_ic           = malloc(2 * NEQ * sizeof(realtype));
+      
     } else {
   
       mexErrMsgIdAndTxt("cvode:invalid_argument_name", 
@@ -279,12 +296,64 @@ void mexFunction(int n_output,       mxArray *mex_output[],
     }
   }
   
+  if ( sensitivity && parameter_sensitivity ) {
+     mexErrMsgIdAndTxt("cvode:no_ic_and_param_sens",
+                  "The sensitivity of the parameters "
+                  "and the initial conditions cannot be done "
+                  "at the same time.");
+  }
+  
+  if ( sensitivity && sensitivity_finite_diff ) {
+     mexErrMsgIdAndTxt("cvode:no_ic_and_param_sens",
+                  "Sensitivity by solving the variational "
+                  "problem and the sensitivity by finite differences "
+                  "cannot be done at the same time.");
+  }
+  
+  if ( sensitivity_finite_diff && parameter_sensitivity ) {
+     mexErrMsgIdAndTxt("cvode:no_ic_and_param_sens",
+                  "Sensitivity of the parameters "
+                  "and the sensitivity by finite differences "
+                  "cannot be done at the same time.");
+  }
+  
+  if ( sensitivity_finite_diff ) {
+    realtype h = SENSITIVITY_H;
+    for (int i = 0; i < neq; i++) {
+      snstvty_fd_ic[i]       = initial_point[i] - h * snstvty_fd_vector[i];
+      snstvty_fd_ic[NEQ + i] = initial_point[i] + h * snstvty_fd_vector[i];
+    }
+  }
+  
+  int neq_solver = neq;
+  if (sensitivity_finite_diff) {
+    neq_solver = 2 * neq;
+  }
+    
+   
+  if ( sensitivity_finite_diff ) {
+    for ( int i = 0; i < neq_solver; i++ ) {
+      mexPrintf("%.15f\n", snstvty_fd_ic[i]);
+    }
+  }
+  
 
   void*             cvode       = NULL;
   SUNMatrix         A           = NULL;
   SUNLinearSolver   LS          = NULL;
+  
+
+  
+  N_Vector solver_y;
+  
+  if ( sensitivity_finite_diff ) {
+    solver_y = N_VMake_Serial(neq_solver, snstvty_fd_ic);
+  } else {
+    solver_y = N_VMake_Serial(neq_solver, initial_point);
+  }
     
-  N_Vector solver_y = new_N_Vector(neq);
+  
+  
   N_Vector* solver_s;
   realtype* s_data;
   if (sensitivity || parameter_sensitivity) {
@@ -305,15 +374,14 @@ void mexFunction(int n_output,       mxArray *mex_output[],
       }
     }
   }
-
-  N_VSetArrayPointer(initial_point, solver_y);
-  realtype* y_data = initial_point;
-  
-
   
   cvode = CVodeCreate_nullchecked(CV_BDF);
 
-  CVodeInit_checked           (cvode, dydt_cvode,    t_values[0], solver_y);  
+  if ( sensitivity_finite_diff ) {
+    CVodeInit_checked(cvode, dydt_cvode         , t_values[0], solver_y);  
+  } else {
+    CVodeInit_checked(cvode, sensitivity_fd_dydt, t_values[0], solver_y);  
+  }
   CVodeSetErrHandlerFn_checked(cvode, error_handler, NULL                 );
   CVodeSetUserData_checked    (cvode, user_data                           );
   CVodeSStolerances_checked   (cvode, rel_tol,       abs_tol              );
@@ -331,17 +399,17 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   }
      
   #if JACOBIAN_STORAGE == DENSE
-  A  = SUNDenseMatrix_nullchecked(neq, neq);
+  A  = SUNDenseMatrix_nullchecked(neq_solver, neq_solver);
   LS = SUNLinSol_Dense_nullchecked(solver_y, A);
   #endif
   
   #if JACOBIAN_STORAGE == BANDED
-  A  = SUNBandMatrix_nullchecked(neq, UPPER_BANDWIDTH, LOWER_BANDWIDTH);
+  A  = SUNBandMatrix_nullchecked(neq_solver, UPPER_BANDWIDTH, LOWER_BANDWIDTH);
   LS = SUNLinSol_Band_nullchecked(solver_y, A);
   #endif
   
   #if JACOBIAN_STORAGE == SPARSE
-  A = SUNSparseMatrix(neq, neq, JACOBIAN_NNZ, CSC_MAT);
+  A = SUNSparseMatrix(neq_solver, neq_solver, JACOBIAN_NNZ, CSC_MAT);
   LS = SUNLinSol_SPGMR(solver_y, PREC_NONE, 0);
   #endif
    
@@ -349,7 +417,11 @@ void mexFunction(int n_output,       mxArray *mex_output[],
  
   /* Set the user-supplied Jacobian routine Jac */
   #if ANALYTIC_JACOBIAN
-  CVodeSetJacFn(cvode, jacobian_dydt);
+  if ( sensitivity_finite_diff )
+    CVodeSetJacFn(cvode, sensitivity_fd_jacobian);
+  else {
+    CVodeSetJacFn(cvode, jacobian_dydt);
+  }
   #endif
   
   int rootfinding_direction = INCREASING;
@@ -376,7 +448,7 @@ void mexFunction(int n_output,       mxArray *mex_output[],
     }
 
     CVodeSensEEtolerances(cvode);
-    CVodeSetSensErrCon(cvode, true);    
+    CVodeSetSensErrCon(cvode, false);    
   } 
   
   
@@ -388,18 +460,19 @@ void mexFunction(int n_output,       mxArray *mex_output[],
                                                                mxREAL);
   }
     
-  if (parameter_sensitivity) {
+  if (parameter_sensitivity || sensitivity_finite_diff) {
     mex_output[OUTPUT_SENSITIVITY] = mxCreateDoubleMatrix(neq, 1, mxREAL);
   }
   
   mxDouble* t_out = my_mex_get_doubles(t_output_array);
   mxDouble* y_out = my_mex_get_doubles(y_output_array);
   mxDouble* s_out;
-  if (sensitivity || parameter_sensitivity) {
+  if (sensitivity || parameter_sensitivity || sensitivity_finite_diff) {
     s_out = my_mex_get_doubles(mex_output[OUTPUT_SENSITIVITY]);
   }
   
   copy_real_to_double(t_values, t_out,  n_points);
+  realtype* y_data = N_VGetArrayPointer(solver_y);
   copy_real_to_double(y_data,   y_out, neq      );
   
   double* y_out_ptr = y_out + neq;
@@ -415,14 +488,14 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   #endif
   
   for(i = 1; i < n_points; i++) {
-    # if ENABLE_INTERRUPT
+    #if ENABLE_INTERRUPT
     // to make this work link with:
     // fullfile(matlabroot, 'bin', computer('arch'), 'libut.dll') (windows)
     // fullfile(matlabroot, 'bin', computer('arch'), 'libut.so ') (linux)
     if (utIsInterruptPending()) {
       break;
     }
-    # endif
+    #endif
     #ifdef PRINT_TIME
     mex_eval("print_temp('t=%.15e')", (double)t_values[i]);
     #endif
@@ -439,7 +512,7 @@ void mexFunction(int n_output,       mxArray *mex_output[],
       CVodeGetRootInfo(cvode, &rootsfound);
     }
     copy_real_to_double(y_data, y_out_ptr, neq);
-    y_out_ptr += neq;
+    y_out_ptr += neq_solver;
 
     if (rootsfound) {
       //mexPrintf("cvode: period: %.6f\n", t);
@@ -451,6 +524,16 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   mex_eval("clear('time_print_temp')");
   mex_eval("print_temp()");
   #endif
+  
+
+  
+  if (sensitivity_finite_diff) {
+    realtype* y1 = y_data;
+    realtype* y2 = y_data + neq;
+    for (int i = 0; i < neq; i++) {
+      s_out[i] = (double) ((y2[i] - y1[i]) / SENSITIVITY_H / 2);
+    }
+  }
   
   if (i+1 < n_points) {
     // this happens when a cycle has been detected
@@ -483,6 +566,11 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   if (cycle_detection) {
     N_VDestroy(point_on_limitcycle);
     N_VDestroy(tangent_to_limitcycle);
+  }
+  
+  if (sensitivity_finite_diff) {
+    free(snstvty_fd_vector);
+    free(snstvty_fd_ic);   
   }
   
   SUNLinSolFree(LS); /* Free the linear solver memory */

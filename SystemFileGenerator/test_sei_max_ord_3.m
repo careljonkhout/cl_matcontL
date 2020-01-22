@@ -1,7 +1,7 @@
 
 max_ord = 3;
 name = sprintf('SEI_max_ord_%d', max_ord);
-pars = "alpha beta mu delta gamma";
+parameters = "alpha beta mu delta gamma";
 equations = [
     "s' = mu - mu * s - beta*(1 + delta * u) * s * i"
     "e' = beta*(1+delta*i) *s*i - (mu + alpha)*e"
@@ -9,7 +9,7 @@ equations = [
     "u' = u-2*pi*v - (u^2+v^2)*u"
     "v' = 2* pi * u + v - (u^2+v^2)*v"];
  
-s = SystemFileGenerator.new(name,pars,"t",max_ord,equations);
+s = SystemFileGenerator.new(name, parameters, "t", max_ord, equations);
 s.generate_file
 
 old_path = pwd;

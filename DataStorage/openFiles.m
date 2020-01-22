@@ -25,7 +25,9 @@ if isempty(cds.runID)
   cds.runID = scriptname;
 end
 % Don't let users accidentally overwrite their data
-cds.runID = [cds.runID '_' my_timestamp];
+if contopts.timestamp_in_filenames
+  cds.runID = [cds.runID '_' my_timestamp];
+end
 
 %% Find path
 if isempty(contopts.TestPath)   

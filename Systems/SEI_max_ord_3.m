@@ -39,7 +39,7 @@ options = odeset(...
 
 % --------------------------------------------------------------------------
 function jac = jacobian(t, y, par_alpha, par_beta, par_mu, par_delta, par_gamma)
-jac = reshape([-par_mu-par_beta.*y(3).*(par_delta.*y(4)+1.0),par_beta.*y(3).*(par_delta.*y(3)+1.0),0.0,0.0,0.0,0.0,-par_alpha-par_mu,par_alpha,0.0,0.0,-par_beta.*y(1).*(par_delta.*y(4)+1.0),par_beta.*y(1).*(par_delta.*y(3)+1.0)+par_beta.*par_delta.*y(3).*y(1),-par_gamma-par_mu,0.0,0.0,-par_beta.*par_delta.*y(3).*y(1),0.0,0.0,y(4).^2.*-3.0-y(5).^2+1.0,pi.*2.0-y(4).*y(5).*2.0,0.0,0.0,0.0,pi.*-2.0-y(4).*y(5).*2.0,-y(4).^2-y(5).^2.*3.0+1.0],[5,5]);
+jac = reshape([-par_mu-par_beta.*y(3)-par_beta.*par_delta.*y(3).*y(4),par_beta.*y(3).*(par_delta.*y(3)+1.0),0.0,0.0,0.0,0.0,-par_alpha-par_mu,par_alpha,0.0,0.0,-par_beta.*y(1).*(par_delta.*y(4)+1.0),par_beta.*y(1).*(par_delta.*y(3)+1.0)+par_beta.*par_delta.*y(3).*y(1),-par_gamma-par_mu,0.0,0.0,-par_beta.*par_delta.*y(3).*y(1),0.0,0.0,y(4).^2.*-3.0-y(5).^2+1.0,pi.*2.0-y(4).*y(5).*2.0,0.0,0.0,0.0,pi.*-2.0-y(4).*y(5).*2.0,-y(4).^2-y(5).^2.*3.0+1.0],[5,5]);
 % --------------------------------------------------------------------------
 function jacp=jacobian_params(t, y, par_alpha, par_beta, par_mu, par_delta, par_gamma)
 jacp = reshape([0.0,-y(2),y(2),0.0,0.0,-y(3).*y(1).*(par_delta.*y(4)+1.0),y(3).*y(1).*(par_delta.*y(3)+1.0),0.0,0.0,0.0,-y(1)+1.0,-y(2),-y(3),0.0,0.0,-par_beta.*y(3).*y(1).*y(4),par_beta.*y(3).^2.*y(1),0.0,0.0,0.0,0.0,0.0,-y(3),0.0,0.0],[5,5]);

@@ -15,6 +15,7 @@ function Mx = NP_SS_monodromy_map(x, period, parameters, abs_tol, rel_tol)
       'The actual number of input arguments is %d.\n'], nargin);
   end
   if cds.using_cvode
+    tic
     [~,~,Mx] = feval(cds.integrator, ...
       't_values',                [0 period], ...
       'initial_point',           cds.phases_0, ...
@@ -22,6 +23,8 @@ function Mx = NP_SS_monodromy_map(x, period, parameters, abs_tol, rel_tol)
       'ode_parameters',          cell2mat(parameters), ...
       'abs_tol',                 abs_tol, ...
       'rel_tol',                 rel_tol);
+    toc
+    pause
     return
   end
 
@@ -46,11 +49,16 @@ function Mx = NP_SS_monodromy_map(x, period, parameters, abs_tol, rel_tol)
       'AbsTol',       1e-13, ...
       'RelTol',       1e-13  ...
     ); 
-    h = 5e-5;
-    x_cycle = deval(cds.cycle_orbit,0);
+    
+    x = x(:);
+  
+   
+    h  = 1e-5;
     f  = @(t, x) cds.dydt_ode(0,x,parameters{:});
     ff = @(t, x1_and_x2) [f(0, x1_and_x2(1:cds.n_phases    ))
                           f(0, x1_and_x2(  cds.n_phases+1:end))];
+    x_cycle = deval(cds.cycle_orbit,0);
+   
     [~, orbit] = ode15s(ff, ...
       [0 period], ...
       [x_cycle - h * x; x_cycle + h * x], ...
@@ -60,6 +68,6 @@ function Mx = NP_SS_monodromy_map(x, period, parameters, abs_tol, rel_tol)
     phi_x1 = phi_x1__and__phi_x2(1:cds.n_phases);
     phi_x2 = phi_x1__and__phi_x2(cds.n_phases+1:end);
     
-    Mx = (phi_x2 - phi_x1)/h/2; 
+    Mx = ((phi_x2 - phi_x1)/h)/2; 
   end
 end

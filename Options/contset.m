@@ -185,7 +185,10 @@ function options = defaultOptions()
   % TSearchOrder
   % note that cl_matcontL allows to set more options
   options.contL_DiagnosticsLevel  =    0;   % Diagnostic Level, -inf to suppress all output
-  options.contL_LogFile           =    1;   % Whether a logfile will be created
+  options.contL_LogFile           = true;   % Whether a logfile will be created
+  
+  options.timestamp_in_filenames       = true;
+  
   options.contL_SmoothingAngle    = pi/50;  % Minimum allowed change in angle between points
   options.contL_ParallelComputing = 0;      % Whether or not to use the parallel computing toolbox
   % note: while trying the parallel computing toolbox matlab 2019a to

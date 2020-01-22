@@ -434,7 +434,7 @@ classdef SystemFileGenerator < matlab.mixin.CustomDisplay & handle
     end
     
     function generate_c_files(s)
-      mc_path        = SystemFileGenerator.get_cl_matcontL_path();
+      mc_path        = get_cl_matcontL_path();
       systems_path   = fullfile(mc_path, 'Systems');
       system_path    = fullfile(systems_path, s.name);
       templates_path = fullfile(mc_path, 'SystemFileGenerator', 'templates');
@@ -558,7 +558,7 @@ classdef SystemFileGenerator < matlab.mixin.CustomDisplay & handle
       end
 
       build_script = [  sprintf([ ...
-        '  mc_path        = SystemFileGenerator.get_cl_matcontL_path;\n', ...
+        '  mc_path        = get_cl_matcontL_path();\n', ...
         '  generator_path = fullfile(mc_path, ''SystemFileGenerator'');\n', ...
         '  cvodes_path    = fullfile(generator_path, ''cvodes'');\n', ...
         '  system_name    = ''%s'';\n', ...
@@ -640,8 +640,8 @@ classdef SystemFileGenerator < matlab.mixin.CustomDisplay & handle
                     s.input_syms, s.internal_syms);
             formatted_rhs = [formatted_rhs ';\n'];
           end
-          formatted_rhs = [formatted_rhs
-                    'dydt =[\n  ', strjoin(s.rhs, ';\n  ') ']'];
+          formatted_rhs = sprintf([formatted_rhs, ...
+                    'dydt =[\n  ', strjoin(s.rhs, ';\n  ') ']']);
       end
       
       print_temp('replacing symbols');
@@ -1079,12 +1079,6 @@ classdef SystemFileGenerator < matlab.mixin.CustomDisplay & handle
       end
       s = SystemFileGenerator(name, par_str, time, max_ord, ...
               equations, [], output_type);
-    end
-    
-    function path = get_cl_matcontL_path()
-      stack         = dbstack('-completenames');
-      path_elements = strsplit(stack(1).file, filesep);
-      path          = strjoin(path_elements(1:end-2), filesep);
     end
     
     function print_to_file(filename, content)

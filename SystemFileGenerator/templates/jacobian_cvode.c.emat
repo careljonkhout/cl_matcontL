@@ -7,16 +7,20 @@
 #include "user_data.h"
 
 #if JACOBIAN_STORAGE == DENSE
-#define JAC(i,j) (SM_ELEMENT_D(jacobian, (i), (j)))
+#define JAC(i,j) (SM_ELEMENT_D(jacobian, ((i)+(offset)), ((j)+(offset))))
 #endif
 
 #if JACOBIAN_STORAGE == BANDED
-#define JAC(i,j) (SM_ELEMENT_B(jacobian, (i), (j)))
+#define JAC(i,j) (SM_ELEMENT_B(jacobian, ((i)+(offset)), ((j)+(offset))))
 #endif
 
+void compute_jacobian(SUNMatrix jacobian, realtype* y, realtype* parameters);
+
+int offset = 0;
+
 int jacobian_dydt(
-               realtype t, N_Vector y_vec, N_Vector fy, SUNMatrix jacobian,
-              void* user_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
+        realtype t, N_Vector y_vec, N_Vector fy, SUNMatrix jacobian,
+        void* user_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
   
   realtype* y          = N_VGetArrayPointer(y_vec);
   realtype* parameters = ((UserData) user_data)->parameters;
@@ -36,8 +40,30 @@ int jacobian_dydt(
             SUNMATRIX_DENSE, SUNMatGetID(jacobian));
   }
   #endif
-
-<%= s.jacobian %>
+ 
+  compute_jacobian(jacobian, y, parameters);
   
   return 0;
 }
+
+int sensitivity_fd_jacobian(
+        realtype t, N_Vector y_vec, N_Vector fy, SUNMatrix jacobian,
+        void* user_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
+
+  realtype* y1         = N_VGetArrayPointer(y_vec);
+  realtype* y2         = N_VGetArrayPointer(y_vec) + NV_LENGTH_S(y_vec) / 2;
+  realtype* parameters = ((UserData) user_data)->parameters;
+  
+  compute_jacobian(jacobian, y1, parameters);
+
+  offset = NV_LENGTH_S(y_vec) / 2;
+
+  compute_jacobian(jacobian, y2, parameters);
+
+}
+
+void compute_jacobian(SUNMatrix jacobian, realtype* y, realtype* parameters) {
+<%= s.jacobian %>
+}
+
+
