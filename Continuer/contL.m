@@ -110,6 +110,7 @@ function [sout, datafile] = contL(curvefile, x0, v_cont, opts, varargin)
   end
 
   cds.StartTime = clock;
+  cds.first_point = true;
 
   feval(cds.curve_init, x0, v_cont);
   cds.newtcorrL_needs_CISdata = 0;
@@ -221,9 +222,10 @@ function [sout, datafile] = contL(curvefile, x0, v_cont, opts, varargin)
 
   first_point.angle = 0;
   first_point = DefaultProcessor(first_point); 
-
+  cds.first_point = false;
   %% II. Main Loop
   currpoint = first_point;
+
   while cds.i < MaxNumPoints && ~cds.lastpointfound
     corrections = 1;
     print_diag(1,'\n --- Step %d ---\n',cds.i);
@@ -565,17 +567,10 @@ function [sout, datafile] = contL(curvefile, x0, v_cont, opts, varargin)
     if trailpoint.v'*currpoint.v < 0,  trailpoint.v = -trailpoint.v; end
     currpoint = trailpoint;
 
-
-
-
-
     % stepsize control
     if cds.h < cds.h_max && corrections==1
       cds.h = min(cds.h*cds.h_inc_fac, cds.h_max);
     end
-
-
-
 
     if contopts.pause && mod(cds.i, contopts.nsteps_before_pause) == 0
       pause

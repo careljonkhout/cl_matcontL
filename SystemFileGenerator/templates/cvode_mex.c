@@ -378,9 +378,9 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   cvode = CVodeCreate_nullchecked(CV_BDF);
 
   if ( sensitivity_finite_diff ) {
-    CVodeInit_checked(cvode, dydt_cvode         , t_values[0], solver_y);  
-  } else {
     CVodeInit_checked(cvode, sensitivity_fd_dydt, t_values[0], solver_y);  
+  } else {
+    CVodeInit_checked(cvode, dydt_cvode         , t_values[0], solver_y);  
   }
   CVodeSetErrHandlerFn_checked(cvode, error_handler, NULL                 );
   CVodeSetUserData_checked    (cvode, user_data                           );
@@ -440,7 +440,7 @@ void mexFunction(int n_output,       mxArray *mex_output[],
                                               d_sensitivity_dt_pars, solver_s);
     }
     #else
-    CVodeSensInit1(cvode, NS, SENSITIVITY_METHOD, NULL, solver_s);
+    CVodeSensInit1(cvode, n_sensitivity, SENSITIVITY_METHOD, NULL, solver_s);
     #endif
     
     if (parameter_sensitivity) {
@@ -448,7 +448,7 @@ void mexFunction(int n_output,       mxArray *mex_output[],
     }
 
     CVodeSensEEtolerances(cvode);
-    CVodeSetSensErrCon(cvode, false);    
+    CVodeSetSensErrCon(cvode, true);    
   } 
   
   
@@ -724,4 +724,9 @@ void mex_eval(const char * format, ... ) {
   vsnprintf(buffer, sizeof buffer, format, args2);
   va_end(args2);
   mexEvalString(buffer);
+}
+
+int main() {
+  mwSize dimensions[] = {1, 13};
+  mxArray* name_initial_point = mxCreateCharArray(2, dimensions);
 }

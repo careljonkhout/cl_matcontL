@@ -22,7 +22,7 @@ function [ failed ] = savePoint( varargin )
 
   if nargin == 1
       % 'normal' point
-      if cds.i == 1 % first point
+      if cds.first_point % first point
           s.index   = 1;
           s.label   = '00';
           s.msg     = 'This is the first point of the curve';
