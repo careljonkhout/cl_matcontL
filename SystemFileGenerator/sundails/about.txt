@@ -1,0 +1,7 @@
+The folders below contain the sources of version 4.1.0 of the cvodes integrator 
+form the sundails suite. The sundails suite is distributed by Lawrence Livermore 
+national laboratories.
+
+All Makefiles and files related to Fortran have been left out.
+Only the file include/sundails/sundails_version.h and cvodes/cvodes_impl.h 
+have been slightly modified from its original to support __float128.

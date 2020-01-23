@@ -22,21 +22,20 @@
 #include "cvode_with_checks.c"
 #include "mex_utils_cvode.c"
 
-#define OUTPUT_T            0
-#define OUTPUT_Y            1
-#define OUTPUT_SENSITIVITY  2
+#define OUT_T               0
+#define OUT_Y               1
+#define OUT_SENS            2
 #define INCREASING          1
 #define SENSITIVITY_H       1e-8
 
-#define DEFAULT_ABS_TOL     RCONST(1.e-6) /* default scalar absolute tolerance */
-#define DEFAULT_REL_TOL     RCONST(1.e-6) /* default relative tolerance */
+#define DEFAULT_ABS_TOL     RCONST(1.e-8) /* default absolute tolerance */
+#define DEFAULT_REL_TOL     RCONST(1.e-8) /* default relative tolerance */
 #define MAX_NUM_STEPS       10*1000*1000
 #define SENSITIVITY_METHOD  CV_SIMULTANEOUS
 
 #ifdef ENABLE_INTERRUPT
 int utIsInterruptPending();
 #endif
-
 
 // implemented in dydt_cvode.c
 int dydt_cvode(realtype t, N_Vector u, N_Vector udot, void *);
@@ -104,10 +103,6 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   int          n_sensitivity              = 0;
   realtype*    sensitivity_vectors        = NULL;
   int          sensitivity_vector_size    = 0;
-  
-  booleantype  sensitivity_finite_diff    = false;
-  realtype*    snstvty_fd_vector          = NULL;
-  realtype*    snstvty_fd_ic              = NULL;
   
   booleantype  parameter_sensitivity      = false;
   int          parameter_index            = 0;
@@ -223,12 +218,6 @@ void mexFunction(int n_output,       mxArray *mex_output[],
       n_sensitivity = 1;
       parameter_sensitivity = true;
       
-    } else if( ! strcmp(arg.name, "sensitivity_finite_diff") ) {
-      
-      sensitivity_finite_diff = true;
-      snstvty_fd_vector       = get_reals(arg, NEQ);
-      snstvty_fd_ic           = malloc(2 * NEQ * sizeof(realtype));
-      
     } else {
   
       mexErrMsgIdAndTxt("cvode:invalid_argument_name", 
@@ -302,60 +291,15 @@ void mexFunction(int n_output,       mxArray *mex_output[],
                   "and the initial conditions cannot be done "
                   "at the same time.");
   }
-  
-  if ( sensitivity && sensitivity_finite_diff ) {
-     mexErrMsgIdAndTxt("cvode:no_ic_and_param_sens",
-                  "Sensitivity by solving the variational "
-                  "problem and the sensitivity by finite differences "
-                  "cannot be done at the same time.");
-  }
-  
-  if ( sensitivity_finite_diff && parameter_sensitivity ) {
-     mexErrMsgIdAndTxt("cvode:no_ic_and_param_sens",
-                  "Sensitivity of the parameters "
-                  "and the sensitivity by finite differences "
-                  "cannot be done at the same time.");
-  }
-  
-  if ( sensitivity_finite_diff ) {
-    realtype h = SENSITIVITY_H;
-    for (int i = 0; i < neq; i++) {
-      snstvty_fd_ic[i]       = initial_point[i] - h * snstvty_fd_vector[i];
-      snstvty_fd_ic[NEQ + i] = initial_point[i] + h * snstvty_fd_vector[i];
-    }
-  }
-  
-  int neq_solver = neq;
-  if (sensitivity_finite_diff) {
-    neq_solver = 2 * neq;
-  }
-    
-   
-  if ( sensitivity_finite_diff ) {
-    for ( int i = 0; i < neq_solver; i++ ) {
-      mexPrintf("%.15f\n", snstvty_fd_ic[i]);
-    }
-  }
-  
+
 
   void*             cvode       = NULL;
   SUNMatrix         A           = NULL;
   SUNLinearSolver   LS          = NULL;
   
-
-  
-  N_Vector solver_y;
-  
-  if ( sensitivity_finite_diff ) {
-    solver_y = N_VMake_Serial(neq_solver, snstvty_fd_ic);
-  } else {
-    solver_y = N_VMake_Serial(neq_solver, initial_point);
-  }
-    
-  
-  
-  N_Vector* solver_s;
-  realtype* s_data;
+  N_Vector  solver_y = N_VMake_Serial(neq, initial_point);
+  N_Vector* solver_s = NULL;
+  realtype* s_data   = NULL;
   if (sensitivity || parameter_sensitivity) {
     solver_s = malloc(n_sensitivity * sizeof(N_Vector *));
     if (sensitivity) {
@@ -377,11 +321,8 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   
   cvode = CVodeCreate_nullchecked(CV_BDF);
 
-  if ( sensitivity_finite_diff ) {
-    CVodeInit_checked(cvode, sensitivity_fd_dydt, t_values[0], solver_y);  
-  } else {
-    CVodeInit_checked(cvode, dydt_cvode         , t_values[0], solver_y);  
-  }
+
+  CVodeInit_checked(cvode, dydt_cvode         , t_values[0], solver_y);  
   CVodeSetErrHandlerFn_checked(cvode, error_handler, NULL                 );
   CVodeSetUserData_checked    (cvode, user_data                           );
   CVodeSStolerances_checked   (cvode, rel_tol,       abs_tol              );
@@ -399,17 +340,17 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   }
      
   #if JACOBIAN_STORAGE == DENSE
-  A  = SUNDenseMatrix_nullchecked(neq_solver, neq_solver);
+  A  = SUNDenseMatrix_nullchecked(neq, neq);
   LS = SUNLinSol_Dense_nullchecked(solver_y, A);
   #endif
   
   #if JACOBIAN_STORAGE == BANDED
-  A  = SUNBandMatrix_nullchecked(neq_solver, UPPER_BANDWIDTH, LOWER_BANDWIDTH);
+  A  = SUNBandMatrix_nullchecked(neq, UPPER_BANDWIDTH, LOWER_BANDWIDTH);
   LS = SUNLinSol_Band_nullchecked(solver_y, A);
   #endif
   
   #if JACOBIAN_STORAGE == SPARSE
-  A = SUNSparseMatrix(neq_solver, neq_solver, JACOBIAN_NNZ, CSC_MAT);
+  A = SUNSparseMatrix(neq, neq, JACOBIAN_NNZ, CSC_MAT);
   LS = SUNLinSol_SPGMR(solver_y, PREC_NONE, 0);
   #endif
    
@@ -417,11 +358,7 @@ void mexFunction(int n_output,       mxArray *mex_output[],
  
   /* Set the user-supplied Jacobian routine Jac */
   #if ANALYTIC_JACOBIAN
-  if ( sensitivity_finite_diff )
-    CVodeSetJacFn(cvode, sensitivity_fd_jacobian);
-  else {
-    CVodeSetJacFn(cvode, jacobian_dydt);
-  }
+  CVodeSetJacFn(cvode, jacobian_dydt);
   #endif
   
   int rootfinding_direction = INCREASING;
@@ -455,20 +392,15 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   
   mxArray* t_output_array = mxCreateDoubleMatrix(1,   n_points, mxREAL);
   mxArray* y_output_array = mxCreateDoubleMatrix(neq, n_points, mxREAL);
-  if (sensitivity) {
-    mex_output[OUTPUT_SENSITIVITY] = mxCreateDoubleMatrix(neq, n_sensitivity, 
-                                                               mxREAL);
+  if (sensitivity || parameter_sensitivity) {
+    mex_output[OUT_SENS] = mxCreateDoubleMatrix(neq, n_sensitivity, mxREAL);
   }
     
-  if (parameter_sensitivity || sensitivity_finite_diff) {
-    mex_output[OUTPUT_SENSITIVITY] = mxCreateDoubleMatrix(neq, 1, mxREAL);
-  }
-  
   mxDouble* t_out = my_mex_get_doubles(t_output_array);
   mxDouble* y_out = my_mex_get_doubles(y_output_array);
   mxDouble* s_out;
-  if (sensitivity || parameter_sensitivity || sensitivity_finite_diff) {
-    s_out = my_mex_get_doubles(mex_output[OUTPUT_SENSITIVITY]);
+  if (sensitivity || parameter_sensitivity) {
+    s_out = my_mex_get_doubles(mex_output[OUT_SENS]);
   }
   
   copy_real_to_double(t_values, t_out,  n_points);
@@ -512,7 +444,7 @@ void mexFunction(int n_output,       mxArray *mex_output[],
       CVodeGetRootInfo(cvode, &rootsfound);
     }
     copy_real_to_double(y_data, y_out_ptr, neq);
-    y_out_ptr += neq_solver;
+    y_out_ptr += neq;
 
     if (rootsfound) {
       //mexPrintf("cvode: period: %.6f\n", t);
@@ -525,16 +457,6 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   mex_eval("print_temp()");
   #endif
   
-
-  
-  if (sensitivity_finite_diff) {
-    realtype* y1 = y_data;
-    realtype* y2 = y_data + neq;
-    for (int i = 0; i < neq; i++) {
-      s_out[i] = (double) ((y2[i] - y1[i]) / SENSITIVITY_H / 2);
-    }
-  }
-  
   if (i+1 < n_points) {
     // this happens when a cycle has been detected
     mxSetN(t_output_array, i+1);
@@ -542,11 +464,11 @@ void mexFunction(int n_output,       mxArray *mex_output[],
   }
   mxArray* y_transposed = mxCreateDoubleMatrix(i+1, neq, mxREAL);
   mexCallMATLAB(1, &y_transposed, 1, &y_output_array, "transpose");
-  mex_output[OUTPUT_Y] = y_transposed;
+  mex_output[OUT_Y] = y_transposed;
   
   mxArray* t_transposed = mxCreateDoubleMatrix(i+1, 1, mxREAL);
   mexCallMATLAB(1, &t_transposed, 1, &t_output_array, "transpose");
-  mex_output[OUTPUT_T] = t_transposed;
+  mex_output[OUT_T] = t_transposed;
   
    
   if (verbose) {
@@ -568,11 +490,7 @@ void mexFunction(int n_output,       mxArray *mex_output[],
     N_VDestroy(tangent_to_limitcycle);
   }
   
-  if (sensitivity_finite_diff) {
-    free(snstvty_fd_vector);
-    free(snstvty_fd_ic);   
-  }
-  
+
   SUNLinSolFree(LS); /* Free the linear solver memory */
   SUNMatDestroy(A);  /* Free the matrix memory */
   free(user_data);   /* Free the user data */
@@ -724,9 +642,4 @@ void mex_eval(const char * format, ... ) {
   vsnprintf(buffer, sizeof buffer, format, args2);
   va_end(args2);
   mexEvalString(buffer);
-}
-
-int main() {
-  mwSize dimensions[] = {1, 13};
-  mxArray* name_initial_point = mxCreateCharArray(2, dimensions);
 }

@@ -91,7 +91,7 @@ typedef HIGHER_PRECISION realtype;
 # define RCONST(x) x##q
 # define BIG_REAL LDBL_MAX
 # define SMALL_REAL LDBL_MIN
-# define UNIT_ROUNDOFF DBL_EPSILON
+# define UNIT_ROUNDOFF HIGHER_PRECISION_EPSILON
 
 #endif
 

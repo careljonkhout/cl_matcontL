@@ -16,21 +16,6 @@ int dydt_cvode(realtype t, N_Vector y_vec, N_Vector dydt_vec, void *user_data) {
   return 0;
 }
 
-int sensitivity_fd_dydt(
-        realtype t, N_Vector y_vec, N_Vector dydt_vec, void *user_data) {
-
-  realtype* y1     = N_VGetArrayPointer(y_vec);
-  realtype* y2     = N_VGetArrayPointer(y_vec) + NV_LENGTH_S(y_vec) / 2;
-  realtype* dydt_1 = N_VGetArrayPointer(dydt_vec);
-  realtype* dydt_2 = N_VGetArrayPointer(dydt_vec) + NV_LENGTH_S(y_vec) / 2;
-  realtype* parameters     = ((UserData) user_data)->parameters;
-
-  compute_dydt(y1, dydt_1, parameters);
-  compute_dydt(y2, dydt_2, parameters);
-
-  return 0;
-}
-
 void compute_dydt(realtype* y, realtype* dydt, realtype* parameters) {
 <%= s.formatted_rhs %>
 }

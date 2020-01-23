@@ -1,6 +1,8 @@
-% Print something to the Matlab console. The second time (and any subsequent 
-% times) print_temp is called it removes the text printed the previous time by
-% printing n_bytes backspace characters, before printing the new text.
+% Print the status of something that changes continuously to the Matlab console.
+% The second time (and any subsequent times) print_temp is called it removes the
+% text printed the previous time by printing n_bytes backspace characters,
+% before printing the new text.
+
 function print_temp(format_string, varargin)
   persistent n_bytes
   if ~ isempty(time_print_temp())

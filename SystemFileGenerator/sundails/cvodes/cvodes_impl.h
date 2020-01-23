@@ -1017,11 +1017,23 @@ int cvNlsInitSensStg1(CVodeMem cv_mem);
 
 #if defined(SUNDIALS_EXTENDED_PRECISION)
 
+#if HIGHER_PRECISION == __float128
+
+#define MSG_TIME        "t = %Qg"
+#define MSG_TIME_H      "t = %Qg and h = %Qg"
+#define MSG_TIME_INT    "t = %Qg is not between tcur - hu = %Qg and tcur = %Qg."
+#define MSG_TIME_TOUT   "tout = %Qg"
+#define MSG_TIME_TSTOP  "tstop = %Qg"
+
+#else
+
 #define MSG_TIME        "t = %Lg"
 #define MSG_TIME_H      "t = %Lg and h = %Lg"
 #define MSG_TIME_INT    "t = %Lg is not between tcur - hu = %Lg and tcur = %Lg."
 #define MSG_TIME_TOUT   "tout = %Lg"
 #define MSG_TIME_TSTOP  "tstop = %Lg"
+
+#endif
 
 #elif defined(SUNDIALS_DOUBLE_PRECISION)
 

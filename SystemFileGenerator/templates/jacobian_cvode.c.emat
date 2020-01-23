@@ -18,6 +18,28 @@ void compute_jacobian(SUNMatrix jacobian, realtype* y, realtype* parameters);
 
 int offset = 0;
 
+void print_matrix(SUNMatrix A) {
+  if (SUNMatGetID(A) != SUNMATRIX_DENSE) {
+    mexErrMsgIdAndTxt("cvode:wrong_matrix_type",
+            "expected type %d = SUNMATRIX_DENSE, got type %d",
+            SUNMATRIX_DENSE, SUNMatGetID(A));
+  }
+    mexPrintf("\n");
+  for (int i=0; i<SM_ROWS_D(A); i++) {
+    for (int j=0; j<SM_COLUMNS_D(A); j++) {
+#if defined(SUNDIALS_EXTENDED_PRECISION)
+      mexPrintf("%+1.1Le ", SM_ELEMENT_D(A,i,j));
+#elif defined(SUNDIALS_DOUBLE_PRECISION)
+      mexPrintf("%+1.1e ", SM_ELEMENT_D(A,i,j));
+#else
+      mexPrintf("%+1.1e ", SM_ELEMENT_D(A,i,j));
+#endif
+    }
+    mexPrintf("\n");
+  }
+  mexPrintf("\n");
+}
+
 int jacobian_dydt(
         realtype t, N_Vector y_vec, N_Vector fy, SUNMatrix jacobian,
         void* user_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
@@ -46,46 +68,6 @@ int jacobian_dydt(
   compute_jacobian(jacobian, y, parameters);
   
   return 0;
-}
-
-void print_matrix(SUNMatrix A) {
-  if (SUNMatGetID(A) != SUNMATRIX_DENSE) {
-    mexErrMsgIdAndTxt("cvode:wrong_matrix_type",
-            "expected type %d = SUNMATRIX_DENSE, got type %d",
-            SUNMATRIX_DENSE, SUNMatGetID(jacobian));
-  }
-    mexPrintf("\n");
-  for (int i=0; i<SM_ROWS_D(A); i++) {
-    for (int j=0; j<SM_COLUMNS_D(A); j++) {
-#if defined(SUNDIALS_EXTENDED_PRECISION)
-      mexPrintf("%+1.1Le ", SM_ELEMENT_D(A,i,j));
-#elif defined(SUNDIALS_DOUBLE_PRECISION)
-      mexPrintf("%+1.1e ", SM_ELEMENT_D(A,i,j));
-#else
-      mexPrintf("%+1.1e ", SM_ELEMENT_D(A,i,j));
-#endif
-    }
-    mexPrintf("\n");
-  }
-  mexPrintf("\n");
-}
-
-int sensitivity_fd_jacobian(
-        realtype t, N_Vector y_vec, N_Vector fy, SUNMatrix jacobian,
-        void* user_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
-
-  realtype* y1         = N_VGetArrayPointer(y_vec);
-  realtype* y2         = N_VGetArrayPointer(y_vec) + NV_LENGTH_S(y_vec) / 2;
-  realtype* parameters = ((UserData) user_data)->parameters;
-
-  offset = 0;
-  
-  compute_jacobian(jacobian, y1, parameters);
-
-  offset = NV_LENGTH_S(y_vec) / 2;
-
-  compute_jacobian(jacobian, y2, parameters);
-
 }
 
 void compute_jacobian(SUNMatrix jacobian, realtype* y, realtype* parameters) {
