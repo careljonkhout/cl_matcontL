@@ -1,6 +1,4 @@
 function in_log_file(eval_r,eval_l)
-%UNTITLED Summary of this function goes here
-%   Detailed explanation goes here
 print_diag(2,'\nEigenvalues: (Subspace)\n')
 for j=1:length(eval_r)
     print_diag(2,'%+e',real(eval_r(j)))

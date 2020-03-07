@@ -260,12 +260,9 @@ NUnstable = contopts.CIS_NUnstable;
    
 CISdata = contCIS_init(A, 0, NSub, NUnstable);
 
-% Eigenvalues                            % MP 9/2018
-s.data.eigenvals = [CISdata.evl_r; CISdata.evl_l];  % MP
-
-eval_r = CISdata.evl_r;     % MP
-eval_l = CISdata.evl_l;     % MP  
-in_log_file(eval_r,eval_l); % MP
+if ~ isempty(CISdata)
+  in_log_file(CISdata.evl_r, CISdata.evl_l);
+end
 
 %% ---------------------------------------------------------
 function CISdata = CIS_step(X, CISdata1)
@@ -273,11 +270,6 @@ function CISdata = CIS_step(X, CISdata1)
 [x,p] = rearr(X); p = num2cell(p); A = ejac(x, p);
 CISdata = contCIS_step(A, CISdata1);
 
-% Eigenvalues                            % MP 9/2018
 if ~ isempty(CISdata)
-  s.data.eigenvals = [CISdata.evl_r; CISdata.evl_l];
-
-  eval_r = CISdata.evl_r;
-  eval_l = CISdata.evl_l;  
-  in_log_file(eval_r,eval_l); % MP
+  in_log_file(CISdata.evl_r, CISdata.evl_l);
 end

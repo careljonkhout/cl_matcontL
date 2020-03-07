@@ -327,3 +327,7 @@ function CISdata = CIS_step(X, CISdata1)
 
 [x,p] = rearr(X); p = num2cell(p); A = lpjac(x, p);
 CISdata = contCIS_step(A, CISdata1);
+
+if ~ isempty(CISdata)
+  in_log_file(CISdata.evl_r,CISdata.evl_l);
+end

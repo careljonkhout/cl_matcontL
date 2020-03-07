@@ -30,7 +30,7 @@
 
 #define DEFAULT_ABS_TOL     RCONST(1.e-8) /* default absolute tolerance */
 #define DEFAULT_REL_TOL     RCONST(1.e-8) /* default relative tolerance */
-#define MAX_NUM_STEPS       10*1000*1000
+#define MAX_NUM_STEPS       1000*1000*1000
 #define SENSITIVITY_METHOD  CV_SIMULTANEOUS
 
 #ifdef ENABLE_INTERRUPT

@@ -337,8 +337,16 @@ CISdata = contCIS_init(A, 0, NSub, NUnstable);
 
 [cds.borders, cds.index1, cds.index2] = find_new_borders_H(CISdata,x,p);
 
+if ~ isempty(CISdata)
+  in_log_file(CISdata.evl_r, CISdata.evl_l);
+end
+
 %% ---------------------------------------------------------
 function CISdata = CIS_step(X, CISdata1)
 
 [x,p] = rearr(X); p = num2cell(p); A = ejac(x, p);
 CISdata = contCIS_step(A, CISdata1);
+
+if ~ isempty(CISdata)
+  in_log_file(CISdata.evl_r, CISdata.evl_l);
+end
